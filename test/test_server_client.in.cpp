@@ -68,11 +68,12 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
   copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
   copy_data(t_c, vector<float>{4, 5, 6});
 
-  vector<float> inputs{1, 2, 3};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
-    auto he_client = ngraph::he::HESealClient(
-        "localhost", 34000, batch_size, client_input_map{{"TODO", inputs}});
+  auto client_thread = std::thread([&]() {
+    vector<float> inputs{1, 2, 3};
+    auto he_client =
+        ngraph::he::HESealClient("localhost", 34000, batch_size,
+                                 client_input_map{{b->get_name(), inputs}});
 
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
@@ -80,16 +81,12 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
 
   auto handle =
       static_pointer_cast<ngraph::he::HESealExecutable>(he_backend->compile(f));
-  NGRAPH_INFO << "Enabling client";
   handle->enable_client();
-  NGRAPH_INFO << "Calling with validate";
   handle->call_with_validate({t_result}, {t_dummy, t_c});
-  NGRAPH_INFO << "Waiting for client thread to finish";
   client_thread.join();
-  EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
+  EXPECT_TRUE(all_close(results, vector<float>{5.1, 7.2, 9.3}, 1e-3f));
 }
 
-/*
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -102,6 +99,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto t = make_shared<op::Add>(a, b);
   auto f = make_shared<Function>(t, ParameterVector{b});
 
+  auto he_op_annotations = std::make_shared<ngraph::he::HEOpAnnotations>(true);
+  b->set_op_annotations(he_op_annotations);
+
   // Server inputs which are not used
   auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
   auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
@@ -110,11 +110,12 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   float DUMMY_FLOAT = 99;
   copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
 
-  vector<float> inputs{1, 2, 3};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
+    vector<float> inputs{1, 2, 3};
     auto he_client =
-        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+        ngraph::he::HESealClient("localhost", 34000, batch_size,
+                                 client_input_map{{b->get_name(), inputs}});
 
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
@@ -128,6 +129,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }
 
+/*
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -151,7 +153,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
 
   vector<float> inputs{-1, -0.2, 3};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -191,7 +193,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
 
   vector<double> inputs{-1, -0.2, 3};
   vector<double> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -231,7 +233,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
 
   vector<double> inputs{-1, 0, 3};
   vector<int64_t> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -277,7 +279,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
 
   vector<float> inputs{-1, 3, 7};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -320,7 +322,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
 
   vector<float> inputs{-1, -0.2, 3};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -524,7 +526,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
   vector<float> inputs{-1, -1, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -568,7 +570,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
 
   vector<float> inputs{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0};
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -617,7 +619,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
           .get_vector();
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -669,7 +671,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                 {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
           .get_vector();
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 
@@ -743,7 +745,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                  {1, 0, 0, 0, 2}}}})
           .get_vector();
   vector<float> results;
-  auto client_thread = std::thread([&inputs, &results, &batch_size]() {
+  auto client_thread = std::thread([&]() {
     auto he_client =
         ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
 

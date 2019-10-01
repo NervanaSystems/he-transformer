@@ -23,15 +23,15 @@
 
 namespace ngraph {
 namespace he {
-/// \brief Annotations added to graph ops by CPU backend passes
+/// \brief Annotations added to graph ops by HE backend passes
 class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
  public:
-  HEOpAnnotations(bool encrypted) : m_encrypted(encrypted) {}
-  inline bool is_encrypted() { return m_encrypted; }
-  inline void set_encrypted(bool val) { m_encrypted = val; }
+  HEOpAnnotations(bool from_client) : m_from_client(from_client) {}
+  inline bool from_client() { return m_from_client; }
+  inline void set_from_client(bool val) { m_from_client = val; }
 
  private:
-  bool m_encrypted = false;
+  bool m_from_client = false;
 };
 
 }  // namespace he

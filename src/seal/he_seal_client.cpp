@@ -43,7 +43,12 @@ ngraph::he::HESealClient::HESealClient(
     const std::string& hostname, const size_t port, const size_t batch_size,
     const std::unordered_map<std::string, std::vector<double>>& inputs)
     : m_batch_size{batch_size}, m_is_done{false}, m_inputs{inputs} {
-  NGRAPH_CHECK(m_inputs.size() == 1, "Client supports only input parameter");
+  NGRAPH_CHECK(m_inputs.size() == 1,
+               "Client supports only one input parameter");
+
+  for (const auto& elem : inputs) {
+    NGRAPH_HE_LOG(1) << "Client input tensor: " << elem.first;
+  }
 
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
@@ -130,7 +135,15 @@ void ngraph::he::HESealClient::handle_inference_request(
   NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
                "Only support 1 encrypted parameter from client");
 
-  auto param_shape = proto_msg.cipher_tensors(0).shape();
+  auto proto_tensor = proto_msg.cipher_tensors(0);
+
+  auto proto_name = proto_tensor.name();
+  NGRAPH_HE_LOG(5) << "Inference request tensor has name " << proto_name;
+
+  NGRAPH_CHECK(m_inputs.find(proto_name) != m_inputs.end(), "Tensor name ",
+               proto_name, " not found");
+
+  auto param_shape = proto_tensor.shape();
   ngraph::Shape shape{param_shape.begin(), param_shape.end()};
 
   NGRAPH_HE_LOG(5) << "Client received inference request with shape "

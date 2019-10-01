@@ -216,17 +216,17 @@ class HESealExecutable : public runtime::Executable {
            nullptr;
   }
 
-  /// \brief Returns whether or not Parameter node should be encrypted. Defaults
-  /// to false if Parameter has no HEOpAnnotation
-  /// \param[in] param Parameter node
-  inline bool encrypted(const ngraph::op::Parameter& param) {
+  /// \brief Returns whether or not Parameter node should be received from
+  /// client. Defaults to false if Parameter has no HEOpAnnotation \param[in]
+  /// param Parameter node
+  inline bool from_client(const ngraph::op::Parameter& param) {
     auto annotation = param.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
                 annotation)) {
-      NGRAPH_HE_LOG(3) << "He annotation is_encrypted? "
-                       << he_annotation->is_encrypted();
-      return he_annotation->is_encrypted();
+      NGRAPH_HE_LOG(3) << "He annotation from_client? "
+                       << he_annotation->from_client();
+      return he_annotation->from_client();
     }
     return false;
   }

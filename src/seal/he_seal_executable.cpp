@@ -106,10 +106,15 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   NGRAPH_HE_LOG(3) << "Creating Executable";
   for (const auto& param : function->get_parameters()) {
+    NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (has_he_annotatation(*param)) {
-      std::string encrypted_string = encrypted(*param) ? "" : "not ";
+      std::string from_client_str = from_client(*param) ? "" : "not ";
       NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param->get_shape())
-                       << "} is " << encrypted_string << "encrypted";
+                       << "} is " << from_client_str << "from client";
+    }
+
+    for (const auto& tag : param->get_provenance_tags()) {
+      NGRAPH_HE_LOG(3) << "Tag " << tag;
     }
   }
 
@@ -151,6 +156,11 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
+
+    NGRAPH_HE_LOG(5) << "Node " << node->get_name();
+    for (const auto& tag : node->get_provenance_tags()) {
+      NGRAPH_HE_LOG(3) << "Tag " << tag;
+    }
   }
 
   NGRAPH_HE_LOG(3) << "Setting parameters and results";
@@ -176,7 +186,7 @@ void ngraph::he::HESealExecutable::check_client_supports_function() {
   bool first_batch_size = true;
   size_t batch_size = 1;
   for (const auto& param : get_parameters()) {
-    if (encrypted(*param)) {
+    if (from_client(*param)) {
       auto param_shape = param->get_shape();
       if (param_shape.size() == 0) {
         NGRAPH_CHECK(false, "Parameter shape is empty");
@@ -223,7 +233,7 @@ void ngraph::he::HESealExecutable::server_setup() {
 
     m_server_setup = true;
 
-    // Set client inputs
+    // Set client inputs to dummy values
     if (m_is_compiled) {
       m_client_inputs.clear();
       m_client_load_idx.clear();
@@ -324,7 +334,8 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
   proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
   for (const auto& input_param : input_parameters) {
-    if (encrypted(*input_param)) {  // TODO: allow plaintext params from client?
+    if (from_client(
+            *input_param)) {  // TODO: allow plaintext params from client?
 
       he_proto::SealCipherTensor* proto_cipher_tensor =
           proto_msg.add_cipher_tensors();
@@ -334,6 +345,8 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
 
       NGRAPH_HE_LOG(1) << "Server setting inference shape "
                        << ngraph::join(shape, "x");
+
+      proto_cipher_tensor->set_name(input_param->get_name());
     }
   }
 
@@ -510,7 +523,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     const ParameterVector& input_parameters = get_parameters();
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
-      if (encrypted(*param)) {
+      if (from_client(*param)) {
         NGRAPH_HE_LOG(5) << "Checking if parameter " << parm_idx
                          << " is loaded";
         size_t param_size = shape_size(param->get_shape()) / m_batch_size;
@@ -579,7 +592,7 @@ bool ngraph::he::HESealExecutable::call(
   for (size_t input_idx = 0; input_idx < server_inputs.size(); ++input_idx) {
     auto param_shape = server_inputs[input_idx]->get_shape();
 
-    if (m_enable_client && encrypted(*parameters[input_idx])) {
+    if (m_enable_client && from_client(*parameters[input_idx])) {
       NGRAPH_HE_LOG(1) << "Processing parameter shape " << param_shape
                        << " from client";
       he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(
@@ -647,9 +660,9 @@ bool ngraph::he::HESealExecutable::call(
         const auto param_op =
             std::static_pointer_cast<const ngraph::op::Parameter>(op);
         if (has_he_annotatation(*param_op)) {
-          std::string encrypted_string = encrypted(*param_op) ? "" : "not ";
+          std::string from_client_str = from_client(*param_op) ? "" : "not ";
           NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param_op->get_shape())
-                           << "} is " << encrypted_string << "encrypted";
+                           << "} is " << from_client_str << "from client";
         }
       }
       continue;
