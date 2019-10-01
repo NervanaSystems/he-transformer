@@ -120,28 +120,33 @@ class HESealCipherTensor : public HETensor {
   /// \param[out] protos Target to write encrypted cipehertexts to
   inline void save_to_proto(
       std::vector<he_proto::SealCipherTensor>& protos) const {
-    protos.resize(1);
-    protos[0].set_name(get_name());
-
-    std::vector<uint64_t> shape{get_packed_shape()};
-    *protos[0].mutable_shape() = {shape.begin(), shape.end()};
-
-    protos[0].set_offset(0);
-
-    for (size_t idx = 0; idx < m_num_elements; ++idx) {
-      m_ciphertexts[idx]->save(*protos[0].add_ciphertexts());
-    }
-
-    // TODO: Max cipher size
+    save_to_proto(protos, m_ciphertexts, get_shape(), get_name());
   }
 
+  /// \brief Writes encrypted ciphertexts to vector of protobufs
+  /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
+  /// multiple protobuf messages.
+  /// \param[out] protos Target to write encrypted cipehertexts to
+  /// \param[in] ciphertexts Ciphertexts to save
+  /// \param[in] shape Shape the vector of ciphertexts represents
+  /// \param[in] name Name of the tensor to save
   static inline void save_to_proto(
       std::vector<he_proto::SealCipherTensor>& protos,
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           ciphertexts,
-      const size_t m_num_elements, const ngraph::Shape& shape,
-      const std::string& name) {
-    return;
+      const ngraph::Shape& shape, const std::string& name) {
+    // TODO: support large shapes
+    protos.resize(1);
+    protos[0].set_name(name);
+
+    std::vector<uint64_t> int_shape{shape};
+    *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+
+    protos[0].set_offset(0);
+
+    for (const auto& cipher : ciphertexts) {
+      cipher->save(*protos[0].add_ciphertexts());
+    }
   }
 
   /// \brief Returns the ciphertexts stored in the tensor
