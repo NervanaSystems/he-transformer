@@ -21,6 +21,7 @@
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_cipher_tensor.hpp"
+#include "seal/he_seal_executable.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -184,6 +185,7 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape) {
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{10000, 1};
 
@@ -192,29 +194,10 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
   auto f =
       make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
 
-  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
-}
+  auto handle =
+      static_pointer_cast<ngraph::he::HESealExecutable>(backend->compile(f));
 
-NGRAPH_TEST(${BACKEND_NAME}, validate_packing_batch_size) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  Shape shape_a{1, 1, 3, 5};
-  Shape shape_b{2, 1, 2, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto b = make_shared<op::Parameter>(element::f32, shape_b);
-  auto t = make_shared<op::Convolution>(a, b, Strides{1, 1},  // move_strides
-                                        Strides{1, 1},        // filter_dilation
-                                        CoordinateDiff{0, 0},  // below_pads
-                                        CoordinateDiff{0, 0},  // above_pads
-                                        Strides{1, 1});        // data_dilation
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
-
-  he_backend->set_pack_data(true);
-  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
-
-  he_backend->set_pack_data(false);
-  EXPECT_NO_THROW({ backend->compile(f); });
+  EXPECT_THROW({ handle->set_batch_size(10000); }, ngraph::CheckFailure);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, unsupported_op) {
