@@ -215,5 +215,14 @@ TEST(seal_cipher_tensor, load_save) {
   he_tensor->save_to_proto(protos);
 
   EXPECT_EQ(protos.size(), 1);
-  EXPECT_EQ(protos[0].name() == he_tensor->get_name());
+  EXPECT_EQ(protos[0].name(), he_tensor->get_name());
+
+  std::vector<uint64_t> expected_shape{shape};
+  for (size_t shape_idx = 0; shape_idx < expected_shape.size(); ++shape_idx) {
+    EXPECT_EQ(protos[0].shape(shape_idx), expected_shape[shape_idx]);
+  }
+
+  EXPECT_EQ(protos[0].offset(), 0);
+
+  EXPECT_EQ(protos[0].ciphertexts_size(), he_tensor->num_ciphertexts());
 }
