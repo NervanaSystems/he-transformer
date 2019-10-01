@@ -371,7 +371,8 @@ void ngraph::he::HESealExecutable::handle_relu_result(
   std::lock_guard<std::mutex> guard(m_relu_mutex);
 
   NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-               "Can only handle one tensor at a time");
+               "Can only handle one tensor at a time, got ",
+               proto_msg.cipher_tensors_size());
 
   auto proto_tensor = proto_msg.cipher_tensors(0);
   size_t result_count = proto_tensor.ciphertexts_size();
@@ -395,21 +396,25 @@ void ngraph::he::HESealExecutable::handle_bounded_relu_result(
 
 void ngraph::he::HESealExecutable::handle_max_pool_result(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_HE_LOG(3) << "Server handling maxpool result";
-  /*
-    std::lock_guard<std::mutex> guard(m_max_pool_mutex);
-    size_t message_count = proto_msg.ciphers_size();
+  std::lock_guard<std::mutex> guard(m_max_pool_mutex);
 
-    NGRAPH_CHECK(message_count == 1,
-                 "Maxpool only supports message count 1, got ", message_count);
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
+               "Can only handle one tensor at a time, got ",
+               proto_msg.cipher_tensors_size());
 
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper> new_cipher;
-    ngraph::he::SealCiphertextWrapper::load(new_cipher, proto_msg.ciphers(0),
-                                            m_context);
+  auto proto_tensor = proto_msg.cipher_tensors(0);
+  size_t result_count = proto_tensor.ciphertexts_size();
 
-    m_max_pool_ciphertexts.emplace_back(new_cipher);
-    m_max_pool_done = true;
-    m_max_pool_cond.notify_all(); */
+  NGRAPH_CHECK(result_count == 1, "Maxpool only supports result_count 1, got ",
+               result_count);
+
+  std::shared_ptr<ngraph::he::SealCiphertextWrapper> new_cipher;
+  ngraph::he::SealCiphertextWrapper::load(
+      new_cipher, proto_tensor.ciphertexts(0), m_context);
+
+  m_max_pool_ciphertexts.emplace_back(new_cipher);
+  m_max_pool_done = true;
+  m_max_pool_cond.notify_all();
 }
 
 void ngraph::he::HESealExecutable::handle_message(
@@ -1847,58 +1852,68 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     const NodeWrapper& node_wrapper) {
   NGRAPH_HE_LOG(3) << "Server handle_server_max_pool_op";
 
-  NGRAPH_CHECK(false, "handle_server_max_pool_op unimplemented");
-  /*
-    const Node& node = *node_wrapper.get_node();
-    bool verbose = verbose_op(node);
-    const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+  const Node& node = *node_wrapper.get_node();
+  bool verbose = verbose_op(node);
+  const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
 
-    m_max_pool_done = false;
+  m_max_pool_done = false;
 
-    Shape unpacked_arg_shape = node.get_input_shape(0);
-    Shape packed_out_shape =
-        ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
+  Shape unpacked_arg_shape = node.get_input_shape(0);
+  Shape packed_out_shape =
+      ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
 
-    std::vector<std::vector<size_t>> maximize_list =
-    ngraph::he::max_pool_seal( unpacked_arg_shape, packed_out_shape,
-    max_pool->get_window_shape(), max_pool->get_window_movement_strides(),
-    max_pool->get_padding_below(), max_pool->get_padding_above());
+  std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
+      unpacked_arg_shape, packed_out_shape, max_pool->get_window_shape(),
+      max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
+      max_pool->get_padding_above());
 
-    m_max_pool_ciphertexts.clear();
+  m_max_pool_ciphertexts.clear();
 
-    for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
-      he_proto::TCPMessage proto_msg;
-      proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+  for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+    he_proto::TCPMessage proto_msg;
+    proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-      json js = {{"function", node.description()}}
-      he_proto::Function f;
-      f.set_function(js.dump());
-      *proto_msg.mutable_function() = f;
+    json js = {{"function", node.description()}};
+    he_proto::Function f;
+    f.set_function(js.dump());
+    *proto_msg.mutable_function() = f;
 
-      for (const size_t max_ind : maximize_list[list_ind]) {
-        arg_cipher->get_element(max_ind)->save(*proto_msg.add_ciphers());
-      }
-
-      // Send list of ciphertexts to maximize over to client
-      if (verbose) {
-        NGRAPH_HE_LOG(3) << "Sending " << proto_msg.ciphers_size()
-                         << " Maxpool ciphertexts to client";
-      }
-
-      ngraph::he::TCPMessage max_pool_message(std::move(proto_msg));
-      m_session->write_message(std::move(max_pool_message));
-
-      // Acquire lock
-      std::unique_lock<std::mutex> mlock(m_max_pool_mutex);
-
-      // Wait until max is done
-      m_max_pool_cond.wait(mlock,
-                           std::bind(&HESealExecutable::max_pool_done, this));
-
-      // Reset for next max_pool call
-      m_max_pool_done = false;
+    std::vector<std::shared_ptr<SealCiphertextWrapper>> cipher_batch;
+    for (const size_t max_ind : maximize_list[list_ind]) {
+      cipher_batch.emplace_back(arg_cipher->get_element(max_ind));
     }
-    out_cipher->set_elements(m_max_pool_ciphertexts); */
+
+    std::vector<he_proto::SealCipherTensor> proto_tensors;
+    // TODO: pass packed shape?
+    ngraph::he::HESealCipherTensor::save_to_proto(proto_tensors, cipher_batch,
+                                                  Shape{1, cipher_batch.size()},
+                                                  m_pack_data);
+
+    NGRAPH_CHECK(proto_tensors.size() == 1,
+                 "Only support ReLU with 1 proto tensor");
+
+    *proto_msg.add_cipher_tensors() = proto_tensors[0];
+
+    // Send list of ciphertexts to maximize over to client
+    if (verbose) {
+      NGRAPH_HE_LOG(3) << "Sending " << cipher_batch.size()
+                       << " Maxpool ciphertexts to client";
+    }
+
+    ngraph::he::TCPMessage max_pool_message(std::move(proto_msg));
+    m_session->write_message(std::move(max_pool_message));
+
+    // Acquire lock
+    std::unique_lock<std::mutex> mlock(m_max_pool_mutex);
+
+    // Wait until max is done
+    m_max_pool_cond.wait(mlock,
+                         std::bind(&HESealExecutable::max_pool_done, this));
+
+    // Reset for next max_pool call
+    m_max_pool_done = false;
+  }
+  out_cipher->set_elements(m_max_pool_ciphertexts);
 }
 
 void ngraph::he::HESealExecutable::handle_server_relu_op(
@@ -1980,7 +1995,7 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         *proto_msg.mutable_function() = f;
 
         std::vector<he_proto::SealCipherTensor> proto_tensors;
-
+        // TODO: pass packed shape?
         ngraph::he::HESealCipherTensor::save_to_proto(
             proto_tensors, cipher_batch, Shape{1, cipher_batch.size()},
             m_pack_data);

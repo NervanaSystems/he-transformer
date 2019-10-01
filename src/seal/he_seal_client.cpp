@@ -276,8 +276,9 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
   NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
                "Client received result with no cipher tensors");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-               "Client supports only relu requests with one cipher tensor");
+  NGRAPH_CHECK(
+      proto_msg.cipher_tensors_size() == 1,
+      "Client supports only bounded relu requests with one cipher tensor");
 
   const std::string& function = proto_msg.function().function();
   json js = json::parse(function);
@@ -310,40 +311,45 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
 }
 
 void ngraph::he::HESealClient::handle_max_pool_request(
-    const he_proto::TCPMessage& proto_msg) {
+    he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling maxpool request";
 
-  /*
-NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
+               "Client received result with no cipher tensors");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
+               "Client supports only max pool requests with one cipher tensor");
 
-size_t cipher_count = proto_msg.ciphers_size();
-std::vector<std::shared_ptr<SealCiphertextWrapper>> max_pool_ciphers(
-  cipher_count);
-std::vector<std::shared_ptr<SealCiphertextWrapper>> post_max_pool_ciphers(1);
-post_max_pool_ciphers[0] = std::make_shared<SealCiphertextWrapper>();
+  he_proto::SealCipherTensor* proto_tensor =
+      proto_msg.mutable_cipher_tensors(0);
+  size_t cipher_count = proto_tensor->ciphertexts_size();
+
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> max_pool_ciphers(
+      cipher_count);
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> post_max_pool_ciphers(1);
+  post_max_pool_ciphers[0] = std::make_shared<SealCiphertextWrapper>();
 
 #pragma omp parallel for
-for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-ngraph::he::SealCiphertextWrapper::load(
-    max_pool_ciphers[cipher_idx], proto_msg.ciphers(cipher_idx), m_context);
-}
+  for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
+    ngraph::he::SealCiphertextWrapper::load(
+        max_pool_ciphers[cipher_idx], proto_tensor->ciphertexts(cipher_idx),
+        m_context);
+  }
 
-// We currently just support max_pool with single output
-ngraph::he::max_pool_seal(
-  max_pool_ciphers, post_max_pool_ciphers, Shape{1, 1, cipher_count},
-  Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
-  Shape{0}, m_context->first_parms_id(), scale(), *m_ckks_encoder,
-  *m_encryptor, *m_decryptor, complex_packing());
+  // We currently just support max_pool with single output
+  ngraph::he::max_pool_seal(
+      max_pool_ciphers, post_max_pool_ciphers, Shape{1, 1, cipher_count},
+      Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
+      Shape{0}, m_context->first_parms_id(), scale(), *m_ckks_encoder,
+      *m_encryptor, *m_decryptor, complex_packing());
 
-// Create max_pool result message
-he_proto::TCPMessage proto_max_pool;
-proto_max_pool.set_type(he_proto::TCPMessage_Type_RESPONSE);
-*proto_max_pool.mutable_function() = proto_msg.function();
+  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  proto_tensor->clear_ciphertexts();
 
-post_max_pool_ciphers[0]->save(*proto_max_pool.add_ciphers());
-ngraph::he::TCPMessage max_pool_result_msg(std::move(proto_max_pool));
-write_message(std::move(max_pool_result_msg));
-return; */
+  post_max_pool_ciphers[0]->save(*proto_tensor->add_ciphertexts());
+  ngraph::he::TCPMessage max_pool_result_msg(std::move(proto_msg));
+  write_message(std::move(max_pool_result_msg));
+  return;
 }
 
 void ngraph::he::HESealClient::handle_message(
@@ -378,7 +384,7 @@ void ngraph::he::HESealClient::handle_message(
         } else if (name == "BoundedRelu") {
           handle_bounded_relu_request(std::move(*proto_msg));
         } else if (name == "MaxPool") {
-          handle_max_pool_request(*proto_msg);
+          handle_max_pool_request(std::move(*proto_msg));
         } else {
           NGRAPH_HE_LOG(5) << "Unknown name " << name;
         }

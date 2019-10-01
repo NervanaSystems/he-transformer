@@ -77,14 +77,11 @@ class HESealClient {
 
   /// \brief Processes a request to perform ReLU function
   /// \param[in] message Message to process
-  void handle_relu_request(const ngraph::he::TCPMessage& message);
-
-  /// \brief TODO
   void handle_relu_request(he_proto::TCPMessage&& message);
 
   /// \brief Processes a request to perform MaxPool function
   /// \param[in] message Message to process
-  void handle_max_pool_request(const he_proto::TCPMessage& message);
+  void handle_max_pool_request(he_proto::TCPMessage&& message);
 
   /// \brief Processes a request to perform BoundedReLU function
   /// \param[in] message Message to process
