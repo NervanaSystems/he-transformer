@@ -22,6 +22,17 @@ import tensorflow as tf
 from tensorflow.core.protobuf import rewriter_config_pb2
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 def main(FLAGS):
 
     a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
@@ -59,7 +70,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
     parser.add_argument(
-        '--enable_client', type=bool, default=False, help='Enable the client')
+        '--enable_client',
+        type=str2bool,
+        default=False,
+        help='Enable the client')
     parser.add_argument(
         '--backend',
         type=str,
