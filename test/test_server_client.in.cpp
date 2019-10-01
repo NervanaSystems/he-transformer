@@ -370,7 +370,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   EXPECT_TRUE(all_close(results, vector<float>{0, 0, 0, 3, 0}, 1e-3f));
 }
 
-/*
 auto server_client_relu_packed_test = [](size_t element_count,
                                          size_t batch_size,
                                          bool complex_packing, bool bounded,
@@ -394,6 +393,10 @@ auto server_client_relu_packed_test = [](size_t element_count,
     auto relu_op = make_shared<op::Relu>(a);
     f = make_shared<Function>(relu_op, ParameterVector{a});
   }
+
+  auto from_client_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(true);
+  a->set_op_annotations(from_client_annotation);
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
   auto bounded_relu = [bound_value](double d) {
@@ -422,8 +425,9 @@ auto server_client_relu_packed_test = [](size_t element_count,
 
   vector<float> results;
   auto client_thread = std::thread([&]() {
-    auto he_client =
-        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        client_float_input_map{{a->get_name(), inputs}});
 
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
@@ -531,6 +535,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_10000) {
   server_client_relu_packed_test(10000, 1, true, true, 6.0);
 }
 
+/*
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_pad_max_pool_1d_1channel_1image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");

@@ -120,7 +120,7 @@ class HESealCipherTensor : public HETensor {
   /// \param[out] protos Target to write encrypted cipehertexts to
   inline void save_to_proto(
       std::vector<he_proto::SealCipherTensor>& protos) const {
-    save_to_proto(protos, m_ciphertexts, get_shape(), get_name());
+    save_to_proto(protos, m_ciphertexts, get_shape(), is_packed(), get_name());
   }
 
   /// \brief Writes encrypted ciphertexts to vector of protobufs
@@ -129,15 +129,18 @@ class HESealCipherTensor : public HETensor {
   /// \param[out] protos Target to write encrypted cipehertexts to
   /// \param[in] ciphertexts Ciphertexts to save
   /// \param[in] shape Shape the vector of ciphertexts represents
+  /// \param[in] packed Whether or not the cipher tensor uses plaintext packing
   /// \param[in] name Name of the tensor to save
   static inline void save_to_proto(
       std::vector<he_proto::SealCipherTensor>& protos,
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           ciphertexts,
-      const ngraph::Shape& shape, const std::string& name = "") {
+      const ngraph::Shape& shape, const bool packed,
+      const std::string& name = "") {
     // TODO: support large shapes
     protos.resize(1);
     protos[0].set_name(name);
+    protos[0].set_packed(packed);
 
     std::vector<uint64_t> int_shape{shape};
     *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};

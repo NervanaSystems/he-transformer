@@ -223,5 +223,6 @@ TEST(seal_cipher_tensor, save) {
   }
 
   EXPECT_EQ(protos[0].offset(), 0);
+  EXPECT_EQ(protos[0].packed(), he_tensor->is_packed());
   EXPECT_EQ(protos[0].ciphertexts_size(), he_tensor->num_ciphertexts());
 }

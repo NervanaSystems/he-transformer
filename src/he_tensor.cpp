@@ -31,12 +31,11 @@ ngraph::he::HETensor::HETensor(const element::Type& element_type,
           *m_descriptor));
 
   if (packed) {
-    m_batch_size = shape[0];
     m_packed_shape = pack_shape(shape, 0);
   } else {
-    m_batch_size = 1;
     m_packed_shape = shape;
   }
+  m_batch_size = batch_size(shape, packed);
 }
 
 ngraph::Shape ngraph::he::HETensor::pack_shape(const ngraph::Shape& shape,
@@ -49,6 +48,14 @@ ngraph::Shape ngraph::he::HETensor::pack_shape(const ngraph::Shape& shape,
     packed_shape[0] = 1;
   }
   return packed_shape;
+}
+
+uint64_t ngraph::he::HETensor::batch_size(const Shape& shape,
+                                          const bool packed) {
+  if (shape.size() > 0 && packed) {
+    return shape[0];
+  }
+  return 1;
 }
 
 void ngraph::he::HETensor::check_io_bounds(const void* source, size_t n) const {

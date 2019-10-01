@@ -53,5 +53,6 @@ message SealCipherTensor {
   string name = 1;
   repeated uint64 shape = 2;
   uint64 offset = 3;
-  repeated SealCiphertextWrapper ciphertexts = 4;
+  bool packed = 4;
+  repeated SealCiphertextWrapper ciphertexts = 5;
 }

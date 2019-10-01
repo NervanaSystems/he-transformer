@@ -179,6 +179,8 @@ void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {
   NGRAPH_CHECK(batch_size <= max_batch_size, "Batch size ", batch_size,
                " too large (maximum ", max_batch_size, ")");
   m_batch_size = batch_size;
+
+  NGRAPH_HE_LOG(5) << "Server set batch size to " << m_batch_size;
 }
 
 void ngraph::he::HESealExecutable::check_client_supports_function() {
@@ -465,8 +467,15 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
                "Client received empty cipher tensor message");
   NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
                "Client only supports 1 client cipher tensor");
+  // TODO: check for uniqueness of batch size if > 1 cipher tensor
 
   he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
+
+  ngraph::Shape shape{cipher_tensor.shape().begin(),
+                      cipher_tensor.shape().end()};
+
+  set_batch_size(
+      ngraph::he::HETensor::batch_size(shape, cipher_tensor.packed()));
 
   size_t count = cipher_tensor.ciphertexts_size();
 
@@ -515,6 +524,8 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
                      " too large for parameter size ", param_size);
         m_client_load_idx[param_idx]++;
       }
+      NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
+                       << "] = " << m_client_load_idx[param_idx];
     }
   }
 
@@ -523,9 +534,10 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
       if (from_client(*param)) {
-        NGRAPH_HE_LOG(5) << "Checking if parameter " << parm_idx
-                         << " is loaded";
         size_t param_size = shape_size(param->get_shape()) / m_batch_size;
+
+        NGRAPH_HE_LOG(5) << "Checking if parameter " << parm_idx << ", size "
+                         << param_size << " is loaded";
 
         if (m_client_load_idx[parm_idx] != param_size) {
           return false;
@@ -1970,7 +1982,8 @@ void ngraph::he::HESealExecutable::handle_server_relu_op(
         std::vector<he_proto::SealCipherTensor> proto_tensors;
 
         ngraph::he::HESealCipherTensor::save_to_proto(
-            proto_tensors, cipher_batch, Shape{1, cipher_batch.size()});
+            proto_tensors, cipher_batch, Shape{1, cipher_batch.size()},
+            m_pack_data);
 
         NGRAPH_CHECK(proto_tensors.size() == 1,
                      "Only support ReLU with 1 proto tensor");

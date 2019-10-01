@@ -56,6 +56,11 @@ class HETensor : public runtime::Tensor {
   /// \return Shape after packing along pack axis
   static Shape pack_shape(const Shape& shape, size_t pack_axis = 0);
 
+  /// \brief Returns the batch size of a given shape
+  /// \param[in] Shape Shape of the tensor
+  /// \param[in] packed Whether or not batch-axis packing is used
+  static uint64_t batch_size(const Shape& shape, const bool packed);
+
   /// \brief Returns the shape of the un-expanded (i.e. packed) tensor.
   const Shape& get_packed_shape() const { return m_packed_shape; }
 
@@ -63,15 +68,15 @@ class HETensor : public runtime::Tensor {
   const Shape& get_expanded_shape() const { return get_shape(); }
 
   /// \brief Returns packing factor used in the tensor
-  inline size_t get_batch_size() { return m_batch_size; }
+  inline size_t get_batch_size() const { return m_batch_size; }
 
   /// \brief Returns number of ciphertext / plaintext objects in the tensor
-  inline size_t get_batched_element_count() {
+  inline size_t get_batched_element_count() const {
     return get_element_count() / get_batch_size();
   }
 
   /// \brief Returns whether or not the tensor is packed
-  inline bool is_packed() { return m_packed; }
+  inline bool is_packed() const { return m_packed; }
 
   /// \brief Returns type information of the tensor
   virtual const HETensorTypeInfo& get_type_info() const { return type_info; }
