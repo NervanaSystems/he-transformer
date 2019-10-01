@@ -231,32 +231,35 @@ void ngraph::he::HESealClient::handle_relu_request(
     he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling relu request";
 
-  /*
+  NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
+               "Client received result with no cipher tensors");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
+               "Client supports only relu requests with one cipher tensor");
 
-NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
-
-size_t result_count = proto_msg.ciphers_size();
+  auto proto_tensor = proto_msg.cipher_tensors(0);
+  size_t result_count = proto_tensor.ciphertexts_size();
 
 #pragma omp parallel for
-for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-NGRAPH_CHECK(!proto_msg.ciphers(result_idx).known_value(),
-             "Client should not receive known-valued relu values");
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    NGRAPH_CHECK(!proto_tensor.ciphertexts(result_idx).known_value(),
+                 "Client should not receive known-valued relu values");
 
-auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
-ngraph::he::SealCiphertextWrapper::load(
-    post_relu_cipher, proto_msg.ciphers(result_idx), m_context);
+    auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
+    ngraph::he::SealCiphertextWrapper::load(
+        post_relu_cipher, proto_tensor.ciphertexts(result_idx), m_context);
 
-ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
-                             m_context->first_parms_id(), scale(),
-                             *m_ckks_encoder, *m_encryptor, *m_decryptor);
-post_relu_cipher->save(*proto_msg.mutable_ciphers(result_idx));
-}
+    ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
+                                 m_context->first_parms_id(), scale(),
+                                 *m_ckks_encoder, *m_encryptor, *m_decryptor);
+    post_relu_cipher->save(*proto_tensor.mutable_ciphertexts(result_idx));
+  }
 
-ngraph::he::TCPMessage relu_result_msg(std::move(proto_msg));
-write_message(std::move(relu_result_msg));
-return; */
+  ngraph::he::TCPMessage relu_result_msg(std::move(proto_msg));
+  write_message(std::move(relu_result_msg));
+  return;
 }
 
 void ngraph::he::HESealClient::handle_bounded_relu_request(

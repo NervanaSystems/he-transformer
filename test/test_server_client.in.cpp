@@ -49,8 +49,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
   auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
   auto b = make_shared<op::Parameter>(element::f32, shape);
 
-  auto he_op_annotations = std::make_shared<ngraph::he::HEOpAnnotations>(true);
-  b->set_op_annotations(he_op_annotations);
+  auto from_client_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(true);
+  b->set_op_annotations(from_client_annotation);
 
   auto c = make_shared<op::Parameter>(element::f32, shape_c);
   auto d = make_shared<op::Reshape>(c, AxisVector{0, 1}, shape);
@@ -99,8 +100,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto t = make_shared<op::Add>(a, b);
   auto f = make_shared<Function>(t, ParameterVector{b});
 
-  auto he_op_annotations = std::make_shared<ngraph::he::HEOpAnnotations>(true);
-  b->set_op_annotations(he_op_annotations);
+  auto from_client_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(true);
+  b->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
   auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
@@ -129,7 +131,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }
 
-/*
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -143,6 +144,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   auto relu = make_shared<op::Relu>(t);
   auto f = make_shared<Function>(relu, ParameterVector{b});
 
+  auto from_client_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(true);
+  b->set_op_annotations(from_client_annotation);
+
   // Server inputs which are not used
   auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
   auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
@@ -151,11 +156,12 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   float DUMMY_FLOAT = 99;
   copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
 
-  vector<float> inputs{-1, -0.2, 3};
   vector<float> results;
   auto client_thread = std::thread([&]() {
+    vector<float> inputs{-1, -0.2, 3};
     auto he_client =
-        ngraph::he::HESealClient("localhost", 34000, batch_size, inputs);
+        ngraph::he::HESealClient("localhost", 34000, batch_size,
+                                 client_input_map{{b->get_name(), inputs}});
 
     auto double_results = he_client.get_results();
     results = std::vector<float>(double_results.begin(), double_results.end());
@@ -170,6 +176,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   EXPECT_TRUE(all_close(results, vector<float>{0, 0, 3.3}, 1e-3f));
 }
 
+/*
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

@@ -134,7 +134,7 @@ class HESealCipherTensor : public HETensor {
       std::vector<he_proto::SealCipherTensor>& protos,
       const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
           ciphertexts,
-      const ngraph::Shape& shape, const std::string& name) {
+      const ngraph::Shape& shape, const std::string& name = "") {
     // TODO: support large shapes
     protos.resize(1);
     protos[0].set_name(name);
