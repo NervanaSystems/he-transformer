@@ -102,7 +102,11 @@ bool ngraph::he::HESealBackend::set_config(
   for (const auto& config_opt : config) {
     // Check parameters to be provided by client
     if (ngraph::to_lower(config_opt.second) == "client_input") {
-      m_client_tensor_names.insert(config_opt.first);
+      // Strip attributes, i.e. "tensor_name:0 => tensor_name"
+      std::string tensor_name =
+          config_opt.first.substr(0, config_opt.first.find(":", 0));
+
+      m_client_tensor_names.insert(tensor_name);
     }
 
     // Check whether client is enabled
@@ -117,7 +121,7 @@ bool ngraph::he::HESealBackend::set_config(
   }
 
   for (const auto& tensor_name : m_client_tensor_names) {
-    NGRAPH_HE_LOG(3) << "Client tensor name" << tensor_name;
+    NGRAPH_HE_LOG(3) << "Client tensor name " << tensor_name;
   }
   return true;
 }
@@ -180,8 +184,6 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   auto from_client_annotation =
       std::make_shared<ngraph::he::HEOpAnnotations>(true);
-
-  // TODO: use name instead of shape once provenance works as expected
 
   for (auto& param : function->get_parameters()) {
     if (get_client_tensor_names().find(param->get_name()) !=
