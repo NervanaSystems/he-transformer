@@ -314,26 +314,34 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
 
   const ParameterVector& input_parameters = get_parameters();
 
+  he_proto::TCPMessage proto_msg;
+  proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+
   for (const auto& input_param : input_parameters) {
-    if (encrypted(*input_param)) {
-      auto param_shape = input_param->get_shape();
-      json js;
-      js["shape"] = param_shape;
-      js["function"] = "Parameter";
+    if (encrypted(*input_param)) {  // TODO: allow plaintext params from client?
 
-      he_proto::TCPMessage proto_msg;
-      proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+      he_proto::SealCipherTensor* proto_cipher_tensor =
+          proto_msg.add_cipher_tensors();
 
-      he_proto::Function f;
-      f.set_function(js.dump());
-      *proto_msg.mutable_function() = f;
+      std::vector<uint64_t> shape{input_param->get_shape()};
+      *proto_cipher_tensor->mutable_shape() = {shape.begin(), shape.end()};
 
-      NGRAPH_HE_LOG(1) << "Server sending inference shape " << js.dump();
-
-      ngraph::he::TCPMessage execute_msg(std::move(proto_msg));
-      m_session->write_message(std::move(execute_msg));
+      NGRAPH_HE_LOG(1) << "Server setting inference shape "
+                       << ngraph::join(shape, "x");
     }
   }
+
+  NGRAPH_HE_LOG(1) << "Server sending inference of "
+                   << proto_msg.cipher_tensors_size() << " parameters";
+
+  json js = {{"function", "Parameter"}};
+  he_proto::Function f;
+  f.set_function(js.dump());
+  NGRAPH_HE_LOG(3) << "js " << js.dump();
+  *proto_msg.mutable_function() = f;
+
+  ngraph::he::TCPMessage execute_msg(std::move(proto_msg));
+  m_session->write_message(std::move(execute_msg));
 }
 
 void ngraph::he::HESealExecutable::handle_relu_result(
@@ -1810,9 +1818,7 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
       he_proto::TCPMessage proto_msg;
       proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-      json js;
-      js["function"] = node.description();
-
+      json js = {{"function", node.description()}}
       he_proto::Function f;
       f.set_function(js.dump());
       *proto_msg.mutable_function() = f;
@@ -1912,8 +1918,7 @@ auto process_unknown_relu_ciphers_batch =
     proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
     // TODO: factor out serializing the function
-    json js;
-    js["function"] = node.description();
+    json js = {{"function", node.description()}}
     if (type_id == OP_TYPEID::BoundedRelu) {
       const op::BoundedRelu* bounded_relu =
           static_cast<const op::BoundedRelu*>(&node);

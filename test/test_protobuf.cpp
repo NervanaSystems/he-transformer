@@ -196,7 +196,7 @@ TEST(seal_cipher_wrapper, load_save_known_value) {
   EXPECT_EQ(cipher.value(), cipher_load->value());
 }
 
-TEST(seal_cipher_tensor, load_save) {
+TEST(seal_cipher_tensor, save) {
   auto backend = runtime::Backend::create("HE_SEAL");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   auto parms =
@@ -223,6 +223,5 @@ TEST(seal_cipher_tensor, load_save) {
   }
 
   EXPECT_EQ(protos[0].offset(), 0);
-
   EXPECT_EQ(protos[0].ciphertexts_size(), he_tensor->num_ciphertexts());
 }

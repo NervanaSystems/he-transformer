@@ -332,15 +332,13 @@ void ngraph::he::HESealClient::handle_message(
 
   NGRAPH_HE_LOG(3) << "Client handling message";
 
-  /*
-
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
-      } else if (proto_msg->ciphers_size() > 0) {
+      } else if (proto_msg->cipher_tensors_size() > 0) {
         handle_result(*proto_msg);
       } else {
         NGRAPH_CHECK(false, "Unknown RESPONSE type");
@@ -373,7 +371,6 @@ void ngraph::he::HESealClient::handle_message(
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
-  */
 }
 
 void ngraph::he::HESealClient::close_connection() {
