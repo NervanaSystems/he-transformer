@@ -239,22 +239,23 @@ void ngraph::he::HESealClient::handle_relu_request(
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  auto proto_tensor = proto_msg.cipher_tensors(0);
-  size_t result_count = proto_tensor.ciphertexts_size();
+  he_proto::SealCipherTensor* proto_tensor =
+      proto_msg.mutable_cipher_tensors(0);
+  size_t result_count = proto_tensor->ciphertexts_size();
 
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    NGRAPH_CHECK(!proto_tensor.ciphertexts(result_idx).known_value(),
+    NGRAPH_CHECK(!proto_tensor->ciphertexts(result_idx).known_value(),
                  "Client should not receive known-valued relu values");
 
     auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
     ngraph::he::SealCiphertextWrapper::load(
-        post_relu_cipher, proto_tensor.ciphertexts(result_idx), m_context);
+        post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);
 
     ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
                                  m_context->first_parms_id(), scale(),
                                  *m_ckks_encoder, *m_encryptor, *m_decryptor);
-    post_relu_cipher->save(*proto_tensor.mutable_ciphertexts(result_idx));
+    post_relu_cipher->save(*proto_tensor->mutable_ciphertexts(result_idx));
   }
 
   ngraph::he::TCPMessage relu_result_msg(std::move(proto_msg));
