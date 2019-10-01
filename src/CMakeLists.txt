@@ -30,6 +30,7 @@ set(HE_SRC
     seal/kernel/add_seal.cpp
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
+    seal/kernel/relu_seal.cpp
     # seal backend
     seal/he_seal_backend.cpp
     seal/he_seal_cipher_tensor.cpp
