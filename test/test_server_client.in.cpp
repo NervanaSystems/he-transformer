@@ -82,6 +82,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters) {
   handle->enable_client();
   NGRAPH_INFO << "Calling with validate";
   handle->call_with_validate({t_result}, {t_dummy});
+  NGRAPH_INFO << "Waiting for client thread to finish";
   client_thread.join();
   EXPECT_TRUE(all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }

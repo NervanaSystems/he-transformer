@@ -428,10 +428,9 @@ void ngraph::he::HESealExecutable::handle_message(
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
-      NGRAPH_CHECK(false, "Can't handle request type");
-      /* if (proto_msg->ciphers_size() > 0) {
-         handle_client_ciphers(*proto_msg);
-       } */
+      if (proto_msg->cipher_tensors_size() > 0) {
+        handle_client_ciphers(*proto_msg);
+      }
       break;
     }
     case he_proto::TCPMessage_Type_UNKNOWN:
@@ -444,71 +443,90 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Handling client ciphers";
 
-  NGRAPH_CHECK(false, "handle_client_ciphers unimplemented");
-  /*
-  size_t count = proto_msg.
-  handle_server_relu_op
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        he_cipher_inputs(count);
-  #pragma omp parallel for
-    for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
-      ngraph::he::SealCiphertextWrapper::load(
-          he_cipher_inputs[cipher_idx], proto_msg.ciphers(cipher_idx),
-  m_context);
-    }
-    const ParameterVector& input_parameters = get_parameters();
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
+               "Client received empty cipher tensor message");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
+               "Client only supports 1 client cipher tensor");
 
-    // Write ciphers to client inputs
-    size_t parm_idx = 0;
-    for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
-      auto input_param = input_parameters[parm_idx];
-      const auto& shape = input_param->get_shape();
-      size_t param_size = shape_size(shape) / m_batch_size;
-      auto element_type = input_param->get_element_type();
+  he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
 
-      auto& client_input_tensor = dynamic_cast<ngraph::he::HESealCipherTensor&>(
-          *m_client_inputs[parm_idx]);
+  size_t count = cipher_tensor.ciphertexts_size();
 
-      size_t current_load_idx = m_client_load_idx[parm_idx];
-      NGRAPH_CHECK(current_load_idx < param_size, "current load index too
-  large");
+  std::vector<uint64_t> tensor_shape{cipher_tensor.shape().begin(),
+                                     cipher_tensor.shape().end()};
 
-      client_input_tensor.get_element(current_load_idx) =
-          he_cipher_inputs[cipher_idx];
-      m_client_load_idx[parm_idx]++;
-      if (m_client_load_idx[parm_idx] == param_size) {
-        parm_idx++;
-        NGRAPH_CHECK(
-            parm_idx < input_parameters.size() || cipher_idx == count - 1,
-            "Too many client inputs");
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      he_cipher_inputs(count);
+#pragma omp parallel for
+  for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
+    ngraph::he::SealCiphertextWrapper::load(
+        he_cipher_inputs[cipher_idx], cipher_tensor.ciphertexts(cipher_idx),
+        m_context);
+  }
+
+  // Write ciphers to client inputs
+  const ParameterVector& input_parameters = get_parameters();
+  for (size_t param_idx = 0; param_idx < input_parameters.size(); ++param_idx) {
+    const auto& parameter = input_parameters[param_idx];
+    // TODO: use provenance to track correct parameter by name instead of shape
+
+    size_t param_size = shape_size(parameter->get_shape()) / m_batch_size;
+
+    std::vector<uint64_t> param_shape{parameter->get_shape().begin(),
+                                      parameter->get_shape().end()};
+    if (param_shape == tensor_shape) {
+      NGRAPH_HE_LOG(5) << "Param shape " << ngraph::join(param_shape, "x")
+                       << " matches";
+
+      size_t offset = cipher_tensor.offset();
+
+      NGRAPH_HE_LOG(5) << "Offset " << offset;
+
+      for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
+        size_t input_tensor_offset = offset + cipher_idx;
+
+        auto& client_input_tensor =
+            dynamic_cast<ngraph::he::HESealCipherTensor&>(
+                *m_client_inputs[param_idx]);
+
+        client_input_tensor.get_element(input_tensor_offset) =
+            he_cipher_inputs[cipher_idx];
+
+        NGRAPH_CHECK(m_client_load_idx[param_idx] < param_size,
+                     "current load index ", m_client_load_idx[param_idx],
+                     " too large for parameter size ", param_size);
+        m_client_load_idx[param_idx]++;
       }
     }
+  }
 
-    auto done_loading = [this]() {
-      const ParameterVector& input_parameters = get_parameters();
-      for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx)
-  { auto input_param = input_parameters[parm_idx]; const auto& shape =
-  input_param->get_shape(); size_t param_size = shape_size(shape) /
-  m_batch_size; size_t current_load_idx = m_client_load_idx[parm_idx];
+  auto done_loading = [this]() {
+    const ParameterVector& input_parameters = get_parameters();
+    for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
+      const auto& param = input_parameters[parm_idx];
+      if (encrypted(*param)) {
+        NGRAPH_HE_LOG(5) << "Checking if parameter " << parm_idx
+                         << " is loaded";
+        size_t param_size = shape_size(param->get_shape()) / m_batch_size;
 
-        if (current_load_idx != param_size) {
+        if (m_client_load_idx[parm_idx] != param_size) {
           return false;
         }
       }
-      return true;
-    };
-
-    if (done_loading()) {
-      NGRAPH_HE_LOG(3) << "Done loading client ciphertexts";
-      // TODO: check if done loading?
-
-      std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
-      m_client_inputs_received = true;
-      m_client_inputs_cond.notify_all();
-    } else {
-      NGRAPH_HE_LOG(3) << "Not yet done loading client ciphertexts";
     }
-    */
+    return true;
+  };
+
+  if (done_loading()) {
+    NGRAPH_HE_LOG(3) << "Done loading client ciphertexts";
+
+    std::lock_guard<std::mutex> guard(m_client_inputs_mutex);
+    m_client_inputs_received = true;
+    NGRAPH_HE_LOG(5) << "Notifying done loading client ciphertexts";
+    m_client_inputs_cond.notify_all();
+  } else {
+    NGRAPH_HE_LOG(3) << "Not yet done loading client ciphertexts";
+  }
 }
 
 std::vector<ngraph::runtime::PerformanceCounter>
@@ -1807,10 +1825,10 @@ void ngraph::he::HESealExecutable::handle_server_max_pool_op(
     Shape packed_out_shape =
         ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
 
-    std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
-        unpacked_arg_shape, packed_out_shape, max_pool->get_window_shape(),
-        max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
-        max_pool->get_padding_above());
+    std::vector<std::vector<size_t>> maximize_list =
+    ngraph::he::max_pool_seal( unpacked_arg_shape, packed_out_shape,
+    max_pool->get_window_shape(), max_pool->get_window_movement_strides(),
+    max_pool->get_padding_below(), max_pool->get_padding_above());
 
     m_max_pool_ciphertexts.clear();
 

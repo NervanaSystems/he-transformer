@@ -43,7 +43,7 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
                                        const size_t port,
                                        const size_t batch_size,
                                        const std::vector<double>& inputs)
-    : m_batch_size{batch_size}, m_is_done(false), m_inputs{inputs} {
+    : m_batch_size{batch_size}, m_is_done{false}, m_inputs{inputs} {
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
