@@ -192,9 +192,9 @@ inline void double_vec_to_type_vec(void* target,
   }
 }
 
-inline std::unordered_map<std::string, std::vector<double>>
-float_map_to_double_map(
-    const std::unordered_map<std::string, std::vector<float>>& inputs) {
+template <typename T>
+inline std::unordered_map<std::string, std::vector<double>> map_to_double_map(
+    const std::unordered_map<std::string, std::vector<T>>& inputs) {
   std::unordered_map<std::string, std::vector<double>> double_map;
 
   for (const auto& elem : inputs) {

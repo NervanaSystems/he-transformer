@@ -65,7 +65,13 @@ ngraph::he::HESealClient::HESealClient(
     const std::string& hostname, const size_t port, const size_t batch_size,
     const std::unordered_map<std::string, std::vector<float>>& inputs)
     : HESealClient(hostname, port, batch_size,
-                   ngraph::he::float_map_to_double_map(inputs)) {}
+                   ngraph::he::map_to_double_map<float>(inputs)) {}
+
+ngraph::he::HESealClient::HESealClient(
+    const std::string& hostname, const size_t port, const size_t batch_size,
+    const std::unordered_map<std::string, std::vector<int64_t>>& inputs)
+    : HESealClient(hostname, port, batch_size,
+                   ngraph::he::map_to_double_map<int64_t>(inputs)) {}
 
 void ngraph::he::HESealClient::set_seal_context() {
   NGRAPH_HE_LOG(5) << "Client setting seal context";

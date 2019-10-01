@@ -54,6 +54,15 @@ class HESealClient {
       const std::string& hostname, const size_t port, const size_t batch_size,
       const std::unordered_map<std::string, std::vector<float>>& inputs);
 
+  /// \brief Constructs a client object and connects to a server
+  /// \param[in] hostname Hostname of the server
+  /// \param[in] port Port of the server
+  /// \param[in] batch_size Batch size of the inference to perform
+  /// \param[in] inputs Input data as a map from tensor name to inputs
+  HESealClient(
+      const std::string& hostname, const size_t port, const size_t batch_size,
+      const std::unordered_map<std::string, std::vector<int64_t>>& inputs);
+
   /// \brief Creates SEAL context
   void set_seal_context();
 
