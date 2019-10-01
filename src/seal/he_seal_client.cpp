@@ -146,8 +146,10 @@ void ngraph::he::HESealClient::handle_inference_request(
   auto proto_name = proto_tensor.name();
   NGRAPH_HE_LOG(5) << "Inference request tensor has name " << proto_name;
 
-  NGRAPH_CHECK(m_inputs.find(proto_name) != m_inputs.end(), "Tensor name ",
-               proto_name, " not found");
+  // TODO: turn into hard check once provenance nodes work
+  if (m_inputs.find(proto_name) == m_inputs.end()) {
+    NGRAPH_WARN << "Tensor name " << proto_name << " not found";
+  }
 
   auto param_shape = proto_tensor.shape();
   ngraph::Shape shape{param_shape.begin(), param_shape.end()};

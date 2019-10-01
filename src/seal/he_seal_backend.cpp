@@ -99,43 +99,10 @@ void ngraph::he::HESealBackend::generate_context() {
 
 bool ngraph::he::HESealBackend::set_config(
     const std::map<std::string, std::string>& config, std::string& error) {
-  /// \brief Checks if a string description contains a shape=(x,y,z) substring
-  /// \param[in] description input string
-  /// \param[out] shape_str Resulting string description of shape if parsed
-  /// \returns whether or not the string contains a shape description
-  auto parse_shape = [](const std::string& description,
-                        std::string& shape_str) {
-    if (description.substr(0, 6) == "Tensor") {
-      static std::string shape_start_str{"shape=("};
-      size_t shape_start = description.find(shape_start_str);
-      size_t shape_end = description.find(")", shape_start);
-      if (shape_start == std::string::npos || shape_end == std::string::npos) {
-        NGRAPH_WARN << "Parameter " << description
-                    << " is tensor, but has no shape";
-        return false;
-      }
-      std::string tensor_shape_str =
-          description.substr(shape_start + shape_start_str.size(),
-                             shape_end - shape_start - shape_start_str.size());
-
-      std::vector<std::string> dimensions_str =
-          ngraph::split(tensor_shape_str, ',', true);
-
-      shape_str = ngraph::join(dimensions_str, "x");
-      NGRAPH_HE_LOG(5) << "shape_str " << shape_str;
-
-      return true;
-    } else {
-      return false;
-    }
-  };
-
   for (const auto& config_opt : config) {
-    // Check for encryption of parameters
-    std::string shape_str;
-    if (ngraph::to_lower(config_opt.second) == "encrypt" &&
-        parse_shape(config_opt.first, shape_str)) {
-      m_encrypt_parameter_shapes.insert(shape_str);
+    // Check parameters to be provided by client
+    if (ngraph::to_lower(config_opt.second) == "client_input") {
+      m_client_tensor_names.insert(config_opt.first);
     }
 
     // Check whether client is enabled
@@ -149,8 +116,8 @@ bool ngraph::he::HESealBackend::set_config(
     }
   }
 
-  for (const auto& shape : m_encrypt_parameter_shapes) {
-    NGRAPH_HE_LOG(3) << "Encryption parameter shape " << shape;
+  for (const auto& tensor_name : m_client_tensor_names) {
+    NGRAPH_HE_LOG(3) << "Client tensor name" << tensor_name;
   }
   return true;
 }
@@ -211,7 +178,19 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
 
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
-  // TODO: tag each node as encrypted or not
+  auto from_client_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(true);
+
+  // TODO: use name instead of shape once provenance works as expected
+
+  for (auto& param : function->get_parameters()) {
+    if (get_client_tensor_names().find(param->get_name()) !=
+        get_client_tensor_names().end()) {
+      NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
+                       << " as from client";
+      param->set_op_annotations(from_client_annotation);
+    }
+  }
 
   return std::make_shared<HESealExecutable>(
       function, enable_performance_collection, *this, m_encrypt_model,

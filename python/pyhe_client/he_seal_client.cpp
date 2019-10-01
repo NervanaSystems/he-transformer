@@ -18,6 +18,8 @@
 #include <pybind11/stl.h>
 
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "pyhe_client/he_seal_client.hpp"
 #include "seal/he_seal_client.hpp"
@@ -28,8 +30,9 @@ void regclass_pyhe_client(py::module m) {
   py::class_<ngraph::he::HESealClient> he_seal_client(m, "HESealClient");
   he_seal_client.doc() = "he_seal_client wraps ngraph::he::HESealClient";
 
-  he_seal_client.def(py::init<const std::string&, const std::size_t,
-                              const size_t, const std::vector<float>&>());
+  he_seal_client.def(
+      py::init<const std::string&, const std::size_t, const size_t,
+               const std::unordered_map<std::string, std::vector<float>>&>());
 
   he_seal_client.def("set_seal_context",
                      &ngraph::he::HESealClient::set_seal_context);

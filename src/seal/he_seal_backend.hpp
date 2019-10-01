@@ -331,9 +331,9 @@ class HESealBackend : public ngraph::runtime::Backend {
         ->chain_index();
   }
 
-  inline std::unordered_set<std::string> get_encryption_parameter_shapes()
-      const {
-    return m_encrypt_parameter_shapes;
+  /// \brief Returns set of tensors to be provided by the client
+  inline std::unordered_set<std::string> get_client_tensor_names() const {
+    return m_client_tensor_names;
   }
 
  private:
@@ -363,7 +363,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::unordered_set<size_t> m_supported_element_types{
       element::f32.hash(), element::i64.hash(), element::f64.hash()};
 
-  std::unordered_set<std::string> m_encrypt_parameter_shapes;
+  std::unordered_set<std::string> m_client_tensor_names;
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",

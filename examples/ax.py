@@ -36,7 +36,7 @@ def str2bool(v):
 def main(FLAGS):
 
     a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
-    b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
+    b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4), name='client_input')
     c = tf.compat.v1.placeholder(tf.float32, shape=(1))
     f = (a + b) * a + c
 
@@ -45,12 +45,12 @@ def main(FLAGS):
     rewriter_options.meta_optimizer_iterations = (
         rewriter_config_pb2.RewriterConfig.ONE)
     rewriter_options.min_graph_nodes = -1
-    ngraph_optimizer = rewriter_options.custom_optimizers.add()
-    ngraph_optimizer.name = "ngraph-optimizer"
-    ngraph_optimizer.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
-    ngraph_optimizer.parameter_map["device_id"].s = b''
-    ngraph_optimizer.parameter_map[str(b)].s = b'encrypt'
-    ngraph_optimizer.parameter_map['enable_client'].s = (str(
+    client_config = rewriter_options.custom_optimizers.add()
+    client_config.name = "ngraph-optimizer"
+    client_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
+    client_config.parameter_map["device_id"].s = b''
+    client_config.parameter_map[b.name].s = b'client_input'
+    client_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
 
     config = tf.compat.v1.ConfigProto()
