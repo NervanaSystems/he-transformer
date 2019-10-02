@@ -184,27 +184,20 @@ void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {
 }
 
 void ngraph::he::HESealExecutable::check_client_supports_function() {
-  // Check if parameter batch sizes are unique
-  bool first_batch_size = true;
-  size_t batch_size = 1;
+  // Check if single parameter is from client
+  size_t from_client_count = 0;
   for (const auto& param : get_parameters()) {
     if (from_client(*param)) {
-      auto param_shape = param->get_shape();
-      if (param_shape.size() == 0) {
-        NGRAPH_CHECK(false, "Parameter shape is empty");
-      }
-      size_t new_batch_size = param_shape[0];
-      if (!first_batch_size && batch_size != new_batch_size) {
-        NGRAPH_CHECK(false,
-                     "Encrypted parameters imply different batch sizes, ",
-                     batch_size, ", and ", new_batch_size);
-      }
+      from_client_count++;
+      NGRAPH_HE_LOG(5) << "Parameter " << param->get_name() << " from client";
     }
-  }
+    NGRAPH_CHECK(from_client_count == 1, "Function specifies ",
+                 from_client_count, " parameters from client, expected 1");
 
-  NGRAPH_CHECK(get_results().size() == 1,
-               "HESealExecutable only supports output size 1 (got ",
-               get_results().size(), "");
+    NGRAPH_CHECK(get_results().size() == 1,
+                 "HESealExecutable only supports output size 1 (got ",
+                 get_results().size(), "");
+  }
 }
 
 void ngraph::he::HESealExecutable::server_setup() {
@@ -486,8 +479,9 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
           std::vector<uint64_t> param_shape{parameter->get_shape().begin(),
                                             parameter->get_shape().end()};
           if (param_shape == tensor_shape) {
-            NGRAPH_HE_LOG(5) << "Param shape " << ngraph::join(param_shape, "x")
-                             << " matches at index " << param_idx;
+            NGRAPH_HE_LOG(5)
+                << "Param shape {" << ngraph::join(param_shape, "x")
+                << "} matches at index " << param_idx;
             matching_idx = param_idx;
             return true;
           }

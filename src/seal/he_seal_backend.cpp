@@ -191,13 +191,23 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   auto from_client_annotation =
       std::make_shared<ngraph::he::HEOpAnnotations>(true);
 
-  for (auto& param : function->get_parameters()) {
-    if (get_client_tensor_names().find(param->get_name()) !=
-        get_client_tensor_names().end()) {
-      NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
-                       << " as from client";
-      param->set_op_annotations(from_client_annotation);
+  // TODO: enable provenance
+
+  for (const auto& name : get_client_tensor_names()) {
+    bool match = false;
+    for (auto& param : function->get_parameters()) {
+      NGRAPH_HE_LOG(3) << "Compiling function with parameter name "
+                       << param->get_name() << " (shape  "
+                       << join(param->get_shape(), "x") << ")";
+      if (param->get_name() == name) {
+        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
+                         << " (shape  " << join(param->get_shape(), "x")
+                         << ") as from client";
+        param->set_op_annotations(from_client_annotation);
+        match = true;
+      }
     }
+    NGRAPH_CHECK(match, "Function has no parameter named ", name);
   }
 
   return std::make_shared<HESealExecutable>(

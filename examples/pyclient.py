@@ -26,7 +26,7 @@ def main(FLAGS):
     batch_size = 1
 
     client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size,
-                                      {'input_tensor_name': ('encrypt', data)})
+                                      {'Parameter_0': ('encrypt', data)})
 
     while not client.is_done():
         time.sleep(1)

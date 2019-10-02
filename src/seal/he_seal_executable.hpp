@@ -119,9 +119,10 @@ class HESealExecutable : public runtime::Executable {
     return m_he_seal_backend.get_encryption_parameters().complex_packing();
   }
 
-  /// \brief Checks whether or not the server supports the function
+  /// \brief Checks whether or not the client supports the function
   /// \throws ngraph_error if function is unsupported
-  /// Currently, we only support functions with a single parameter
+  /// Currently, we only support functions with a single client parameter and
+  /// single results
   /// TODO: rename; return bool
   void check_client_supports_function();
 
@@ -224,8 +225,6 @@ class HESealExecutable : public runtime::Executable {
     if (auto he_annotation =
             std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
                 annotation)) {
-      NGRAPH_HE_LOG(3) << "He annotation from_client? "
-                       << he_annotation->from_client();
       return he_annotation->from_client();
     }
     return false;
