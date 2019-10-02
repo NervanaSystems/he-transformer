@@ -139,6 +139,8 @@ void ngraph::he::HESealClient::handle_inference_request(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling inference request";
 
+  // Note: the message cipher tensors are used to store the inference shapes.
+  // The actual tensors returned by the client may be cipher or plain
   NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
                "Proto msg doesn't have any cipher tensors");
 
@@ -154,7 +156,6 @@ void ngraph::he::HESealClient::handle_inference_request(
   NGRAPH_HE_LOG(5) << "Inference request tensor has name " << proto_name;
 
   bool encrypt_tensor = true;
-
   auto input_proto = m_input_config.find(proto_name);
   if (input_proto == m_input_config.end()) {
     // TODO: turn into hard check once provenance nodes work

@@ -325,9 +325,8 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
   proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
   for (const auto& input_param : input_parameters) {
-    if (from_client(
-            *input_param)) {  // TODO: allow plaintext params from client?
-
+    if (from_client(*input_param)) {
+      // Note: Inference shapes are written to the cipher tensors
       he_proto::SealCipherTensor* proto_cipher_tensor =
           proto_msg.add_cipher_tensors();
 

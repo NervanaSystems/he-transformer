@@ -36,11 +36,12 @@ def str2bool(v):
 def main(FLAGS):
 
     a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
-    b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4), name='client_input')
+    b = tf.compat.v1.placeholder(
+        tf.float32, shape=(1, 4), name='input_tensor_name')
     c = tf.compat.v1.placeholder(tf.float32, shape=(1))
     f = (a + b) * a + c
 
-    # Create config to encrypt parameter b
+    # Create config to load parameter b from client
     rewriter_options = rewriter_config_pb2.RewriterConfig()
     rewriter_options.meta_optimizer_iterations = (
         rewriter_config_pb2.RewriterConfig.ONE)

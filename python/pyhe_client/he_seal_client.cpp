@@ -32,7 +32,7 @@ void regclass_pyhe_client(py::module m) {
 
   he_seal_client.def(
       py::init<const std::string&, const std::size_t, const size_t,
-               const std::unordered_map<std::string, std::vector<float>>&>());
+               const ngraph::he::HETensorConfigMap<float>&>());
 
   he_seal_client.def("set_seal_context",
                      &ngraph::he::HESealClient::set_seal_context);
