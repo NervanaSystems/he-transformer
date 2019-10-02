@@ -15,14 +15,34 @@ python train.py
 This trains the network briefly and stores the network weights.
 
 # Test the network
-To test the network, in one terminal run
+First, make sure the python virtual environment is active:
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST/Cryptonets-Relu
-NGRAPH_ENABLE_CLIENT=1 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-python test.py
 ```
+
+## CPU
+To test the network using the CPU backend, run
+```bash
+python test.py --batch_size=10 --enable_client=no --backend=CPU
+```
+
+## HE_SEAL plaintext
+To test the network using plaintext inputs (i.e. not encrypted), run
+```bash
+python test.py --batch_size=10 --enable_client=no --backend=HE_SEAL
+```
+This should just be used for debugging, since the data is not encrypted
+
+## HE_SEAL encrypted
+To test the network using encrypted inputs, run
+```bash
+NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
+python test.py --batch_size=1024 \
+               --enable_client=no \
+               --backend=HE_SEAL
+```
+
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
 The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
 

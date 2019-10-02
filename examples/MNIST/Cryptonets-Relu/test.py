@@ -33,7 +33,7 @@ from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
+from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid, str2bool
 
 FLAGS = None
 
@@ -68,7 +68,8 @@ def cryptonets_relu_test_squashed(x):
 def test_cryptonets_relu(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
+    x = tf.compat.v1.placeholder(
+        tf.float32, [None, 28, 28, 1], name='client_input')
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
@@ -78,15 +79,16 @@ def test_cryptonets_relu(FLAGS):
     rewriter_options.meta_optimizer_iterations = (
         rewriter_config_pb2.RewriterConfig.ONE)
     rewriter_options.min_graph_nodes = -1
-    ngraph_optimizer = rewriter_options.custom_optimizers.add()
-    ngraph_optimizer.name = "ngraph-optimizer"
-    # Use HE_SEAL backend
-    ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
-    ngraph_optimizer.parameter_map["device_id"].s = b''
-    # Create configuration to encrypt parameter x
-    ngraph_optimizer.parameter_map[str(x)].s = b'encrypt'
-    ngraph_optimizer.parameter_map['enable_client'].s = (str(
+    client_config = rewriter_options.custom_optimizers.add()
+    client_config.name = "ngraph-optimizer"
+    client_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
+    client_config.parameter_map["device_id"].s = b''
+
+    # Create configuration to encrypt parameter
+    client_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
+    if FLAGS.enable_client:
+        client_config.parameter_map[x.name].s = b'client_input'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(
@@ -122,7 +124,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
     parser.add_argument(
-        '--enable_client', type=bool, default=False, help='Enable the client')
+        '--enable_client',
+        type=str2bool,
+        default=False,
+        help='Enable the client')
+    parser.add_argument(
+        '--backend',
+        type=str,
+        default='HE_SEAL',
+        help='Name of backend to use')
 
     FLAGS, unparsed = parser.parse_known_args()
     test_cryptonets_relu(FLAGS)
