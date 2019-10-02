@@ -234,7 +234,7 @@ void ngraph::he::HESealClient::handle_inference_request(
     plain_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
 
     std::vector<he_proto::PlainTensor> plain_tensor_protos;
-    plain_tensor.save_to_proto(plain_tensor_protos, shape, "TODO");
+    plain_tensor.save_to_proto(plain_tensor_protos, "TODO");
 
     for (const auto& plain_tensor_proto : plain_tensor_protos) {
       he_proto::TCPMessage inputs_msg;
@@ -256,28 +256,62 @@ void ngraph::he::HESealClient::handle_result(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling result";
 
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
-               "Client received result with no cipher tensors");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-               "Client supports only results with one cipher tensor");
+  NGRAPH_CHECK(
+      proto_msg.cipher_tensors_size() > 0 || proto_msg.plain_tensors_size() > 0,
+      "Client received result with no tensors");
+  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1 ||
+                   proto_msg.plain_tensors_size() == 1,
+               "Client supports only results with one tensor");
 
-  auto proto_tensor = proto_msg.cipher_tensors(0);
+  bool cipher_result = (proto_msg.cipher_tensors_size() == 1);
 
-  size_t result_count = proto_tensor.ciphertexts_size();
-  m_results.resize(result_count * m_batch_size);
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
-      result_count);
+  if (cipher_result) {
+    NGRAPH_HE_LOG(5) << "Client handling cipher result";
+    auto proto_tensor = proto_msg.cipher_tensors(0);
+    size_t result_count = proto_tensor.ciphertexts_size();
+    m_results.resize(result_count * m_batch_size);
+    std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
+        result_count);
 #pragma omp parallel for
-  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    ngraph::he::SealCiphertextWrapper::load(
-        result_ciphers[result_idx], proto_tensor.ciphertexts(result_idx),
-        m_context);
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      ngraph::he::SealCiphertextWrapper::load(
+          result_ciphers[result_idx], proto_tensor.ciphertexts(result_idx),
+          m_context);
+    }
+
+    size_t num_bytes = result_count * sizeof(double) * m_batch_size;
+    ngraph::he::HESealCipherTensor::read(m_results.data(), result_ciphers,
+                                         num_bytes, m_batch_size, element::f64,
+                                         *m_ckks_encoder, *m_decryptor);
+  } else {
+    NGRAPH_HE_LOG(5) << "Client handling plain result";
+
+    auto proto_tensor = proto_msg.plain_tensors(0);
+    size_t result_count = proto_tensor.plaintexts_size();
+    m_results.resize(result_count * m_batch_size);
+
+    std::vector<ngraph::he::HEPlaintext> result_plaintexts(result_count);
+
+    // TODO: load from protos as separate function
+#pragma omp parallel for
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      // Load tensor plaintexts
+      auto proto_plain = proto_tensor.plaintexts(result_idx);
+      result_plaintexts[result_idx] =
+          ngraph::he::HEPlaintext(std::vector<double>{
+              proto_plain.value().begin(), proto_plain.value().end()});
+
+      NGRAPH_HE_LOG(5) << "Loaded plaintext " << result_plaintexts[result_idx];
+    }
+    ngraph::Shape shape = ngraph::he::proto_shape_to_ngraph_shape(proto_tensor);
+
+    HEPlainTensor plain_tensor(element::f64, shape, proto_tensor.packed());
+    plain_tensor.set_elements(result_plaintexts);
+
+    size_t num_bytes = result_count * sizeof(double) * m_batch_size;
+    plain_tensor.read(m_results.data(), num_bytes);
   }
 
-  size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-  ngraph::he::HESealCipherTensor::read(m_results.data(), result_ciphers,
-                                       num_bytes, m_batch_size, element::f64,
-                                       *m_ckks_encoder, *m_decryptor);
   close_connection();
 }
 
@@ -412,7 +446,8 @@ void ngraph::he::HESealClient::handle_message(
     case he_proto::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
-      } else if (proto_msg->cipher_tensors_size() > 0) {
+      } else if (proto_msg->cipher_tensors_size() > 0 ||
+                 proto_msg->plain_tensors_size() > 0) {
         handle_result(*proto_msg);
       } else {
         NGRAPH_CHECK(false, "Unknown RESPONSE type");

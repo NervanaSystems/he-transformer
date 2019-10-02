@@ -565,6 +565,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
                                        plain_tensor.shape().end()};
 
     // Load tensor plaintexts
+    // TODO: separate function
     std::vector<ngraph::he::HEPlaintext> he_plain_inputs(count);
     for (size_t plain_idx = 0; plain_idx < count; ++plain_idx) {
       auto proto_plain = plain_tensor.plaintexts(plain_idx);
@@ -763,8 +764,7 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     if (m_enable_client && type_id == OP_TYPEID::Result) {
-      // Client outputs remain ciphertexts, so don't perform result op on
-      // them
+      // Client outputs don't have decryption performed, so skip result op
       NGRAPH_HE_LOG(3) << "Setting client outputs";
       m_client_outputs = op_inputs;
     }
@@ -873,19 +873,28 @@ void ngraph::he::HESealExecutable::send_client_results() {
   he_proto::TCPMessage result_msg;
   result_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  auto output_cipher_tensor =
-      he_tensor_as_type<HESealCipherTensor>(m_client_outputs[0]);
+  if (m_client_outputs[0]->is_type<HESealCipherTensor>()) {
+    NGRAPH_HE_LOG(5) << "Sending ciphertext results to client";
+    auto output_cipher_tensor =
+        he_tensor_as_type<HESealCipherTensor>(m_client_outputs[0]);
+    std::vector<he_proto::SealCipherTensor> cipher_tensor_proto;
+    output_cipher_tensor->save_to_proto(cipher_tensor_proto);
+    NGRAPH_CHECK(cipher_tensor_proto.size() == 1,
+                 "Support only results which fit in single cipher tensor");
+    *result_msg.add_cipher_tensors() = cipher_tensor_proto[0];
+  } else {
+    NGRAPH_HE_LOG(5) << "Sending plaintext results to client";
+    auto output_plain_tensor =
+        he_tensor_as_type<HEPlainTensor>(m_client_outputs[0]);
+    std::vector<he_proto::PlainTensor> plain_tensor_proto;
+    output_plain_tensor->save_to_proto(plain_tensor_proto);
 
-  std::vector<he_proto::SealCipherTensor> cipher_tensor_proto;
-  output_cipher_tensor->save_to_proto(cipher_tensor_proto);
-
-  NGRAPH_CHECK(cipher_tensor_proto.size() == 1,
-               "Support only results which fit in single cipher tensor");
-
-  *result_msg.add_cipher_tensors() = cipher_tensor_proto[0];
-
+    NGRAPH_INFO << "Output[0] " << output_plain_tensor->get_element(0);
+    NGRAPH_CHECK(plain_tensor_proto.size() == 1,
+                 "Support only results which fit in single plain tensor");
+    *result_msg.add_plain_tensors() = plain_tensor_proto[0];
+  }
   m_session->write_message(std::move(result_msg));
-
   std::unique_lock<std::mutex> mlock(m_result_mutex);
 
   // Wait until message is written

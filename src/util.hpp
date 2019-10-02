@@ -25,6 +25,7 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
+#include "protos/message.pb.h"
 
 namespace ngraph {
 namespace he {
@@ -209,6 +210,20 @@ map_to_double_map(
         {elem.first, std::make_pair(elem.second.first, double_inputs)});
   }
   return outputs;
+}
+
+inline ngraph::Shape proto_shape_to_ngraph_shape(
+    const he_proto::SealCipherTensor& tensor) {
+  auto proto_shape = tensor.shape();
+  std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
+  return ngraph::Shape{dims};
+}
+
+inline ngraph::Shape proto_shape_to_ngraph_shape(
+    const he_proto::PlainTensor& tensor) {
+  auto proto_shape = tensor.shape();
+  std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
+  return ngraph::Shape{dims};
 }
 
 }  // namespace he

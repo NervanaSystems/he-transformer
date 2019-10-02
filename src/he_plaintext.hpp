@@ -60,13 +60,23 @@ class HEPlaintext {
   /// \brief Returns the number of values stored in the plaintext
   inline size_t num_values() const { return m_values.size(); }
 
-  /// \brief Saves the cihertext to a protobuf ciphertext wrapper
-  /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
-  /// ciphertext
-  inline void save(he_proto::Plaintext& proto_cipher) const {}
+  /// \brief Saves the  plaintext o a protobuf message
+  /// \param[out] proto Protobuf to store the plaintext in
+  inline void save(he_proto::Plaintext& proto) const {
+    for (const auto& value : m_values) {
+      proto.add_value(value);
+    }
+  }
 
  private:
   std::vector<double> m_values;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
+  for (const auto& value : plain.values()) {
+    os << value << " ";
+  }
+  return os;
+}
 }  // namespace he
 }  // namespace ngraph

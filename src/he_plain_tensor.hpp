@@ -82,17 +82,15 @@ class HEPlainTensor : public HETensor {
   /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
   /// multiple protobuf messages.
   /// \param[out] protos Target to write plaintexts to
-  /// \param[in] shape Shape the vector of plaintexts represents
   /// \param[in] name Name of the tensor to save
   inline void save_to_proto(std::vector<he_proto::PlainTensor>& protos,
-                            const ngraph::Shape& shape,
                             const std::string& name = "") {
     // TODO: support large shapes
     protos.resize(1);
     protos[0].set_name(name);
     protos[0].set_packed(is_packed());
 
-    std::vector<uint64_t> int_shape{shape};
+    std::vector<uint64_t> int_shape{get_shape()};
     *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
 
     protos[0].set_offset(0);
