@@ -120,6 +120,12 @@ bool ngraph::he::HESealBackend::set_config(
     }
   }
 
+  if (m_client_tensor_names.size() > 1 || !m_enable_client) {
+    NGRAPH_WARN
+        << "Configuration specifies client input, but client is not enabled";
+    m_client_tensor_names.clear();
+  }
+
   for (const auto& tensor_name : m_client_tensor_names) {
     NGRAPH_HE_LOG(3) << "Client tensor name " << tensor_name;
   }

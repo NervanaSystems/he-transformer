@@ -92,8 +92,14 @@ class HESealBackend : public ngraph::runtime::Backend {
   bool is_supported(const Node& node) const override;
 
   /// \brief Sets a configuration for the backend
-  /// \paran[in] config Configuration string
-  /// \param[out] error Error string
+  /// \paran[in] config Configuration map. It should contain entries in one of
+  /// two forms:
+  ///     1) {tensor_name : "client_input"}, which indicates the specified
+  ///     tensor should be loaded from the client 2) {enable_client : "True" /
+  ///     "False"}, which indicates the client should be enabled
+  ///  \warning Specfying entries of form 1) without an entry of form 2) will
+  ///  not load the tensors from the client
+  /// \param[out] error Error string. Unused
   bool set_config(const std::map<std::string, std::string>& config,
                   std::string& error) override;
 
