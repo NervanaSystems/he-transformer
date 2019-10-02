@@ -18,7 +18,7 @@ The client uses python bindings. See the `python` folder for instructions to bui
 
 For a simple demonstration of a server-client approach, run
 ```bash
-python ax.py --enable_client
+python ax.py --backend=HE_SEAL --enable_client=yes
 ```
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.

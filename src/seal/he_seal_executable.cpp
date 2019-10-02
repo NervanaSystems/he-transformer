@@ -642,6 +642,10 @@ bool ngraph::he::HESealExecutable::call(
   validate(outputs, server_inputs);
   NGRAPH_HE_LOG(3) << "HESealExecutable::call validated inputs";
 
+  if (m_enable_client) {
+    server_setup();
+  }
+
   if (m_pack_data) {
     NGRAPH_HE_LOG(1) << "Batching data with batch size " << m_batch_size;
   }

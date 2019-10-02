@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 
@@ -204,23 +205,37 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     }
   }
 
-  // TODO: enable provenance
+  auto param_originates_from_name = [](const ngraph::op::Parameter& param,
+                                       const std::string& name) {
+    if (param.get_name() == name) {
+      return true;
+    }
+    return std::any_of(param.get_provenance_tags().begin(),
+                       param.get_provenance_tags().end(),
+                       [&](const std::string& tag) { return tag == name; });
+  };
 
   for (const auto& name : get_client_tensor_names()) {
-    bool match = false;
+    bool matching_param = false;
+    bool has_tag = false;
     for (auto& param : function->get_parameters()) {
       NGRAPH_HE_LOG(3) << "Compiling function with parameter name "
                        << param->get_name() << " (shape  "
                        << join(param->get_shape(), "x") << ")";
-      if (param->get_name() == name) {
+      has_tag |= (param->get_provenance_tags().size() != 0);
+
+      if (param_originates_from_name(*param, name)) {
         NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
                          << " (shape  " << join(param->get_shape(), "x")
                          << ") as from client";
         param->set_op_annotations(from_client_annotation);
-        match = true;
+        matching_param = true;
       }
     }
-    NGRAPH_CHECK(match, "Function has no parameter named ", name);
+    // ngraph-bridge calls compile() twice, once before adding tags, and once
+    // after
+    NGRAPH_CHECK(!has_tag || matching_param, "Function has no parameter named ",
+                 name);
   }
 
   return std::make_shared<HESealExecutable>(

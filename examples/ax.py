@@ -50,9 +50,10 @@ def main(FLAGS):
     client_config.name = "ngraph-optimizer"
     client_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
     client_config.parameter_map["device_id"].s = b''
-    client_config.parameter_map[b.name].s = b'client_input'
     client_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
+    if FLAGS.enable_client:
+        client_config.parameter_map[b.name].s = b'client_input'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

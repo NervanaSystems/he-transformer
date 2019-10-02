@@ -62,7 +62,7 @@ class HESealExecutable : public runtime::Executable {
 
   ~HESealExecutable() override {
     NGRAPH_HE_LOG(3) << "~HESealExecutable()";
-    if (m_enable_client) {
+    if (m_server_setup) {
       NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
       m_message_handling_thread.join();
       NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
