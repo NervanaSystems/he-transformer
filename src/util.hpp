@@ -193,16 +193,22 @@ inline void double_vec_to_type_vec(void* target,
 }
 
 template <typename T>
-inline std::unordered_map<std::string, std::vector<double>> map_to_double_map(
-    const std::unordered_map<std::string, std::vector<T>>& inputs) {
-  std::unordered_map<std::string, std::vector<double>> double_map;
+inline std::unordered_map<std::string,
+                          std::pair<std::string, std::vector<double>>>
+map_to_double_map(
+    const std::unordered_map<std::string,
+                             std::pair<std::string, std::vector<T>>>& inputs) {
+  std::unordered_map<std::string, std::pair<std::string, std::vector<double>>>
+      outputs;
 
   for (const auto& elem : inputs) {
-    std::vector<double> double_inputs{elem.second.begin(), elem.second.end()};
+    std::vector<double> double_inputs{elem.second.second.begin(),
+                                      elem.second.second.end()};
 
-    double_map.insert({elem.first, double_inputs});
+    outputs.insert(
+        {elem.first, std::make_pair(elem.second.first, double_inputs)});
   }
-  return double_map;
+  return outputs;
 }
 
 }  // namespace he

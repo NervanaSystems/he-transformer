@@ -30,6 +30,11 @@
 
 namespace ngraph {
 namespace he {
+
+template <class T>
+using HETensorConfigMap =
+    std::unordered_map<std::string, std::pair<std::string, std::vector<T>>>;
+
 /// \brief Class representing a data owner. The client provides encrypted values
 /// to a server and receives the encrypted result. The client may also aid in
 /// the computation, for example by computing activation functions the sever
@@ -40,28 +45,28 @@ class HESealClient {
   /// \param[in] hostname Hostname of the server
   /// \param[in] port Port of the server
   /// \param[in] batch_size Batch size of the inference to perform
-  /// \param[in] inputs Input data as a map from tensor name to inputs
-  HESealClient(
-      const std::string& hostname, const size_t port, const size_t batch_size,
-      const std::unordered_map<std::string, std::vector<double>>& inputs);
+  /// \param[in] inputs Input data as a map from tensor name to pair of
+  /// ('encrypt', inputs) or ('plain', inputs)
+  HESealClient(const std::string& hostname, const size_t port,
+               const size_t batch_size,
+               const HETensorConfigMap<double>& inputs);
 
   /// \brief Constructs a client object and connects to a server
   /// \param[in] hostname Hostname of the server
   /// \param[in] port Port of the server
   /// \param[in] batch_size Batch size of the inference to perform
   /// \param[in] inputs Input data as a map from tensor name to inputs
-  HESealClient(
-      const std::string& hostname, const size_t port, const size_t batch_size,
-      const std::unordered_map<std::string, std::vector<float>>& inputs);
+  HESealClient(const std::string& hostname, const size_t port,
+               const size_t batch_size, const HETensorConfigMap<float>& inputs);
 
   /// \brief Constructs a client object and connects to a server
   /// \param[in] hostname Hostname of the server
   /// \param[in] port Port of the server
   /// \param[in] batch_size Batch size of the inference to perform
   /// \param[in] inputs Input data as a map from tensor name to inputs
-  HESealClient(
-      const std::string& hostname, const size_t port, const size_t batch_size,
-      const std::unordered_map<std::string, std::vector<int64_t>>& inputs);
+  HESealClient(const std::string& hostname, const size_t port,
+               const size_t batch_size,
+               const HETensorConfigMap<int64_t>& inputs);
 
   /// \brief Creates SEAL context
   void set_seal_context();
@@ -111,7 +116,7 @@ class HESealClient {
   /// \warning Will sleep until results are ready
   /// TODO: better solution
   inline std::vector<double> get_results() {
-    NGRAPH_INFO << "Waiting for results";
+    NGRAPH_HE_LOG(1) << "Client waiting for results";
     while (!is_done()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -123,10 +128,12 @@ class HESealClient {
 
   /// \brief Returns whether or not the encryption parameters use complex
   /// packing
-  bool complex_packing() const { return m_encryption_params.complex_packing(); }
+  inline bool complex_packing() const {
+    return m_encryption_params.complex_packing();
+  }
 
   /// \brief Returns the scale of the encryption parameters
-  double scale() const { return m_encryption_params.scale(); }
+  inline double scale() const { return m_encryption_params.scale(); }
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;
@@ -143,7 +150,7 @@ class HESealClient {
   size_t m_batch_size;
   bool m_is_done;
   // Function inputs
-  std::unordered_map<std::string, std::vector<double>> m_inputs;
+  HETensorConfigMap<double> m_inputs;
   std::vector<double> m_results;  // Function outputs
 
 };  // namespace he

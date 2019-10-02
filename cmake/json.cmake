@@ -28,7 +28,7 @@ ExternalProject_Add(ext_json
                     CONFIGURE_COMMAND ""
                     BUILD_COMMAND cp
                                   -r
-                                  ${JSON_SRC_DIR}/single_include/nlohmann
+                                  ${JSON_SRC_DIR}/single_include/
                                   ${EXTERNAL_INSTALL_DIR}/include/
                     INSTALL_COMMAND ""
                     UPDATE_COMMAND ""

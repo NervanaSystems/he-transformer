@@ -39,9 +39,10 @@
 
 using json = nlohmann::json;
 
-ngraph::he::HESealClient::HESealClient(
-    const std::string& hostname, const size_t port, const size_t batch_size,
-    const std::unordered_map<std::string, std::vector<double>>& inputs)
+ngraph::he::HESealClient::HESealClient(const std::string& hostname,
+                                       const size_t port,
+                                       const size_t batch_size,
+                                       const HETensorConfigMap<double>& inputs)
     : m_batch_size{batch_size}, m_is_done{false}, m_inputs{inputs} {
   NGRAPH_CHECK(m_inputs.size() == 1,
                "Client supports only one input parameter");
@@ -61,15 +62,17 @@ ngraph::he::HESealClient::HESealClient(
   io_context.run();
 }
 
-ngraph::he::HESealClient::HESealClient(
-    const std::string& hostname, const size_t port, const size_t batch_size,
-    const std::unordered_map<std::string, std::vector<float>>& inputs)
+ngraph::he::HESealClient::HESealClient(const std::string& hostname,
+                                       const size_t port,
+                                       const size_t batch_size,
+                                       const HETensorConfigMap<float>& inputs)
     : HESealClient(hostname, port, batch_size,
                    ngraph::he::map_to_double_map<float>(inputs)) {}
 
-ngraph::he::HESealClient::HESealClient(
-    const std::string& hostname, const size_t port, const size_t batch_size,
-    const std::unordered_map<std::string, std::vector<int64_t>>& inputs)
+ngraph::he::HESealClient::HESealClient(const std::string& hostname,
+                                       const size_t port,
+                                       const size_t batch_size,
+                                       const HETensorConfigMap<int64_t>& inputs)
     : HESealClient(hostname, port, batch_size,
                    ngraph::he::map_to_double_map<int64_t>(inputs)) {}
 
@@ -167,7 +170,7 @@ void ngraph::he::HESealClient::handle_inference_request(
     NGRAPH_HE_LOG(5) << "Client complex packing";
   }
 
-  if (m_inputs.begin()->second.size() > parameter_size * m_batch_size) {
+  if (m_inputs.begin()->second.second.size() > parameter_size * m_batch_size) {
     NGRAPH_HE_LOG(5) << "m_inputs.size() " << m_inputs.size()
                      << " > paramter_size ( " << parameter_size
                      << ") * m_batch_size (" << m_batch_size << ")";
@@ -183,7 +186,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   // TODO: add element type to function message
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
   ngraph::he::HESealCipherTensor::write(
-      ciphers, m_inputs.begin()->second.data(), num_bytes, m_batch_size,
+      ciphers, m_inputs.begin()->second.second.data(), num_bytes, m_batch_size,
       element::f64, m_context->first_parms_id(), scale(), *m_ckks_encoder,
       *m_encryptor, complex_packing());
 
