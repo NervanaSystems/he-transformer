@@ -165,10 +165,6 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   NGRAPH_HE_LOG(3) << "Setting parameters and results";
   set_parameters_and_results(*function);
-
-  if (m_enable_client) {
-    server_setup();
-  }
 }
 
 void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {

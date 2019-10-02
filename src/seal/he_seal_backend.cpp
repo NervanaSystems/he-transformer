@@ -194,7 +194,15 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   NGRAPH_INFO << "Compiling function with " << function->get_parameters().size()
               << " parameters";
 
-  exit(1);
+  for (auto& param : function->get_parameters()) {
+    NGRAPH_HE_LOG(3) << "Compiling function with parameter name "
+                     << param->get_name() << " (shape  "
+                     << join(param->get_shape(), "x") << ")";
+
+    for (const auto& tag : param->get_provenance_tags()) {
+      NGRAPH_HE_LOG(3) << "Tag " << tag;
+    }
+  }
 
   // TODO: enable provenance
 
