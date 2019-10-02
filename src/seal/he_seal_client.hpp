@@ -150,7 +150,7 @@ class HESealClient {
   size_t m_batch_size;
   bool m_is_done;
   // Function inputs
-  HETensorConfigMap<double> m_inputs;
+  HETensorConfigMap<double> m_input_config;
   std::vector<double> m_results;  // Function outputs
 
 };  // namespace he

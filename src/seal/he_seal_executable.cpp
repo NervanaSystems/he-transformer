@@ -239,24 +239,13 @@ void ngraph::he::HESealExecutable::server_setup() {
     if (m_is_compiled) {
       m_client_inputs.clear();
       m_client_load_idx.clear();
-      const ParameterVector& input_parameters = get_parameters();
-      for (auto input_param : input_parameters) {
-        NGRAPH_HE_LOG(1) << "parameter shape "
-                         << join(input_param->get_shape(), "x");
-        auto element_type = input_param->get_element_type();
 
-        auto input_tensor =
-            std::dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(
-                m_he_seal_backend.create_cipher_tensor(
-                    element_type, input_param->get_shape(), m_pack_data,
-                    "client_parameter"));
-        m_client_inputs.emplace_back(input_tensor);
-        m_client_load_idx.emplace_back(0);
-      }
+      m_client_inputs.resize(get_parameters().size());
+      m_client_load_idx = std::vector<size_t>(m_client_inputs.size(), 0);
+
+    } else {
+      NGRAPH_HE_LOG(1) << "Client already setup";
     }
-
-  } else {
-    NGRAPH_HE_LOG(1) << "Client already setup";
   }
 }
 
@@ -453,7 +442,8 @@ void ngraph::he::HESealExecutable::handle_message(
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
-      if (proto_msg->cipher_tensors_size() > 0) {
+      if (proto_msg->cipher_tensors_size() > 0 ||
+          proto_msg->plain_tensors_size() > 0) {
         handle_client_ciphers(*proto_msg);
       }
       break;
@@ -468,70 +458,150 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Handling client ciphers";
 
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
+  NGRAPH_CHECK((proto_msg.cipher_tensors_size() > 0) ||
+                   (proto_msg.plain_tensors_size() > 0),
                "Client received empty cipher tensor message");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-               "Client only supports 1 client cipher tensor");
-  // TODO: check for uniqueness of batch size if > 1 cipher tensor
+  NGRAPH_CHECK((proto_msg.cipher_tensors_size() == 1) ||
+                   (proto_msg.plain_tensors_size() == 1),
+               "Client only supports 1 client tensor");
+  NGRAPH_CHECK((proto_msg.cipher_tensors_size() == 0) ||
+                   (proto_msg.plain_tensors_size() == 0),
+               "Client only supports 1 client tensor type");
+  // TODO: check for uniqueness of batch size if > 1 input tensor
+  bool cipher_input = (proto_msg.cipher_tensors_size() == 1);
 
-  he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
-
-  ngraph::Shape shape{cipher_tensor.shape().begin(),
-                      cipher_tensor.shape().end()};
-
-  set_batch_size(
-      ngraph::he::HETensor::batch_size(shape, cipher_tensor.packed()));
-
-  size_t count = cipher_tensor.ciphertexts_size();
-
-  std::vector<uint64_t> tensor_shape{cipher_tensor.shape().begin(),
-                                     cipher_tensor.shape().end()};
-
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      he_cipher_inputs(count);
-#pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
-    ngraph::he::SealCiphertextWrapper::load(
-        he_cipher_inputs[cipher_idx], cipher_tensor.ciphertexts(cipher_idx),
-        m_context);
-  }
-
-  // Write ciphers to client inputs
   const ParameterVector& input_parameters = get_parameters();
-  for (size_t param_idx = 0; param_idx < input_parameters.size(); ++param_idx) {
-    const auto& parameter = input_parameters[param_idx];
-    // TODO: use provenance to track correct parameter by name instead of shape
 
-    size_t param_size = shape_size(parameter->get_shape()) / m_batch_size;
+  /// \brief Looks for a parameter which matching a given shape
+  // TODO: use provenance to track correct parameter by name
+  // instead of shape
+  /// \param[in] tensor_shape Shape to match against
+  /// \param[out] matching_idx Will be populated if a match is found
+  /// \returns Whether or not a matching parameter shape has been found
+  auto find_matching_parameter_index =
+      [&](const std::vector<uint64_t>& tensor_shape, size_t& matching_idx) {
+        for (size_t param_idx = 0; param_idx < input_parameters.size();
+             ++param_idx) {
+          const auto& parameter = input_parameters[param_idx];
 
-    std::vector<uint64_t> param_shape{parameter->get_shape().begin(),
-                                      parameter->get_shape().end()};
-    if (param_shape == tensor_shape) {
-      NGRAPH_HE_LOG(5) << "Param shape " << ngraph::join(param_shape, "x")
-                       << " matches";
+          std::vector<uint64_t> param_shape{parameter->get_shape().begin(),
+                                            parameter->get_shape().end()};
+          if (param_shape == tensor_shape) {
+            NGRAPH_HE_LOG(5) << "Param shape " << ngraph::join(param_shape, "x")
+                             << " matches at index " << param_idx;
+            matching_idx = param_idx;
+            return true;
+          }
+        }
+        NGRAPH_HE_LOG(5) << "Could not find tensor shape "
+                         << ngraph::join(tensor_shape, "x");
+        return false;
+      };
 
-      size_t offset = cipher_tensor.offset();
+  if (cipher_input) {
+    he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
+    ngraph::Shape shape{cipher_tensor.shape().begin(),
+                        cipher_tensor.shape().end()};
 
-      NGRAPH_HE_LOG(5) << "Offset " << offset;
+    set_batch_size(
+        ngraph::he::HETensor::batch_size(shape, cipher_tensor.packed()));
 
-      for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
-        size_t input_tensor_offset = offset + cipher_idx;
+    size_t count = cipher_tensor.ciphertexts_size();
 
-        auto& client_input_tensor =
-            dynamic_cast<ngraph::he::HESealCipherTensor&>(
-                *m_client_inputs[param_idx]);
+    NGRAPH_HE_LOG(5) << "Offset " << cipher_tensor.offset();
 
-        client_input_tensor.get_element(input_tensor_offset) =
-            he_cipher_inputs[cipher_idx];
+    std::vector<uint64_t> tensor_shape{cipher_tensor.shape().begin(),
+                                       cipher_tensor.shape().end()};
 
-        NGRAPH_CHECK(m_client_load_idx[param_idx] < param_size,
-                     "current load index ", m_client_load_idx[param_idx],
-                     " too large for parameter size ", param_size);
-        m_client_load_idx[param_idx]++;
-      }
-      NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
-                       << "] = " << m_client_load_idx[param_idx];
+    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+        he_cipher_inputs(count);
+#pragma omp parallel for
+    for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
+      ngraph::he::SealCiphertextWrapper::load(
+          he_cipher_inputs[cipher_idx], cipher_tensor.ciphertexts(cipher_idx),
+          m_context);
     }
+
+    // Write ciphers to client inputs
+    size_t param_idx;
+    NGRAPH_CHECK(find_matching_parameter_index(tensor_shape, param_idx),
+                 "Could not find matching parameter shape ",
+                 ngraph::join(tensor_shape, "x"));
+    const auto& input_param = input_parameters[param_idx];
+    if (m_client_inputs[param_idx] == nullptr) {
+      m_client_inputs[param_idx] =
+          std::dynamic_pointer_cast<ngraph::he::HETensor>(
+              m_he_seal_backend.create_cipher_tensor(
+                  input_param->get_element_type(), input_param->get_shape(),
+                  m_pack_data, "client_parameter"));
+    }
+    auto& client_input_tensor = dynamic_cast<ngraph::he::HESealCipherTensor&>(
+        *m_client_inputs[param_idx]);
+
+    size_t param_size =
+        ngraph::shape_size(client_input_tensor.get_packed_shape());
+
+    for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
+      client_input_tensor.get_element(cipher_tensor.offset() + cipher_idx) =
+          he_cipher_inputs[cipher_idx];
+
+      NGRAPH_CHECK(m_client_load_idx[param_idx] < param_size,
+                   "current load index ", m_client_load_idx[param_idx],
+                   " too large for parameter size ", param_size);
+      m_client_load_idx[param_idx]++;
+    }
+    NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
+                     << "] = " << m_client_load_idx[param_idx];
+  } else {  // plaintext tensor input
+    he_proto::PlainTensor plain_tensor = proto_msg.plain_tensors(0);
+    ngraph::Shape shape{plain_tensor.shape().begin(),
+                        plain_tensor.shape().end()};
+
+    set_batch_size(
+        ngraph::he::HETensor::batch_size(shape, plain_tensor.packed()));
+
+    size_t count = plain_tensor.plaintexts_size();
+    std::vector<uint64_t> tensor_shape{plain_tensor.shape().begin(),
+                                       plain_tensor.shape().end()};
+
+    // Load tensor plaintexts
+    std::vector<ngraph::he::HEPlaintext> he_plain_inputs(count);
+    for (size_t plain_idx = 0; plain_idx < count; ++plain_idx) {
+      auto proto_plain = plain_tensor.plaintexts(plain_idx);
+      he_plain_inputs[plain_idx] = ngraph::he::HEPlaintext(std::vector<double>{
+          proto_plain.value().begin(), proto_plain.value().end()});
+    }
+
+    // Write plaintexts to client inputs
+    size_t param_idx;
+    NGRAPH_CHECK(find_matching_parameter_index(tensor_shape, param_idx),
+                 "Could not find matching parameter shape ",
+                 ngraph::join(tensor_shape, "x"));
+    if (m_client_inputs[param_idx] == nullptr) {
+      const auto& input_param = input_parameters[param_idx];
+      m_client_inputs[param_idx] =
+          std::dynamic_pointer_cast<ngraph::he::HETensor>(
+              m_he_seal_backend.create_plain_tensor(
+                  input_param->get_element_type(), input_param->get_shape(),
+                  m_pack_data));
+    }
+    auto& client_input_tensor =
+        dynamic_cast<ngraph::he::HEPlainTensor&>(*m_client_inputs[param_idx]);
+
+    size_t param_size =
+        ngraph::shape_size(client_input_tensor.get_packed_shape());
+
+    for (size_t plain_idx = 0; plain_idx < count; ++plain_idx) {
+      client_input_tensor.get_element(plain_tensor.offset() + plain_idx) =
+          he_plain_inputs[plain_idx];
+
+      NGRAPH_CHECK(m_client_load_idx[param_idx] < param_size,
+                   "current load index ", m_client_load_idx[param_idx],
+                   " too large for parameter size ", param_size);
+      m_client_load_idx[param_idx]++;
+    }
+    NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
+                     << "] = " << m_client_load_idx[param_idx];
   }
 
   auto done_loading = [this]() {
@@ -693,7 +763,8 @@ bool ngraph::he::HESealExecutable::call(
     }
 
     if (m_enable_client && type_id == OP_TYPEID::Result) {
-      // Client outputs remain ciphertexts, so don't perform result op on them
+      // Client outputs remain ciphertexts, so don't perform result op on
+      // them
       NGRAPH_HE_LOG(3) << "Setting client outputs";
       m_client_outputs = op_inputs;
     }
@@ -1526,8 +1597,8 @@ void ngraph::he::HESealExecutable::generate_calls(
           if (m_enable_client) {
             handle_server_relu_op(cipher_args[0], out0_cipher, node_wrapper);
           } else {
-            NGRAPH_WARN
-                << "Performing Relu without client is not privacy-preserving";
+            NGRAPH_WARN << "Performing Relu without client is not "
+                           "privacy-preserving";
             size_t output_size = cipher_args[0]->get_batched_element_count();
             NGRAPH_CHECK(output_size == cipher_args[0]->num_ciphertexts(),
                          "output size ", output_size,

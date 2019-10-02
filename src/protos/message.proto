@@ -16,6 +16,7 @@ message TCPMessage {
   EvaluationKey eval_key = 4;
   PublicKey public_key = 5;
   repeated SealCipherTensor cipher_tensors = 6;
+  repeated PlainTensor plain_tensors = 7;
 }
 
 message EncryptionParameters {
@@ -41,7 +42,11 @@ message SealCiphertextWrapper {
   bytes ciphertext = 4;
 }
 
-/// \brief Represents a cipher tensor
+message Plaintext {
+  repeated float value = 1;
+}
+
+/// \brief Represents a ciphertext tensor
 /// Due to the 2GB limit in protobuf, large cipher tensors may not be able to
 /// store the entire tensor in one SealCipherTensor message. In this case, the
 /// offset argument is used to decribe how far into the cipher tensor array the
@@ -55,4 +60,20 @@ message SealCipherTensor {
   uint64 offset = 3;
   bool packed = 4;
   repeated SealCiphertextWrapper ciphertexts = 5;
+}
+
+/// \brief Represents a plaintext tensor
+/// Due to the 2GB limit in protobuf, large cipher tensors may not be able to
+/// store the entire tensor in one PlainTensor message. In this case, the
+/// offset argument is used to decribe how far into the tensor array the
+/// current message's plaintexts begin.  For example, if we have a cipher
+/// tensor of shape {1000,10}, and maximum size of store 100 plaintexts per
+/// message, 100 messages with offsets 0, 100, 200, 300, ..., 9900,
+/// respectively, would be used to store the entire cipher tensor
+message PlainTensor {
+  string name = 1;
+  repeated uint64 shape = 2;
+  uint64 offset = 3;
+  bool packed = 4;
+  repeated Plaintext plaintexts = 5;
 }

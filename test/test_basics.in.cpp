@@ -185,7 +185,6 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape) {
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{10000, 1};
 
