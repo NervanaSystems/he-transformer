@@ -191,6 +191,11 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   auto from_client_annotation =
       std::make_shared<ngraph::he::HEOpAnnotations>(true);
 
+  NGRAPH_INFO << "Compiling function with " << function->get_parameters().size()
+              << " parameters";
+
+  exit(1);
+
   // TODO: enable provenance
 
   for (const auto& name : get_client_tensor_names()) {

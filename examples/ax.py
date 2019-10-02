@@ -37,7 +37,7 @@ def main(FLAGS):
 
     a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
     b = tf.compat.v1.placeholder(tf.float32, shape=(1, 4), name='Parameter_0')
-    c = tf.compat.v1.placeholder(tf.float32, shape=(1))
+    c = tf.compat.v1.placeholder(tf.float32, shape=(1), name='test')
     f = (a + b) * a + c
 
     # Create config to load parameter b from client
