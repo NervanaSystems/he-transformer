@@ -102,12 +102,15 @@ bool ngraph::he::HESealBackend::set_config(
     const std::map<std::string, std::string>& config, std::string& error) {
   for (const auto& config_opt : config) {
     // Check parameters to be provided by client
-    if (ngraph::to_lower(config_opt.second) == "client_input") {
-      // Strip attributes, i.e. "tensor_name:0 => tensor_name"
-      std::string tensor_name =
-          config_opt.first.substr(0, config_opt.first.find(":", 0));
+    std::string option = ngraph::to_lower(config_opt.second);
+    // Strip attributes, i.e. "tensor_name:0 => tensor_name"
+    std::string tensor_name =
+        config_opt.first.substr(0, config_opt.first.find(":", 0));
 
+    if (option == "client_input") {
       m_client_tensor_names.insert(tensor_name);
+    } else if (option == "encrypt") {
+      m_encrypted_tensor_names.insert(tensor_name);
     }
 
     // Check whether client is enabled
@@ -190,7 +193,7 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
 
   NGRAPH_INFO << "Compiling function with " << function->get_parameters().size()
               << " parameters";
@@ -236,6 +239,29 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     // after
     NGRAPH_CHECK(!has_tag || matching_param, "Function has no parameter named ",
                  name);
+  }
+
+  for (const auto& name : get_encrypted_tensor_names()) {
+    for (auto& param : function->get_parameters()) {
+      if (param_originates_from_name(*param, name)) {
+        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
+                         << " (shape " << join(param->get_shape(), "x")
+                         << ") as encrypted";
+        auto current_annotation =
+            std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
+                param->get_op_annotations());
+        if (current_annotation == nullptr) {
+          auto encrypted_annotation =
+              std::make_shared<ngraph::he::HEOpAnnotations>(false, true);
+          param->set_op_annotations(encrypted_annotation);
+        } else {
+          current_annotation->set_encrypted(true);
+        }
+        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name()
+                         << " (shape  " << join(param->get_shape(), "x")
+                         << ") as encrypted";
+      }
+    }
   }
 
   return std::make_shared<HESealExecutable>(

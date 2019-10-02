@@ -68,8 +68,7 @@ def cryptonets_relu_test_squashed(x):
 def test_cryptonets_relu(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    x = tf.compat.v1.placeholder(
-        tf.float32, [None, 28, 28, 1], name='client_input')
+    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1], name='input')
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
@@ -89,6 +88,8 @@ def test_cryptonets_relu(FLAGS):
         FLAGS.enable_client)).encode()
     if FLAGS.enable_client:
         client_config.parameter_map[x.name].s = b'client_input'
+    elif FLAGS.encrypt_data:
+        client_config.parameter_map[x.name].s = b'encrypt'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(
@@ -128,6 +129,8 @@ if __name__ == '__main__':
         type=str2bool,
         default=False,
         help='Enable the client')
+    rser.add_argument(
+        '--encrypt_data', type=str2bool, default=False, help='Encrypt data')
     parser.add_argument(
         '--backend',
         type=str,
@@ -135,4 +138,12 @@ if __name__ == '__main__':
         help='Name of backend to use')
 
     FLAGS, unparsed = parser.parse_known_args()
+
+    if unparsed:
+        print('Unparsed flags:', unparsed)
+    if FLAGS.encrypt_data and FLAGS.enable_client:
+        raise Exception(
+            "encrypt_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
+        )
+
     test_cryptonets_relu(FLAGS)

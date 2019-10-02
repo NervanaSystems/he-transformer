@@ -73,7 +73,7 @@ def test_mnist_cnn(FLAGS):
     ngraph_optimizer.name = "ngraph-optimizer"
     ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
     ngraph_optimizer.parameter_map["device_id"].s = b''
-    ngraph_optimizer.parameter_map[str(x)].s = b'encrypt'
+    ngraph_optimizer.parameter_map[x.name].s = b'encrypt'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

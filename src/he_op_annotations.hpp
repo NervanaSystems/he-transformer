@@ -26,12 +26,16 @@ namespace he {
 /// \brief Annotations added to graph ops by HE backend passes
 class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
  public:
-  HEOpAnnotations(bool from_client) : m_from_client(from_client) {}
+  HEOpAnnotations(bool from_client, bool encrypted) : m_from_client(from_client), m_encrypted(encrypted) {}
   inline bool from_client() { return m_from_client; }
   inline void set_from_client(bool val) { m_from_client = val; }
 
+  inline bool encrypted() { return m_encrypted; }
+  inline void set_encrypted(bool val) { m_encrypted = val; }
+
  private:
   bool m_from_client = false;
+  bool m_encrypted = false;
 };
 
 }  // namespace he
