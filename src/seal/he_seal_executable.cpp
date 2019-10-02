@@ -889,7 +889,6 @@ void ngraph::he::HESealExecutable::send_client_results() {
     std::vector<he_proto::PlainTensor> plain_tensor_proto;
     output_plain_tensor->save_to_proto(plain_tensor_proto);
 
-    NGRAPH_INFO << "Output[0] " << output_plain_tensor->get_element(0);
     NGRAPH_CHECK(plain_tensor_proto.size() == 1,
                  "Support only results which fit in single plain tensor");
     *result_msg.add_plain_tensors() = plain_tensor_proto[0];
