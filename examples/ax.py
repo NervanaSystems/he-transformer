@@ -38,7 +38,7 @@ def main(FLAGS):
     a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
     b = tf.compat.v1.placeholder(
         tf.float32, shape=(1, 4), name='client_parameter_name')
-    c = tf.compat.v1.placeholder(tf.float32, shape=(1))
+    c = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
     f = (a + b) * a + c
 
     # Create config to load parameter b from client
@@ -64,7 +64,7 @@ def main(FLAGS):
     print('config', config)
 
     with tf.compat.v1.Session(config=config) as sess:
-        f_val = sess.run(f, feed_dict={b: np.ones((1, 4)), c: np.ones((1))})
+        f_val = sess.run(f, feed_dict={b: np.ones((1, 4)), c: np.ones((1, 4))})
         print("Result: ", f_val)
 
 

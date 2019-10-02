@@ -129,7 +129,7 @@ if __name__ == '__main__':
         type=str2bool,
         default=False,
         help='Enable the client')
-    rser.add_argument(
+    parser.add_argument(
         '--encrypt_data', type=str2bool, default=False, help='Encrypt data')
     parser.add_argument(
         '--backend',

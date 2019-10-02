@@ -40,17 +40,27 @@ To test the network using encrypted inputs, run
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
 python test.py --batch_size=1024 \
                --enable_client=no \
+               --backend=HE_SEAL \
+               --encrypt_data=yes
+```
+This runs inference on the Cryptonets network using the SEAL CKKS backend. Note, the client is *not* enabled, meaning the backend holds the secret and public keys. This should only be used for debugging, as it is *not* cryptographically secure.
+The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
+
+## HE_SEAL client
+To test the network with inputs from a client, first install the python client (https://github.com/NervanaSystems/he-transformer/tree/master/python). Then, in one terminal, run
+```bash
+source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
+cd $HE_TRANSFORMER/examples/MNIST/Cryptonets-Relu
+python test.py --enable_client=yes \
                --backend=HE_SEAL
 ```
-
-This runs inference on the Cryptonets network using the SEAL CKKS backend.
-The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
 
 In another terminal, run
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST
-python pyclient_mnist.py --batch_size=1024
+python pyclient_mnist.py --batch_size=1024 \
+                         --encrypt_data=yes
 ```
 
 # Debugging

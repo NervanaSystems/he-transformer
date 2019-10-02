@@ -100,6 +100,7 @@ void ngraph::he::HESealBackend::generate_context() {
 
 bool ngraph::he::HESealBackend::set_config(
     const std::map<std::string, std::string>& config, std::string& error) {
+  NGRAPH_HE_LOG(3) << "Setting config";
   for (const auto& config_opt : config) {
     // Check parameters to be provided by client
     std::string option = ngraph::to_lower(config_opt.second);
@@ -132,6 +133,9 @@ bool ngraph::he::HESealBackend::set_config(
 
   for (const auto& tensor_name : m_client_tensor_names) {
     NGRAPH_HE_LOG(3) << "Client tensor name " << tensor_name;
+  }
+  for (const auto& tensor_name : m_encrypted_tensor_names) {
+    NGRAPH_HE_LOG(3) << "Encrypted tensor name " << tensor_name;
   }
   return true;
 }
@@ -200,23 +204,13 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
 
   for (auto& param : function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Compiling function with parameter name "
-                     << param->get_name() << " (shape  "
-                     << join(param->get_shape(), "x") << ")";
+                     << param->get_name() << " (shape {"
+                     << join(param->get_shape(), "x") << "})";
 
     for (const auto& tag : param->get_provenance_tags()) {
       NGRAPH_HE_LOG(3) << "Tag " << tag;
     }
   }
-
-  auto param_originates_from_name = [](const ngraph::op::Parameter& param,
-                                       const std::string& name) {
-    if (param.get_name() == name) {
-      return true;
-    }
-    return std::any_of(param.get_provenance_tags().begin(),
-                       param.get_provenance_tags().end(),
-                       [&](const std::string& tag) { return tag == name; });
-  };
 
   for (const auto& name : get_client_tensor_names()) {
     bool matching_param = false;

@@ -215,6 +215,7 @@ void ngraph::he::HESealExecutable::server_setup() {
     proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
     ngraph::he::TCPMessage parms_message(std::move(proto_msg));
+    NGRAPH_HE_LOG(3) << "Server waiting until session started";
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     m_session_cond.wait(mlock,
                         std::bind(&HESealExecutable::session_started, this));
@@ -322,8 +323,9 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
       std::vector<uint64_t> shape{input_param->get_shape()};
       *proto_cipher_tensor->mutable_shape() = {shape.begin(), shape.end()};
 
-      NGRAPH_HE_LOG(1) << "Server setting inference shape "
-                       << ngraph::join(shape, "x");
+      std::string name;
+      NGRAPH_HE_LOG(1) << "Server setting inference tensor name " << name
+                       << ", with shape {" << ngraph::join(shape, "x") << "}";
 
       proto_cipher_tensor->set_name(input_param->get_name());
     }
@@ -460,32 +462,27 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
 
   const ParameterVector& input_parameters = get_parameters();
 
-  /// \brief Looks for a parameter which matching a given shape
-  // TODO: use provenance to track correct parameter by name
-  // instead of shape
-  /// \param[in] tensor_shape Shape to match against
+  /// \brief Looks for a parameter which matches a given tensor name
+  /// \param[in] tensor_name Tensor name to match against
   /// \param[out] matching_idx Will be populated if a match is found
   /// \returns Whether or not a matching parameter shape has been found
-  auto find_matching_parameter_index =
-      [&](const std::vector<uint64_t>& tensor_shape, size_t& matching_idx) {
-        for (size_t param_idx = 0; param_idx < input_parameters.size();
-             ++param_idx) {
-          const auto& parameter = input_parameters[param_idx];
+  auto find_matching_parameter_index = [&](const std::string& tensor_name,
+                                           size_t& matching_idx) {
+    NGRAPH_HE_LOG(5) << "Calling find_matching_parameter_index(" << tensor_name
+                     << ")";
+    for (size_t param_idx = 0; param_idx < input_parameters.size();
+         ++param_idx) {
+      const auto& parameter = input_parameters[param_idx];
 
-          std::vector<uint64_t> param_shape{parameter->get_shape().begin(),
-                                            parameter->get_shape().end()};
-          if (param_shape == tensor_shape) {
-            NGRAPH_HE_LOG(5)
-                << "Param shape {" << ngraph::join(param_shape, "x")
-                << "} matches at index " << param_idx;
-            matching_idx = param_idx;
-            return true;
-          }
-        }
-        NGRAPH_HE_LOG(5) << "Could not find tensor shape "
-                         << ngraph::join(tensor_shape, "x");
-        return false;
-      };
+      if (param_originates_from_name(*parameter, tensor_name)) {
+        NGRAPH_HE_LOG(5) << "Param " << tensor_name << "matches at index "
+                         << param_idx;
+        return true;
+      }
+    }
+    NGRAPH_HE_LOG(5) << "Could not find tensor " << tensor_name;
+    return false;
+  };
 
   if (cipher_input) {
     he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
@@ -499,9 +496,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
 
     NGRAPH_HE_LOG(5) << "Offset " << cipher_tensor.offset();
 
-    std::vector<uint64_t> tensor_shape{cipher_tensor.shape().begin(),
-                                       cipher_tensor.shape().end()};
-
     std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
         he_cipher_inputs(count);
 #pragma omp parallel for
@@ -513,9 +507,9 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
 
     // Write ciphers to client inputs
     size_t param_idx;
-    NGRAPH_CHECK(find_matching_parameter_index(tensor_shape, param_idx),
-                 "Could not find matching parameter shape ",
-                 ngraph::join(tensor_shape, "x"));
+    NGRAPH_CHECK(find_matching_parameter_index(cipher_tensor.name(), param_idx),
+                 "Could not find matching parameter name ",
+                 cipher_tensor.name());
     const auto& input_param = input_parameters[param_idx];
     if (m_client_inputs[param_idx] == nullptr) {
       m_client_inputs[param_idx] =
@@ -550,8 +544,6 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
         ngraph::he::HETensor::batch_size(shape, plain_tensor.packed()));
 
     size_t count = plain_tensor.plaintexts_size();
-    std::vector<uint64_t> tensor_shape{plain_tensor.shape().begin(),
-                                       plain_tensor.shape().end()};
 
     // Load tensor plaintexts
     // TODO: separate function
@@ -564,9 +556,9 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
 
     // Write plaintexts to client inputs
     size_t param_idx;
-    NGRAPH_CHECK(find_matching_parameter_index(tensor_shape, param_idx),
-                 "Could not find matching parameter shape ",
-                 ngraph::join(tensor_shape, "x"));
+    NGRAPH_CHECK(find_matching_parameter_index(plain_tensor.name(), param_idx),
+                 "Could not find matching parameter name ",
+                 plain_tensor.name());
     if (m_client_inputs[param_idx] == nullptr) {
       const auto& input_param = input_parameters[param_idx];
       m_client_inputs[param_idx] =

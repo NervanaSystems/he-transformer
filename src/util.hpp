@@ -202,13 +202,14 @@ map_to_double_map(
   std::unordered_map<std::string, std::pair<std::string, std::vector<double>>>
       outputs;
 
+  NGRAPH_INFO << "Map to double map";
   for (const auto& elem : inputs) {
     std::vector<double> double_inputs{elem.second.second.begin(),
                                       elem.second.second.end()};
-
     outputs.insert(
         {elem.first, std::make_pair(elem.second.first, double_inputs)});
   }
+  NGRAPH_INFO << "returning from Map to double map";
   return outputs;
 }
 
@@ -224,6 +225,16 @@ inline ngraph::Shape proto_shape_to_ngraph_shape(
   auto proto_shape = tensor.shape();
   std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
   return ngraph::Shape{dims};
+}
+
+inline bool param_originates_from_name(const ngraph::op::Parameter& param,
+                                       const std::string& name) {
+  if (param.get_name() == name) {
+    return true;
+  }
+  return std::any_of(param.get_provenance_tags().begin(),
+                     param.get_provenance_tags().end(),
+                     [&](const std::string& tag) { return tag == name; });
 }
 
 }  // namespace he
