@@ -85,8 +85,6 @@ def main(FLAGS):
     sess = tf.compat.v1.Session(config=config)
     graph_def = load_model(FLAGS.model)
 
-    print('node names', [n.name for n in graph_def.node])
-
     tf.import_graph_def(graph_def, name='')
 
     input_tensor = sess.graph.get_tensor_by_name('input:0')
