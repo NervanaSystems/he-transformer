@@ -219,7 +219,6 @@ void ngraph::he::HESealClient::handle_inference_request(
     for (const auto& cipher_tensor_proto : cipher_tensor_protos) {
       he_proto::TCPMessage encrypted_inputs_msg;
       encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-
       *encrypted_inputs_msg.add_cipher_tensors() = cipher_tensor_proto;
 
       auto param_shape = encrypted_inputs_msg.cipher_tensors(0).shape();

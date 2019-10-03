@@ -153,17 +153,16 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
 
   std::string json_config_str = config;
   if (ngraph::file_util::exists(config)) {
-    std::string json_config_str =
-        ngraph::file_util::read_file_to_string(config);
+    json_config_str = ngraph::file_util::read_file_to_string(config);
   }
 
   try {
     // Parse json
     nlohmann::json js = nlohmann::json::parse(json_config_str);
-    std::string parsed_scheme_name = js["scheme_name"];
+    std::string scheme_name = js["scheme_name"];
 
-    NGRAPH_CHECK(parsed_scheme_name == "HE_SEAL", "Parsed scheme name ",
-                 parsed_scheme_name, " is not HE_SEAL");
+    NGRAPH_CHECK(scheme_name == "HE_SEAL", "Parsed scheme name ", scheme_name,
+                 " is not HE_SEAL");
 
     uint64_t poly_modulus_degree = js["poly_modulus_degree"];
     uint64_t security_level = js["security_level"];
@@ -183,7 +182,7 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
       complex_packing = js["complex_packing"];
     }
 
-    auto params = HESealEncryptionParameters("HE_SEAL", poly_modulus_degree,
+    auto params = HESealEncryptionParameters(scheme_name, poly_modulus_degree,
                                              coeff_mod_bits, security_level,
                                              scale, complex_packing);
 
@@ -191,7 +190,8 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
 
   } catch (const std::exception& e) {
     std::stringstream ss;
-    ss << "Error creating encryption parameters: " << e.what();
+    ss << "Error creating encryption parameter from string " << json_config_str
+       << ": " << e.what();
     throw ngraph::ngraph_error(ss.str());
   }
 }

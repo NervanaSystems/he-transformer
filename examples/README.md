@@ -20,6 +20,11 @@ For a simple demonstration of a server-client approach, run
 ```bash
 python ax.py --backend=HE_SEAL --enable_client=yes
 ```
+By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag, for example
+```bash
+--encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
+ ```
+
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
 
