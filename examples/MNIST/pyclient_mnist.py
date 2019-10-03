@@ -39,10 +39,6 @@ def test_mnist_cnn(FLAGS):
     client = pyhe_client.HESealClient(FLAGS.hostname, port, FLAGS.batch_size,
                                       {'input': (encrypt_str, data)})
 
-    print('Sleeping until client is done')
-    while not client.is_done():
-        time.sleep(1)
-
     results = client.get_results()
     results = np.round(results, 2)
 

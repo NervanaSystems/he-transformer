@@ -323,9 +323,13 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
       std::vector<uint64_t> shape{input_param->get_shape()};
       *proto_cipher_tensor->mutable_shape() = {shape.begin(), shape.end()};
 
-      std::string name;
-      NGRAPH_HE_LOG(1) << "Server setting inference tensor name " << name
-                       << ", with shape {" << ngraph::join(shape, "x") << "}";
+      std::string name = (input_param->get_provenance_tags().size() > 0)
+                             ? *input_param->get_provenance_tags().begin()
+                             : input_param->get_name();
+
+      NGRAPH_HE_LOG(1) << "Server setting inference tensor name "
+                       << input_param->get_name() << ", with shape {"
+                       << ngraph::join(shape, "x") << "}";
 
       proto_cipher_tensor->set_name(input_param->get_name());
       proto_cipher_tensor->set_packed(m_pack_data);

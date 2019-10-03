@@ -24,25 +24,25 @@ cd $HE_TRANSFORMER/examples/MNIST/Cryptonets-Relu
 ## CPU
 To test the network using the CPU backend, run
 ```bash
-python test.py --batch_size=10 --enable_client=no --backend=CPU
+python test.py --batch_size=1024 --backend=CPU
 ```
 
 ## HE_SEAL plaintext
 To test the network using plaintext inputs (i.e. not encrypted), run
 ```bash
-python test.py --batch_size=10 --enable_client=no --backend=HE_SEAL
+python test.py --batch_size=1024 --backend=HE_SEAL
 ```
 This should just be used for debugging, since the data is not encrypted
 
 ## HE_SEAL encrypted
 To test the network using encrypted inputs, run
 ```bash
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
 python test.py --batch_size=1024 \
-               --enable_client=no \
                --backend=HE_SEAL \
-               --encrypt_data=yes
+               --encrypt_data=yes \
+               --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
 ```
+
 This runs inference on the Cryptonets network using the SEAL CKKS backend. Note, the client is *not* enabled, meaning the backend holds the secret and public keys. This should only be used for debugging, as it is *not* cryptographically secure.
 The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
 
@@ -52,7 +52,8 @@ To test the network with inputs from a client, first install the python client (
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST/Cryptonets-Relu
 python test.py --enable_client=yes \
-               --backend=HE_SEAL
+               --backend=HE_SEAL \
+               --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
 ```
 
 In another terminal, run
@@ -61,26 +62,4 @@ source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST
 python pyclient_mnist.py --batch_size=1024 \
                          --encrypt_data=yes
-```
-
-# Debugging
-For debugging purposes, you can omit the use of the client.
-This will perform non-linear layers on the server, which stores the public and secret keys. Note, this is not a valid security model, and is used only for debugging.
-
-```bash
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-python test.py --batch_size=1024
-```
-
-# Complex packing
-For models with no ciphertext-ciphertext multiplication, use the `NGRAPH_COMPLEX_PACK=1` flag to double the capacity.
-As a rough guideline, the `NGRAPH_COMPLEX_PACK` flag is suitable when the model does not contain polynomial activations,
-and when either the model or data remains unencrypted.
-
-Using the `NGRAPH_COMPLEX_PACK` flag, we double the capacity to 2048, doubling the throughput.
-
-```bash
-NGRAPH_COMPLEX_PACK=1 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-python test.py --batch_size=2048
 ```

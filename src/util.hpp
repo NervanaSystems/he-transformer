@@ -202,14 +202,12 @@ map_to_double_map(
   std::unordered_map<std::string, std::pair<std::string, std::vector<double>>>
       outputs;
 
-  NGRAPH_INFO << "Map to double map";
   for (const auto& elem : inputs) {
     std::vector<double> double_inputs{elem.second.second.begin(),
                                       elem.second.second.end()};
     outputs.insert(
         {elem.first, std::make_pair(elem.second.first, double_inputs)});
   }
-  NGRAPH_INFO << "returning from Map to double map";
   return outputs;
 }
 

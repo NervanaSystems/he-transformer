@@ -224,9 +224,6 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     bool matching_param = false;
     bool has_tag = false;
     for (auto& param : function->get_parameters()) {
-      NGRAPH_HE_LOG(3) << "Compiling function with parameter name "
-                       << param->get_name() << " (shape  "
-                       << join(param->get_shape(), "x") << ")";
       has_tag |= (param->get_provenance_tags().size() != 0);
 
       if (param_originates_from_name(*param, name)) {

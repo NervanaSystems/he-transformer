@@ -61,7 +61,7 @@ def cryptonets_test_squashed(x):
 def test_mnist_cnn(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
+    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1], name='input')
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
