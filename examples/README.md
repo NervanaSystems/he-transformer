@@ -40,12 +40,9 @@ The server-client approach currently works only for functions with one result te
 For a deep learning example using the client-server model, see the `MNIST/MLP` folder.
 
 # List of command-line flags
-  * `NGRAPH_ENCRYPT_ALL_PARMS`. Set to 1 to encrypt all parameters in a model
-  * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model
+  * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model.
   * `NGRAPH_UNPACK_DATA`. Set to 1 to prevent SIMD packing along batch axis. ***Note***: For arbitrary computation that isn't packed along the batch axis, use `NGRAPH_UNPACK_DATA=1`.
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
-  * `NGRAPH_TF_BACKEND`. Set to `HE_SEAL` to use the HE backend. Set to `CPU` for inference on un-encrypted data
-  * `NGRAPH_COMPLEX_PACK`. Set to 1 to enable complex packing. For models with no ciphertext-ciphertext multiplication, this will double the capacity from `N/2` to `N`. As a rough guideline, this flag is suitable when the model does not contain polynomial activations, and when either the model or data remains unencrypted
   * `OMP_NUM_THREADS`. Set to 1 to enable single-threaded execution (useful for debugging). For best multi-threaded performance, this number should be tuned.
   * `NGRAPH_HE_SEAL_CONFIG`. Used to specify the encryption parameters filename. If no value is passed, a small parameter choice will be used. ***Warning***: the default parameter selection does not enforce any security level. The configuration file should be of the form:
     ```bash
@@ -59,7 +56,8 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
         22,
         30
       ],
-      "scale": 4194304
+      "scale": 4194304,
+      "complex_packing": true,
     }
     ```
     - `scheme_name` should always be "HE_SEAL".
@@ -67,6 +65,7 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
     - `security_level` should be in {0, 128, 192, 256}. Note: a security level of 0 indicates the HE backend will *not* enforce a minimum security level. This means the encryption is not secure against attacks.
     - `coeff_modulus` should be a list of integers in [1,60]. This indicates the bit-widths of the coefficient moduli used. ***Note***: The number of coefficient moduli should be at least the multiplicative depth of your model between non-polynomial layers.
     - `scale` is the scale at which number are encoded; `log2(scale)` represents roughly the fixed-bit precision of the encoding. If no scale is passes, the second-to-last coeffcient modulus is used.
+    - `complex_packing` specifies whether or not to double the capacity (i.e. maximum batch size) by packing two scalars `(a,b)` in a complex number `a+bi`. Typically, the capacity is `poly_modulus_degree/2`. Enabling complex packing doubles the capacity to `poly_modulus_degree`. Note: enabling `complex_packing` will reduce the performance of ciphertext-ciphertext multiplication.
   * `NAIVE_RESCALING`. For comparison purposes only. No need to enable.
   * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`. *Note*, `NGRAPH_HE_LOG_LEVEL` should be set to at least 3 when using `NGRAPH_VOPS`
   * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly;
