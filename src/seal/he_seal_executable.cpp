@@ -103,9 +103,10 @@ ngraph::he::HESealExecutable::HESealExecutable(
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
+  m_function = clone_function(*function);
 
   NGRAPH_HE_LOG(3) << "Creating Executable";
-  for (const auto& param : function->get_parameters()) {
+  for (const auto& param : m_function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (has_he_annotatation(*param)) {
       std::string from_client_str = from_client(*param) ? "" : "not ";
@@ -136,30 +137,34 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   NGRAPH_HE_LOG(3) << "Running optimization passes";
   ngraph::pass::Manager pass_manager;
+  pass_manager.set_pass_visualization(false);
+  pass_manager.set_pass_serialization(true);
+
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
   pass_manager.register_pass<ngraph::pass::CoreFusion>();
   if (!m_stop_const_fold) {
-    NGRAPH_HE_LOG(4) << "Running constant folding pass";
+    NGRAPH_HE_LOG(4) << "Registering constant folding pass";
     pass_manager.register_pass<ngraph::pass::ConstantFolding>();
   }
 
-  pass_manager.set_pass_visualization(true);
-  pass_manager.set_pass_serialization(true);
+  NGRAPH_HE_LOG(4) << "Running passes";
+  pass_manager.run_passes(m_function);
 
-  pass_manager.run_passes(function);
   ngraph::pass::Manager pass_manager_he;
+  pass_manager_he.set_pass_visualization(false);
+  pass_manager_he.set_pass_serialization(true);
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
   pass_manager_he.register_pass<ngraph::he::pass::SupportedOps>(
       [this](const ngraph::Node& op) {
         return m_he_seal_backend.is_supported(op);
       });
-  pass_manager_he.run_passes(function);
+  pass_manager_he.run_passes(m_function);
   m_is_compiled = true;
   NGRAPH_HE_LOG(3) << "Done running optimization passes";
 
-  for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
+  for (const std::shared_ptr<Node>& node : m_function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
 
     NGRAPH_HE_LOG(5) << "Node " << node->get_name();
@@ -169,7 +174,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   }
 
   NGRAPH_HE_LOG(3) << "Setting parameters and results";
-  set_parameters_and_results(*function);
+  set_parameters_and_results(*m_function);
 }
 
 void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {

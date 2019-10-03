@@ -235,6 +235,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_encrypt_model;
   bool m_pack_data;
   bool m_is_compiled;
+  std::shared_ptr<Function> m_function;
   bool m_verbose_all_ops;
 
   bool m_sent_inference_shape{false};
