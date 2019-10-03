@@ -406,6 +406,8 @@ void ngraph::he::HESealExecutable::handle_message(
   NGRAPH_HE_LOG(3) << "Server handling message";
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_public_key()) {
@@ -447,6 +449,7 @@ void ngraph::he::HESealExecutable::handle_message(
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
+#pragma clang diagnostic pop
 }
 
 void ngraph::he::HESealExecutable::handle_client_ciphers(
@@ -597,8 +600,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
                      << "] = " << m_client_load_idx[param_idx];
   }
 
-  auto done_loading = [this]() {
-    const ParameterVector& input_parameters = get_parameters();
+  auto done_loading = [&]() {
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
       if (from_client(*param)) {
@@ -1641,7 +1643,6 @@ void ngraph::he::HESealExecutable::generate_calls(
           } else {
             NGRAPH_WARN << "Performing Relu without client is not "
                            "privacy-preserving";
-            size_t output_size = cipher_args[0]->get_batched_element_count();
             NGRAPH_CHECK(output_size == cipher_args[0]->num_ciphertexts(),
                          "output size ", output_size,
                          " doesn't match number of elements",

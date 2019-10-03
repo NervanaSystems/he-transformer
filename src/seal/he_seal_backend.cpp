@@ -207,8 +207,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   auto from_client_annotation =
       std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
 
-  NGRAPH_INFO << "Compiling function with " << function->get_parameters().size()
-              << " parameters";
+  NGRAPH_HE_LOG(1) << "Compiling function with "
+                   << function->get_parameters().size() << " parameters";
 
   for (auto& param : function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Compiling function with parameter name "

@@ -277,7 +277,6 @@ class HESealExecutable : public runtime::Executable {
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
   size_t m_relu_done_count;
-  size_t m_relu_idx_offset{0};
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when max_pool is done

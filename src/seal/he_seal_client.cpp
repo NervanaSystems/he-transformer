@@ -222,7 +222,6 @@ void ngraph::he::HESealClient::handle_inference_request(
       *encrypted_inputs_msg.add_cipher_tensors() = cipher_tensor_proto;
 
       auto param_shape = encrypted_inputs_msg.cipher_tensors(0).shape();
-      ngraph::Shape shape{param_shape.begin(), param_shape.end()};
       NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape {"
                        << ngraph::join(param_shape, "x") << "}";
 
@@ -245,7 +244,6 @@ void ngraph::he::HESealClient::handle_inference_request(
       *inputs_msg.add_plain_tensors() = plain_tensor_proto;
 
       auto param_shape = inputs_msg.plain_tensors(0).shape();
-      ngraph::Shape shape{param_shape.begin(), param_shape.end()};
       NGRAPH_HE_LOG(3) << "Client sending plaintext input with shape "
                        << ngraph::join(param_shape, "x");
 
@@ -444,6 +442,8 @@ void ngraph::he::HESealClient::handle_message(
 
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
   switch (proto_msg->type()) {
     case he_proto::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_encryption_parameters()) {
@@ -482,6 +482,7 @@ void ngraph::he::HESealClient::handle_message(
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
+#pragma clang diagnostic pop
 }
 
 void ngraph::he::HESealClient::close_connection() {

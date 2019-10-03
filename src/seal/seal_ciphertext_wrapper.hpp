@@ -44,41 +44,41 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
 /// \param[in] cipher Ciphertext to write
 /// \param[out] destination Where to save ciphertext to
 inline void save(const seal::Ciphertext& cipher, void* destination) {
-  {
-    static constexpr std::array<size_t, 6> offsets = {
-        sizeof(seal::parms_id_type),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            2 * sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            3 * sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            3 * sizeof(uint64_t) + sizeof(double),
-    };
+  static constexpr std::array<size_t, 6> offsets = {
+      sizeof(seal::parms_id_type),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          2 * sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          3 * sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          3 * sizeof(uint64_t) + sizeof(double),
+  };
 
-    bool is_ntt_form = cipher.is_ntt_form();
-    uint64_t size = cipher.size();
-    uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
-    uint64_t coeff_mod_count = cipher.coeff_mod_count();
+  bool is_ntt_form = cipher.is_ntt_form();
+  uint64_t size = cipher.size();
+  uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
+  uint64_t coeff_mod_count = cipher.coeff_mod_count();
 
-    char* dst_char = static_cast<char*>(destination);
-    std::memcpy(destination, (void*)&cipher.parms_id(),
-                sizeof(seal::parms_id_type));
-    std::memcpy(static_cast<void*>(dst_char + offsets[0]), (void*)&is_ntt_form,
-                sizeof(seal::SEAL_BYTE));
-    std::memcpy(static_cast<void*>(dst_char + offsets[1]), (void*)&size,
-                sizeof(uint64_t));
-    std::memcpy(static_cast<void*>(dst_char + offsets[2]),
-                (void*)&polynomial_modulus_degree, sizeof(uint64_t));
-    std::memcpy(static_cast<void*>(dst_char + offsets[3]),
-                (void*)&coeff_mod_count, sizeof(uint64_t));
-    std::memcpy(static_cast<void*>(dst_char + offsets[4]),
-                (void*)&cipher.scale(), sizeof(double));
-    std::memcpy(static_cast<void*>(dst_char + offsets[5]), (void*)cipher.data(),
-                8 * cipher.uint64_count());
-  }
+  char* dst_char = static_cast<char*>(destination);
+  std::memcpy(destination,
+              const_cast<void*>(static_cast<const void*>(&cipher.parms_id())),
+              sizeof(seal::parms_id_type));
+  std::memcpy(static_cast<void*>(dst_char + offsets[0]),
+              static_cast<void*>(&is_ntt_form), sizeof(seal::SEAL_BYTE));
+  std::memcpy(static_cast<void*>(dst_char + offsets[1]),
+              static_cast<void*>(&size), sizeof(uint64_t));
+  std::memcpy(static_cast<void*>(dst_char + offsets[2]),
+              static_cast<void*>(&polynomial_modulus_degree), sizeof(uint64_t));
+  std::memcpy(static_cast<void*>(dst_char + offsets[3]),
+              static_cast<void*>(&coeff_mod_count), sizeof(uint64_t));
+  std::memcpy(static_cast<void*>(dst_char + offsets[4]),
+              const_cast<void*>(static_cast<const void*>(&cipher.scale())),
+              sizeof(double));
+  std::memcpy(
+      const_cast<void*>(static_cast<const void*>(dst_char + offsets[5])),
+      static_cast<const void*>(cipher.data()), 8 * cipher.uint64_count());
 }
 
 /// \brief Loads a serialized ciphertext

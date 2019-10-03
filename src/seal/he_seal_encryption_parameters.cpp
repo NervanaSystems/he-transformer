@@ -106,6 +106,18 @@ void HESealEncryptionParameters::validate_parameters() const {
   // TODO: validate scale is reasonable
 }
 
+bool HESealEncryptionParameters::operator==(
+    const HESealEncryptionParameters& other) const {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfloat-equal"
+  return (other.m_scheme_name == m_scheme_name) &&
+         (other.m_seal_encryption_parameters == m_seal_encryption_parameters) &&
+         (other.m_security_level == m_security_level) &&
+         (other.m_scale == m_scale) &&
+         (other.m_complex_packing == m_complex_packing);
+#pragma clang diagnostic pop
+}
+
 bool HESealEncryptionParameters::same_context(
     const HESealEncryptionParameters& parms1,
     const HESealEncryptionParameters& parms2) {

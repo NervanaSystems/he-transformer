@@ -80,14 +80,9 @@ class HESealEncryptionParameters {
   static HESealEncryptionParameters parse_config_or_use_default(
       const char* config);
 
-  inline bool operator==(const HESealEncryptionParameters& other) {
-    return (other.m_scheme_name == m_scheme_name) &&
-           (other.m_seal_encryption_parameters ==
-            m_seal_encryption_parameters) &&
-           (other.m_security_level == m_security_level) &&
-           (other.m_scale == m_scale) &&
-           (other.m_complex_packing == m_complex_packing);
-  }
+  /// \brief Returns whether or not all fields match
+  /// \param[in] other Encryption parameters to compare against
+  bool operator==(const HESealEncryptionParameters& other) const;
 
   /// \brief Returns whether or not two encryption parameters differ in such a
   /// way they can use the same SEAL context

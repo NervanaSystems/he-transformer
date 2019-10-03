@@ -38,7 +38,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   TCPSession(tcp::socket socket,
              std::function<void(const ngraph::he::TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
-        m_writing(false),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
   /// \brief Start the session
@@ -135,7 +134,6 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   data_buffer m_read_buffer;
   data_buffer m_write_buffer;
   tcp::socket m_socket;
-  bool m_writing;
   std::condition_variable m_is_writing;
   std::mutex m_write_mtx;
 
