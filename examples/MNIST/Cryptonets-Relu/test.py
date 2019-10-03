@@ -33,9 +33,12 @@ from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid, str2bool
-
-FLAGS = None
+from mnist_util import load_mnist_data, \
+                       get_variable, \
+                       conv2d_stride_2_valid, \
+                       str2bool, \
+                       server_argument_parser, \
+                       client_config_from_flags
 
 
 def cryptonets_relu_test_squashed(x):
@@ -74,29 +77,7 @@ def test_cryptonets_relu(FLAGS):
     # Create the model
     y_conv = cryptonets_relu_test_squashed(x)
 
-    rewriter_options = rewriter_config_pb2.RewriterConfig()
-    rewriter_options.meta_optimizer_iterations = (
-        rewriter_config_pb2.RewriterConfig.ONE)
-    rewriter_options.min_graph_nodes = -1
-    client_config = rewriter_options.custom_optimizers.add()
-    client_config.name = "ngraph-optimizer"
-    client_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
-    client_config.parameter_map["device_id"].s = b''
-
-    # Create configuration to encrypt parameter
-    client_config.parameter_map['enable_client'].s = (str(
-        FLAGS.enable_client)).encode()
-    if FLAGS.enable_client:
-        client_config.parameter_map[x.name].s = b'client_input'
-    elif FLAGS.encrypt_data:
-        client_config.parameter_map[x.name].s = b'encrypt'
-
-    config = tf.compat.v1.ConfigProto()
-    config.MergeFrom(
-        tf.compat.v1.ConfigProto(
-            graph_options=tf.compat.v1.GraphOptions(
-                rewrite_options=rewriter_options)))
-
+    config = client_config_from_flags(FLAGS, x.name)
     print('config', config)
 
     with tf.compat.v1.Session(config=config) as sess:
@@ -122,21 +103,7 @@ def test_cryptonets_relu(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-    parser.add_argument(
-        '--enable_client',
-        type=str2bool,
-        default=False,
-        help='Enable the client')
-    parser.add_argument(
-        '--encrypt_data', type=str2bool, default=False, help='Encrypt data')
-    parser.add_argument(
-        '--backend',
-        type=str,
-        default='HE_SEAL',
-        help='Name of backend to use')
-
+    parser = server_argument_parser()
     FLAGS, unparsed = parser.parse_known_args()
 
     if unparsed:

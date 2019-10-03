@@ -32,9 +32,12 @@ from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
-
-FLAGS = None
+from mnist_util import load_mnist_data, \
+                       get_variable, \
+                       conv2d_stride_2_valid, \
+                       str2bool, \
+                       server_argument_parser, \
+                       client_config_from_flags
 
 
 def cryptonets_test_squashed(x):
@@ -64,22 +67,7 @@ def test_mnist_cnn(FLAGS):
     # Create the model
     y_conv = cryptonets_test_squashed(x)
 
-    # Create configuration to encrypt data
-    rewriter_options = rewriter_config_pb2.RewriterConfig()
-    rewriter_options.meta_optimizer_iterations = (
-        rewriter_config_pb2.RewriterConfig.ONE)
-    rewriter_options.min_graph_nodes = -1
-    ngraph_optimizer = rewriter_options.custom_optimizers.add()
-    ngraph_optimizer.name = "ngraph-optimizer"
-    ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
-    ngraph_optimizer.parameter_map["device_id"].s = b''
-    ngraph_optimizer.parameter_map[x.name].s = b'encrypt'
-
-    config = tf.compat.v1.ConfigProto()
-    config.MergeFrom(
-        tf.compat.v1.ConfigProto(
-            graph_options=tf.compat.v1.GraphOptions(
-                rewrite_options=rewriter_options)))
+    config = client_config_from_flags(FLAGS, x.name)
 
     print('config', config)
 
@@ -103,8 +91,14 @@ def test_mnist_cnn(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-
+    parser = server_argument_parser()
     FLAGS, unparsed = parser.parse_known_args()
+
+    if unparsed:
+        print('Unparsed flags:', unparsed)
+    if FLAGS.encrypt_data and FLAGS.enable_client:
+        raise Exception(
+            "encrypt_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
+        )
+
     test_mnist_cnn(FLAGS)

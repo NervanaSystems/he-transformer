@@ -13,8 +13,9 @@ This trains the network briefly and stores the network weights.
 ## Python
 To test the network, with encrypted data,
 ```
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N13_L7.json \
-python test.py --batch_size=4096
+python test.py --batch_size=4096 \
+               --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N13_L7.json
+               --encrypt_data=True
 ```
 
 This runs inference on the Cryptonets network using the SEAL CKKS backend.
