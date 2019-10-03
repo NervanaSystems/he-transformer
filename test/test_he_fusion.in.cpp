@@ -164,3 +164,36 @@ NGRAPH_TEST(${BACKEND_NAME}, const_broadcast_add_3) {
     NGRAPH_INFO << "node " << node->get_name();
   }
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, mobilenet_v2) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  std::string filename = std::string(std::getenv("MOBILENET_V2_FILE"));
+
+  NGRAPH_INFO << "Reading from filename " << filename;
+
+  std::string model = ngraph::file_util::read_file_to_string(filename);
+
+  NGRAPH_INFO << "Loaded model string size " << model.size();
+
+  NGRAPH_INFO << "f starts with " << model.substr(0, 1000);
+
+  auto f = deserialize(model);
+
+  NGRAPH_INFO << "Deserialized model";
+
+  NGRAPH_INFO << "Nodes before compiling " << f->get_ordered_ops().size();
+  /* for (const auto& node : f->get_ordered_ops()) {
+    NGRAPH_INFO << "node " << node->get_name();
+  } */
+
+  // Includes result op
+
+  auto handle = backend->compile(f);
+
+  NGRAPH_INFO << "Nodes after compiling " << f->get_ordered_ops().size();
+  /* for (const auto& node : f->get_ordered_ops()) {
+    NGRAPH_INFO << "node " << node->get_name();
+  } */
+}

@@ -137,7 +137,7 @@ ngraph::he::HESealExecutable::HESealExecutable(
   NGRAPH_HE_LOG(3) << "Running optimization passes";
   ngraph::pass::Manager pass_manager;
   pass_manager.set_pass_visualization(false);
-  pass_manager.set_pass_serialization(true);
+  pass_manager.set_pass_serialization(false);
 
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
   pass_manager.register_pass<ngraph::pass::AssignLayout<DenseTensorLayout>>();
@@ -152,14 +152,14 @@ ngraph::he::HESealExecutable::HESealExecutable(
 
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.set_pass_visualization(false);
-  pass_manager_he.set_pass_serialization(true);
+  pass_manager_he.set_pass_serialization(false);
   pass_manager_he.register_pass<ngraph::he::pass::HEFusion>();
   pass_manager_he.register_pass<ngraph::he::pass::HELiveness>();
-  pass_manager_he.register_pass<ngraph::he::pass::SupportedOps>(
+  /*pass_manager_he.register_pass<ngraph::he::pass::SupportedOps>(
       [this](const ngraph::Node& op) {
         return m_he_seal_backend.is_supported(op);
       });
-  pass_manager_he.run_passes(function);
+  pass_manager_he.run_passes(function); */
   m_is_compiled = true;
   NGRAPH_HE_LOG(3) << "Done running optimization passes";
 
