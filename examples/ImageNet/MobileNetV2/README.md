@@ -61,21 +61,23 @@ For the remaining instructions, run```bash
 export DATA_DIR=path_to_your_data_dir
 ```
 
-4. To run inference using TensorFlow on unencrypted data, call
+## CPU backend
+To run inference using the CPU backend on unencrypted data, call
 ```bash
 python test.py \
   --data_dir=$DATA_DIR \
-  --batch_size=300
+  --batch_size=300 \
+  --backend=CPU
 ```
 
+##
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
-NGRAPH_TF_BACKEND=HE_SEAL \
 STOP_CONST_FOLD=1 \
 python test.py \
 --data_dir=$DATA_DIR \
---ngraph=true \
---batch_size=300
+--batch_size=300 \
+--backend=HE_SEAL
 ```
 Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
 For large batch sizes, const folding incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
