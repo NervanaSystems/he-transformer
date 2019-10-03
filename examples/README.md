@@ -1,5 +1,10 @@
 This example demonstrates a simple example of a small matrix multiplication and addition. This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with the ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
 
+The examples rely on numpy, so first run
+```bash
+pip install numpy
+```
+
 To run on the CKKS backend,
 ```bash
 python ax.py --backend=HE_SEAL
@@ -28,7 +33,7 @@ By default, the default encryption parameters will be used. To specify a non-def
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
 
-To start the client, in a separate terminal on the same host, run
+To start the client, in a separate terminal on the same host (with the ngraph-tf bridge python environment active), run
 ```bash
 python pyclient.py
 ```

@@ -14,6 +14,11 @@ source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 ```
 Also ensure the `pyhe_client` wheel has been installed (see `python` folder for instructions).
 
+The examples rely on numpy and pillow, so run
+```bash
+pip install numpy pillow
+```
+
 2. Build Tensorflow graph transforms and add them to your path:
 
 To build run:
@@ -30,11 +35,6 @@ export PATH=$HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/te
 3. To download the models and optimize for inference, call
 ```bash
 python get_models.py
-```
-
-4. To enable image processing, run
-```bash
-pip install pillow
 ```
 
 # Image-Net evaluation

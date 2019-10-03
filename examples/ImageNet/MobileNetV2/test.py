@@ -31,9 +31,8 @@ from util import get_imagenet_inference_labels, \
                  get_validation_image, \
                  get_validation_images, \
                  get_validation_labels, \
-                 str2bool
-
-FLAGS = None
+                 str2bool, \
+                 server_argument_parser
 
 
 def print_nodes(filename):
@@ -124,7 +123,7 @@ def main(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = server_argument_parser()
     parser.add_argument(
         '--data_dir',
         type=str,
@@ -161,7 +160,6 @@ if __name__ == '__main__':
         help='crop to this size before resizing to image_size')
     parser.add_argument(
         '--ngraph', type=str2bool, default=False, help='use ngraph backend')
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
     parser.add_argument(
         '--start_batch', type=int, default=0, help='Test data start index')
 
