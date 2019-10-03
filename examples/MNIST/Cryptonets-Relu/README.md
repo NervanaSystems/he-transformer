@@ -1,9 +1,7 @@
 This example demonstrates a simple CNN, which achieves ~98% on MNIST.
 The architecture uses MaxPool and ReLU activations.
 
-Since it is impossible to perform ReLU using homomorphic encryption, this model will only run when `NGRAPH_ENABLE_CLIENT=1`. The client will send encrypted data to the server. To perform the ReLU/Maxpool layer, the encrypted data is sent to the client, which decrypts, performs the ReLU/Maxpool, re-encrypts and sends the post-ReLU/Maxpool ciphertexts back to the server.
-
-***Note***: the client is an experimental feature and currently uses a large amount of memory. For a better experience, see the `Debugging` section below.
+Since it is not possible to date to perform ReLU using the CKKS homomorphic encryption, this model will only run with the help of a client. The client will send encrypted data to the server. To perform the ReLU/Maxpool layer, the encrypted data is sent to the client, which decrypts, performs the ReLU/Maxpool, re-encrypts and sends the post-ReLU/Maxpool ciphertexts back to the server.
 
 This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`. Also ensure the `pyhe_client` wheel has been installed (see `python` folder for instructions).
 

@@ -35,9 +35,12 @@ from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
-
-FLAGS = None
+from mnist_util import load_mnist_data, \
+                       get_variable, \
+                       conv2d_stride_2_valid, \
+                       str2bool, \
+                       server_argument_parser, \
+                       client_config_from_flags
 
 
 def load_pb_file(filename):
@@ -61,28 +64,9 @@ def test_mnist_mlp(FLAGS):
         y_conv = tf.compat.v1.get_default_graph().get_tensor_by_name(
             "import/output:0")
         x_input = tf.compat.v1.get_default_graph().get_tensor_by_name(
-            "import/Placeholder:0")
+            "import/input:0")
 
-        # Create configuration to encrypt data
-        rewriter_options = rewriter_config_pb2.RewriterConfig()
-        rewriter_options.meta_optimizer_iterations = (
-            rewriter_config_pb2.RewriterConfig.ONE)
-        rewriter_options.min_graph_nodes = -1
-        ngraph_optimizer = rewriter_options.custom_optimizers.add()
-        ngraph_optimizer.name = "ngraph-optimizer"
-        ngraph_optimizer.parameter_map["ngraph_backend"].s = b'HE_SEAL'
-        ngraph_optimizer.parameter_map["device_id"].s = b''
-        ngraph_optimizer.parameter_map[str(x_input)].s = b'encrypt'
-        ngraph_optimizer.parameter_map['enable_client'].s = (str(
-            FLAGS.enable_client)).encode()
-        ngraph_optimizer.parameter_map['complex_packing'].s = (str(
-            FLAGS.complex_packing)).encode()
-
-        config = tf.compat.v1.ConfigProto()
-        config.MergeFrom(
-            tf.compat.v1.ConfigProto(
-                graph_options=tf.compat.v1.GraphOptions(
-                    rewrite_options=rewriter_options)))
+        config = client_config_from_flags(FLAGS, x_input.name)
 
         print('config', config)
 
@@ -95,9 +79,7 @@ def test_mnist_mlp(FLAGS):
             elasped_time = (time.time() - start_time)
             print("total time(s)", np.round(elasped_time, 3))
 
-    using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
-
-    if not using_client:
+    if not FLAGS.enable_client:
         y_test_batch = y_test[:FLAGS.batch_size]
         y_label_batch = np.argmax(y_test_batch, 1)
 
@@ -112,15 +94,14 @@ def test_mnist_mlp(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-    parser.add_argument(
-        '--enable_client', type=bool, default=False, help='Enable the client')
-    parser.add_argument(
-        '--complex_packing',
-        type=bool,
-        default=False,
-        help='Whether or not to use complex packing')
-
+    parser = server_argument_parser()
     FLAGS, unparsed = parser.parse_known_args()
+
+    if unparsed:
+        print('Unparsed flags:', unparsed)
+    if FLAGS.encrypt_data and FLAGS.enable_client:
+        raise Exception(
+            "encrypt_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
+        )
+
     test_mnist_mlp(FLAGS)

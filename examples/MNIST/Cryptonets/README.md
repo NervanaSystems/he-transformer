@@ -10,7 +10,6 @@ python train.py
 This trains the network briefly and stores the network weights.
 
 # Test the network
-## Python
 To test the network, with encrypted data,
 ```
 python test.py --batch_size=4096 \
@@ -18,5 +17,5 @@ python test.py --batch_size=4096 \
                --encrypt_data=True
 ```
 
-This runs inference on the Cryptonets network using the SEAL CKKS backend.
-The `he_seal_ckks_config_N13_L7.json` file specifies the parameters which to run the model on. Note: the batch size must be beweteen 1 and 4096.
+This runs inference on the Cryptonets network with encrypted data using the SEAL CKKS backend.
+See the [Cryptonets-Relu example](https://github.com/NervanaSystems/he-transformer/blob/master/examples/MNIST/Cryptonets-Relu/README.md) for more details and possible configurations to try.

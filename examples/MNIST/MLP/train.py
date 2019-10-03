@@ -76,7 +76,7 @@ def save_model(sess, directory, filename):
 def main(_):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
+    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1], name='input')
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
     y_conv = model.mnist_mlp_model(x)
 
