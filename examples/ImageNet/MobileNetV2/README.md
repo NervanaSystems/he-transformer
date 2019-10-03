@@ -1,10 +1,10 @@
 # MobileNet V2 example
 
 This folder demonstrates an example of inference on MobileNetV2.
-Note: this is a work in progress, and requires ~150GB memory.
+Note: this is a work in progress, and requires ~50GB memory.
 Runtime will be very slow without many cores.
 
-See here: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
+See https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
 for a description.
 
 # Setup
@@ -12,7 +12,7 @@ for a description.
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 ```
-Also be sure the `pyhe_client` wheel has been installed
+Also ensure the `pyhe_client` wheel has been installed (see `python` folder for instructions).
 
 2. Build Tensorflow graph transforms and add them to your path:
 
