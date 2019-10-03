@@ -14,11 +14,14 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/he_seal_encryption_parameters.hpp"
+#include <stdexcept>
+#include <unordered_set>
+
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/file_util.hpp"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_util.hpp"
 
 using namespace ngraph::he;
@@ -144,7 +147,7 @@ HESealEncryptionParameters HESealEncryptionParameters::load(
 
 HESealEncryptionParameters
 HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
-  if (config == nullptr) {
+  if (config == nullptr || strlen(config) == 0) {
     return HESealEncryptionParameters();
   }
 

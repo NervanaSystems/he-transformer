@@ -33,7 +33,7 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def client_config_from_flags(FLAGS):
+def client_config_from_flags(FLAGS, tensor_param_name):
     rewriter_options = rewriter_config_pb2.RewriterConfig()
     rewriter_options.meta_optimizer_iterations = (
         rewriter_config_pb2.RewriterConfig.ONE)
@@ -47,7 +47,7 @@ def client_config_from_flags(FLAGS):
     client_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
     if FLAGS.enable_client:
-        client_config.parameter_map[b.name].s = b'client_input'
+        client_config.parameter_map[tensor_param_name].s = b'client_input'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(
@@ -67,7 +67,7 @@ def main(FLAGS):
     f = (a + b) * a + c
 
     # Create config to load parameter b from client
-    config = client_config_from_flags(FLAGS)
+    config = client_config_from_flags(FLAGS, b.name)
     print('config', config)
 
     with tf.compat.v1.Session(config=config) as sess:

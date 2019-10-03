@@ -16,12 +16,9 @@
 
 #pragma once
 
-#include <cstdlib>
-#include <fstream>
-#include <memory>
-#include <ostream>
-#include <stdexcept>
-#include <unordered_set>
+#include <cstdint>
+#include <iostream>
+#include <string>
 
 #include "nlohmann/json.hpp"
 #include "seal/seal.h"
