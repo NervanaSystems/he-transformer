@@ -13,17 +13,9 @@ To test the network, in one terminal run
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST/MLP
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-python test.py --enable_client=yes
-```
-This runs inference on the Cryptonets network using the SEAL CKKS backend.
-The `he_seal_ckks_config_N11_L1.json` file specifies the parameters which to run the model on. Note: the batch size must be between 1 and 1024 = 2^(11)/2.
-
-In another terminal, run
-```bash
-source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-cd $HE_TRANSFORMER/examples/MNIST
-python pyclient_mnist.py --batch_size=1024
+python test.py --batch_size=100 \
+               --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
+               --encrypt_data=true
 ```
 
 See the [Cryptonets-Relu example](https://github.com/NervanaSystems/he-transformer/blob/master/examples/MNIST/Cryptonets-Relu/README.md) for more details and possible configurations to try.
