@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "ngraph/ngraph.hpp"
+#include "ngraph/pass/constant_folding.hpp"
 #include "op/bounded_relu.hpp"
 #include "pass/he_fusion.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -166,6 +167,57 @@ NGRAPH_TEST(${BACKEND_NAME}, const_broadcast_add_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mobilenet_v2) {
+  auto count_constant_ops = [](std::shared_ptr<ngraph::Function>& f) {
+    size_t count = 0;
+    for (const auto& op : f->get_ordered_ops()) {
+      if (op->is_constant()) {
+        count++;
+      }
+    }
+    return count;
+  };
+
+  auto count_power_ops = [](std::shared_ptr<ngraph::Function>& f) {
+    size_t count = 0;
+    for (const auto& op : f->get_ordered_ops()) {
+      if (auto power = std::dynamic_pointer_cast<ngraph::op::Power>(op)) {
+        count++;
+      }
+    }
+    return count;
+  };
+
+  auto count_add_ops = [](std::shared_ptr<ngraph::Function>& f) {
+    size_t count = 0;
+    for (const auto& op : f->get_ordered_ops()) {
+      if (auto power = std::dynamic_pointer_cast<ngraph::op::Add>(op)) {
+        count++;
+      }
+    }
+    return count;
+  };
+
+  auto count_sub_ops = [](std::shared_ptr<ngraph::Function>& f) {
+    size_t count = 0;
+    for (const auto& op : f->get_ordered_ops()) {
+      if (auto power = std::dynamic_pointer_cast<ngraph::op::Subtract>(op)) {
+        count++;
+      }
+    }
+    return count;
+  };
+
+  auto print_function_info = [&](std::shared_ptr<ngraph::Function>& f,
+                                 const std::string& description) {
+    NGRAPH_INFO << "\n" << description;
+    NGRAPH_INFO << "Constant count " << count_constant_ops(f);
+    NGRAPH_INFO << "Power count " << count_power_ops(f);
+    NGRAPH_INFO << "Add count " << count_add_ops(f);
+    NGRAPH_INFO << "Subtract count " << count_sub_ops(f);
+    NGRAPH_INFO << "Node count " << f->get_ordered_ops().size() << "\n";
+  };
+  //// . ===========
+
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
@@ -180,20 +232,18 @@ NGRAPH_TEST(${BACKEND_NAME}, mobilenet_v2) {
   NGRAPH_INFO << "f starts with " << model.substr(0, 1000);
 
   auto f = deserialize(model);
-
   NGRAPH_INFO << "Deserialized model";
+  print_function_info(f, "Before compiling");
 
-  NGRAPH_INFO << "Nodes before compiling " << f->get_ordered_ops().size();
-  /* for (const auto& node : f->get_ordered_ops()) {
-    NGRAPH_INFO << "node " << node->get_name();
-  } */
-
-  // Includes result op
-
+  // Compile
   auto handle = backend->compile(f);
+  print_function_info(f, "after compiling");
 
-  NGRAPH_INFO << "Nodes after compiling " << f->get_ordered_ops().size();
-  /* for (const auto& node : f->get_ordered_ops()) {
-    NGRAPH_INFO << "node " << node->get_name();
-  } */
+  // Run extra passes
+  ngraph::pass::Manager pass_manager;
+  pass_manager.register_pass<ngraph::pass::ConstantFolding>();
+  NGRAPH_INFO << "Running ConstantFolding pass";
+  pass_manager.run_passes(f);
+
+  print_function_info(f, "after ConstantFolding pass");
 }
