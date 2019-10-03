@@ -24,10 +24,13 @@
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
 #include "ngraph/util.hpp"
+#include "nlohmann/json.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
+
+using json = nlohmann::json;
 
 extern "C" ngraph::runtime::BackendConstructor*
 get_backend_constructor_pointer() {
@@ -102,26 +105,31 @@ bool ngraph::he::HESealBackend::set_config(
     const std::map<std::string, std::string>& config, std::string& error) {
   NGRAPH_HE_LOG(3) << "Setting config";
   for (const auto& config_opt : config) {
-    // Check parameters to be provided by client
-    std::string option = ngraph::to_lower(config_opt.second);
+    std::string option = ngraph::to_lower(config_opt.first);
+    std::string setting = config_opt.second;
+    std::string lower_setting = ngraph::to_lower(config_opt.second);
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
     std::string tensor_name =
         config_opt.first.substr(0, config_opt.first.find(":", 0));
 
-    if (option == "client_input") {
+    if (lower_setting == "client_input") {
       m_client_tensor_names.insert(tensor_name);
-    } else if (option == "encrypt") {
+    } else if (lower_setting == "encrypt") {
       m_encrypted_tensor_names.insert(tensor_name);
     }
 
     // Check whether client is enabled
-    if (ngraph::to_lower(config_opt.first) == "enable_client") {
-      bool client_enabled =
-          ngraph::he::flag_to_bool(config_opt.second.c_str(), false);
+    if (option == "enable_client") {
+      bool client_enabled = ngraph::he::flag_to_bool(setting.c_str(), false);
       if (client_enabled) {
         NGRAPH_HE_LOG(3) << "Enabling client from config";
         m_enable_client = true;
       }
+    } else if (option == "encryption_parameters") {
+      auto new_parms =
+          ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
+              setting.c_str());
+      update_encryption_parameters(new_parms);
     }
   }
 

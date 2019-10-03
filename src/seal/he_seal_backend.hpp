@@ -103,7 +103,10 @@ class HESealBackend : public ngraph::runtime::Backend {
   ///     3) {tensor_name : "encrypt"}, which indicates the specified
   ///     tensor should be encrypted. By default, tensors may or may not be
   ///     encrypted. Setting this option will encrypt the plaintext tensor of
-  ///     name tensor_name if not already encrypted.
+  ///     name tensor_name if not already encrypted and it is not a client
+  ///     input.
+  ///     4) {"encryption_parameters" : "filename or json string"}, which sets
+  ///     the encryption parameters to use.
   ///
   ///  \warning Specfying entries of form 1) without an entry of form 2) will
   ///  not load the tensors from the client

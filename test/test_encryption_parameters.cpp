@@ -92,3 +92,20 @@ TEST(encryption_parameters, save) {
   EXPECT_EQ(he_parms.seal_encryption_parameters(),
             loaded_parms.seal_encryption_parameters());
 }
+
+TEST(encryption_parameters, from_string) {
+  std::string config = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 2048,
+        "security_level" : 128,
+        "coeff_modulus" : [54],
+        "scale" : 1.23
+    })";
+  auto he_parms =
+      HESealEncryptionParameters::parse_config_or_use_default(config.c_str());
+
+  EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
+  EXPECT_EQ(he_parms.security_level(), 128);
+  EXPECT_EQ(he_parms.scale(), 1.23);
+}

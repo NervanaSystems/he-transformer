@@ -18,6 +18,7 @@
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
+#include "ngraph/file_util.hpp"
 #include "seal/seal_util.hpp"
 
 using namespace ngraph::he;
@@ -142,28 +143,20 @@ HESealEncryptionParameters HESealEncryptionParameters::load(
 }
 
 HESealEncryptionParameters
-HESealEncryptionParameters::parse_config_or_use_default(
-    const char* config_path) {
-  if (config_path == nullptr) {
+HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
+  if (config == nullptr) {
     return HESealEncryptionParameters();
   }
 
-  auto file_exists = [](const char* filename) {
-    std::ifstream f(filename);
-    return f.good();
-  };
-  NGRAPH_CHECK(file_exists(config_path), "Config path ", config_path,
-               " does not exist");
+  std::string json_config_str = config;
+  if (ngraph::file_util::exists(config)) {
+    std::string json_config_str =
+        ngraph::file_util::read_file_to_string(config);
+  }
 
   try {
-    // Read file to string
-    std::ifstream f(config_path);
-    std::stringstream ss;
-    ss << f.rdbuf();
-    std::string s = ss.str();
-
     // Parse json
-    nlohmann::json js = nlohmann::json::parse(s);
+    nlohmann::json js = nlohmann::json::parse(json_config_str);
     std::string parsed_scheme_name = js["scheme_name"];
 
     NGRAPH_CHECK(parsed_scheme_name == "HE_SEAL", "Parsed scheme name ",

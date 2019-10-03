@@ -33,15 +33,7 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def main(FLAGS):
-
-    a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
-    b = tf.compat.v1.placeholder(
-        tf.float32, shape=(1, 4), name='client_parameter_name')
-    c = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
-    f = (a + b) * a + c
-
-    # Create config to load parameter b from client
+def client_config_from_flags(FLAGS):
     rewriter_options = rewriter_config_pb2.RewriterConfig()
     rewriter_options.meta_optimizer_iterations = (
         rewriter_config_pb2.RewriterConfig.ONE)
@@ -50,6 +42,8 @@ def main(FLAGS):
     client_config.name = "ngraph-optimizer"
     client_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
     client_config.parameter_map["device_id"].s = b''
+    client_config.parameter_map[
+        "encryption_parameters"].s = FLAGS.encryption_parameters.encode()
     client_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
     if FLAGS.enable_client:
@@ -61,6 +55,19 @@ def main(FLAGS):
             graph_options=tf.compat.v1.GraphOptions(
                 rewrite_options=rewriter_options)))
 
+    return config
+
+
+def main(FLAGS):
+
+    a = tf.constant(np.array([[1, 2, 3, 4]]), dtype=np.float32)
+    b = tf.compat.v1.placeholder(
+        tf.float32, shape=(1, 4), name='client_parameter_name')
+    c = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
+    f = (a + b) * a + c
+
+    # Create config to load parameter b from client
+    config = client_config_from_flags(FLAGS)
     print('config', config)
 
     with tf.compat.v1.Session(config=config) as sess:
@@ -81,6 +88,13 @@ if __name__ == '__main__':
         type=str,
         default='HE_SEAL',
         help='Name of backend to use')
+    parser.add_argument(
+        '--encryption_parameters',
+        type=str,
+        default='',
+        help=
+        'Filename containing json description of encryption parameters, or json description itself'
+    )
 
     FLAGS, unparsed = parser.parse_known_args()
     main(FLAGS)

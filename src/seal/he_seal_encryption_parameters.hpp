@@ -76,12 +76,12 @@ class HESealEncryptionParameters {
 
   /// \brief Returns encryption parameters at given path if possible, or use
   /// default parameters
-  /// \param[in] config_path filename where configuration is
-  /// stored. If empty, uses default configuration
+  /// \param[in] config filename where configuration is stored, or contents of
+  /// filename with configuration. If empty, uses default configuration
   /// \throws ngraph_error if config_path is specified but does not exist
   /// \throws ngraph_error if encryption parameters are not valid
   static HESealEncryptionParameters parse_config_or_use_default(
-      const char* config_path);
+      const char* config);
 
   inline bool operator==(const HESealEncryptionParameters& other) {
     return (other.m_scheme_name == m_scheme_name) &&
