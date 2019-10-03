@@ -213,8 +213,8 @@ void ngraph::he::HESealClient::handle_inference_request(
         *m_ckks_encoder, *m_encryptor, complex_packing());
 
     std::vector<he_proto::SealCipherTensor> cipher_tensor_protos;
-    ngraph::he::HESealCipherTensor::save_to_proto(cipher_tensor_protos, ciphers,
-                                                  shape, "TODO");
+    ngraph::he::HESealCipherTensor::save_to_proto(
+        cipher_tensor_protos, ciphers, shape, proto_packed, proto_name);
 
     for (const auto& cipher_tensor_proto : cipher_tensor_protos) {
       he_proto::TCPMessage encrypted_inputs_msg;
@@ -224,7 +224,7 @@ void ngraph::he::HESealClient::handle_inference_request(
 
       auto param_shape = encrypted_inputs_msg.cipher_tensors(0).shape();
       ngraph::Shape shape{param_shape.begin(), param_shape.end()};
-      NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape { "
+      NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape {"
                        << ngraph::join(param_shape, "x") << "}";
 
       write_message(std::move(encrypted_inputs_msg));
@@ -237,7 +237,7 @@ void ngraph::he::HESealClient::handle_inference_request(
     plain_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
 
     std::vector<he_proto::PlainTensor> plain_tensor_protos;
-    plain_tensor.save_to_proto(plain_tensor_protos, "TODO");
+    plain_tensor.save_to_proto(plain_tensor_protos, proto_name);
 
     for (const auto& plain_tensor_proto : plain_tensor_protos) {
       he_proto::TCPMessage inputs_msg;

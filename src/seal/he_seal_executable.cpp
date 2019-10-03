@@ -328,6 +328,7 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
                        << ", with shape {" << ngraph::join(shape, "x") << "}";
 
       proto_cipher_tensor->set_name(input_param->get_name());
+      proto_cipher_tensor->set_packed(m_pack_data);
     }
   }
 
@@ -474,8 +475,12 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
          ++param_idx) {
       const auto& parameter = input_parameters[param_idx];
 
+      for (const auto& tag : parameter->get_provenance_tags()) {
+        NGRAPH_HE_LOG(5) << "Tag " << tag;
+      }
+
       if (param_originates_from_name(*parameter, tensor_name)) {
-        NGRAPH_HE_LOG(5) << "Param " << tensor_name << "matches at index "
+        NGRAPH_HE_LOG(5) << "Param " << tensor_name << " matches at index "
                          << param_idx;
         return true;
       }
@@ -488,6 +493,8 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
     ngraph::Shape shape{cipher_tensor.shape().begin(),
                         cipher_tensor.shape().end()};
+
+    NGRAPH_HE_LOG(5) << "cipher_tensor.packed()" << cipher_tensor.packed();
 
     set_batch_size(
         ngraph::he::HETensor::batch_size(shape, cipher_tensor.packed()));
@@ -591,6 +598,9 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
       if (from_client(*param)) {
+        NGRAPH_HE_LOG(5) << "From client param shape "
+                         << ngraph::join(param->get_shape(), "x");
+        NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
         size_t param_size = shape_size(param->get_shape()) / m_batch_size;
 
         NGRAPH_HE_LOG(5) << "Checking if parameter " << parm_idx << ", size "
