@@ -66,7 +66,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// generating encryption keys, encryptor, decryptor, evaluator, and encoder
   void generate_context();
 
-  /// \brief Constructs a plaintext tensor
+  /// \brief Constructs an unpacked plaintext tensor
   /// \param[in] element_type Datatype to store in the tensor
   /// \param[in] shape Shape of the tensor
   std::shared_ptr<runtime::Tensor> create_tensor(
@@ -358,6 +358,12 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_encrypted_tensor_names;
   }
 
+  /// \brief Returns set of tensors to remain plaintext. These tensors should
+  /// correspond to the function input which may be packed.
+  inline std::unordered_set<std::string> get_plaintext_tensor_names() const {
+    return m_plaintext_tensor_names;
+  }
+
  private:
   bool m_pack_data{
       !ngraph::he::flag_to_bool(std::getenv("NGRAPH_UNPACK_DATA"))};
@@ -387,6 +393,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   std::unordered_set<std::string> m_client_tensor_names;
   std::unordered_set<std::string> m_encrypted_tensor_names;
+  std::unordered_set<std::string> m_plaintext_tensor_names;
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",

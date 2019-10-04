@@ -111,7 +111,7 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_cipher_2_3_complex) {
                         vector<float>{0, 0, 0, 0.5, 1, 1.5}, 1e-3f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, relu_batched_plain_2_3) {
+NGRAPH_TEST(${BACKEND_NAME}, relu_packed_plain_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
@@ -131,7 +131,7 @@ NGRAPH_TEST(${BACKEND_NAME}, relu_batched_plain_2_3) {
                         vector<float>{0, 0, 0, 0.5, 1, 8}, 1e-3f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, relu_batched_cipher_2_3) {
+NGRAPH_TEST(${BACKEND_NAME}, relu_packed_cipher_2_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 

@@ -144,6 +144,8 @@ def client_config_from_flags(FLAGS, tensor_param_name):
         client_config.parameter_map[tensor_param_name].s = b'client_input'
     elif FLAGS.encrypt_data:
         client_config.parameter_map[tensor_param_name].s = b'encrypt'
+    else:
+        client_config.parameter_map[tensor_param_name].s = b'plain'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

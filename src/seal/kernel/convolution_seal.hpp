@@ -649,14 +649,10 @@ inline void convolution_seal(
 
     auto sum = HEPlaintext();
     bool first_add = true;
-    NGRAPH_INFO << "Starting it through filter";
 
     while (input_it != input_end && filter_it != filter_end) {
       const Coordinate& input_batch_coord = *input_it;
       Coordinate filter_coord = *filter_it;
-
-      NGRAPH_INFO << "Input batch coord" << input_batch_coord;
-      NGRAPH_INFO << "filter_coord coord" << filter_coord;
 
       if (rotate_filter) {
         Shape target_shape = filter_transform.get_target_shape();
@@ -670,35 +666,23 @@ inline void convolution_seal(
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
         auto prod = HEPlaintext();
 
-        NGRAPH_INFO << "Doing mult seal ";
-        NGRAPH_INFO << "Conv mult arg0 " << mult_arg0;
-        NGRAPH_INFO << "Conv mult_arg1 " << mult_arg1;
-
         scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
                              he_seal_backend);
-        NGRAPH_INFO << "Done with mult seal ";
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          NGRAPH_INFO << "Doing add seal ";
-          NGRAPH_INFO << "Add seal arg0 " << prod;
-          NGRAPH_INFO << "Add seal arg1 " << sum;
           scalar_add_seal(prod, sum, sum, element_type, he_seal_backend);
-          NGRAPH_INFO << "Done with add seal";
         }
       }
       ++input_it;
       ++filter_it;
     }
     if (first_add) {
-      NGRAPH_INFO << "First add";
       out[out_coord_idx] = HEPlaintext(0.f);
     } else {
       // Write the sum back.
-      NGRAPH_INFO << "Writing sum " << out_coord_idx;
       out[out_coord_idx] = sum;
-      NGRAPH_INFO << "Done writing sum " << out_coord_idx;
     }
   }
 }

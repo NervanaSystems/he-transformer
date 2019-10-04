@@ -71,6 +71,9 @@ class HEPlainTensor : public HETensor {
   /// \param[in] elements Plaintexts to set the tensor to
   void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);
 
+  /// \brief Unpacks a tensor. If tensor is already unpacked, does nothing
+  void unpack();
+
   /// \brief Returns type information about the tensor
   /// /returns a reference to a HETensorTypeInfo object
   const HETensorTypeInfo& get_type_info() const override { return type_info; }

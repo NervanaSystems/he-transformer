@@ -200,3 +200,18 @@ void ngraph::he::HEPlainTensor::set_elements(
   }
   m_plaintexts = elements;
 }
+
+void ngraph::he::HEPlainTensor::unpack() {
+  NGRAPH_INFO << "Unpacking plain tensor";
+  if (!is_packed()) {
+    return;
+  }
+
+  size_t batch_size = get_batch_size();
+
+  NGRAPH_INFO << "Unpacking HETensor to batch size " << batch_size;
+
+  m_plaintexts.resize(num_plaintexts() * batch_size);
+
+  m_packed = false;
+}
