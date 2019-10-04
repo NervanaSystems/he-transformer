@@ -660,6 +660,9 @@ inline void convolution_seal(
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
         auto prod = HEPlaintext();
 
+        NGRAPH_INFO << "Conv mult arg0 " << mult_arg0;
+        NGRAPH_INFO << "Conv mult_arg1 " << mult_arg1;
+
         scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
                              he_seal_backend);
         if (first_add) {

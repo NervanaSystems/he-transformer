@@ -49,24 +49,33 @@ def save_model(sess, directory, filename):
     pbtxt_filepath = os.path.join(directory, pbtxt_filename)
     pb_filepath = os.path.join(directory, filename + '.pb')
 
+    print('directory', directory)
+    print('pb_filepath', pb_filepath)
+
     tf.io.write_graph(
         graph_or_graph_def=sess.graph_def,
         logdir=directory,
-        name=pbtxt_filename,
-        as_text=True)
+        name=filename + '.pb',
+        as_text=False)
+
+    #tf.io.write_graph(
+    #    graph_or_graph_def=sess.graph_def,
+    #    logdir=directory,
+    #    name=pbtxt_filename,
+    #    as_text=True)
 
     # Freeze graph to turn variables into constants
-    freeze_graph.freeze_graph(
-        input_graph=pbtxt_filepath,
-        input_saver='',
-        input_binary=False,
-        input_checkpoint=ckpt_filepath,
-        output_node_names='output',
-        restore_op_name='save/restore_all',
-        filename_tensor_name='save/Const:0',
-        output_graph=pb_filepath,
-        clear_devices=True,
-        initializer_nodes='')
+    #freeze_graph.freeze_graph(
+    #    input_graph=pbtxt_filepath,
+    #    input_saver='',
+    #    input_binary=False,
+    #    input_checkpoint=ckpt_filepath,
+    #    output_node_names='output',
+    #    restore_op_name='save/restore_all',
+    #    filename_tensor_name='save/Const:0',
+    #    output_graph=pb_filepath,
+    #    clear_devices=True,
+    #    initializer_nodes='')
 
     print("Model saved to: %s" % pb_filepath)
 

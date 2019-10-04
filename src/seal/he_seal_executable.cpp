@@ -1598,9 +1598,10 @@ void ngraph::he::HESealExecutable::generate_calls(
       }
       break;
     }
-    case OP_TYPEID::Parameter:
+    case OP_TYPEID::Parameter: {
       NGRAPH_HE_LOG(3) << "Skipping parameter";
       break;
+    }
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
       const Shape arg0_shape = packed_arg_shapes[0];
