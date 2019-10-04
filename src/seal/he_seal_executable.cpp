@@ -664,7 +664,7 @@ bool ngraph::he::HESealExecutable::call(
   }
 
   if (m_pack_data) {
-    NGRAPH_HE_LOG(1) << "Batching data with batch size " << m_batch_size;
+    NGRAPH_HE_LOG(1) << "Packing data with batch size " << m_batch_size;
   }
   if (m_encrypt_model) {
     NGRAPH_HE_LOG(1) << "Encrypting model";
@@ -1415,6 +1415,9 @@ void ngraph::he::HESealExecutable::generate_calls(
           break;
         }
         case BinaryOpType::PlainPlainToPlain: {
+          NGRAPH_INFO << "Arg0 packed? " << plain_args[0]->is_packed();
+          NGRAPH_INFO << "Arg1 packed? " << plain_args[1]->is_packed();
+
           ngraph::he::convolution_seal(
               plain_args[0]->get_elements(), plain_args[1]->get_elements(),
               out0_plain->get_elements(), in_shape0, in_shape1,
