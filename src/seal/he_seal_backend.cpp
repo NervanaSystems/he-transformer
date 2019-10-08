@@ -207,8 +207,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
 
   for (auto& param : function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Compiling function with parameter name "
-                     << param->get_name() << " (shape {"
-                     << join(param->get_shape(), "x") << "})";
+                     << param->get_name() << " (" << param->get_shape() << ")";
 
     for (const auto& tag : param->get_provenance_tags()) {
       NGRAPH_HE_LOG(3) << "Tag " << tag;
@@ -222,9 +221,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
       has_tag |= (param->get_provenance_tags().size() != 0);
 
       if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
-                         << " (shape  " << join(param->get_shape(), "x")
-                         << ") as from client";
+        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
+                         << param->get_shape() << ") as from client";
         param->set_op_annotations(from_client_annotation);
         matching_param = true;
       }
@@ -235,13 +233,12 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
                  name);
   }
 
-  NGRAPH_HE_LOG(5) << "Setting encrypted tags";
+  NGRAPH_HE_LOG(3) << "Setting encrypted tags";
   for (const auto& name : get_encrypted_tensor_names()) {
     for (auto& param : function->get_parameters()) {
       if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
-                         << " (shape " << join(param->get_shape(), "x")
-                         << ") as encrypted";
+        NGRAPH_HE_LOG(5) << "Setting tensor name " << param->get_name()
+                         << param->get_shape() << ") as encrypted";
         auto current_annotation =
             std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
                 param->get_op_annotations());
@@ -252,9 +249,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
         } else {
           current_annotation->set_encrypted(true);
         }
-        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name()
-                         << " (shape  " << join(param->get_shape(), "x")
-                         << ") as encrypted";
+        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
+                         << param->get_shape() << ") as encrypted";
       }
     }
   }
@@ -264,9 +260,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     NGRAPH_HE_LOG(5) << "Plaintext tensor name " << name;
     for (auto& param : function->get_parameters()) {
       if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name()
-                         << " (shape " << join(param->get_shape(), "x")
-                         << ") as plaintext";
+        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
+                         << param->get_shape() << ") as plaintext";
         auto current_annotation =
             std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
                 param->get_op_annotations());
@@ -278,9 +273,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
         } else {
           current_annotation->set_encrypted(false);
         }
-        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name()
-                         << " (shape  " << join(param->get_shape(), "x")
-                         << ") as plaintext";
+        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
+                         << param->get_shape() << ") as plaintext";
       }
     }
   }

@@ -26,6 +26,9 @@ ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
   size_t num_elements =
       m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
   m_plaintexts.resize(num_elements);
+  NGRAPH_INFO << "HEPlainTensor::HEPlainTensor num elements " << num_elements;
+  NGRAPH_INFO << "HEPlainTensor::HEPlainTensor packed " << packed;
+  NGRAPH_INFO << "HEPlainTensor::HEPlainTensor m_batch_size " << m_batch_size;
 }
 
 void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
@@ -201,6 +204,29 @@ void ngraph::he::HEPlainTensor::set_elements(
   m_plaintexts = elements;
 }
 
+void ngraph::he::HEPlainTensor::pack() {
+  NGRAPH_INFO << "Packing plain tensor";
+  if (is_packed()) {
+    return;
+  }
+
+  m_batch_size = HETensor::batch_size(get_shape(), true);
+
+  std::vector<ngraph::he::HEPlaintext> new_plaintexts(num_plaintexts() /
+                                                      m_batch_size);
+  for (size_t i = 0; i < new_plaintexts.size(); ++i) {
+  }
+
+  for (size_t plain_idx = 0; plain_idx < m_plaintexts.size(); ++plain_idx) {
+    auto new_val = m_plaintexts[plain_idx].values()[0];
+    size_t new_plain_idx = plain_idx % new_plaintexts.size();
+    new_plaintexts[new_plain_idx].values().emplace_back(new_val);
+  }
+
+  m_plaintexts = std::move(new_plaintexts);
+  m_packed = true;
+}
+
 void ngraph::he::HEPlainTensor::unpack() {
   NGRAPH_INFO << "Unpacking plain tensor";
   if (!is_packed()) {
@@ -209,11 +235,16 @@ void ngraph::he::HEPlainTensor::unpack() {
 
   size_t batch_size = get_batch_size();
 
-  NGRAPH_INFO << "Unpacking HETensor to batch size " << batch_size;
-  NGRAPH_INFO << "Num plaintext " << num_plaintexts();
+  std::vector<ngraph::he::HEPlaintext> new_plaintexts;
+  for (size_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+    for (size_t i = 0; i < m_plaintexts.size(); ++i) {
+      auto vals = m_plaintexts[i].values();
+      new_plaintexts.emplace_back(
+          HEPlaintext(m_plaintexts[i].values()[batch_idx]));
+    }
+  }
 
-  // TODO: implement
-  m_plaintexts.resize(num_plaintexts() * batch_size);
-
+  m_plaintexts = std::move(new_plaintexts);
   m_packed = false;
+  m_batch_size = 1;
 }

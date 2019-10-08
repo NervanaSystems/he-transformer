@@ -39,6 +39,9 @@ class HEPlaintext {
   /// \brief Returns a reference to the stored values
   inline const std::vector<double>& values() const { return m_values; }
 
+  /// \brief Returns a reference to the stored values
+  inline std::vector<double>& values() { return m_values; }
+
   /// \brief Returns the first value stored in the plaintext
   inline double first_value() const { return m_values[0]; }
 

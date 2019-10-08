@@ -698,70 +698,75 @@ bool ngraph::he::HESealExecutable::call(
   for (size_t input_idx = 0; input_idx < server_inputs.size(); ++input_idx) {
     auto param_shape = server_inputs[input_idx]->get_shape();
     auto& param = parameters[input_idx];
+    std::shared_ptr<ngraph::he::HETensor> he_input;
 
     if (m_enable_client && from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
-
-      he_inputs.push_back(std::static_pointer_cast<ngraph::he::HETensor>(
-          m_client_inputs[input_idx]));
+      he_input = std::static_pointer_cast<ngraph::he::HETensor>(
+          m_client_inputs[input_idx]);
     } else {
-      NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
-                       << "(shape {" << param_shape << "}) from server";
+      NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name() << " ("
+                       << param_shape << ") from server";
 
       auto he_server_input = std::static_pointer_cast<ngraph::he::HETensor>(
           server_inputs[input_idx]);
 
-      auto current_annotation =
-          std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-              param->get_op_annotations());
-      if (current_annotation != nullptr) {
+      if (auto current_annotation =
+              std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
+                  param->get_op_annotations())) {
         NGRAPH_HE_LOG(5) << "Parameter is encrypted? "
                          << current_annotation->encrypted();
-        if (current_annotation->encrypted() &&
-            !he_server_input->is_type<ngraph::he::HESealCipherTensor>()) {
+        if (current_annotation->encrypted()) {
           NGRAPH_HE_LOG(3) << "Encrypting parameter " << param->get_name()
                            << " from server";
+          if (he_server_input->is_type<ngraph::he::HESealCipherTensor>()) {
+            he_input = he_server_input;
+          } else {
+            auto plain_input =
+                he_tensor_as_type<ngraph::he::HEPlainTensor>(he_server_input);
 
+            auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
+                m_he_seal_backend.create_cipher_tensor(
+                    plain_input->get_element_type(), plain_input->get_shape(),
+                    current_annotation->plaintext_packing(),
+                    plain_input->get_name()));
+
+#pragma omp parallel for
+            for (size_t plain_idx = 0;
+                 plain_idx < plain_input->get_batched_element_count();
+                 ++plain_idx) {
+              encrypt(cipher_input->get_element(plain_idx),
+                      plain_input->get_element(plain_idx),
+                      m_he_seal_backend.get_context()->first_parms_id(),
+                      plain_input->get_element_type(),
+                      m_he_seal_backend.get_scale(),
+                      *m_he_seal_backend.get_ckks_encoder(),
+                      *m_he_seal_backend.get_encryptor(), complex_packing());
+            }
+            NGRAPH_DEBUG << "Done encrypting parameter " << param->get_name();
+            plain_input->reset();
+            he_input = cipher_input;
+          }
+        } else {  // not encrypted
+          NGRAPH_CHECK(he_server_input->is_type<ngraph::he::HEPlainTensor>(),
+                       "Server input anotation is not encrypted, but tensor is "
+                       "not plaintext");
           auto plain_input =
               he_tensor_as_type<ngraph::he::HEPlainTensor>(he_server_input);
 
-          auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
-              m_he_seal_backend.create_cipher_tensor(
-                  plain_input->get_element_type(), plain_input->get_shape(),
-                  current_annotation->plaintext_packing(),
-                  plain_input->get_name()));
-
-#pragma omp parallel for
-          for (size_t plain_idx = 0;
-               plain_idx < plain_input->get_batched_element_count();
-               ++plain_idx) {
-            encrypt(cipher_input->get_element(plain_idx),
-                    plain_input->get_element(plain_idx),
-                    m_he_seal_backend.get_context()->first_parms_id(),
-                    plain_input->get_element_type(),
-                    m_he_seal_backend.get_scale(),
-                    *m_he_seal_backend.get_ckks_encoder(),
-                    *m_he_seal_backend.get_encryptor(), complex_packing());
+          if (current_annotation->plaintext_packing()) {
+            NGRAPH_HE_LOG(5) << "Packing parameter " << param->get_name();
+            plain_input->pack();
+          } else {
+            NGRAPH_HE_LOG(5) << "Unpacking parameter " << param->get_name();
+            plain_input->unpack();
           }
-          NGRAPH_DEBUG << "Done encrypting parameter " << param->get_name();
-          plain_input->reset();
-          he_inputs.push_back(cipher_input);
-        } else {
-          he_inputs.push_back(he_server_input);
+          he_input = plain_input;
         }
-      } else if (he_server_input->is_type<ngraph::he::HEPlainTensor>()) {
-        NGRAPH_HE_LOG(5) << "Unpacking parameter " << param->get_name();
-        // Don't pack tensors tagged as plaintext
-
-        ngraph::he::he_tensor_as_type<ngraph::he::HEPlainTensor>(
-            he_server_input)
-            ->unpack();
-        he_inputs.push_back(he_server_input);
-      } else {
-        he_inputs.push_back(he_server_input);
       }
     }
+    he_inputs.emplace_back(he_input);
   }
 
   NGRAPH_HE_LOG(3) << "Converting outputs to HETensor";
@@ -1815,13 +1820,18 @@ void ngraph::he::HESealExecutable::generate_calls(
         Coordinate lower_bounds = slice->get_lower_bounds();
         Coordinate upper_bounds = slice->get_upper_bounds();
 
+        NGRAPH_INFO << "Checking if slice op is packed";
+
         if (plaintext_packed(node_wrapper)) {
+          NGRAPH_INFO << "slice op is packed";
+
           in_shape = unpacked_arg_shapes[0];
           lower_bounds =
               ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
           upper_bounds =
               ngraph::he::HETensor::pack_shape(slice->get_upper_bounds());
         }
+        NGRAPH_INFO << "Done checking if slice op is packed";
 
         const Strides& strides = slice->get_strides();
 
