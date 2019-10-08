@@ -68,7 +68,6 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 1, 14};
   Shape window_shape{3};
@@ -149,7 +148,6 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_batched) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 2, 14};
   Shape window_shape{3};
@@ -204,7 +202,6 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
 
   Shape shape_a{2, 2, 5, 5};
   Shape window_shape{2, 3};

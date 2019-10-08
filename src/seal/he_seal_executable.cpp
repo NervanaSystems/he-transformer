@@ -169,6 +169,20 @@ ngraph::he::HESealExecutable::HESealExecutable(
   set_parameters_and_results(*function);
 }
 
+ngraph::he::HESealExecutable::~HESealExecutable() {
+  NGRAPH_HE_LOG(3) << "~HESealExecutable()";
+  if (m_server_setup) {
+    NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
+    m_message_handling_thread.join();
+    NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
+
+    // m_acceptor and m_io_context both free the socket? Avoid double-free
+    m_acceptor->close();
+    m_acceptor = nullptr;
+    m_session = nullptr;
+  }
+}
+
 void ngraph::he::HESealExecutable::set_batch_size(size_t batch_size) {
   size_t max_batch_size = m_he_seal_backend.get_ckks_encoder()->slot_count();
   if (complex_packing()) {
@@ -1121,7 +1135,7 @@ void ngraph::he::HESealExecutable::generate_calls(
     Shape arg_shape = node.get_input_shape(arg_idx);
     unpacked_arg_shapes.emplace_back(arg_shape);
 
-    if (plaintext_packed(*node_wrapper->get_op())) {
+    if (plaintext_packed(node_wrapper)) {
       arg_shape = ngraph::he::HETensor::pack_shape(arg_shape);
       packed_arg_shapes.emplace_back(arg_shape);
     }
@@ -1133,7 +1147,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                    "Only support single-output functions");
       out_shape = node.get_output_shape(0);
       packed_out_shape = out_shape;
-      if (m_pack_data) {
+      if (plaintext_packed(node_wrapper)) {
         packed_out_shape = ngraph::he::HETensor::pack_shape(packed_out_shape);
       }
     }
@@ -1801,7 +1815,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         Coordinate lower_bounds = slice->get_lower_bounds();
         Coordinate upper_bounds = slice->get_upper_bounds();
 
-        if (m_pack_data) {
+        if (plaintext_packed(node_wrapper)) {
           in_shape = unpacked_arg_shapes[0];
           lower_bounds =
               ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
@@ -1990,196 +2004,195 @@ void ngraph::he::HESealExecutable::generate_calls(
 #pragma GCC diagnostic pop
     }
   }
+}
 
-  void ngraph::he::HESealExecutable::handle_server_max_pool_op(
-      std::shared_ptr<HESealCipherTensor> & arg_cipher,
-      std::shared_ptr<HESealCipherTensor> & out_cipher,
-      const NodeWrapper& node_wrapper) {
-    NGRAPH_HE_LOG(3) << "Server handle_server_max_pool_op";
+void ngraph::he::HESealExecutable::handle_server_max_pool_op(
+    std::shared_ptr<HESealCipherTensor>& arg_cipher,
+    std::shared_ptr<HESealCipherTensor>& out_cipher,
+    const NodeWrapper& node_wrapper) {
+  NGRAPH_HE_LOG(3) << "Server handle_server_max_pool_op";
 
-    const Node& node = *node_wrapper.get_node();
-    bool verbose = verbose_op(node);
-    const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+  const Node& node = *node_wrapper.get_node();
+  bool verbose = verbose_op(node);
+  const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
 
-    m_max_pool_done = false;
+  m_max_pool_done = false;
 
-    Shape unpacked_arg_shape = node.get_input_shape(0);
-    Shape packed_out_shape =
-        ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
+  Shape unpacked_arg_shape = node.get_input_shape(0);
+  Shape packed_out_shape =
+      ngraph::he::HETensor::pack_shape(node.get_output_shape(0));
 
-    std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
-        unpacked_arg_shape, packed_out_shape, max_pool->get_window_shape(),
-        max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
-        max_pool->get_padding_above());
+  std::vector<std::vector<size_t>> maximize_list = ngraph::he::max_pool_seal(
+      unpacked_arg_shape, packed_out_shape, max_pool->get_window_shape(),
+      max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
+      max_pool->get_padding_above());
 
-    m_max_pool_ciphertexts.clear();
+  m_max_pool_ciphertexts.clear();
 
-    for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
-      he_proto::TCPMessage proto_msg;
-      proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+  for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+    he_proto::TCPMessage proto_msg;
+    proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-      json js = {{"function", node.description()}};
-      he_proto::Function f;
-      f.set_function(js.dump());
-      *proto_msg.mutable_function() = f;
+    json js = {{"function", node.description()}};
+    he_proto::Function f;
+    f.set_function(js.dump());
+    *proto_msg.mutable_function() = f;
 
-      std::vector<std::shared_ptr<SealCiphertextWrapper>> cipher_batch;
-      for (const size_t max_ind : maximize_list[list_ind]) {
-        cipher_batch.emplace_back(arg_cipher->get_element(max_ind));
-      }
-
-      std::vector<he_proto::SealCipherTensor> proto_tensors;
-      // TODO: pass packed shape?
-      ngraph::he::HESealCipherTensor::save_to_proto(
-          proto_tensors, cipher_batch, Shape{1, cipher_batch.size()},
-          m_pack_data);
-
-      NGRAPH_CHECK(proto_tensors.size() == 1,
-                   "Only support ReLU with 1 proto tensor");
-
-      *proto_msg.add_cipher_tensors() = proto_tensors[0];
-
-      // Send list of ciphertexts to maximize over to client
-      if (verbose) {
-        NGRAPH_HE_LOG(3) << "Sending " << cipher_batch.size()
-                         << " Maxpool ciphertexts to client";
-      }
-
-      ngraph::he::TCPMessage max_pool_message(std::move(proto_msg));
-      m_session->write_message(std::move(max_pool_message));
-
-      // Acquire lock
-      std::unique_lock<std::mutex> mlock(m_max_pool_mutex);
-
-      // Wait until max is done
-      m_max_pool_cond.wait(mlock,
-                           std::bind(&HESealExecutable::max_pool_done, this));
-
-      // Reset for next max_pool call
-      m_max_pool_done = false;
+    std::vector<std::shared_ptr<SealCiphertextWrapper>> cipher_batch;
+    for (const size_t max_ind : maximize_list[list_ind]) {
+      cipher_batch.emplace_back(arg_cipher->get_element(max_ind));
     }
-    out_cipher->set_elements(m_max_pool_ciphertexts);
+
+    std::vector<he_proto::SealCipherTensor> proto_tensors;
+    // TODO: pass packed shape?
+    ngraph::he::HESealCipherTensor::save_to_proto(
+        proto_tensors, cipher_batch, Shape{1, cipher_batch.size()},
+        plaintext_packed(node_wrapper));
+
+    NGRAPH_CHECK(proto_tensors.size() == 1,
+                 "Only support ReLU with 1 proto tensor");
+
+    *proto_msg.add_cipher_tensors() = proto_tensors[0];
+
+    // Send list of ciphertexts to maximize over to client
+    if (verbose) {
+      NGRAPH_HE_LOG(3) << "Sending " << cipher_batch.size()
+                       << " Maxpool ciphertexts to client";
+    }
+
+    ngraph::he::TCPMessage max_pool_message(std::move(proto_msg));
+    m_session->write_message(std::move(max_pool_message));
+
+    // Acquire lock
+    std::unique_lock<std::mutex> mlock(m_max_pool_mutex);
+
+    // Wait until max is done
+    m_max_pool_cond.wait(mlock,
+                         std::bind(&HESealExecutable::max_pool_done, this));
+
+    // Reset for next max_pool call
+    m_max_pool_done = false;
+  }
+  out_cipher->set_elements(m_max_pool_ciphertexts);
+}
+
+void ngraph::he::HESealExecutable::handle_server_relu_op(
+    std::shared_ptr<HESealCipherTensor>& arg_cipher,
+    std::shared_ptr<HESealCipherTensor>& out_cipher,
+    const NodeWrapper& node_wrapper) {
+  NGRAPH_HE_LOG(3) << "Server handle_server_relu_op";
+
+  auto type_id = node_wrapper.get_typeid();
+  NGRAPH_CHECK(type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
+               "only support relu / bounded relu");
+
+  const Node& node = *node_wrapper.get_node();
+  bool verbose = verbose_op(node);
+  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
+
+  if (arg_cipher == nullptr || out_cipher == nullptr) {
+    throw ngraph_error("Relu types not supported.");
   }
 
-  void ngraph::he::HESealExecutable::handle_server_relu_op(
-      std::shared_ptr<HESealCipherTensor> & arg_cipher,
-      std::shared_ptr<HESealCipherTensor> & out_cipher,
-      const NodeWrapper& node_wrapper) {
-    NGRAPH_HE_LOG(3) << "Server handle_server_relu_op";
+  size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
+      arg_cipher->get_elements(), m_he_seal_backend);
 
-    auto type_id = node_wrapper.get_typeid();
-    NGRAPH_CHECK(
-        type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
-        "only support relu / bounded relu");
+  if (verbose) {
+    NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
+  }
 
-    const Node& node = *node_wrapper.get_node();
-    bool verbose = verbose_op(node);
-    size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
+  m_relu_ciphertexts.resize(element_count);
+  for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+    m_relu_ciphertexts[relu_idx] = std::make_shared<SealCiphertextWrapper>();
+  }
 
-    if (arg_cipher == nullptr || out_cipher == nullptr) {
-      throw ngraph_error("Relu types not supported.");
+  // TODO: tune
+  const size_t max_relu_message_cnt = 1000;
+
+  m_unknown_relu_idx.clear();
+  m_unknown_relu_idx.reserve(element_count);
+
+  // Process known values
+  for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
+    auto& cipher = *arg_cipher->get_element(relu_idx);
+    if (cipher.known_value()) {
+      if (type_id == OP_TYPEID::Relu) {
+        ngraph::he::scalar_relu_seal_known_value(cipher,
+                                                 m_relu_ciphertexts[relu_idx]);
+      } else {
+        const op::BoundedRelu* bounded_relu =
+            static_cast<const op::BoundedRelu*>(&node);
+        float alpha = bounded_relu->get_alpha();
+        ngraph::he::scalar_bounded_relu_seal_known_value(
+            cipher, m_relu_ciphertexts[relu_idx], alpha);
+      }
+    } else {
+      m_unknown_relu_idx.emplace_back(relu_idx);
     }
+  }
+  auto process_unknown_relu_ciphers_batch =
+      [&](const std::vector<std::shared_ptr<SealCiphertextWrapper>>&
+              cipher_batch) {
+        if (verbose) {
+          NGRAPH_HE_LOG(3) << "Sending relu request size "
+                           << cipher_batch.size();
+        }
 
-    size_t smallest_ind = ngraph::he::match_to_smallest_chain_index(
-        arg_cipher->get_elements(), m_he_seal_backend);
+        he_proto::TCPMessage proto_msg;
+        proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-    if (verbose) {
-      NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
-    }
-
-    m_relu_ciphertexts.resize(element_count);
-    for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-      m_relu_ciphertexts[relu_idx] = std::make_shared<SealCiphertextWrapper>();
-    }
-
-    // TODO: tune
-    const size_t max_relu_message_cnt = 1000;
-
-    m_unknown_relu_idx.clear();
-    m_unknown_relu_idx.reserve(element_count);
-
-    // Process known values
-    for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-      auto& cipher = *arg_cipher->get_element(relu_idx);
-      if (cipher.known_value()) {
-        if (type_id == OP_TYPEID::Relu) {
-          ngraph::he::scalar_relu_seal_known_value(
-              cipher, m_relu_ciphertexts[relu_idx]);
-        } else {
+        // TODO: factor out serializing the function
+        json js = {{"function", node.description()}};
+        if (type_id == OP_TYPEID::BoundedRelu) {
           const op::BoundedRelu* bounded_relu =
               static_cast<const op::BoundedRelu*>(&node);
           float alpha = bounded_relu->get_alpha();
-          ngraph::he::scalar_bounded_relu_seal_known_value(
-              cipher, m_relu_ciphertexts[relu_idx], alpha);
+          js["bound"] = alpha;
         }
-      } else {
-        m_unknown_relu_idx.emplace_back(relu_idx);
-      }
-    }
-    auto process_unknown_relu_ciphers_batch =
-        [&](const std::vector<std::shared_ptr<SealCiphertextWrapper>>&
-                cipher_batch) {
-          if (verbose) {
-            NGRAPH_HE_LOG(3)
-                << "Sending relu request size " << cipher_batch.size();
-          }
 
-          he_proto::TCPMessage proto_msg;
-          proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+        he_proto::Function f;
+        f.set_function(js.dump());
+        *proto_msg.mutable_function() = f;
 
-          // TODO: factor out serializing the function
-          json js = {{"function", node.description()}};
-          if (type_id == OP_TYPEID::BoundedRelu) {
-            const op::BoundedRelu* bounded_relu =
-                static_cast<const op::BoundedRelu*>(&node);
-            float alpha = bounded_relu->get_alpha();
-            js["bound"] = alpha;
-          }
+        std::vector<he_proto::SealCipherTensor> proto_tensors;
+        // TODO: pass packed shape?
+        ngraph::he::HESealCipherTensor::save_to_proto(
+            proto_tensors, cipher_batch, Shape{1, cipher_batch.size()},
+            plaintext_packed(node_wrapper));
 
-          he_proto::Function f;
-          f.set_function(js.dump());
-          *proto_msg.mutable_function() = f;
+        NGRAPH_CHECK(proto_tensors.size() == 1,
+                     "Only support ReLU with 1 proto tensor");
 
-          std::vector<he_proto::SealCipherTensor> proto_tensors;
-          // TODO: pass packed shape?
-          ngraph::he::HESealCipherTensor::save_to_proto(
-              proto_tensors, cipher_batch, Shape{1, cipher_batch.size()},
-              m_pack_data);
+        *proto_msg.add_cipher_tensors() = proto_tensors[0];
 
-          NGRAPH_CHECK(proto_tensors.size() == 1,
-                       "Only support ReLU with 1 proto tensor");
+        ngraph::he::TCPMessage relu_message(std::move(proto_msg));
 
-          *proto_msg.add_cipher_tensors() = proto_tensors[0];
+        NGRAPH_HE_LOG(5) << "Server writing relu request message";
+        m_session->write_message(std::move(relu_message));
+      };
 
-          ngraph::he::TCPMessage relu_message(std::move(proto_msg));
+  // Process unknown values
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> relu_ciphers_batch;
+  relu_ciphers_batch.reserve(max_relu_message_cnt);
 
-          NGRAPH_HE_LOG(5) << "Server writing relu request message";
-          m_session->write_message(std::move(relu_message));
-        };
-
-    // Process unknown values
-    std::vector<std::shared_ptr<SealCiphertextWrapper>> relu_ciphers_batch;
-    relu_ciphers_batch.reserve(max_relu_message_cnt);
-
-    for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
-      auto& cipher = arg_cipher->get_element(unknown_relu_idx);
-      relu_ciphers_batch.emplace_back(cipher);
-      if (relu_ciphers_batch.size() == max_relu_message_cnt) {
-        process_unknown_relu_ciphers_batch(relu_ciphers_batch);
-        relu_ciphers_batch.clear();
-      }
-    }
-    if (relu_ciphers_batch.size() != 0) {
+  for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
+    auto& cipher = arg_cipher->get_element(unknown_relu_idx);
+    relu_ciphers_batch.emplace_back(cipher);
+    if (relu_ciphers_batch.size() == max_relu_message_cnt) {
       process_unknown_relu_ciphers_batch(relu_ciphers_batch);
       relu_ciphers_batch.clear();
     }
-
-    // Wait until all batches have been processed
-    std::unique_lock<std::mutex> mlock(m_relu_mutex);
-    m_relu_cond.wait(mlock, [=]() {
-      return m_relu_done_count == m_unknown_relu_idx.size();
-    });
-    m_relu_done_count = 0;
-
-    out_cipher->set_elements(m_relu_ciphertexts);
   }
+  if (relu_ciphers_batch.size() != 0) {
+    process_unknown_relu_ciphers_batch(relu_ciphers_batch);
+    relu_ciphers_batch.clear();
+  }
+
+  // Wait until all batches have been processed
+  std::unique_lock<std::mutex> mlock(m_relu_mutex);
+  m_relu_cond.wait(
+      mlock, [=]() { return m_relu_done_count == m_unknown_relu_idx.size(); });
+  m_relu_done_count = 0;
+
+  out_cipher->set_elements(m_relu_ciphertexts);
+}

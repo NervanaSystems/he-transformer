@@ -106,7 +106,6 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
 NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
 
   Shape shape{2, 2};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -272,7 +271,6 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
 
   Shape shape{0};
   auto a = make_shared<op::Parameter>(element::f32, shape);
@@ -306,7 +304,6 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
 
   Shape shape{0, 0};
   auto a = make_shared<op::Parameter>(element::f32, shape);

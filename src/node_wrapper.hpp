@@ -1,3 +1,4 @@
+
 //*****************************************************************************
 // Copyright 2018-2019 Intel Corporation
 //
@@ -36,6 +37,7 @@ enum class ngraph::he::OP_TYPEID {
   NGRAPH_OP(BoundedRelu, ngraph::op)
 };
 #undef NGRAPH_OP
+
 /// \brief This class allows adding an enum typeid to each Node. This makes
 /// dealing with collections of Nodes a little easier and faster as we can use
 /// switch() instead of if/else statements
@@ -43,13 +45,12 @@ class ngraph::he::NodeWrapper {
  public:
   NodeWrapper(const std::shared_ptr<const ngraph::Node>& node);
 
-  std::shared_ptr<const ngraph::Node> get_node() const { return m_node; }
+  std::shared_ptr<const Node> get_node() const { return m_node; }
+  ngraph::he::OP_TYPEID get_typeid() const { return m_typeid; }
 
   std::shared_ptr<const ngraph::op::Op> get_op() const;
 
-  ngraph::he::OP_TYPEID get_typeid() const { return m_typeid; }
-
  private:
   std::shared_ptr<const ngraph::Node> m_node;
-  ngraph::he::OP_TYPEID m_typeid;
+  OP_TYPEID m_typeid;
 };

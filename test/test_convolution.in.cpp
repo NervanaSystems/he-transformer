@@ -85,7 +85,6 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
   auto shape_a = Shape{1, 1, 3, 5};
   auto shape_b = Shape{2, 1, 2, 2};
   {
@@ -143,7 +142,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+
   Shape shape_a{1, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   {
@@ -223,7 +222,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+
   Shape shape_a{1, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   {
@@ -305,7 +304,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+
   Shape shape_a{1, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   {
@@ -419,7 +418,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+
   Shape shape_a{2, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   {
@@ -499,7 +498,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items) {
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+
   Shape shape_a{2, 1, 3, 5};
   Shape shape_b{2, 1, 2, 2};
   {

@@ -55,19 +55,8 @@ class HESealExecutable : public runtime::Executable {
                    ngraph::he::HESealBackend& he_seal_backend,
                    bool enable_client);
 
-  ~HESealExecutable() override {
-    NGRAPH_HE_LOG(3) << "~HESealExecutable()";
-    if (m_server_setup) {
-      NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
-      m_message_handling_thread.join();
-      NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
-
-      // m_acceptor and m_io_context both free the socket? Avoid double-free
-      m_acceptor->close();
-      m_acceptor = nullptr;
-      m_session = nullptr;
-    }
-  }
+  /// \brief Shuts down the TCP session if client is enabled
+  ~HESealExecutable() override;
 
   /// \brief TODO
   void server_setup();
@@ -229,95 +218,96 @@ class HESealExecutable : public runtime::Executable {
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation, should be Constant or Parameter node
   inline bool plaintext_packed(const NodeWrapper& node_wrapper) {
-    const Node& node = *node_wrapper.get_node();
+    return plaintext_packed(*node_wrapper.get_op());
+  }
 
-    inline bool plaintext_packed(const ngraph::op::Op& op) {
-      auto annotation = op.get_op_annotations();
-      if (auto he_annotation =
-              std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-                  annotation)) {
-        return he_annotation->plaintext_packing();
-      }
-      return false;
+  inline bool plaintext_packed(const ngraph::op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
+                annotation)) {
+      return he_annotation->plaintext_packing();
     }
+    return false;
+  }
 
-   private:
-    HESealBackend& m_he_seal_backend;
-    bool m_is_compiled;
-    bool m_verbose_all_ops;
+ private:
+  HESealBackend& m_he_seal_backend;
+  bool m_is_compiled;
+  bool m_verbose_all_ops;
 
-    bool m_sent_inference_shape{false};
-    bool m_client_public_key_set{false};
-    bool m_client_eval_key_set{false};
+  bool m_sent_inference_shape{false};
+  bool m_client_public_key_set{false};
+  bool m_client_eval_key_set{false};
 
-    bool m_enable_client;
-    bool m_server_setup;
-    size_t m_batch_size;
-    size_t m_port;  // Which port the server is hosted at
+  bool m_enable_client;
+  bool m_server_setup;
+  size_t m_batch_size;
+  size_t m_port;  // Which port the server is hosted at
 
-    std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
-    std::vector<NodeWrapper> m_wrapped_nodes;
+  std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
+  std::vector<NodeWrapper> m_wrapped_nodes;
 
-    std::unique_ptr<tcp::acceptor> m_acceptor;
+  std::unique_ptr<tcp::acceptor> m_acceptor;
 
-    // Must be shared, since TCPSession uses enable_shared_from_this()
-    std::shared_ptr<TCPSession> m_session;
-    std::thread m_message_handling_thread;
-    boost::asio::io_context m_io_context;
+  // Must be shared, since TCPSession uses enable_shared_from_this()
+  std::shared_ptr<TCPSession> m_session;
+  std::thread m_message_handling_thread;
+  boost::asio::io_context m_io_context;
 
-    // (Encrypted) inputs to compiled function
-    std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;
-    std::vector<size_t> m_client_load_idx;
-    // (Encrypted) outputs of compiled function
-    std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
+  // (Encrypted) inputs to compiled function
+  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;
+  std::vector<size_t> m_client_load_idx;
+  // (Encrypted) outputs of compiled function
+  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
 
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        m_relu_ciphertexts;
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        m_max_pool_ciphertexts;
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-        m_minimum_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_relu_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_max_pool_ciphertexts;
+  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
+      m_minimum_ciphertexts;
 
-    std::set<std::string> m_verbose_ops;
+  std::set<std::string> m_verbose_ops;
 
-    std::shared_ptr<seal::SEALContext> m_context;
+  std::shared_ptr<seal::SEALContext> m_context;
 
-    // To trigger when relu is done
-    std::mutex m_relu_mutex;
-    std::condition_variable m_relu_cond;
-    size_t m_relu_done_count;
-    std::vector<size_t> m_unknown_relu_idx;
+  // To trigger when relu is done
+  std::mutex m_relu_mutex;
+  std::condition_variable m_relu_cond;
+  size_t m_relu_done_count;
+  std::vector<size_t> m_unknown_relu_idx;
 
-    // To trigger when max_pool is done
-    std::mutex m_max_pool_mutex;
-    std::condition_variable m_max_pool_cond;
-    bool m_max_pool_done;
+  // To trigger when max_pool is done
+  std::mutex m_max_pool_mutex;
+  std::condition_variable m_max_pool_cond;
+  bool m_max_pool_done;
 
-    // To trigger when minimum is done
-    std::mutex m_minimum_mutex;
-    std::condition_variable m_minimum_cond;
-    bool m_minimum_done;
+  // To trigger when minimum is done
+  std::mutex m_minimum_mutex;
+  std::condition_variable m_minimum_cond;
+  bool m_minimum_done;
 
-    // To trigger when result message has been written
-    std::mutex m_result_mutex;
-    std::condition_variable m_result_cond;
+  // To trigger when result message has been written
+  std::mutex m_result_mutex;
+  std::condition_variable m_result_cond;
 
-    // To trigger when session has started
-    std::mutex m_session_mutex;
-    std::condition_variable m_session_cond;
-    bool m_session_started;
+  // To trigger when session has started
+  std::mutex m_session_mutex;
+  std::condition_variable m_session_cond;
+  bool m_session_started;
 
-    // To trigger when client inputs have been received
-    std::mutex m_client_inputs_mutex;
-    std::condition_variable m_client_inputs_cond;
-    bool m_client_inputs_received;
+  // To trigger when client inputs have been received
+  std::mutex m_client_inputs_mutex;
+  std::condition_variable m_client_inputs_cond;
+  bool m_client_inputs_received;
 
-    void generate_calls(const element::Type& type, const NodeWrapper& op,
-                        const std::vector<std::shared_ptr<HETensor>>& outputs,
-                        const std::vector<std::shared_ptr<HETensor>>& inputs);
+  void generate_calls(const element::Type& type, const NodeWrapper& op,
+                      const std::vector<std::shared_ptr<HETensor>>& outputs,
+                      const std::vector<std::shared_ptr<HETensor>>& inputs);
 
-    bool m_stop_const_fold{
-        ngraph::he::flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
-  };  // namespace he
+  bool m_stop_const_fold{
+      ngraph::he::flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
+};
 }  // namespace he
-}  // namespace he
+}  // namespace ngraph
