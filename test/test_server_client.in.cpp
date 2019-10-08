@@ -48,7 +48,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
   auto b = make_shared<op::Parameter>(element::f32, shape);
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   b->set_op_annotations(from_client_annotation);
 
   auto c = make_shared<op::Parameter>(element::f32, shape_c);
@@ -98,7 +98,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
   auto b = make_shared<op::Parameter>(element::f32, shape);
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   b->set_op_annotations(from_client_annotation);
 
   auto c = make_shared<op::Parameter>(element::f32, shape_c);
@@ -150,7 +150,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto f = make_shared<Function>(t, ParameterVector{b});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   b->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -195,7 +195,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   auto f = make_shared<Function>(relu, ParameterVector{b});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   b->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -241,7 +241,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
   auto f = make_shared<Function>(relu, ParameterVector{b});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   b->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -287,7 +287,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
   auto f = make_shared<Function>(relu, ParameterVector{b});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   b->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -339,7 +339,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
   auto f = make_shared<Function>(relu, ParameterVector{a});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   a->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -388,7 +388,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   auto f = make_shared<Function>(relu, ParameterVector{a});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   a->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -445,7 +445,7 @@ auto server_client_relu_packed_test = [](size_t element_count,
   }
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, true);
   a->set_op_annotations(from_client_annotation);
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
@@ -604,7 +604,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                  ParameterVector{A});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
   A->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -654,7 +654,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
                                  ParameterVector{A});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false,false);
   A->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -705,7 +705,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                  ParameterVector{A});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, true);
   A->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -761,7 +761,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                  ParameterVector{A});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, true);
   A->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used
@@ -822,7 +822,7 @@ NGRAPH_TEST(${BACKEND_NAME},
                                  ParameterVector{A});
 
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, true);
   A->set_op_annotations(from_client_annotation);
 
   // Server inputs which are not used

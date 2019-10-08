@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/multiply_seal.hpp"
@@ -328,9 +329,15 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_packed) {
   Shape shape_a{4, 3};
   Shape shape_b{4, 3};
   Shape shape_r{4, 3};
+
+  auto packed_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(false, false, true);
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
+    a->set_op_annotations(packed_annotation);
+    b->set_op_annotations(packed_annotation);
+
     auto t = make_shared<op::Multiply>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
     auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
@@ -349,6 +356,8 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_packed) {
   {
     auto a = make_shared<op::Parameter>(element::f64, shape_a);
     auto b = make_shared<op::Parameter>(element::f64, shape_b);
+    a->set_op_annotations(packed_annotation);
+    b->set_op_annotations(packed_annotation);
     auto t = make_shared<op::Multiply>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
     auto t_a = he_backend->create_packed_plain_tensor(element::f64, shape_a);
@@ -367,6 +376,8 @@ NGRAPH_TEST(${BACKEND_NAME}, multiply_4_3_packed) {
   {
     auto a = make_shared<op::Parameter>(element::i64, shape_a);
     auto b = make_shared<op::Parameter>(element::i64, shape_b);
+    a->set_op_annotations(packed_annotation);
+    b->set_op_annotations(packed_annotation);
     auto t = make_shared<op::Multiply>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
     auto t_a = he_backend->create_packed_plain_tensor(element::i64, shape_a);

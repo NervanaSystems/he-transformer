@@ -203,7 +203,7 @@ ngraph::he::HESealBackend::create_packed_plain_tensor(const element::Type& type,
 std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_collection) {
   auto from_client_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false);
+      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
 
   NGRAPH_HE_LOG(1) << "Compiling function with "
                    << function->get_parameters().size() << " parameters";
@@ -250,7 +250,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
                 param->get_op_annotations());
         if (current_annotation == nullptr) {
           auto encrypted_annotation =
-              std::make_shared<ngraph::he::HEOpAnnotations>(false, true);
+              std::make_shared<ngraph::he::HEOpAnnotations>(false, true, false);
           param->set_op_annotations(encrypted_annotation);
         } else {
           current_annotation->set_encrypted(true);
@@ -275,7 +275,8 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
                 param->get_op_annotations());
         if (current_annotation == nullptr) {
           auto encrypted_annotation =
-              std::make_shared<ngraph::he::HEOpAnnotations>(false, false);
+              std::make_shared<ngraph::he::HEOpAnnotations>(false, false,
+                                                            false);
           param->set_op_annotations(encrypted_annotation);
         } else {
           current_annotation->set_encrypted(false);

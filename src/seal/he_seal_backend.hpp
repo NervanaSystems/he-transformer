@@ -307,15 +307,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns the top-level scale used for encoding
   inline double get_scale() const { return m_encryption_params.scale(); }
 
-  /// \brief Sets plaintext packing
-  /// TODO: rename to plaintext_pack_data
-  void set_pack_data(const bool pack) { m_pack_data = pack; }
-
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
-
-  /// \brief Returns whether or not plaintext packing is used
-  bool pack_data() const { return m_pack_data; }
 
   /// \brief Returns whether or not the model is encrypted
   bool encrypt_model() const { return m_encrypt_model; }
@@ -365,8 +358,6 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
  private:
-  bool m_pack_data{
-      !ngraph::he::flag_to_bool(std::getenv("NGRAPH_UNPACK_DATA"))};
   bool m_encrypt_model{
       ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_MODEL"))};
   bool m_naive_rescaling{
