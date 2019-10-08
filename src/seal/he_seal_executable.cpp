@@ -107,8 +107,8 @@ ngraph::he::HESealExecutable::HESealExecutable(
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (has_he_annotatation(*param)) {
       std::string from_client_str = from_client(*param) ? "" : "not ";
-      NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param->get_shape())
-                       << "} is " << from_client_str << "from client";
+      NGRAPH_HE_LOG(3) << "Parameter shape " << param->get_shape() << " is "
+                       << from_client_str << "from client";
     }
 
     for (const auto& tag : param->get_provenance_tags()) {
@@ -344,8 +344,8 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
                              : input_param->get_name();
 
       NGRAPH_HE_LOG(1) << "Server setting inference tensor name "
-                       << input_param->get_name() << ", with shape {"
-                       << ngraph::join(shape, "x") << "}";
+                       << input_param->get_name() << ", with "
+                       << input_param->get_shape();
 
       proto_cipher_tensor->set_name(input_param->get_name());
 
@@ -628,8 +628,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
       if (from_client(*param)) {
-        NGRAPH_HE_LOG(5) << "From client param shape "
-                         << ngraph::join(param->get_shape(), "x");
+        NGRAPH_HE_LOG(5) << "From client param shape " << param->get_shape();
         NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
         size_t param_size = shape_size(param->get_shape()) / m_batch_size;
 
@@ -815,7 +814,7 @@ bool ngraph::he::HESealExecutable::call(
                        << "[ " << op->get_name() << " ]"
                        << "\033[0m";
       if (type_id == OP_TYPEID::Constant) {
-        NGRAPH_HE_LOG(3) << "Constant shape {" << join(op->get_shape()) << "}";
+        NGRAPH_HE_LOG(3) << "Constant shape " << op->get_shape();
       }
     }
 
@@ -825,8 +824,8 @@ bool ngraph::he::HESealExecutable::call(
             std::static_pointer_cast<const ngraph::op::Parameter>(op);
         if (has_he_annotatation(*param_op)) {
           std::string from_client_str = from_client(*param_op) ? "" : "not ";
-          NGRAPH_HE_LOG(3) << "Parameter shape {" << join(param_op->get_shape())
-                           << "} is " << from_client_str << "from client";
+          NGRAPH_HE_LOG(3) << "Parameter shape " << param_op->get_shape()
+                           << from_client_str;
         }
       }
       continue;
@@ -1205,8 +1204,8 @@ void ngraph::he::HESealExecutable::generate_calls(
         Shape op_out_shape = packed_out_shape;
 
         if (verbose) {
-          NGRAPH_HE_LOG(3) << "AvgPool " << join(op_in_shape, "x") << " => "
-                           << join(op_out_shape, "x");
+          NGRAPH_HE_LOG(3) << "AvgPool " << op_in_shape << " => "
+                           << op_out_shape;
         }
 
         switch (unary_op_type) {
@@ -1472,8 +1471,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         Shape in_shape1 = unpacked_arg_shapes[1];
 
         if (verbose) {
-          NGRAPH_HE_LOG(3) << join(in_shape0, "x") << " dot "
-                           << join(in_shape1, "x");
+          NGRAPH_HE_LOG(3) << in_shape0 << " dot " << in_shape1;
         }
 
         switch (binary_op_type) {
@@ -1734,8 +1732,7 @@ void ngraph::he::HESealExecutable::generate_calls(
         }
 
         if (verbose) {
-          NGRAPH_HE_LOG(3) << join(op_in_shape, "x") << " reshape "
-                           << join(op_out_shape, "x");
+          NGRAPH_HE_LOG(3) << op_in_shape << " reshape " << op_out_shape;
         }
         switch (unary_op_type) {
           case UnaryOpType::CipherToCipher: {
@@ -1817,6 +1814,7 @@ void ngraph::he::HESealExecutable::generate_calls(
       case OP_TYPEID::Slice: {
         const op::Slice* slice = static_cast<const op::Slice*>(&node);
         Shape& in_shape = packed_arg_shapes[0];
+        NGRAPH_INFO << "in_shape " << in_shape;
         Coordinate lower_bounds = slice->get_lower_bounds();
         Coordinate upper_bounds = slice->get_upper_bounds();
 

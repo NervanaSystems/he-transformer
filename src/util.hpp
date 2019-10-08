@@ -212,15 +212,8 @@ map_to_double_map(
 }
 
 inline ngraph::Shape proto_shape_to_ngraph_shape(
-    const he_proto::SealCipherTensor& tensor) {
-  auto proto_shape = tensor.shape();
-  std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
-  return ngraph::Shape{dims};
-}
-
-inline ngraph::Shape proto_shape_to_ngraph_shape(
-    const he_proto::PlainTensor& tensor) {
-  auto proto_shape = tensor.shape();
+    const google::protobuf::RepeatedField<google::protobuf::uint64>&
+        proto_shape) {
   std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
   return ngraph::Shape{dims};
 }

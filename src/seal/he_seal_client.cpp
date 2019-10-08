@@ -175,8 +175,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   }
 
   NGRAPH_HE_LOG(5) << "Client received inference request with name "
-                   << proto_name << ", shape {" << join(shape, "x")
-                   << "}, to be "
+                   << proto_name << ", " << shape << ", to be "
                    << (encrypt_tensor ? "encrypted" : "plaintext");
 
   size_t parameter_size =
@@ -222,8 +221,8 @@ void ngraph::he::HESealClient::handle_inference_request(
       *encrypted_inputs_msg.add_cipher_tensors() = cipher_tensor_proto;
 
       auto param_shape = encrypted_inputs_msg.cipher_tensors(0).shape();
-      NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape {"
-                       << ngraph::join(param_shape, "x") << "}";
+      NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape "
+                       << proto_shape_to_ngraph_shape(param_shape);
 
       write_message(std::move(encrypted_inputs_msg));
     }
@@ -245,7 +244,7 @@ void ngraph::he::HESealClient::handle_inference_request(
 
       auto param_shape = inputs_msg.plain_tensors(0).shape();
       NGRAPH_HE_LOG(3) << "Client sending plaintext input with shape "
-                       << ngraph::join(param_shape, "x");
+                       << proto_shape_to_ngraph_shape(param_shape);
 
       write_message(std::move(inputs_msg));
     }
@@ -303,7 +302,8 @@ void ngraph::he::HESealClient::handle_result(
 
       NGRAPH_HE_LOG(5) << "Loaded plaintext " << result_plaintexts[result_idx];
     }
-    ngraph::Shape shape = ngraph::he::proto_shape_to_ngraph_shape(proto_tensor);
+    ngraph::Shape shape =
+        ngraph::he::proto_shape_to_ngraph_shape(proto_tensor.shape());
 
     HEPlainTensor plain_tensor(element::f64, shape, proto_tensor.packed());
     plain_tensor.set_elements(result_plaintexts);
