@@ -310,9 +310,6 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
-  /// \brief Returns whether or not the model is encrypted
-  bool encrypt_model() const { return m_encrypt_model; }
-
   /// \brief Returns whether or not the rescaling operation is performed after
   /// every multiplication.
   /// \warning Naive rescaling results in a dramatic performance penalty for
@@ -358,8 +355,6 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
  private:
-  bool m_encrypt_model{
-      ngraph::he::flag_to_bool(std::getenv("NGRAPH_ENCRYPT_MODEL"))};
   bool m_naive_rescaling{
       ngraph::he::flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};

@@ -210,7 +210,7 @@ void ngraph::he::HEPlainTensor::unpack() {
   size_t batch_size = get_batch_size();
 
   NGRAPH_INFO << "Unpacking HETensor to batch size " << batch_size;
-  NGRAPH_INFO << "Num plaintext " < num_plaintexts();
+  NGRAPH_INFO << "Num plaintext " << num_plaintexts();
 
   // TODO: implement
   m_plaintexts.resize(num_plaintexts() * batch_size);

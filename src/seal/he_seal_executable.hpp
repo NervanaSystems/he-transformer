@@ -48,17 +48,12 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] function Function in the executable
   /// \param[in] enable_performance_collection Unused: TODO use
   /// \param[in] he_seal_backend Backend storing encryption context
-  /// \param[in] encrypt_all_params Whether or not to encrypt all the parameters
-  /// in the model
-  /// \param[in] encrypt_model Whether or not to encrypt the model
-  /// \param[in] pack_data Whether or not to pack the data using plaintext
-  /// packing
   /// \param[in] enable_client Whether or not to rely on a client to store the
   /// secret key
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
                    ngraph::he::HESealBackend& he_seal_backend,
-                   bool encrypt_model, bool pack_data, bool enable_client);
+                   bool enable_client);
 
   ~HESealExecutable() override {
     NGRAPH_HE_LOG(3) << "~HESealExecutable()";
@@ -217,10 +212,10 @@ class HESealExecutable : public runtime::Executable {
            nullptr;
   }
 
-  /// \brief Returns whether or not Parameter node should be received from
-  /// client. Defaults to false if Parameter has no HEOpAnnotation \param[in]
-  /// param Parameter node
-  inline bool from_client(const ngraph::op::Parameter& param) {
+  /// \brief Returns whether or not operation node should be received from
+  /// client. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation, should be Constant or Parameter node
+  inline bool from_client(const ngraph::op::Op& op) {
     auto annotation = param.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
@@ -230,10 +225,21 @@ class HESealExecutable : public runtime::Executable {
     return false;
   }
 
+  /// \brief Returns whether or not operation node should be packed using
+  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation, should be Constant or Parameter node
+  inline bool plaintext_packed(const ngraph::op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
+                annotation)) {
+      return he_annotation->plaintext_packing();
+    }
+    return false;
+  }
+
  private:
   HESealBackend& m_he_seal_backend;
-  bool m_encrypt_model;
-  bool m_pack_data;
   bool m_is_compiled;
   bool m_verbose_all_ops;
 

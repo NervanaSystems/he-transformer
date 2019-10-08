@@ -89,10 +89,8 @@ using json = nlohmann::json;
 ngraph::he::HESealExecutable::HESealExecutable(
     const std::shared_ptr<Function>& function,
     bool enable_performance_collection, HESealBackend& he_seal_backend,
-    bool encrypt_model, bool pack_data, bool enable_client)
+    bool enable_client)
     : m_he_seal_backend(he_seal_backend),
-      m_encrypt_model(encrypt_model),
-      m_pack_data(pack_data),
       m_verbose_all_ops(false),
       m_enable_client(enable_client),
       m_server_setup(false),
@@ -336,7 +334,12 @@ void ngraph::he::HESealExecutable::send_inference_shape() {
                        << ngraph::join(shape, "x") << "}";
 
       proto_cipher_tensor->set_name(input_param->get_name());
-      proto_cipher_tensor->set_packed(m_pack_data);
+
+      if (plaintext_packed(*input_param)) {
+        NGRAPH_HE_LOG(1) << "Setting parameter " << input_param->get_name()
+                         << "  to packed";
+        proto_cipher_tensor->set_packed(true);
+      }
     }
   }
 
@@ -658,12 +661,6 @@ bool ngraph::he::HESealExecutable::call(
     server_setup();
   }
 
-  if (m_pack_data) {
-    NGRAPH_HE_LOG(1) << "Packing data with batch size " << m_batch_size;
-  }
-  if (m_encrypt_model) {
-    NGRAPH_HE_LOG(1) << "Encrypting model";
-  }
   if (complex_packing()) {
     NGRAPH_HE_LOG(1) << "Complex packing";
   }
@@ -844,7 +841,8 @@ bool ngraph::he::HESealExecutable::call(
                      return op_input->is_type<HEPlainTensor>();
                    });
         if (op->is_constant()) {
-          plain_out = !m_encrypt_model;
+          // TODO: fix
+          plain_out = true;  // !m_encrypt_model;
         }
         bool packed_out =
             std::any_of(op_inputs.begin(), op_inputs.end(),

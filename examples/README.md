@@ -45,7 +45,6 @@ The server-client approach currently works only for functions with one result te
 For a deep learning example using the client-server model, see the `MNIST/MLP` folder.
 
 # List of command-line flags
-  * `NGRAPH_ENCRYPT_MODEL`. Set to 1 to encrypt model.
   * `STOP_CONST_FOLD`. Set to 1 to stop constant folding optimization. Note, this speeds up the graph compilation time for large batch sizes.
   * `OMP_NUM_THREADS`. Set to 1 to enable single-threaded execution (useful for debugging). For best multi-threaded performance, this number should be tuned.
   * `NGRAPH_HE_SEAL_CONFIG`. Used to specify the encryption parameters filename. If no value is passed, a small parameter choice will be used. ***Warning***: the default parameter selection does not enforce any security level. The configuration file should be of the form:

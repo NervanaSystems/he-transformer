@@ -96,9 +96,6 @@ void ngraph::he::HESealBackend::generate_context() {
       m_barrett64_ratio_map[modulus_value] = const_ratio;
     }
   }
-
-  NGRAPH_CHECK(!(m_encrypt_model && complex_packing()),
-               "Encrypting the model is incompatible with complex packing");
 }
 
 bool ngraph::he::HESealBackend::set_config(
@@ -289,8 +286,7 @@ std::shared_ptr<ngraph::runtime::Executable> ngraph::he::HESealBackend::compile(
   }
 
   return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this, m_encrypt_model,
-      pack_data(), m_enable_client);
+      function, enable_performance_collection, *this, m_enable_client);
 }
 
 bool ngraph::he::HESealBackend::is_supported(const ngraph::Node& node) const {
