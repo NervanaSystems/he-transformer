@@ -1813,27 +1813,18 @@ void ngraph::he::HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Slice: {
-      NGRAPH_INFO << "casting slice op";
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
-      NGRAPH_INFO << "Slice op";
-      Shape& in_shape = packed_arg_shapes[0];
-      NGRAPH_INFO << "in_shape " << in_shape;
+      Shape& in_shape = unpacked_arg_shapes[0];
       Coordinate lower_bounds = slice->get_lower_bounds();
       Coordinate upper_bounds = slice->get_upper_bounds();
 
-      NGRAPH_INFO << "Checking if slice op is packed";
-
       if (plaintext_packed(node_wrapper)) {
-        NGRAPH_INFO << "slice op is packed";
-
-        in_shape = unpacked_arg_shapes[0];
+        in_shape = packed_arg_shapes[0];
         lower_bounds =
             ngraph::he::HETensor::pack_shape(slice->get_lower_bounds());
         upper_bounds =
             ngraph::he::HETensor::pack_shape(slice->get_upper_bounds());
       }
-      NGRAPH_INFO << "Done checking if slice op is packed";
-
       const Strides& strides = slice->get_strides();
 
       switch (unary_op_type) {
