@@ -24,14 +24,14 @@ namespace he {
 HEOpAnnotations::HEOpAnnotations(bool from_client, bool encrypted, bool packed)
     : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
 
-bool HEOpAnnotations::from_client() { return m_from_client; }
+bool HEOpAnnotations::from_client() const { return m_from_client; }
 
 void HEOpAnnotations::set_from_client(bool val) { m_from_client = val; }
 
-bool HEOpAnnotations::encrypted() { return m_encrypted; }
+bool HEOpAnnotations::encrypted() const { return m_encrypted; }
 void HEOpAnnotations::set_encrypted(bool val) { m_encrypted = val; }
 
-bool HEOpAnnotations::packed() { return m_packed; }
+bool HEOpAnnotations::packed() const { return m_packed; }
 void HEOpAnnotations::set_packed(bool val) { m_packed = val; }
 
 /// \brief Returns whether or not Op has HEOPAnnotations

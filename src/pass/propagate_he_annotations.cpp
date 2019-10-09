@@ -38,16 +38,26 @@ bool pass::PropagateHEAnnotations::run_on_function(
     std::shared_ptr<ngraph::Function> function) {
   std::list<std::shared_ptr<ngraph::Node>> nodes = function->get_ordered_ops();
 
+  NGRAPH_HE_LOG(3) << "Running Propagate HE Annotations pass";
+
   auto plaintext_unpacked_annotation =
-      std::make_shared<HEOpAnnotations>(true, false, false);
+      std::make_shared<HEOpAnnotations>(false, false, false);
 
   // First, set all ops without annotations to have plaintext unpacked
   // annotation
   for (auto node : nodes) {
+    NGRAPH_HE_LOG(5) << "Node " << node->get_name();
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
+      NGRAPH_INFO << "Node is op";
       if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
         op->set_op_annotations(plaintext_unpacked_annotation);
+        NGRAPH_HE_LOG(5) << "Adding plaintext_unpacked_annotation to op "
+                         << op->get_name();
+      } else {
+        auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
+            op->get_op_annotations());
+        NGRAPH_HE_LOG(5) << "Op has annotation : " << *he_op_annotations;
       }
     }
   }

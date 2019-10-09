@@ -36,13 +36,13 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   /// using plaintext packing
   HEOpAnnotations(bool from_client, bool encrypted, bool packed);
 
-  bool from_client();
+  bool from_client() const;
   void set_from_client(bool val);
 
-  bool encrypted();
+  bool encrypted() const;
   void set_encrypted(bool val);
 
-  bool packed();
+  bool packed() const;
   void set_packed(bool val);
 
   /// \brief Returns whether or not Op has HEOPAnnotations
@@ -54,6 +54,16 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   bool m_encrypted = false;
   bool m_packed = false;
 };
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const HEOpAnnotations& annotation) {
+  os << "HEOpAnnotation{";
+  os << "from_client=" << (annotation.from_client() ? "True" : "False")
+     << ", ";
+  os << "encrypted=" << (annotation.encrypted() ? "True" : "False") << ", ";
+  os << "packed=" << (annotation.packed() ? "True" : "False") << "}";
+  return os;
+}
 
 }  // namespace he
 }  // namespace ngraph

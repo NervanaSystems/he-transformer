@@ -67,7 +67,6 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain) {
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{4};
   {
@@ -163,7 +162,6 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4};
   Shape shape_b{4};
@@ -215,7 +213,6 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape{};
   {

@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -32,24 +33,47 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{};
-  auto r = make_shared<op::Slice>(A, Coordinate{}, Coordinate{});
-  auto f = make_shared<Function>(r, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
 
-    auto a = inputs[0];
-    auto result = results[0];
+  auto server_plaintext_packed_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(false, false, true);
+  auto server_ciphertext_packed_annotation =
+      std::make_shared<ngraph::he::HEOpAnnotations>(false, true, true);
 
-    copy_data(a, vector<float>{312});
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{}, Coordinate{});
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(server_plaintext_packed_annotation);
+
+    auto t_a =
+        he_backend->create_plain_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_plain_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a, vector<float>{312});
     auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_EQ((vector<float>{312}), read_vector<float>(result));
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_EQ((vector<float>{312}), read_vector<float>(t_result));
+  }
+
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{}, Coordinate{});
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(server_ciphertext_packed_annotation);
+
+    auto t_a =
+        he_backend->create_cipher_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_cipher_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a, vector<float>{312});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_EQ((vector<float>{312}), read_vector<float>(t_result));
   }
 }
 
@@ -58,8 +82,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{3, 2};
+  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   auto r = make_shared<op::Slice>(A, Coordinate{0, 1}, Coordinate{3, 3});
   auto f = make_shared<Function>(r, ParameterVector{A});
   // Create some tensors for input/output
@@ -68,6 +92,10 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
   for (auto tensors : tensors_list) {
     auto results = get<0>(tensors);
     auto inputs = get<1>(tensors);
+
+    auto A = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(A, Coordinate{0, 1}, Coordinate{3, 3});
+    auto f = make_shared<Function>(r, ParameterVector{A});
 
     auto a = inputs[0];
     auto result = results[0];
