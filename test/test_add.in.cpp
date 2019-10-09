@@ -105,34 +105,66 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   EXPECT_TRUE(all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
-  add_test(ngraph::Shape{2, 3}, true, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_plain_real_unpacked) {
+  add_test(ngraph::Shape{2, 3}, false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
-  add_test(ngraph::Shape{2, 3}, true, false, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_plain_real_packed) {
+  add_test(ngraph::Shape{2, 3}, false, false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_plain_plain_2_3) {
-  add_test(ngraph::Shape{2, 3}, true, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_plain_complex_unpacked) {
+  add_test(ngraph::Shape{2, 3}, false, false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_cipher_cipher_2_3) {
-  add_test(ngraph::Shape{2, 3}, true, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_plain_complex_packed) {
+  add_test(ngraph::Shape{2, 3}, false, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_cipher_plain_2_3) {
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_cipher_real_unpacked) {
   add_test(ngraph::Shape{2, 3}, false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_cipher_plain_2_3_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_cipher_real_packed) {
   add_test(ngraph::Shape{2, 3}, false, true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_cipher_complex_unpacked) {
+  add_test(ngraph::Shape{2, 3}, false, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_cipher_complex_packed) {
+  add_test(ngraph::Shape{2, 3}, false, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_plain_real_unpacked) {
+  add_test(ngraph::Shape{2, 3}, true, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_plain_real_packed) {
   add_test(ngraph::Shape{2, 3}, true, false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_cipher_cipher_2_3_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_plain_complex_unpacked) {
+  add_test(ngraph::Shape{2, 3}, true, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_plain_complex_packed) {
+  add_test(ngraph::Shape{2, 3}, true, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_cipher_real_unpacked) {
+  add_test(ngraph::Shape{2, 3}, true, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_cipher_real_packed) {
   add_test(ngraph::Shape{2, 3}, true, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_cipher_complex_unpacked) {
+  add_test(ngraph::Shape{2, 3}, true, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, add_2_3_cipher_cipher_complex_packed) {
+  add_test(ngraph::Shape{2, 3}, true, true, true, true);
 }
