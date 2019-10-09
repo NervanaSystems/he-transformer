@@ -510,6 +510,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
       if (param_originates_from_name(*parameter, tensor_name)) {
         NGRAPH_HE_LOG(5) << "Param " << tensor_name << " matches at index "
                          << param_idx;
+        matching_idx = param_idx;
         return true;
       }
     }
@@ -518,11 +519,12 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
   };
 
   if (cipher_input) {
+    NGRAPH_HE_LOG(3) << "Server handling ciphertext client inputs";
     he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
     ngraph::Shape shape{cipher_tensor.shape().begin(),
                         cipher_tensor.shape().end()};
 
-    NGRAPH_HE_LOG(5) << "cipher_tensor.packed()" << cipher_tensor.packed();
+    NGRAPH_HE_LOG(5) << "cipher_tensor.packed() " << cipher_tensor.packed();
 
     set_batch_size(
         ngraph::he::HETensor::batch_size(shape, cipher_tensor.packed()));
@@ -539,6 +541,8 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
           he_cipher_inputs[cipher_idx], cipher_tensor.ciphertexts(cipher_idx),
           m_context);
     }
+
+    NGRAPH_HE_LOG(5) << "Done loading client ciphertext inputs";
 
     // Write ciphers to client inputs
     size_t param_idx;
@@ -573,6 +577,7 @@ void ngraph::he::HESealExecutable::handle_client_ciphers(
     NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
                      << "] = " << m_client_load_idx[param_idx];
   } else {  // plaintext tensor input
+    NGRAPH_HE_LOG(3) << "Server handling plaintext client inputs";
     he_proto::PlainTensor plain_tensor = proto_msg.plain_tensors(0);
     ngraph::Shape shape{plain_tensor.shape().begin(),
                         plain_tensor.shape().end()};
