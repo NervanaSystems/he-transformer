@@ -82,11 +82,6 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
   Shape shape_a{4, 4};
   Shape shape_r{3, 2};
 
-  auto server_plaintext_unpacked_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(false, false, true);
-  auto server_ciphertext_unpacked_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(false, true, true);
-
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
     auto r = make_shared<op::Slice>(a, Coordinate{0, 1}, Coordinate{3, 3});
@@ -134,27 +129,49 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{16};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{12};
-  auto r = make_shared<op::Slice>(A, Coordinate{2}, Coordinate{14});
-  auto f = make_shared<Function>(r, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
 
-    auto a = inputs[0];
-    auto result = results[0];
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{2}, Coordinate{14});
+    auto f = make_shared<Function>(r, ParameterVector{a});
 
-    copy_data(
-        a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_plain_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_plain_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+                                 14, 15});
     auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(
         all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
-                  read_vector<float>(result)));
+                  read_vector<float>(t_result)));
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{2}, Coordinate{14});
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_cipher_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_cipher_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+                                 14, 15});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_TRUE(
+        all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
+                  read_vector<float>(t_result)));
   }
 }
 
@@ -163,27 +180,49 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2};
-  auto r = make_shared<op::Slice>(A, Coordinate{1, 0}, Coordinate{4, 4},
-                                  Strides{2, 3});
-  auto f = make_shared<Function>(r, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
 
-    auto a = inputs[0];
-    auto result = results[0];
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{1, 0}, Coordinate{4, 4},
+                                    Strides{2, 3});
+    auto f = make_shared<Function>(r, ParameterVector{a});
 
-    copy_data(
-        a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_plain_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_plain_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+                                 14, 15});
     auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(
-        all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(result)));
+        all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{1, 0}, Coordinate{4, 4},
+                                    Strides{2, 3});
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_cipher_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_cipher_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a, vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+                                 14, 15});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_TRUE(
+        all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
   }
 }
 
@@ -192,30 +231,57 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4, 4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
-  auto r = make_shared<op::Slice>(A, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
-  auto f = make_shared<Function>(r, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
 
-    auto a = inputs[0];
-    auto result = results[0];
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r =
+        make_shared<op::Slice>(a, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
+    auto f = make_shared<Function>(r, ParameterVector{a});
 
-    copy_data(a,
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_plain_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_plain_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a,
               vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
                             13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
                             26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
                             39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
                             52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
     auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
-                          read_vector<float>(result)));
+                          read_vector<float>(t_result)));
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r =
+        make_shared<op::Slice>(a, Coordinate{1, 1, 1}, Coordinate{3, 3, 3});
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_cipher_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_cipher_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a,
+              vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                            13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                            26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                            39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_TRUE(all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
+                          read_vector<float>(t_result)));
   }
 }
 
@@ -224,31 +290,58 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4, 4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
-  auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
-                                  Strides{2, 2, 2});
-  auto f = make_shared<Function>(r, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
 
-    auto a = inputs[0];
-    auto result = results[0];
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
+                                    Strides{2, 2, 2});
+    auto f = make_shared<Function>(r, ParameterVector{a});
 
-    copy_data(a,
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_plain_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_plain_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a,
               vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
                             14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                             27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
                             40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
     auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
-                          read_vector<float>(result)));
+                          read_vector<float>(t_result)));
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
+                                    Strides{2, 2, 2});
+
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_cipher_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_cipher_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a,
+              vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
+                            14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                            27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                            40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+                            53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_TRUE(all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
+                          read_vector<float>(t_result)));
   }
 }
 
@@ -257,31 +350,56 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4, 4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
   Shape shape_r{2, 2, 2};
-  auto r = make_shared<op::Slice>(A, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
-                                  Strides{2, 2, 3});
-  auto f = make_shared<Function>(r, ParameterVector{A});
 
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
+                                    Strides{2, 2, 3});
+    auto f = make_shared<Function>(r, ParameterVector{a});
 
-    auto a = inputs[0];
-    auto result = results[0];
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
 
-    copy_data(a,
+    auto t_a =
+        he_backend->create_plain_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_plain_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a,
               vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
                             14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                             27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
                             40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
     auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
+    handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
-                          read_vector<float>(result)));
+                          read_vector<float>(t_result)));
+  }
+  {
+    auto a = make_shared<op::Parameter>(element::f32, shape_a);
+    auto r = make_shared<op::Slice>(a, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
+                                    Strides{2, 2, 3});
+    auto f = make_shared<Function>(r, ParameterVector{a});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    auto t_a =
+        he_backend->create_cipher_tensor(a->get_element_type(), a->get_shape());
+    auto t_result =
+        he_backend->create_cipher_tensor(r->get_element_type(), r->get_shape());
+
+    copy_data(t_a,
+              vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
+                            14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                            27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                            40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+                            53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
+    auto handle = backend->compile(f);
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_TRUE(all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
+                          read_vector<float>(t_result)));
   }
 }
