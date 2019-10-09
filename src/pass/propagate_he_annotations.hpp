@@ -18,35 +18,22 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
-#include "ngraph/op/op.hpp"
-#include "ngraph/op/util/op_annotations.hpp"
+#include "ngraph/pass/graph_rewrite.hpp"
 
 namespace ngraph {
 namespace he {
-/// \brief Annotations added to graph ops by HE backend passes
-class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
+namespace pass {
+/// \brief Propagates HE op annotations from parameters / constants to entire
+/// function
+class PropagateHEAnnotations : public ngraph::pass::FunctionPass {
  public:
-  HEOpAnnotations(bool from_client, bool encrypted, bool plaintext_packing);
-
-  bool from_client();
-  void set_from_client(bool val);
-
-  bool encrypted();
-  void set_encrypted(bool val);
-
-  bool plaintext_packing();
-  void set_plaintext_packing(bool val);
-
- private:
-  bool m_from_client = false;
-  bool m_encrypted = false;
-  bool m_plaintext_packing = false;
+  /// \brief Runs pass on function
+  /// \param[in,out] function Function which to run pass on
+  /// \returns whether or not the function has been modified
+  bool run_on_function(std::shared_ptr<ngraph::Function> function) override;
 };
-
-/// \brief Returns whether or not Op has HEOPAnnotations
-/// \param[in] op Operation to check for annotation
-bool has_he_annotation(const ngraph::op::Op& op);
-
+}  // namespace pass
 }  // namespace he
 }  // namespace ngraph

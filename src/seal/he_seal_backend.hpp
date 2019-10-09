@@ -98,8 +98,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   ///     tensor should be loaded from the client. Note, the tensor may or may
   ///     not be encrypted, as determined by the client.
   ///      2) {enable_client : "True" /"False"}, which indicates whether or not
-  ///      the client should be
-  ///     enabled
+  ///      the client should be enabled
   ///     3) {tensor_name : "encrypt"}, which indicates the specified
   ///     tensor should be encrypted. By default, tensors may or may not be
   ///     encrypted. Setting this option will encrypt the plaintext tensor of

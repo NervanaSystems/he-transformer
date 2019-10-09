@@ -17,9 +17,15 @@
 # HE transformer sources
 set(HE_SRC
     # main
-    he_plain_tensor.cpp he_tensor.cpp node_wrapper.cpp
+    he_plain_tensor.cpp
+    he_tensor.cpp
+    node_wrapper.cpp
+    he_op_annotations.cpp
     # pass
-    pass/he_fusion.cpp pass/he_liveness.cpp pass/supported_ops.cpp
+    pass/he_fusion.cpp
+    pass/he_liveness.cpp
+    pass/supported_ops.cpp
+    pass/propagate_he_annotations.cpp
     # op
     op/bounded_relu.cpp
     # seal kernels

@@ -194,13 +194,6 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns the batch size
   void set_batch_size(size_t batch_size);
 
-  /// \brief Returns whether or not Parmeter node has HEOPAnnotations
-  inline bool has_he_annotatation(const ngraph::op::Parameter& param) {
-    auto annotation = param.get_op_annotations();
-    return std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(annotation) !=
-           nullptr;
-  }
-
   /// \brief Returns whether or not operation node should be received from
   /// client. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation, should be Constant or Parameter node
