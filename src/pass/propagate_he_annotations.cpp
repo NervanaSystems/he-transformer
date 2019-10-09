@@ -62,39 +62,60 @@ bool pass::PropagateHEAnnotations::run_on_function(
     }
   }
 
-  // Update annotation with ciphertext / packed as needed
+  NGRAPH_HE_LOG(5) << "Updating annotation with ciphertext / packed as "
+                      "needed";
   for (auto node : nodes) {
     auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
+    NGRAPH_HE_LOG(5) << "Op " << op->get_name();
     if (op == nullptr) {
+      NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not op";
       continue;
     }
     auto he_op_annotations =
         std::dynamic_pointer_cast<HEOpAnnotations>(op->get_op_annotations());
     NGRAPH_CHECK(he_op_annotations != nullptr,
                  "Node doesn't have HEOpAnnotations");
-    for (ngraph::Output<ngraph::Node> output : op->outputs()) {
-      ngraph::Node* out_node = output.get_node();
 
-      auto out_op = dynamic_cast<ngraph::op::Op*>(out_node);
-      if (out_op == nullptr) {
-        continue;
-      }
+    for (const auto& output : node->outputs()) {
+      NGRAPH_INFO << "Output name " << output.get_node()->get_name();
+      for (const auto& target_input : output.get_target_inputs()) {
+        auto target_node = target_input.get_node();
+        NGRAPH_INFO << "Target input " << target_node->get_name();
+        auto target_op = dynamic_cast<ngraph::op::Op*>(target_node);
+        NGRAPH_CHECK(target_op != nullptr, "Target is not an op");
 
-      auto he_output_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
-          out_op->get_op_annotations());
-      NGRAPH_CHECK(he_output_annotations != nullptr,
-                   "Output node doesn't have HEOpAnnotations");
+        auto he_target_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
+            target_op->get_op_annotations());
+        NGRAPH_CHECK(he_target_annotations != nullptr,
+                     "Target node doesn't have HEOpAnnotations");
 
-      if (he_op_annotations->encrypted()) {
-        NGRAPH_HE_LOG(5) << "Setting node " << node->get_name()
-                         << " to encrypted";
-        he_output_annotations->set_encrypted(true);
+        if (he_op_annotations->encrypted()) {
+          NGRAPH_HE_LOG(5) << "Setting node " << target_node->get_name()
+                           << " to encrypted";
+          he_target_annotations->set_encrypted(true);
+        }
+        if (he_op_annotations->packed()) {
+          NGRAPH_HE_LOG(5) << "Setting node " << target_node->get_name()
+                           << " to packed";
+          he_target_annotations->set_packed(true);
+        }
+        target_op->set_op_annotations(he_target_annotations);
       }
-      if (he_op_annotations->packed()) {
-        NGRAPH_HE_LOG(5) << "Setting node " << node->get_name() << " to packed";
-        he_output_annotations->set_packed(true);
+    }
+  }
+
+  // For debugging, print out node info
+  NGRAPH_HE_LOG(5) << "Final node annotations";
+  for (auto node : nodes) {
+    NGRAPH_HE_LOG(5) << "Node " << node->get_name();
+    if (node->is_op()) {
+      auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
+      NGRAPH_INFO << "Node is op";
+      if (ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
+        auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
+            op->get_op_annotations());
+        NGRAPH_HE_LOG(5) << "Op has annotation : " << *he_op_annotations;
       }
-      out_op->set_op_annotations(he_output_annotations);
     }
   }
   return false;
