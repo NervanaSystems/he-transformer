@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -24,6 +25,7 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
@@ -36,6 +38,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
     auto b = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
 
     auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
     auto t_b = he_backend->create_plain_tensor(element::f32, shape);
@@ -56,6 +64,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
     auto b = make_shared<op::Parameter>(element::f64, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
 
     auto t_a = he_backend->create_cipher_tensor(element::f64, shape);
     auto t_b = he_backend->create_plain_tensor(element::f64, shape);
@@ -80,6 +94,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
     auto t_a = he_backend->create_cipher_tensor(element::i64, shape);
     auto t_b = he_backend->create_plain_tensor(element::i64, shape);
     auto t_result = he_backend->create_cipher_tensor(element::i64, shape);
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
 
     copy_data(t_a, vector<int64_t>{1, 2, 3, 4, 5, 6});
     copy_data(t_b, vector<int64_t>{7, 8, 9, 10, 11, 12});
@@ -106,6 +126,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
 
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
     auto t_a = he_backend->create_cipher_tensor(element::f32, shape);
     auto t_b = he_backend->create_plain_tensor(element::f32, shape);
     auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
@@ -145,6 +171,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
     auto b = make_shared<op::Parameter>(element::i64, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
 
     auto t_a = he_backend->create_cipher_tensor(element::i64, shape);
     auto t_b = he_backend->create_plain_tensor(element::i64, shape);

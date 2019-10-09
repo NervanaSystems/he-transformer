@@ -748,9 +748,10 @@ bool HESealExecutable::call(
             he_input = cipher_input;
           }
         } else {  // not encrypted
-          NGRAPH_CHECK(he_server_input->is_type<HEPlainTensor>(),
-                       "Server input anotation is not encrypted, but tensor is "
-                       "not plaintext");
+          NGRAPH_CHECK(
+              he_server_input->is_type<HEPlainTensor>(),
+              "Server input annotation is not encrypted, but tensor is "
+              "not plaintext");
           auto plain_input = he_tensor_as_type<HEPlainTensor>(he_server_input);
 
           if (current_annotation->packed()) {
