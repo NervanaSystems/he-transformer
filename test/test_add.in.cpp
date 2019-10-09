@@ -41,7 +41,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
 
     a->set_op_annotations(
         HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
     b->set_op_annotations(
         HEOpAnnotations::server_plaintext_unpacked_annotation());
 
@@ -67,7 +66,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
 
     a->set_op_annotations(
         HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
     b->set_op_annotations(
         HEOpAnnotations::server_plaintext_unpacked_annotation());
 
@@ -97,7 +95,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3) {
 
     a->set_op_annotations(
         HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
     b->set_op_annotations(
         HEOpAnnotations::server_plaintext_unpacked_annotation());
 
@@ -128,7 +125,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
 
     a->set_op_annotations(
         HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
     b->set_op_annotations(
         HEOpAnnotations::server_plaintext_unpacked_annotation());
 
@@ -152,6 +148,11 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
 
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
     auto t_a = he_backend->create_cipher_tensor(element::f64, shape);
     auto t_b = he_backend->create_plain_tensor(element::f64, shape);
     auto t_result = he_backend->create_cipher_tensor(element::f64, shape);
@@ -174,7 +175,6 @@ NGRAPH_TEST(${BACKEND_NAME}, add_plain_cipher_2_3_complex) {
 
     a->set_op_annotations(
         HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
     b->set_op_annotations(
         HEOpAnnotations::server_plaintext_unpacked_annotation());
 
@@ -297,6 +297,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_complex) {
     auto b = make_shared<op::Parameter>(element::f32, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_plain_tensor(element::f32, shape);
     auto t_b = he_backend->create_plain_tensor(element::f32, shape);
@@ -313,6 +319,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_complex) {
     auto b = make_shared<op::Parameter>(element::f64, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_plain_tensor(element::f64, shape);
     auto t_b = he_backend->create_plain_tensor(element::f64, shape);
@@ -329,6 +341,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_complex) {
     auto b = make_shared<op::Parameter>(element::i64, shape);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_plain_tensor(element::i64, shape);
     auto t_b = he_backend->create_plain_tensor(element::i64, shape);
@@ -425,7 +443,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_zero_2_3) {
   }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
+NGRAPH_TEST(${BACKEND_NAME}, add_4_3_pack_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
@@ -437,6 +455,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape_b);
@@ -457,6 +481,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
     auto b = make_shared<op::Parameter>(element::f64, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_cipher_tensor(element::f64, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::f64, shape_b);
@@ -477,6 +507,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
     auto b = make_shared<op::Parameter>(element::i64, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_cipher_tensor(element::i64, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::i64, shape_b);
@@ -494,7 +530,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher) {
   }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
+NGRAPH_TEST(${BACKEND_NAME}, add_4_3_packed_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   he_backend->update_encryption_parameters(
@@ -508,6 +544,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_cipher_tensor(element::f32, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::f32, shape_b);
@@ -527,6 +569,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
     auto b = make_shared<op::Parameter>(element::f64, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_cipher_tensor(element::f64, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::f64, shape_b);
@@ -546,6 +594,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
     auto b = make_shared<op::Parameter>(element::i64, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_cipher_tensor(element::i64, shape_a);
     auto t_b = he_backend->create_packed_cipher_tensor(element::i64, shape_b);
@@ -562,7 +616,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_cipher_complex) {
   }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, add_4_3_pack_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   Shape shape_a{4, 3};
@@ -573,6 +627,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
     auto b = make_shared<op::Parameter>(element::f32, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
     auto t_b = he_backend->create_packed_plain_tensor(element::f32, shape_b);
@@ -592,6 +652,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
     auto b = make_shared<op::Parameter>(element::f64, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_plain_tensor(element::f64, shape_a);
     auto t_b = he_backend->create_packed_plain_tensor(element::f64, shape_b);
@@ -611,6 +677,12 @@ NGRAPH_TEST(${BACKEND_NAME}, add_4_3_batch_plain) {
     auto b = make_shared<op::Parameter>(element::i64, shape_b);
     auto t = make_shared<op::Add>(a, b);
     auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+    a->set_op_annotations(
+        HEOpAnnotations::server_plaintext_packed_annotation());
+    b->set_op_annotations(
+        HEOpAnnotations::server_plaintext_packed_annotation());
+
     // Create some tensors for input/output
     auto t_a = he_backend->create_packed_plain_tensor(element::i64, shape_a);
     auto t_b = he_backend->create_packed_plain_tensor(element::i64, shape_b);
