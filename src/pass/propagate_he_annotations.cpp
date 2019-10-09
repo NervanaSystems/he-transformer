@@ -49,7 +49,6 @@ bool pass::PropagateHEAnnotations::run_on_function(
     NGRAPH_HE_LOG(5) << "Node " << node->get_name();
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
-      NGRAPH_INFO << "Node is op";
       if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
         op->set_op_annotations(plaintext_unpacked_annotation);
         NGRAPH_HE_LOG(5) << "Adding plaintext_unpacked_annotation to op "
@@ -77,10 +76,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
                  "Node doesn't have HEOpAnnotations");
 
     for (const auto& output : node->outputs()) {
-      NGRAPH_INFO << "Output name " << output.get_node()->get_name();
       for (const auto& target_input : output.get_target_inputs()) {
         auto target_node = target_input.get_node();
-        NGRAPH_INFO << "Target input " << target_node->get_name();
         auto target_op = dynamic_cast<ngraph::op::Op*>(target_node);
         NGRAPH_CHECK(target_op != nullptr, "Target is not an op");
 
@@ -110,7 +107,6 @@ bool pass::PropagateHEAnnotations::run_on_function(
     NGRAPH_HE_LOG(5) << "Node " << node->get_name();
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
-      NGRAPH_INFO << "Node is op";
       if (ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
         auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
             op->get_op_annotations());
