@@ -49,6 +49,26 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   /// \param[in] op Operation to check for annotation
   static bool has_he_annotation(const ngraph::op::Op& op);
 
+  static inline std::shared_ptr<HEOpAnnotations>
+  server_plaintext_unpacked_annotation() {
+    return std::make_shared<HEOpAnnotations>(false, false, false);
+  }
+
+  static inline std::shared_ptr<HEOpAnnotations>
+  server_plaintext_packed_annotation() {
+    return std::make_shared<HEOpAnnotations>(false, false, true);
+  }
+
+  static inline std::shared_ptr<HEOpAnnotations>
+  server_ciphertext_unpacked_annotation() {
+    return std::make_shared<HEOpAnnotations>(false, true, false);
+  }
+
+  static inline std::shared_ptr<HEOpAnnotations>
+  server_ciphertext_packed_annotation() {
+    return std::make_shared<HEOpAnnotations>(false, true, true);
+  }
+
  private:
   bool m_from_client = false;
   bool m_encrypted = false;
@@ -58,8 +78,7 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
 inline std::ostream& operator<<(std::ostream& os,
                                 const HEOpAnnotations& annotation) {
   os << "HEOpAnnotation{";
-  os << "from_client=" << (annotation.from_client() ? "True" : "False")
-     << ", ";
+  os << "from_client=" << (annotation.from_client() ? "True" : "False") << ", ";
   os << "encrypted=" << (annotation.encrypted() ? "True" : "False") << ", ";
   os << "packed=" << (annotation.packed() ? "True" : "False") << "}";
   return os;

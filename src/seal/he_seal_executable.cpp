@@ -821,7 +821,7 @@ bool HESealExecutable::call(
         const auto param_op =
             std::static_pointer_cast<const ngraph::op::Parameter>(op);
         if (HEOpAnnotations::has_he_annotation(*param_op)) {
-          std::string from_client_str = from_client(*param_op) ? "" : "not ";
+          std::string from_client_str = from_client(*param_op) ? "" : " not";
           NGRAPH_HE_LOG(3) << "Parameter shape " << param_op->get_shape()
                            << from_client_str << " from client";
         }
