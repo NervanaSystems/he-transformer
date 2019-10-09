@@ -1155,7 +1155,7 @@ void ngraph::he::HESealExecutable::generate_calls(
                  "Only support single-output functions");
     out_shape = node.get_output_shape(0);
     packed_out_shape = out_shape;
-    if (plaintext_packed(node_wrapper)) {
+    if (node_wrapper.get_node()->is_op() && plaintext_packed(node_wrapper)) {
       packed_out_shape = ngraph::he::HETensor::pack_shape(packed_out_shape);
     }
   }
