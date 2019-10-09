@@ -34,8 +34,8 @@ namespace he {
 /// \brief Class representing a Client over a TCP connection
 class TCPClient {
  public:
-  using data_buffer = ngraph::he::TCPMessage::data_buffer;
-  size_t header_length = ngraph::he::TCPMessage::header_length;
+  using data_buffer = TCPMessage::data_buffer;
+  size_t header_length = TCPMessage::header_length;
 
   /// \brief Connects client to hostname:port and reads message
   /// \param[in] io_context Boost context for I/O functionality
@@ -43,7 +43,7 @@ class TCPClient {
   /// \param[in] message_handler Function to handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
             const tcp::resolver::results_type& endpoints,
-            std::function<void(const ngraph::he::TCPMessage&)> message_handler)
+            std::function<void(const TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
         m_first_connect(true),
@@ -60,7 +60,7 @@ class TCPClient {
 
   /// \brief Asynchronously writes the message
   /// \param[in,out] message Message to write
-  void write_message(const ngraph::he::TCPMessage&& message) {
+  void write_message(const TCPMessage&& message) {
     bool write_in_progress = !m_message_queue.empty();
     m_message_queue.push_back(std::move(message));
     if (!write_in_progress) {
@@ -156,12 +156,12 @@ class TCPClient {
   data_buffer m_read_buffer;
   data_buffer m_write_buffer;
   TCPMessage m_read_message;
-  std::deque<ngraph::he::TCPMessage> m_message_queue;
+  std::deque<TCPMessage> m_message_queue;
 
   inline static std::string s_expected_teardown_message{"End of file"};
 
   bool m_first_connect;
-  std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
+  std::function<void(const TCPMessage&)> m_message_callback;
 };
 }  // namespace he
 }  // namespace ngraph

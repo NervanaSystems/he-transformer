@@ -136,7 +136,10 @@ ngraph::he::NodeWrapper::NodeWrapper(
   }
 }
 
-std::shared_ptr<const ngraph::op::Op> ngraph::he::NodeWrapper::get_op() const {
+namespace ngraph {
+namespace he {
+
+std::shared_ptr<const ngraph::op::Op> NodeWrapper::get_op() const {
   if (!get_node()->is_op()) {
     throw ngraph_error("node is not an op");
   }
@@ -502,3 +505,6 @@ std::shared_ptr<const ngraph::op::Op> ngraph::he::NodeWrapper::get_op() const {
     }
   }
 }
+
+}  // namespace he
+}  // namespace ngraph

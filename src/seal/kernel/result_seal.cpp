@@ -16,10 +16,12 @@
 
 #include "seal/kernel/result_seal.hpp"
 
-void ngraph::he::result_seal(
-    const std::vector<HEPlaintext>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
-    const HESealBackend& he_seal_backend) {
+namespace ngraph {
+namespace he {
+
+void result_seal(const std::vector<HEPlaintext>& arg,
+                 std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                 size_t count, const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
 #pragma omp parallel for
@@ -32,10 +34,9 @@ void ngraph::he::result_seal(
   }
 }
 
-void ngraph::he::result_seal(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<HEPlaintext>& out, size_t count,
-    const HESealBackend& he_seal_backend) {
+void result_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+                 std::vector<HEPlaintext>& out, size_t count,
+                 const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
 #pragma omp parallel for
@@ -43,3 +44,6 @@ void ngraph::he::result_seal(
     he_seal_backend.decrypt(out[i], *arg[i]);
   }
 }
+
+}  // namespace he
+}  // namespace ngraph

@@ -31,19 +31,22 @@
 #include "ngraph/util.hpp"
 #include "pass/propagate_he_annotations.hpp"
 
-bool ngraph::he::pass::PropagateHEAnnotations::run_on_function(
+namespace ngraph {
+namespace he {
+
+bool pass::PropagateHEAnnotations::run_on_function(
     std::shared_ptr<ngraph::Function> function) {
   std::list<std::shared_ptr<ngraph::Node>> nodes = function->get_ordered_ops();
 
   auto plaintext_unpacked_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(true, false, false);
+      std::make_shared<HEOpAnnotations>(true, false, false);
 
   // First, set all ops without annotations to have plaintext unpacked
   // annotation
   for (auto node : nodes) {
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
-      if (!ngraph::he::has_he_annotation(*op)) {
+      if (!has_he_annotation(*op)) {
         op->set_op_annotations(plaintext_unpacked_annotation);
       }
     }
@@ -56,8 +59,7 @@ bool ngraph::he::pass::PropagateHEAnnotations::run_on_function(
       continue;
     }
     auto he_op_annotations =
-        std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-            op->get_op_annotations());
+        std::dynamic_pointer_cast<HEOpAnnotations>(op->get_op_annotations());
     NGRAPH_CHECK(he_op_annotations != nullptr,
                  "Node doesn't have HEOpAnnotations");
     for (ngraph::Output<ngraph::Node> output : op->outputs()) {
@@ -68,9 +70,8 @@ bool ngraph::he::pass::PropagateHEAnnotations::run_on_function(
         continue;
       }
 
-      auto he_output_annotations =
-          std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-              out_op->get_op_annotations());
+      auto he_output_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
+          out_op->get_op_annotations());
       NGRAPH_CHECK(he_output_annotations != nullptr,
                    "Output node doesn't have HEOpAnnotations");
 
@@ -88,3 +89,6 @@ bool ngraph::he::pass::PropagateHEAnnotations::run_on_function(
   }
   return false;
 }
+
+}  // namespace he
+}  // namespace ngraph

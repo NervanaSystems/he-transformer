@@ -23,14 +23,16 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-void ngraph::he::pad_seal(
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& arg0,
-    std::vector<ngraph::he::HEPlaintext>& arg1,  // scalar
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
-    const Shape& arg0_shape, const Shape& out_shape,
-    const CoordinateDiff& padding_below, const CoordinateDiff& padding_above,
-    op::PadMode pad_mode, size_t batch_size,
-    const ngraph::he::HESealBackend& he_seal_backend) {
+namespace ngraph {
+namespace he {
+
+void pad_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
+              std::vector<HEPlaintext>& arg1,  // scalar
+              std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+              const Shape& arg0_shape, const Shape& out_shape,
+              const CoordinateDiff& padding_below,
+              const CoordinateDiff& padding_above, op::PadMode pad_mode,
+              size_t batch_size, const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(arg1.size() == 1, "Padding element must be scalar");
   NGRAPH_CHECK(arg1[0].num_values() == 1, "Padding value must be scalar");
 
@@ -42,10 +44,12 @@ void ngraph::he::pad_seal(
   arg1_encrypted->known_value() = true;
   arg1_encrypted->value() = 0;
 
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      arg1_encrypted_vector{arg1_encrypted};
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> arg1_encrypted_vector{
+      arg1_encrypted};
 
-  ngraph::he::pad_seal(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,
-                       padding_below, padding_above, pad_mode, batch_size,
-                       he_seal_backend);
+  pad_seal(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,
+           padding_below, padding_above, pad_mode, batch_size, he_seal_backend);
 }
+
+}  // namespace he
+}  // namespace ngraph

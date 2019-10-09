@@ -40,10 +40,12 @@
 
 using json = nlohmann::json;
 
-ngraph::he::HESealClient::HESealClient(const std::string& hostname,
-                                       const size_t port,
-                                       const size_t batch_size,
-                                       const HETensorConfigMap<double>& inputs)
+namespace ngraph {
+namespace he {
+
+HESealClient::HESealClient(const std::string& hostname, const size_t port,
+                           const size_t batch_size,
+                           const HETensorConfigMap<double>& inputs)
     : m_batch_size{batch_size}, m_is_done{false}, m_input_config{inputs} {
   NGRAPH_HE_LOG(5) << "Creating HESealClient";
   NGRAPH_CHECK(m_input_config.size() == 1,
@@ -56,36 +58,33 @@ ngraph::he::HESealClient::HESealClient(const std::string& hostname,
   boost::asio::io_context io_context;
   tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
-  auto client_callback = [this](const ngraph::he::TCPMessage& message) {
+  auto client_callback = [this](const TCPMessage& message) {
     return handle_message(message);
   };
-  m_tcp_client = std::make_unique<ngraph::he::TCPClient>(io_context, endpoints,
-                                                         client_callback);
+  m_tcp_client =
+      std::make_unique<TCPClient>(io_context, endpoints, client_callback);
   io_context.run();
 }
 
-ngraph::he::HESealClient::HESealClient(const std::string& hostname,
-                                       const size_t port,
-                                       const size_t batch_size,
-                                       const HETensorConfigMap<float>& inputs)
+HESealClient::HESealClient(const std::string& hostname, const size_t port,
+                           const size_t batch_size,
+                           const HETensorConfigMap<float>& inputs)
     : HESealClient(hostname, port, batch_size,
-                   ngraph::he::map_to_double_map<float>(inputs)) {}
+                   map_to_double_map<float>(inputs)) {}
 
-ngraph::he::HESealClient::HESealClient(const std::string& hostname,
-                                       const size_t port,
-                                       const size_t batch_size,
-                                       const HETensorConfigMap<int64_t>& inputs)
+HESealClient::HESealClient(const std::string& hostname, const size_t port,
+                           const size_t batch_size,
+                           const HETensorConfigMap<int64_t>& inputs)
     : HESealClient(hostname, port, batch_size,
-                   ngraph::he::map_to_double_map<int64_t>(inputs)) {}
+                   map_to_double_map<int64_t>(inputs)) {}
 
-void ngraph::he::HESealClient::set_seal_context() {
+void HESealClient::set_seal_context() {
   NGRAPH_HE_LOG(5) << "Client setting seal context";
-  auto security_level = m_encryption_params.security_level();
-  auto seal_security_level = ngraph::he::seal_security_level(security_level);
+  auto seal_sec_level =
+      seal_security_level(m_encryption_params.security_level());
 
   m_context = seal::SEALContext::Create(
-      m_encryption_params.seal_encryption_parameters(), true,
-      seal_security_level);
+      m_encryption_params.seal_encryption_parameters(), true, seal_sec_level);
 
   print_encryption_parameters(m_encryption_params, *m_context);
 
@@ -99,7 +98,7 @@ void ngraph::he::HESealClient::set_seal_context() {
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 }
 
-void ngraph::he::HESealClient::send_public_and_relin_keys() {
+void HESealClient::send_public_and_relin_keys() {
   he_proto::TCPMessage proto_msg;
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
@@ -120,7 +119,7 @@ void ngraph::he::HESealClient::send_public_and_relin_keys() {
   write_message(std::move(proto_msg));
 }
 
-void ngraph::he::HESealClient::handle_encryption_parameters_response(
+void HESealClient::handle_encryption_parameters_response(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_encryption_parameters(),
                "proto_msg does not have encryption_parameters");
@@ -136,7 +135,7 @@ void ngraph::he::HESealClient::handle_encryption_parameters_response(
   send_public_and_relin_keys();
 }
 
-void ngraph::he::HESealClient::handle_inference_request(
+void HESealClient::handle_inference_request(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling inference request";
 
@@ -178,8 +177,7 @@ void ngraph::he::HESealClient::handle_inference_request(
                    << proto_name << ", " << shape << ", to be "
                    << (encrypt_tensor ? "encrypted" : "plaintext");
 
-  size_t parameter_size =
-      ngraph::shape_size(ngraph::he::HETensor::pack_shape(shape));
+  size_t parameter_size = ngraph::shape_size(HETensor::pack_shape(shape));
 
   NGRAPH_HE_LOG(5) << "Parameter size " << parameter_size;
   NGRAPH_HE_LOG(5) << "Client batch size " << m_batch_size;
@@ -206,14 +204,14 @@ void ngraph::he::HESealClient::handle_inference_request(
   if (encrypt_tensor) {
     // TODO: add element type to function message
     size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-    ngraph::he::HESealCipherTensor::write(
+    HESealCipherTensor::write(
         ciphers, m_input_config.begin()->second.second.data(), num_bytes,
         m_batch_size, element::f64, m_context->first_parms_id(), scale(),
         *m_ckks_encoder, *m_encryptor, complex_packing());
 
     std::vector<he_proto::SealCipherTensor> cipher_tensor_protos;
-    ngraph::he::HESealCipherTensor::save_to_proto(
-        cipher_tensor_protos, ciphers, shape, proto_packed, proto_name);
+    HESealCipherTensor::save_to_proto(cipher_tensor_protos, ciphers, shape,
+                                      proto_packed, proto_name);
 
     for (const auto& cipher_tensor_proto : cipher_tensor_protos) {
       he_proto::TCPMessage encrypted_inputs_msg;
@@ -228,8 +226,7 @@ void ngraph::he::HESealClient::handle_inference_request(
     }
   } else {
     size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-    ngraph::he::HEPlainTensor plain_tensor(element::f64, shape, proto_packed,
-                                           proto_name);
+    HEPlainTensor plain_tensor(element::f64, shape, proto_packed, proto_name);
 
     plain_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
 
@@ -251,8 +248,7 @@ void ngraph::he::HESealClient::handle_inference_request(
   }
 }
 
-void ngraph::he::HESealClient::handle_result(
-    const he_proto::TCPMessage& proto_msg) {
+void HESealClient::handle_result(const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling result";
 
   NGRAPH_CHECK(
@@ -273,15 +269,15 @@ void ngraph::he::HESealClient::handle_result(
         result_count);
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      ngraph::he::SealCiphertextWrapper::load(
-          result_ciphers[result_idx], proto_tensor.ciphertexts(result_idx),
-          m_context);
+      SealCiphertextWrapper::load(result_ciphers[result_idx],
+                                  proto_tensor.ciphertexts(result_idx),
+                                  m_context);
     }
 
     size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-    ngraph::he::HESealCipherTensor::read(m_results.data(), result_ciphers,
-                                         num_bytes, m_batch_size, element::f64,
-                                         *m_ckks_encoder, *m_decryptor);
+    HESealCipherTensor::read(m_results.data(), result_ciphers, num_bytes,
+                             m_batch_size, element::f64, *m_ckks_encoder,
+                             *m_decryptor);
   } else {
     NGRAPH_HE_LOG(5) << "Client handling plain result";
 
@@ -289,21 +285,19 @@ void ngraph::he::HESealClient::handle_result(
     size_t result_count = proto_tensor.plaintexts_size();
     m_results.resize(result_count * m_batch_size);
 
-    std::vector<ngraph::he::HEPlaintext> result_plaintexts(result_count);
+    std::vector<HEPlaintext> result_plaintexts(result_count);
 
     // TODO: load from protos as separate function
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       // Load tensor plaintexts
       auto proto_plain = proto_tensor.plaintexts(result_idx);
-      result_plaintexts[result_idx] =
-          ngraph::he::HEPlaintext(std::vector<double>{
-              proto_plain.value().begin(), proto_plain.value().end()});
+      result_plaintexts[result_idx] = HEPlaintext(std::vector<double>{
+          proto_plain.value().begin(), proto_plain.value().end()});
 
       NGRAPH_HE_LOG(5) << "Loaded plaintext " << result_plaintexts[result_idx];
     }
-    ngraph::Shape shape =
-        ngraph::he::proto_shape_to_ngraph_shape(proto_tensor.shape());
+    ngraph::Shape shape = proto_shape_to_ngraph_shape(proto_tensor.shape());
 
     HEPlainTensor plain_tensor(element::f64, shape, proto_tensor.packed());
     plain_tensor.set_elements(result_plaintexts);
@@ -315,8 +309,7 @@ void ngraph::he::HESealClient::handle_result(
   close_connection();
 }
 
-void ngraph::he::HESealClient::handle_relu_request(
-    he_proto::TCPMessage&& proto_msg) {
+void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling relu request";
 
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
@@ -337,21 +330,21 @@ void ngraph::he::HESealClient::handle_relu_request(
                  "Client should not receive known-valued relu values");
 
     auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
-    ngraph::he::SealCiphertextWrapper::load(
+    SealCiphertextWrapper::load(
         post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);
 
-    ngraph::he::scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
-                                 m_context->first_parms_id(), scale(),
-                                 *m_ckks_encoder, *m_encryptor, *m_decryptor);
+    scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
+                     m_context->first_parms_id(), scale(), *m_ckks_encoder,
+                     *m_encryptor, *m_decryptor);
     post_relu_cipher->save(*proto_tensor->mutable_ciphertexts(result_idx));
   }
 
-  ngraph::he::TCPMessage relu_result_msg(std::move(proto_msg));
+  TCPMessage relu_result_msg(std::move(proto_msg));
   write_message(std::move(relu_result_msg));
   return;
 }
 
-void ngraph::he::HESealClient::handle_bounded_relu_request(
+void HESealClient::handle_bounded_relu_request(
     he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling bounded relu request";
 
@@ -378,22 +371,21 @@ void ngraph::he::HESealClient::handle_bounded_relu_request(
                  "Client should not receive known-valued relu values");
 
     auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
-    ngraph::he::SealCiphertextWrapper::load(
+    SealCiphertextWrapper::load(
         post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);
 
-    ngraph::he::scalar_bounded_relu_seal(
-        *post_relu_cipher, post_relu_cipher, bound, m_context->first_parms_id(),
-        scale(), *m_ckks_encoder, *m_encryptor, *m_decryptor);
+    scalar_bounded_relu_seal(*post_relu_cipher, post_relu_cipher, bound,
+                             m_context->first_parms_id(), scale(),
+                             *m_ckks_encoder, *m_encryptor, *m_decryptor);
     post_relu_cipher->save(*proto_tensor->mutable_ciphertexts(result_idx));
   }
 
-  ngraph::he::TCPMessage bounded_relu_result_msg(std::move(proto_msg));
+  TCPMessage bounded_relu_result_msg(std::move(proto_msg));
   write_message(std::move(bounded_relu_result_msg));
   return;
 }
 
-void ngraph::he::HESealClient::handle_max_pool_request(
-    he_proto::TCPMessage&& proto_msg) {
+void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling maxpool request";
 
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
@@ -413,29 +405,28 @@ void ngraph::he::HESealClient::handle_max_pool_request(
 
 #pragma omp parallel for
   for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-    ngraph::he::SealCiphertextWrapper::load(
-        max_pool_ciphers[cipher_idx], proto_tensor->ciphertexts(cipher_idx),
-        m_context);
+    SealCiphertextWrapper::load(max_pool_ciphers[cipher_idx],
+                                proto_tensor->ciphertexts(cipher_idx),
+                                m_context);
   }
 
   // We currently just support max_pool with single output
-  ngraph::he::max_pool_seal(
-      max_pool_ciphers, post_max_pool_ciphers, Shape{1, 1, cipher_count},
-      Shape{1, 1, 1}, Shape{cipher_count}, ngraph::Strides{1}, Shape{0},
-      Shape{0}, m_context->first_parms_id(), scale(), *m_ckks_encoder,
-      *m_encryptor, *m_decryptor, complex_packing());
+  max_pool_seal(max_pool_ciphers, post_max_pool_ciphers,
+                Shape{1, 1, cipher_count}, Shape{1, 1, 1}, Shape{cipher_count},
+                ngraph::Strides{1}, Shape{0}, Shape{0},
+                m_context->first_parms_id(), scale(), *m_ckks_encoder,
+                *m_encryptor, *m_decryptor, complex_packing());
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
   proto_tensor->clear_ciphertexts();
 
   post_max_pool_ciphers[0]->save(*proto_tensor->add_ciphertexts());
-  ngraph::he::TCPMessage max_pool_result_msg(std::move(proto_msg));
+  TCPMessage max_pool_result_msg(std::move(proto_msg));
   write_message(std::move(max_pool_result_msg));
   return;
 }
 
-void ngraph::he::HESealClient::handle_message(
-    const ngraph::he::TCPMessage& message) {
+void HESealClient::handle_message(const TCPMessage& message) {
   // TODO: try overwriting message?
 
   NGRAPH_HE_LOG(3) << "Client handling message";
@@ -485,8 +476,11 @@ void ngraph::he::HESealClient::handle_message(
 #pragma clang diagnostic pop
 }
 
-void ngraph::he::HESealClient::close_connection() {
+void HESealClient::close_connection() {
   NGRAPH_HE_LOG(5) << "Closing connection";
   m_tcp_client->close();
   m_is_done = true;
 }
+
+}  // namespace he
+}  // namespace ngraph

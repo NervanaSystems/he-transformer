@@ -134,7 +134,7 @@ inline std::vector<double> type_vec_to_double_vec(
   std::vector<double> ret(n);
   char* src_with_offset = static_cast<char*>(const_cast<void*>(src));
   for (size_t i = 0; i < n; ++i) {
-    ret[i] = ngraph::he::type_to_double(src_with_offset, element_type);
+    ret[i] = type_to_double(src_with_offset, element_type);
     ++src_with_offset;
   }
   return ret;

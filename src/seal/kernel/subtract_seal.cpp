@@ -19,11 +19,14 @@
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
-void ngraph::he::scalar_subtract_seal(
-    ngraph::he::SealCiphertextWrapper& arg0,
-    ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend) {
+namespace ngraph {
+namespace he {
+
+void scalar_subtract_seal(SealCiphertextWrapper& arg0,
+                          SealCiphertextWrapper& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg0.known_value() && arg1.known_value()) {
@@ -44,10 +47,10 @@ void ngraph::he::scalar_subtract_seal(
   }
 }
 
-void ngraph::he::scalar_subtract_seal(
-    ngraph::he::SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend) {
+void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg0.known_value()) {
@@ -57,19 +60,19 @@ void ngraph::he::scalar_subtract_seal(
     out->complex_packing() = arg0.complex_packing();
   } else {
     auto p = SealPlaintextWrapper(arg0.complex_packing());
-    ngraph::he::encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
-                       arg0.ciphertext().parms_id(), element_type,
-                       arg0.ciphertext().scale(), arg0.complex_packing());
+    encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
+           arg0.ciphertext().parms_id(), element_type,
+           arg0.ciphertext().scale(), arg0.complex_packing());
     he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
                                                out->ciphertext());
     out->known_value() = false;
   }
 }
 
-void ngraph::he::scalar_subtract_seal(
-    const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend) {
+void scalar_subtract_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg1.known_value()) {
@@ -78,17 +81,16 @@ void ngraph::he::scalar_subtract_seal(
     out->value() = arg0.first_value() - arg1.value();
     out->complex_packing() = arg1.complex_packing();
   } else {
-    auto tmp = std::make_shared<ngraph::he::SealCiphertextWrapper>();
-    ngraph::he::scalar_negate_seal(arg1, tmp, element_type, he_seal_backend);
-    ngraph::he::scalar_add_seal(arg0, *tmp, out, element_type, he_seal_backend);
+    auto tmp = std::make_shared<SealCiphertextWrapper>();
+    scalar_negate_seal(arg1, tmp, element_type, he_seal_backend);
+    scalar_add_seal(arg0, *tmp, out, element_type, he_seal_backend);
     out->known_value() = false;
   }
 }
 
-void ngraph::he::scalar_subtract_seal(const HEPlaintext& arg0,
-                                      const HEPlaintext& arg1, HEPlaintext& out,
-                                      const element::Type& element_type,
-                                      HESealBackend& he_seal_backend) {
+void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                          HEPlaintext& out, const element::Type& element_type,
+                          HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
 
@@ -100,3 +102,6 @@ void ngraph::he::scalar_subtract_seal(const HEPlaintext& arg0,
                  out_vals.begin(), std::minus<double>());
   out.set_values(out_vals);
 }
+
+}  // namespace he
+}  // namespace ngraph

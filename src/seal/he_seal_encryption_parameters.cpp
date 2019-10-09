@@ -24,8 +24,8 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_util.hpp"
 
-using namespace ngraph::he;
-
+namespace ngraph {
+namespace he {
 HESealEncryptionParameters::HESealEncryptionParameters() {
   auto default_parms = default_real_packing_parms();
 
@@ -208,9 +208,8 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
   }
 }
 
-void ngraph::he::print_encryption_parameters(
-    const HESealEncryptionParameters& params,
-    const seal::SEALContext& context) {
+void print_encryption_parameters(const HESealEncryptionParameters& params,
+                                 const seal::SEALContext& context) {
   auto& context_data = *context.key_context_data();
 
   std::stringstream param_ss;
@@ -241,3 +240,6 @@ void ngraph::he::print_encryption_parameters(
 
   NGRAPH_HE_LOG(1) << param_ss.str();
 }
+
+}  // namespace he
+}  // namespace ngraph

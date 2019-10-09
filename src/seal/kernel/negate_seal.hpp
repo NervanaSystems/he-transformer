@@ -45,8 +45,8 @@ inline void negate_seal(const std::vector<HEPlaintext>& arg,
 inline void negate_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type,
-    const ngraph::he::HESealBackend& he_seal_backend, size_t count) {
+    const element::Type& element_type, const HESealBackend& he_seal_backend,
+    size_t count) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
 #pragma omp parallel for

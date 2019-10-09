@@ -82,11 +82,10 @@ void batch_norm_inference_seal(
 
     auto output = he_seal_backend.create_empty_ciphertext();
 
-    ngraph::he::scalar_multiply_seal(*input[input_index], plain_scale, output,
-                                     element::f32, he_seal_backend);
+    scalar_multiply_seal(*input[input_index], plain_scale, output, element::f32,
+                         he_seal_backend);
 
-    ngraph::he::scalar_add_seal(*output, plain_bias, output, element::f32,
-                                he_seal_backend);
+    scalar_add_seal(*output, plain_bias, output, element::f32, he_seal_backend);
     normed_input[input_index] = output;
   }
 };

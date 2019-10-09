@@ -26,14 +26,12 @@
 
 namespace ngraph {
 namespace he {
-void constant_seal(std::vector<ngraph::he::HEPlaintext>& out,
+void constant_seal(std::vector<HEPlaintext>& out,
                    const element::Type& element_type, const void* data_ptr,
-                   const ngraph::he::HESealBackend& he_seal_backend,
-                   size_t count);
+                   const HESealBackend& he_seal_backend, size_t count);
 
-void constant_seal(
-    std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>& out,
-    const element::Type& element_type, const void* data_ptr,
-    const ngraph::he::HESealBackend& he_seal_backend, size_t count);
+void constant_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+                   const element::Type& element_type, const void* data_ptr,
+                   const HESealBackend& he_seal_backend, size_t count);
 }  // namespace he
 }  // namespace ngraph

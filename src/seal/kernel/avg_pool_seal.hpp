@@ -133,9 +133,9 @@ inline void avg_pool_seal(
               *arg[input_batch_transform.index(input_batch_coord)]);
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(
-              *sum, *arg[input_batch_transform.index(input_batch_coord)], sum,
-              element::f32, he_seal_backend);
+          scalar_add_seal(*sum,
+                          *arg[input_batch_transform.index(input_batch_coord)],
+                          sum, element::f32, he_seal_backend);
         }
         n_elements++;
       }
@@ -146,8 +146,8 @@ inline void avg_pool_seal(
     }
     auto inv_n_elements = HEPlaintext(1.f / n_elements);
 
-    ngraph::he::scalar_multiply_seal(*sum, inv_n_elements, sum, element::f32,
-                                     he_seal_backend);
+    scalar_multiply_seal(*sum, inv_n_elements, sum, element::f32,
+                         he_seal_backend);
 
     out[output_transform.index(out_coord)] = sum;
   }
@@ -227,9 +227,9 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
           sum = arg[input_batch_transform.index(input_batch_coord)];
           first_add = false;
         } else {
-          ngraph::he::scalar_add_seal(
-              sum, arg[input_batch_transform.index(input_batch_coord)], sum,
-              element::f32, he_seal_backend);
+          scalar_add_seal(sum,
+                          arg[input_batch_transform.index(input_batch_coord)],
+                          sum, element::f32, he_seal_backend);
         }
         n_elements++;
       }
@@ -240,8 +240,8 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
     }
     auto inv_n_elements = HEPlaintext(1.f / n_elements);
 
-    ngraph::he::scalar_multiply_seal(sum, inv_n_elements, sum, element::f32,
-                                     he_seal_backend);
+    scalar_multiply_seal(sum, inv_n_elements, sum, element::f32,
+                         he_seal_backend);
 
     out[output_transform.index(out_coord)] = sum;
   }

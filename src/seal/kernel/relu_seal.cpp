@@ -24,7 +24,10 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-void ngraph::he::scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
+namespace ngraph {
+namespace he {
+
+void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   const std::vector<double>& arg_vals = arg.values();
   std::vector<double> out_vals(arg.num_values());
 
@@ -33,59 +36,59 @@ void ngraph::he::scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   out.set_values(out_vals);
 }
 
-void ngraph::he::relu_seal(const std::vector<HEPlaintext>& arg,
-                           std::vector<HEPlaintext>& out, size_t count) {
+void relu_seal(const std::vector<HEPlaintext>& arg,
+               std::vector<HEPlaintext>& out, size_t count) {
   for (size_t i = 0; i < count; ++i) {
     scalar_relu_seal(arg[i], out[i]);
   }
 }
 
-void ngraph::he::scalar_relu_seal_known_value(
-    const SealCiphertextWrapper& arg,
-    std::shared_ptr<SealCiphertextWrapper>& out) {
+void scalar_relu_seal_known_value(const SealCiphertextWrapper& arg,
+                                  std::shared_ptr<SealCiphertextWrapper>& out) {
   auto relu = [](double d) { return d > 0 ? d : 0.; };
   NGRAPH_CHECK(arg.known_value());
   out->known_value() = true;
   out->value() = relu(arg.value());
 }
 
-void ngraph::he::scalar_relu_seal(const SealCiphertextWrapper& arg,
-                                  std::shared_ptr<SealCiphertextWrapper>& out,
-                                  const seal::parms_id_type& parms_id,
-                                  double scale, seal::CKKSEncoder& ckks_encoder,
-                                  seal::Encryptor& encryptor,
-                                  seal::Decryptor& decryptor) {
+void scalar_relu_seal(const SealCiphertextWrapper& arg,
+                      std::shared_ptr<SealCiphertextWrapper>& out,
+                      const seal::parms_id_type& parms_id, double scale,
+                      seal::CKKSEncoder& ckks_encoder,
+                      seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
   auto relu = [](double d) { return d > 0 ? d : 0.; };
 
   if (arg.known_value()) {
     scalar_relu_seal_known_value(arg, out);
   } else {
     HEPlaintext plain;
-    ngraph::he::decrypt(plain, arg, decryptor, ckks_encoder);
+    decrypt(plain, arg, decryptor, ckks_encoder);
     const std::vector<double>& arg_vals = plain.values();
     std::vector<double> out_vals(plain.num_values());
     std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
     plain.set_values(out_vals);
-    ngraph::he::encrypt(out, plain, parms_id, ngraph::element::f32, scale,
-                        ckks_encoder, encryptor, arg.complex_packing());
+    encrypt(out, plain, parms_id, ngraph::element::f32, scale, ckks_encoder,
+            encryptor, arg.complex_packing());
   }
 }
 
-void ngraph::he::scalar_relu_seal(const SealCiphertextWrapper& arg,
-                                  std::shared_ptr<SealCiphertextWrapper>& out,
-                                  const HESealBackend& he_seal_backend) {
+void scalar_relu_seal(const SealCiphertextWrapper& arg,
+                      std::shared_ptr<SealCiphertextWrapper>& out,
+                      const HESealBackend& he_seal_backend) {
   scalar_relu_seal(
       arg, out, he_seal_backend.get_context()->first_parms_id(),
       he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
       *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
-void ngraph::he::relu_seal(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count,
-    const HESealBackend& he_seal_backend) {
+void relu_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
+               std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+               size_t count, const HESealBackend& he_seal_backend) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_relu_seal(*arg[i], out[i], he_seal_backend);
   }
 }
+
+}  // namespace he
+}  // namespace ngraph

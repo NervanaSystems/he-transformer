@@ -64,7 +64,7 @@ inline void scalar_add_seal(const HEPlaintext& arg0,
                             std::shared_ptr<SealCiphertextWrapper>& out,
                             const element::Type& element_type,
                             HESealBackend& he_seal_backend) {
-  ngraph::he::scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
+  scalar_add_seal(arg1, arg0, out, element_type, he_seal_backend);
 }
 
 /// \brief Adds two plaintexts

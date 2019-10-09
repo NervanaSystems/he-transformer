@@ -16,21 +16,24 @@
 #include "op/bounded_relu.hpp"
 #include "ngraph/util.hpp"
 
-using namespace std;
-using namespace ngraph;
+namespace ngraph {
+namespace op {
 
-const std::string op::BoundedRelu::type_name{"BoundedRelu"};
+const std::string BoundedRelu::type_name{"BoundedRelu"};
 
-op::BoundedRelu::BoundedRelu(const Output<Node>& arg, float alpha)
+BoundedRelu::BoundedRelu(const Output<Node>& arg, float alpha)
     : UnaryElementwiseArithmetic(arg), m_alpha(alpha) {
   constructor_validate_and_infer_types();
   set_output_type(0, arg.get_element_type(), arg.get_shape());
 }
 
-shared_ptr<Node> op::BoundedRelu::copy_with_new_args(
+std::shared_ptr<Node> BoundedRelu::copy_with_new_args(
     const NodeVector& new_args) const {
   if (new_args.size() != 1) {
     throw ngraph_error("Incorrect number of new arguments");
   }
-  return make_shared<BoundedRelu>(new_args.at(0), m_alpha);
+  return std::make_shared<BoundedRelu>(new_args.at(0), m_alpha);
 }
+
+}  // namespace op
+}  // namespace ngraph

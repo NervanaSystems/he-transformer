@@ -50,15 +50,11 @@ class HEPlainTensor : public HETensor {
   void read(void* target, size_t n) const override;
 
   /// \brief Returns the plaintexts in the tensor
-  inline std::vector<ngraph::he::HEPlaintext>& get_elements() {
-    return m_plaintexts;
-  }
+  inline std::vector<HEPlaintext>& get_elements() { return m_plaintexts; }
 
   /// \brief Returns the plaintext at a given index
   /// \param[in] index Index from which to return the plaintext
-  inline ngraph::he::HEPlaintext& get_element(size_t index) {
-    return m_plaintexts[index];
-  }
+  inline HEPlaintext& get_element(size_t index) { return m_plaintexts[index]; }
 
   /// \brief Clears the plaintexts
   inline void reset() { m_plaintexts.clear(); }
@@ -69,7 +65,7 @@ class HEPlainTensor : public HETensor {
   /// \brief Sets the tensor to the given plaintexts
   /// \throws ngraph_error if wrong number of elements are used
   /// \param[in] elements Plaintexts to set the tensor to
-  void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);
+  void set_elements(const std::vector<HEPlaintext>& elements);
 
   /// \brief Packs a tensor. If tensor is already packed, does nothing
   void pack();
@@ -107,7 +103,7 @@ class HEPlainTensor : public HETensor {
   }
 
  private:
-  std::vector<ngraph::he::HEPlaintext> m_plaintexts;
+  std::vector<HEPlaintext> m_plaintexts;
 };
 }  // namespace he
 }  // namespace ngraph

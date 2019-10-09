@@ -60,7 +60,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   HESealBackend();
   /// \brief Constructs a backend with the given encryption parameters
   /// \param[in] parms Encryption parameters
-  HESealBackend(const ngraph::he::HESealEncryptionParameters& parms);
+  HESealBackend(const HESealEncryptionParameters& parms);
 
   /// \brief Prepares the backend with the encryption context, including
   /// generating encryption keys, encryptor, decryptor, evaluator, and encoder
@@ -161,33 +161,32 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] element_type Datatype of the values to store
   /// \param[in] batch_size TODO: remove
   /// \returns Pointer to created ciphertext
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> create_valued_ciphertext(
+  std::shared_ptr<SealCiphertextWrapper> create_valued_ciphertext(
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
   /// \brief Creates empty ciphertext with backend's complex packing status
   /// \returns Pointer to created ciphertext
-  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-  create_empty_ciphertext() const {
-    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        complex_packing());
+  inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext()
+      const {
+    return std::make_shared<SealCiphertextWrapper>(complex_packing());
   }
 
   /// \brief Creates empty ciphertext
   /// \param[in] complex_packing Whether or not ciphertext uses complex packing
   /// \returns Pointer to created ciphertext
-  static inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-  create_empty_ciphertext(bool complex_packing) {
-    return std::make_shared<ngraph::he::SealCiphertextWrapper>(complex_packing);
+  static inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
+      bool complex_packing) {
+    return std::make_shared<SealCiphertextWrapper>(complex_packing);
   }
 
   /// \brief Creates empty ciphertext at given parameter choice with backend's
   /// complex packing status
   /// \param[in] parms_id Seal encryption parameter id
   /// \returns Pointer to created ciphertext
-  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-  create_empty_ciphertext(seal::parms_id_type parms_id) const {
-    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
+  inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
+      seal::parms_id_type parms_id) const {
+    return std::make_shared<SealCiphertextWrapper>(
         seal::Ciphertext(m_context, parms_id), complex_packing());
   }
 
@@ -195,35 +194,31 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// complex packing status
   /// \param[in] pool Memory pool used for new memory allocation
   /// \returns Pointer to created ciphertext
-  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>
-  create_empty_ciphertext(const seal::MemoryPoolHandle& pool) const {
-    return std::make_shared<ngraph::he::SealCiphertextWrapper>(
-        pool, complex_packing());
+  inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
+      const seal::MemoryPoolHandle& pool) const {
+    return std::make_shared<SealCiphertextWrapper>(pool, complex_packing());
   }
 
   /// \brief Creates SEAL context from encryption parameters
   /// \param[in] sp Pointer to encrpytion parameters
   /// \returns pointer to created SEAL context
   std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<ngraph::he::HESealEncryptionParameters> sp);
+      const std::shared_ptr<HESealEncryptionParameters> sp);
 
   /// \brief TODO
-  void decode(void* output, const ngraph::he::HEPlaintext& input,
-              const element::Type& type, size_t count = 1) const;
+  void decode(void* output, const HEPlaintext& input, const element::Type& type,
+              size_t count = 1) const;
 
   /// \brief TODO
-  void decode(ngraph::he::HEPlaintext& output,
-              const ngraph::he::SealPlaintextWrapper& input) const;
+  void decode(HEPlaintext& output, const SealPlaintextWrapper& input) const;
 
   /// \brief TODO
-  void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
-               const ngraph::he::HEPlaintext& input,
-               const element::Type& element_type,
+  void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
+               const HEPlaintext& input, const element::Type& element_type,
                bool complex_packing = false) const;
 
   /// \brief TODO
-  void decrypt(ngraph::he::HEPlaintext& output,
-               const SealCiphertextWrapper& input) const;
+  void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input) const;
 
   /// \brief Returns pointer to SEAL context
   const inline std::shared_ptr<seal::SEALContext> get_context() const {
@@ -266,8 +261,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
   /// \brief Returns the encryption parameters
-  const ngraph::he::HESealEncryptionParameters& get_encryption_parameters()
-      const {
+  const HESealEncryptionParameters& get_encryption_parameters() const {
     return m_encryption_params;
   }
 
@@ -354,8 +348,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
  private:
-  bool m_naive_rescaling{
-      ngraph::he::flag_to_bool(std::getenv("NAIVE_RESCALING"))};
+  bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;

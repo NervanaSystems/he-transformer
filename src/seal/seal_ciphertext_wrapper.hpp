@@ -208,7 +208,7 @@ class SealCiphertextWrapper {
     }
 
     // TODO: save directly to protobuf
-    size_t stream_size = ngraph::he::ciphertext_size(m_ciphertext);
+    size_t stream_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
     cipher_str.resize(stream_size);
     ngraph::he::save(m_ciphertext, cipher_str.data());
@@ -219,7 +219,7 @@ class SealCiphertextWrapper {
   /// \param[out] dst Destination to load ciphertext wrapper to
   /// \param[in] src Source to load ciphertext wrapper from
   /// \param[in] context TODO
-  static inline void load(ngraph::he::SealCiphertextWrapper& dst,
+  static inline void load(SealCiphertextWrapper& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
     dst.complex_packing() = src.complex_packing();
@@ -239,11 +239,10 @@ class SealCiphertextWrapper {
   /// \param[out] dst Destination to load ciphertext wrapper to
   /// \param[in] src Source to load ciphertext wrapper from
   /// \param[in] context TODO
-  static inline void load(
-      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
-      const he_proto::SealCiphertextWrapper& src,
-      std::shared_ptr<seal::SEALContext> context) {
-    dst = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+  static inline void load(std::shared_ptr<SealCiphertextWrapper>& dst,
+                          const he_proto::SealCiphertextWrapper& src,
+                          std::shared_ptr<seal::SEALContext> context) {
+    dst = std::make_shared<SealCiphertextWrapper>();
     load(*dst, src, context);
   }
 
