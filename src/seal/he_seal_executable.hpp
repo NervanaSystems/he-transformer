@@ -52,8 +52,7 @@ class HESealExecutable : public runtime::Executable {
   /// secret key
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
-                   HESealBackend& he_seal_backend,
-                   bool enable_client);
+                   HESealBackend& he_seal_backend, bool enable_client);
 
   /// \brief Shuts down the TCP session if client is enabled
   ~HESealExecutable() override;
@@ -200,8 +199,7 @@ class HESealExecutable : public runtime::Executable {
   inline bool from_client(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(
-                annotation)) {
+            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
       return he_annotation->from_client();
     }
     return false;
@@ -217,9 +215,8 @@ class HESealExecutable : public runtime::Executable {
   inline bool plaintext_packed(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(
-                annotation)) {
-      return he_annotation->plaintext_packing();
+            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
+      return he_annotation->packed();
     }
     return false;
   }
@@ -254,12 +251,9 @@ class HESealExecutable : public runtime::Executable {
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<HETensor>> m_client_outputs;
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>>
-      m_relu_ciphertexts;
-  std::vector<std::shared_ptr<SealCiphertextWrapper>>
-      m_max_pool_ciphertexts;
-  std::vector<std::shared_ptr<SealCiphertextWrapper>>
-      m_minimum_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_relu_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_max_pool_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_minimum_ciphertexts;
 
   std::set<std::string> m_verbose_ops;
 
@@ -299,8 +293,7 @@ class HESealExecutable : public runtime::Executable {
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
 
-  bool m_stop_const_fold{
-      flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
+  bool m_stop_const_fold{flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
 }  // namespace he
 }  // namespace ngraph

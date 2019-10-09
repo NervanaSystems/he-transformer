@@ -46,7 +46,7 @@ bool pass::PropagateHEAnnotations::run_on_function(
   for (auto node : nodes) {
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
-      if (!has_he_annotation(*op)) {
+      if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
         op->set_op_annotations(plaintext_unpacked_annotation);
       }
     }
@@ -80,9 +80,9 @@ bool pass::PropagateHEAnnotations::run_on_function(
                          << " to encrypted";
         he_output_annotations->set_encrypted(true);
       }
-      if (he_op_annotations->plaintext_packed()) {
+      if (he_op_annotations->packed()) {
         NGRAPH_HE_LOG(5) << "Setting node " << node->get_name() << " to packed";
-        he_output_annotations->set_plaintext_packing(true);
+        he_output_annotations->set_packed(true);
       }
       out_op->set_op_annotations(he_output_annotations);
     }

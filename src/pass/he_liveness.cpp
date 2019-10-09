@@ -50,7 +50,7 @@ bool ngraph::he::pass::HELiveness::run_on_function(
 
   std::unordered_set<descriptor::Tensor*> currently_live;
   for (auto it = ops.rbegin(); it != ops.rend(); it++) {
-    const shared_ptr<Node>& node = *it;
+    const std::shared_ptr<Node>& node = *it;
     node->liveness_new_list.clear();
     node->liveness_free_list.clear();
     std::unordered_set<descriptor::Tensor*> input_tensor_decls;

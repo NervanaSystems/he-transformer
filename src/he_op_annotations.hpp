@@ -27,7 +27,14 @@ namespace he {
 /// \brief Annotations added to graph ops by HE backend passes
 class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
  public:
-  HEOpAnnotations(bool from_client, bool encrypted, bool plaintext_packing);
+  /// \brief Constructs an HE annotation.
+  /// \param[in] from_client Whether or not operation should be provided by a
+  /// client. This should only be set for Parameter nodes
+  /// \param[in] encrypted Whether or not the output of the operation is
+  /// encrypted
+  /// \param[in] packed Whether or not the output of the operation is stored
+  /// using plaintext packing
+  HEOpAnnotations(bool from_client, bool encrypted, bool packed);
 
   bool from_client();
   void set_from_client(bool val);
@@ -35,18 +42,18 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   bool encrypted();
   void set_encrypted(bool val);
 
-  bool plaintext_packing();
-  void set_plaintext_packing(bool val);
+  bool packed();
+  void set_packed(bool val);
+
+  /// \brief Returns whether or not Op has HEOPAnnotations
+  /// \param[in] op Operation to check for annotation
+  static bool has_he_annotation(const ngraph::op::Op& op);
 
  private:
   bool m_from_client = false;
   bool m_encrypted = false;
-  bool m_plaintext_packing = false;
+  bool m_packed = false;
 };
-
-/// \brief Returns whether or not Op has HEOPAnnotations
-/// \param[in] op Operation to check for annotation
-bool has_he_annotation(const ngraph::op::Op& op);
 
 }  // namespace he
 }  // namespace ngraph

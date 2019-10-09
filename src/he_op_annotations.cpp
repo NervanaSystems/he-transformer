@@ -21,11 +21,8 @@
 
 namespace ngraph {
 namespace he {
-HEOpAnnotations::HEOpAnnotations(bool from_client, bool encrypted,
-                                 bool plaintext_packing)
-    : m_from_client(from_client),
-      m_encrypted(encrypted),
-      m_plaintext_packing(plaintext_packing) {}
+HEOpAnnotations::HEOpAnnotations(bool from_client, bool encrypted, bool packed)
+    : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
 
 bool HEOpAnnotations::from_client() { return m_from_client; }
 
@@ -34,14 +31,12 @@ void HEOpAnnotations::set_from_client(bool val) { m_from_client = val; }
 bool HEOpAnnotations::encrypted() { return m_encrypted; }
 void HEOpAnnotations::set_encrypted(bool val) { m_encrypted = val; }
 
-bool HEOpAnnotations::plaintext_packing() { return m_plaintext_packing; }
-void HEOpAnnotations::set_plaintext_packing(bool val) {
-  m_plaintext_packing = val;
-}
+bool HEOpAnnotations::packed() { return m_packed; }
+void HEOpAnnotations::set_packed(bool val) { m_packed = val; }
 
 /// \brief Returns whether or not Op has HEOPAnnotations
 /// \param[in] op Operation to check for annotation
-bool has_he_annotation(const ngraph::op::Op& op) {
+bool HEOpAnnotations::has_he_annotation(const ngraph::op::Op& op) {
   auto annotation = op.get_op_annotations();
   return std::dynamic_pointer_cast<HEOpAnnotations>(annotation) != nullptr;
 }

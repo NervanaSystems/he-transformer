@@ -109,7 +109,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   NGRAPH_HE_LOG(3) << "Creating Executable";
   for (const auto& param : function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
-    if (has_he_annotation(*param)) {
+    if (HEOpAnnotations::has_he_annotation(*param)) {
       std::string from_client_str = from_client(*param) ? "" : "not ";
       NGRAPH_HE_LOG(3) << "Parameter shape " << param->get_shape() << " is "
                        << from_client_str << "from client";
@@ -729,8 +729,7 @@ bool HESealExecutable::call(
             auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
                 m_he_seal_backend.create_cipher_tensor(
                     plain_input->get_element_type(), plain_input->get_shape(),
-                    current_annotation->plaintext_packing(),
-                    plain_input->get_name()));
+                    current_annotation->packed(), plain_input->get_name()));
 
 #pragma omp parallel for
             for (size_t plain_idx = 0;
@@ -754,7 +753,7 @@ bool HESealExecutable::call(
                        "not plaintext");
           auto plain_input = he_tensor_as_type<HEPlainTensor>(he_server_input);
 
-          if (current_annotation->plaintext_packing()) {
+          if (current_annotation->packed()) {
             NGRAPH_HE_LOG(5) << "Packing parameter " << param->get_name();
             plain_input->pack();
           } else {
@@ -821,7 +820,7 @@ bool HESealExecutable::call(
       if (verbose) {
         const auto param_op =
             std::static_pointer_cast<const ngraph::op::Parameter>(op);
-        if (has_he_annotation(*param_op)) {
+        if (HEOpAnnotations::has_he_annotation(*param_op)) {
           std::string from_client_str = from_client(*param_op) ? "" : "not ";
           NGRAPH_HE_LOG(3) << "Parameter shape " << param_op->get_shape()
                            << from_client_str << " from client";
