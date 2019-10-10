@@ -1455,6 +1455,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
 
+      // TODO: enable packed shapes
       Shape in_shape0 = unpacked_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 

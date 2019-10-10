@@ -113,21 +113,21 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_plain_plain) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_plain) {
-  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
            vector<float>{48}, false, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_plain) {
-  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
            vector<float>{48}, true, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_cipher) {
-  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
            vector<float>{48}, false, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_cipher) {
-  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
            vector<float>{48}, true, true, false, false);
 }
