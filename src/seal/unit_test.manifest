@@ -1,6 +1,4 @@
 # Use of static cast to double means we don't support > 52-bit integers
 plain_tv_write_read_large_scalar_int64
 
-# HE_SEAL.minimum_plain_batched
 # HE_SEAL.const_broadcast_add_3
-# HE_SEAL.constant_abc
