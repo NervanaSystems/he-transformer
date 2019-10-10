@@ -46,7 +46,6 @@ bool pass::PropagateHEAnnotations::run_on_function(
   // First, set all ops without annotations to have plaintext unpacked
   // annotation
   for (auto node : nodes) {
-    NGRAPH_HE_LOG(5) << "Node " << node->get_name();
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
       if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
@@ -58,6 +57,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
             op->get_op_annotations());
         NGRAPH_HE_LOG(5) << "Op has annotation : " << *he_op_annotations;
       }
+    } else {
+      NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not an op";
     }
   }
 
@@ -65,11 +66,11 @@ bool pass::PropagateHEAnnotations::run_on_function(
                       "needed";
   for (auto node : nodes) {
     auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
-    NGRAPH_HE_LOG(5) << "Op " << op->get_name();
     if (op == nullptr) {
       NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not op";
       continue;
     }
+    NGRAPH_HE_LOG(5) << "Op " << op->get_name();
     auto he_op_annotations =
         std::dynamic_pointer_cast<HEOpAnnotations>(op->get_op_annotations());
     NGRAPH_CHECK(he_op_annotations != nullptr,
@@ -104,14 +105,16 @@ bool pass::PropagateHEAnnotations::run_on_function(
   // For debugging, print out node info
   NGRAPH_HE_LOG(5) << "Final node annotations";
   for (auto node : nodes) {
-    NGRAPH_HE_LOG(5) << "Node " << node->get_name();
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
       if (ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
         auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
             op->get_op_annotations());
-        NGRAPH_HE_LOG(5) << "Op has annotation : " << *he_op_annotations;
+        NGRAPH_HE_LOG(5) << "Op " << op->get_name() << " (" << op->get_shape()
+                         << ") has annotation : " << *he_op_annotations;
       }
+    } else {
+      NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not an op";
     }
   }
   return false;

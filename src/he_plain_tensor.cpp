@@ -206,6 +206,7 @@ void HEPlainTensor::set_elements(const std::vector<HEPlaintext>& elements) {
 void HEPlainTensor::pack() {
   NGRAPH_INFO << "Packing plain tensor";
   if (is_packed()) {
+    NGRAPH_INFO << "plain tensor already packed";
     return;
   }
 

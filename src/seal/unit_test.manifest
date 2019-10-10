@@ -1,2 +1,5 @@
 # Use of static cast to double means we don't support > 52-bit integers
 plain_tv_write_read_large_scalar_int64
+
+# This doesn't seem to be a valid use of compelx packing, but need to check more thoroughly
+convolution_2d_2items_plain_cipher_complex_packed

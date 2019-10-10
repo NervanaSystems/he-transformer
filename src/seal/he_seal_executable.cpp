@@ -111,12 +111,12 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (HEOpAnnotations::has_he_annotation(*param)) {
       std::string from_client_str = from_client(*param) ? "" : "not ";
-      NGRAPH_HE_LOG(3) << "Parameter shape " << param->get_shape() << " is "
+      NGRAPH_HE_LOG(3) << "\tshape " << param->get_shape() << " is "
                        << from_client_str << "from client";
     }
 
     for (const auto& tag : param->get_provenance_tags()) {
-      NGRAPH_HE_LOG(3) << "Tag " << tag;
+      NGRAPH_HE_LOG(3) << "\tTag " << tag;
     }
   }
 
@@ -715,13 +715,16 @@ bool HESealExecutable::call(
 
       if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
               param->get_op_annotations())) {
-        NGRAPH_HE_LOG(5) << "Parameter is encrypted? "
-                         << current_annotation->encrypted();
+        NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
+                         << " has annotation " << *current_annotation;
         if (current_annotation->encrypted()) {
           NGRAPH_HE_LOG(3) << "Encrypting parameter " << param->get_name()
                            << " from server";
           if (he_server_input->is_type<HESealCipherTensor>()) {
             he_input = he_server_input;
+
+            NGRAPH_INFO << "he_server_input->is_packed()? "
+                        << he_server_input->is_packed();
           } else {
             auto plain_input =
                 he_tensor_as_type<HEPlainTensor>(he_server_input);
@@ -763,9 +766,15 @@ bool HESealExecutable::call(
           }
           he_input = plain_input;
         }
+
+        NGRAPH_CHECK(he_input->is_packed() == current_annotation->packed(),
+                     "Mismatch between tensor input and annotation (",
+                     he_input->is_packed(),
+                     " != ", current_annotation->packed(), ")");
       }
     }
     NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
+
     he_inputs.emplace_back(he_input);
   }
 
@@ -1134,8 +1143,9 @@ void HESealExecutable::generate_calls(
   std::vector<Shape> arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     NGRAPH_INFO << "arg " << arg_idx << " is "
-                << (args[arg_idx]->is_packed() ? "" : "not ")
+                << ((args[arg_idx]->is_packed()) ? "" : "not ")
                 << "packed, arg_shape " << args[arg_idx]->get_packed_shape();
+    NGRAPH_INFO << "args[arg_idx]->is_packed() " << args[arg_idx]->is_packed();
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
 
