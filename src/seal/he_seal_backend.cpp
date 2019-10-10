@@ -164,9 +164,9 @@ std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_tensor(
 }
 
 std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_plain_tensor(
-    const element::Type& element_type, const Shape& shape,
-    const bool packed) const {
-  auto rc = std::make_shared<HEPlainTensor>(element_type, shape, packed);
+    const element::Type& element_type, const Shape& shape, const bool packed,
+    const std::string& name) const {
+  auto rc = std::make_shared<HEPlainTensor>(element_type, shape, packed, name);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
 }
 

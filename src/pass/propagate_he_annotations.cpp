@@ -64,6 +64,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
 
   NGRAPH_HE_LOG(5) << "Updating annotation with ciphertext / packed as "
                       "needed";
+  // Node has encrypted output if any of its inputs is encrypted
+  // Node has packed output if any of its inputs is packed
   for (auto node : nodes) {
     auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
     if (op == nullptr) {

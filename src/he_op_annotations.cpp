@@ -41,5 +41,12 @@ bool HEOpAnnotations::has_he_annotation(const ngraph::op::Op& op) {
   return std::dynamic_pointer_cast<HEOpAnnotations>(annotation) != nullptr;
 }
 
+std::shared_ptr<HEOpAnnotations> HEOpAnnotations::he_op_annotation(
+    const ngraph::op::Op& op) {
+  NGRAPH_CHECK(HEOpAnnotations::has_he_annotation(op), "op ", op.get_name(),
+               " has not HEOpAnnotation");
+  return std::static_pointer_cast<HEOpAnnotations>(op.get_op_annotations());
+}
+
 }  // namespace he
 }  // namespace ngraph

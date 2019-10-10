@@ -864,19 +864,13 @@ bool HESealExecutable::call(
         const element::Type& element_type = op->get_output_element_type(i);
         std::string name = op->output(i).get_tensor().get_name();
 
-        // Plaintext output only if all inputs are plaintext
-        bool plain_out = all_of(op_inputs.begin(), op_inputs.end(),
-                                [](std::shared_ptr<HETensor> op_input) {
-                                  return op_input->is_type<HEPlainTensor>();
-                                });
-        if (op->is_constant()) {
-          // TODO: fix
-          plain_out = true;  // !m_encrypt_model;
-        }
-        bool packed_out = std::any_of(op_inputs.begin(), op_inputs.end(),
-                                      [](std::shared_ptr<HETensor> he_tensor) {
-                                        return he_tensor->is_packed();
-                                      });
+        std::shared_ptr<HEOpAnnotations> he_op_annotation =
+            HEOpAnnotations::he_op_annotation(
+                *std::static_pointer_cast<const ngraph::op::Op>(op));
+
+        bool encrypted_out = he_op_annotation->encrypted();
+        bool packed_out = he_op_annotation->packed();
+
         // Avoid broadcasting from constant to output with batch size first
         // dimension. This happens because not every constant is packed, for
         // examples convolution kernels.
@@ -885,13 +879,15 @@ bool HESealExecutable::call(
           packed_out = true;
         }
 
-        if (plain_out) {
-          auto out_tensor = std::make_shared<HEPlainTensor>(element_type, shape,
-                                                            packed_out, name);
+        if (encrypted_out) {
+          auto out_tensor = std::static_pointer_cast<HETensor>(
+              m_he_seal_backend.create_cipher_tensor(element_type, shape,
+                                                     packed_out, name));
           tensor_map.insert({tensor, out_tensor});
         } else {
-          auto out_tensor = std::make_shared<HESealCipherTensor>(
-              element_type, shape, m_he_seal_backend, packed_out, name);
+          auto out_tensor = std::static_pointer_cast<HETensor>(
+              m_he_seal_backend.create_plain_tensor(element_type, shape,
+                                                    packed_out, name));
           tensor_map.insert({tensor, out_tensor});
         }
       }

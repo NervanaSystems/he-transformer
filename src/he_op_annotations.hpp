@@ -49,6 +49,12 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   /// \param[in] op Operation to check for annotation
   static bool has_he_annotation(const ngraph::op::Op& op);
 
+  /// \brief Returns HEOpAnnotations from Op
+  /// \param[in] op Operation to retrieve annotations from
+  /// \throws ngraph_error if op doesn't have HEOpAnnotation
+  static std::shared_ptr<HEOpAnnotations> he_op_annotation(
+      const ngraph::op::Op& op);
+
   static inline std::shared_ptr<HEOpAnnotations>
   server_plaintext_unpacked_annotation() {
     return std::make_shared<HEOpAnnotations>(false, false, false);
