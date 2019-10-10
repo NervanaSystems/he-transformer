@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -24,185 +25,105 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace he;
 
 static string s_manifest = "${MANIFEST}";
 
+auto concat_test =
+    [](const Shape& shape_a, const Shape& shape_b, const Shape& shape_c,
+       size_t concat_axis, const vector<float>& input_a,
+       const vector<float>& input_b, const vector<float>& input_c,
+       const vector<float>& output, const bool arg1_encrypted,
+       const bool complex_packing, const bool packed) {
+      auto backend = runtime::Backend::create("${BACKEND_NAME}");
+      auto he_backend = static_cast<he::HESealBackend*>(backend.get());
+
+      if (complex_packing) {
+        he_backend->update_encryption_parameters(
+            he::HESealEncryptionParameters::default_complex_packing_parms());
+      }
+
+      auto a = make_shared<op::Parameter>(element::f32, shape_a);
+      auto b = make_shared<op::Parameter>(element::f32, shape_b);
+      auto c = make_shared<op::Parameter>(element::f32, shape_c);
+      auto t = make_shared<op::Concat>(NodeVector{a, b, c}, concat_axis);
+      auto f = make_shared<Function>(t, ParameterVector{a, b, c});
+
+      auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
+        if (is_encrypted && is_packed) {
+          return HEOpAnnotations::server_ciphertext_packed_annotation();
+        } else if (is_encrypted && !is_packed) {
+          return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+        } else if (!is_encrypted && is_packed) {
+          return HEOpAnnotations::server_plaintext_packed_annotation();
+        } else if (!is_encrypted && !is_packed) {
+          return HEOpAnnotations::server_plaintext_unpacked_annotation();
+        }
+        throw ngraph_error("Logic error");
+      };
+
+      a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+      b->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+      c->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+
+      auto tensor_from_flags = [&](const Shape& shape, bool encrypted) {
+        if (encrypted && packed) {
+          return he_backend->create_packed_cipher_tensor(element::f32, shape);
+        } else if (encrypted && !packed) {
+          return he_backend->create_cipher_tensor(element::f32, shape);
+        } else if (!encrypted && packed) {
+          return he_backend->create_packed_plain_tensor(element::f32, shape);
+        } else if (!encrypted && !packed) {
+          return he_backend->create_plain_tensor(element::f32, shape);
+        }
+        throw ngraph_error("Logic error");
+      };
+
+      auto t_a = tensor_from_flags(shape_a, arg1_encrypted);
+      auto t_b = tensor_from_flags(shape_b, arg1_encrypted);
+      auto t_c = tensor_from_flags(shape_c, arg1_encrypted);
+      auto t_result = tensor_from_flags(t->get_shape(), arg1_encrypted);
+
+      copy_data(t_a, input_a);
+      copy_data(t_b, input_b);
+      copy_data(t_c, input_c);
+
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a, t_b, t_c});
+      EXPECT_TRUE(all_close(read_vector<float>(t_result), output, 1e-3f));
+    };
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_b{2, 3};
-  auto B = make_shared<op::Parameter>(element::f32, shape_b);
-  Shape shape_c{2, 3};
-  auto C = make_shared<op::Parameter>(element::f32, shape_c);
-  Shape shape_r{2, 8};
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 1);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 8, 16});
-    copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
-    copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
-        vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13},
-        read_vector<float>(result)));
-  }
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_b{3, 2};
-  auto B = make_shared<op::Parameter>(element::f32, shape_b);
-  Shape shape_c{3, 2};
-  auto C = make_shared<op::Parameter>(element::f32, shape_c);
-  Shape shape_r{8, 2};
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 8, 16});
-    copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
-    copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
-        vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13},
-        read_vector<float>(result)));
-  }
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape_a{4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_b{6};
-  auto B = make_shared<op::Parameter>(element::f32, shape_b);
-  Shape shape_c{2};
-  auto C = make_shared<op::Parameter>(element::f32, shape_c);
-  Shape shape_r{12};
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 8, 16});
-    copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
-    copy_data(c, vector<float>{18, 19});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(
-        all_close(vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19},
-                  read_vector<float>(result)));
-  }
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape{1, 1, 1, 1};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
-  auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1});
-    copy_data(b, vector<float>{2});
-    copy_data(c, vector<float>{3});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
-  }
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape{1, 1};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
-  auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1});
-    copy_data(b, vector<float>{2});
-    copy_data(c, vector<float>{3});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
-  }
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              false, false);
 }
