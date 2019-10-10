@@ -5,12 +5,6 @@ plain_tv_write_read_large_scalar_int64
 # HE_SEAL.perf_square
 # HE_SEAL.perf_mult_plain
 # HE_SEAL.minimum_plain_batched
-# HE_SEAL.max_pool_1d_1channel_1image_cipher
-# HE_SEAL.max_pool_1d_1channel_2image_plain_batched
-# HE_SEAL.max_pool_1d_1channel_2image_cipher
-# HE_SEAL.max_pool_1d_1channel_2image_cipher_batched
-# HE_SEAL.max_pool_1d_2channel_2image_cipher
-# HE_SEAL.max_pool_2d_2channel_2image_cipher
 # HE_SEAL.mult_layer_cipher_cipher
 # HE_SEAL.mult_layer_cipher_plain
 # HE_SEAL.add_layer_cipher_cipher
