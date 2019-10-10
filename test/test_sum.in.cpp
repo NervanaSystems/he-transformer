@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
+#include "ngraph/axis_set.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -24,309 +26,168 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
+auto sum_test = [](const ngraph::Shape& in_shape,
+                   const ngraph::AxisSet& axis_set,
+                   const std::vector<float>& input,
+                   const std::vector<float>& output, const bool arg1_encrypted,
+                   const bool complex_packing, const bool packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  Shape shape{2, 2};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape);
-    auto b = make_shared<op::Parameter>(element::f32, shape);
-    auto t = make_shared<op::Sum>(a, AxisSet{});
-    auto f = make_shared<Function>(t, ParameterVector{a});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-    for (auto tensors : tensors_list) {
-      NGRAPH_INFO << "Running test with same backend";
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_result = results[0];
-      copy_data(t_a, vector<float>{1, 2, 3, 4});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a});
-      EXPECT_TRUE(
-          all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_result)));
-    }
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  if (complex_packing) {
+    he_backend->update_encryption_parameters(
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
   }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape);
-    auto b = make_shared<op::Parameter>(element::f64, shape);
-    auto t = make_shared<op::Sum>(a, AxisSet{});
-    auto f = make_shared<Function>(t, ParameterVector{a});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_result = results[0];
-      copy_data(t_a, vector<double>{1, 2, 3, 4});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a});
-      EXPECT_TRUE(all_close((vector<double>{1, 2, 3, 4}),
-                            read_vector<double>(t_result)));
+
+  auto a = make_shared<op::Parameter>(element::f32, in_shape);
+  auto t = make_shared<op::Sum>(a, axis_set);
+  auto f = make_shared<Function>(t, ParameterVector{a});
+
+  auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
+    if (is_encrypted && is_packed) {
+      return HEOpAnnotations::server_ciphertext_packed_annotation();
+    } else if (is_encrypted && !is_packed) {
+      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+    } else if (!is_encrypted && is_packed) {
+      return HEOpAnnotations::server_plaintext_packed_annotation();
+    } else if (!is_encrypted && !is_packed) {
+      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
     }
-  }
+    throw ngraph_error("Logic error");
+  };
+
+  a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+
+  auto tensor_from_flags = [&](const ngraph::Shape& shape, bool encrypted) {
+    if (encrypted && packed) {
+      return he_backend->create_packed_cipher_tensor(element::f32, shape);
+    } else if (encrypted && !packed) {
+      return he_backend->create_cipher_tensor(element::f32, shape);
+    } else if (!encrypted && packed) {
+      return he_backend->create_packed_plain_tensor(element::f32, shape);
+    } else if (!encrypted && !packed) {
+      return he_backend->create_plain_tensor(element::f32, shape);
+    }
+    throw ngraph_error("Logic error");
+  };
+
+  auto t_a = tensor_from_flags(in_shape, arg1_encrypted);
+  auto t_result = tensor_from_flags(t->get_shape(), arg1_encrypted);
+  copy_data(t_a, input);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a});
+
+  EXPECT_TRUE(all_close(read_vector<float>(t_result), output, 1e-3f));
+};
+
+NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
+  sum_test(ngraph::Shape{2, 2}, ngraph::AxisSet{},
+           std::vector<float>{1, 2, 3, 4}, std::vector<float>{1, 2, 3, 4},
+           false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_encrypted) {
+  sum_test(ngraph::Shape{2, 2}, ngraph::AxisSet{},
+           std::vector<float>{1, 2, 3, 4}, std::vector<float>{1, 2, 3, 4}, true,
+           false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{2, 2, 2, 2, 2}, ngraph::AxisSet{},
+           std::vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+           std::vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+           false, false, false);
+}
 
-  Shape shape{2, 2, 2, 2, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a,
-              vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close(
-        (vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
-        read_vector<float>(t_result), 1e-3f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d_encrypted) {
+  sum_test(ngraph::Shape{2, 2, 2, 2, 2}, ngraph::AxisSet{},
+           std::vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+           std::vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                              1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+           true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+           std::vector<float>{1, 2, 3, 4}, std::vector<float>{10}, false, false,
+           false);
+}
 
-  Shape shape{2, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{1, 2, 3, 4});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        all_close((vector<float>{10}), read_vector<float>(t_result), 1e-3f));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3, 4}), read_vector<float>(t_a), 1e-3f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar_encrypted) {
+  sum_test(ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+           std::vector<float>{1, 2, 3, 4}, std::vector<float>{10}, true, false,
+           false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{3, 2}, ngraph::AxisSet{0},
+           std::vector<float>{1, 2, 3, 4, 5, 6}, std::vector<float>{9, 12},
+           false, false, false);
+}
 
-  Shape shape{3, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        all_close((vector<float>{9, 12}), read_vector<float>(t_result), 1e-3f));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 5, 6}),
-                          read_vector<float>(t_a), 1e-3f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns_encrypted) {
+  sum_test(ngraph::Shape{3, 2}, ngraph::AxisSet{0},
+           std::vector<float>{1, 2, 3, 4, 5, 6}, std::vector<float>{9, 12},
+           true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{3, 2}, ngraph::AxisSet{1},
+           std::vector<float>{1, 2, 3, 4, 5, 6}, std::vector<float>{3, 7, 11},
+           false, false, false);
+}
 
-  Shape shape{3, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{1});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        all_close((vector<float>{3, 7, 11}), read_vector<float>(t_result)));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3, 4, 5, 6}), read_vector<float>(t_a)));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_encrypted) {
+  sum_test(ngraph::Shape{3, 2}, ngraph::AxisSet{1},
+           std::vector<float>{1, 2, 3, 4, 5, 6}, std::vector<float>{3, 7, 11},
+           true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{3, 0}, ngraph::AxisSet{1}, std::vector<float>{},
+           std::vector<float>{0, 0, 0}, false, false, false);
+}
 
-  Shape shape{3, 0};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{1});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{});
-    copy_data(t_result, vector<float>({3, 3, 3}));
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        all_close((vector<float>{0, 0, 0}), read_vector<float>(t_result)));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(all_close((read_vector<float>(t_a)), vector<float>{}, 1e-5f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero_encrypted) {
+  sum_test(ngraph::Shape{3, 0}, ngraph::AxisSet{1}, std::vector<float>{},
+           std::vector<float>{0, 0, 0}, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{0, 2}, ngraph::AxisSet{0}, std::vector<float>{},
+           std::vector<float>{0, 0}, false, false, false);
+}
 
-  Shape shape{0, 2};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{});
-    copy_data(t_result, vector<float>({3, 3}));
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{0, 0}), read_vector<float>(t_result)));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(all_close((read_vector<float>(t_a)), vector<float>{}, 1e-5f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero_encrypted) {
+  sum_test(ngraph::Shape{0, 2}, ngraph::AxisSet{0}, std::vector<float>{},
+           std::vector<float>{0, 0}, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{0}, ngraph::AxisSet{0}, std::vector<float>{},
+           std::vector<float>{0}, false, false, false);
+}
 
-  Shape shape{0};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{0});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{});
-    copy_data(t_result, vector<float>({3}));
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{0}), read_vector<float>(t_result)));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(all_close((read_vector<float>(t_a)), vector<float>{}, 1e-5f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero_encrypted) {
+  sum_test(ngraph::Shape{0}, ngraph::AxisSet{0}, std::vector<float>{},
+           std::vector<float>{0}, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  sum_test(ngraph::Shape{0, 0}, ngraph::AxisSet{0, 1}, std::vector<float>{},
+           std::vector<float>{0}, false, false, false);
+}
 
-  Shape shape{0, 0};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Sum>(a, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, ParameterVector{a});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {a}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto t_a = inputs[0];
-    auto t_result = results[0];
-
-    copy_data(t_a, vector<float>{});
-    copy_data(t_result, vector<float>({3}));
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{0}), read_vector<float>(t_result)));
-
-    // For some reason I'm feeling extra paranoid about making sure reduction
-    // doesn't clobber the input tensors, so let's do this too.
-    EXPECT_TRUE(all_close((read_vector<float>(t_a)), vector<float>{}, 1e-5f));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero_encrypted) {
+  sum_test(ngraph::Shape{0, 0}, ngraph::AxisSet{0, 1}, std::vector<float>{},
+           std::vector<float>{0}, true, false, false);
 }
