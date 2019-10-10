@@ -864,12 +864,31 @@ bool HESealExecutable::call(
         const element::Type& element_type = op->get_output_element_type(i);
         std::string name = op->output(i).get_tensor().get_name();
 
-        std::shared_ptr<HEOpAnnotations> he_op_annotation =
-            HEOpAnnotations::he_op_annotation(
-                *std::static_pointer_cast<const ngraph::op::Op>(op));
-
-        bool encrypted_out = he_op_annotation->encrypted();
-        bool packed_out = he_op_annotation->packed();
+        // TODO: remove case once Constant becomes an op
+        // (https://github.com/NervanaSystems/ngraph/pull/3752)
+        bool encrypted_out;
+        bool packed_out;
+        if (op->is_op()) {
+          std::shared_ptr<HEOpAnnotations> he_op_annotation =
+              HEOpAnnotations::he_op_annotation(
+                  *std::static_pointer_cast<const ngraph::op::Op>(op));
+          encrypted_out = he_op_annotation->encrypted();
+          packed_out = he_op_annotation->packed();
+        } else {
+          NGRAPH_WARN
+              << "Node " << op->get_name()
+              << " is not op, using default encrypted / packing behavior";
+          encrypted_out =
+              !all_of(op_inputs.begin(), op_inputs.end(),
+                      [](std::shared_ptr<ngraph::he::HETensor> op_input) {
+                        return op_input->is_type<HEPlainTensor>();
+                      });
+          packed_out =
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
+                            return he_tensor->is_packed();
+                          });
+        }
 
         // Avoid broadcasting from constant to output with batch size first
         // dimension. This happens because not every constant is packed, for
