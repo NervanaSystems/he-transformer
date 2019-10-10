@@ -50,6 +50,19 @@ ngraph::Shape ngraph::he::HETensor::pack_shape(const ngraph::Shape& shape,
   return packed_shape;
 }
 
+ngraph::Shape ngraph::he::HETensor::unpack_shape(const ngraph::Shape& shape,
+                                                 size_t pack_size,
+                                                 size_t batch_axis) {
+  if (batch_axis != 0) {
+    throw ngraph::ngraph_error("Unpacking only supported along axis 0");
+  }
+  ngraph::Shape unpacked_shape(shape);
+  if (shape.size() > 0 && shape[0] != 0) {
+    unpacked_shape[0] = pack_size;
+  }
+  return unpacked_shape;
+}
+
 uint64_t ngraph::he::HETensor::batch_size(const Shape& shape,
                                           const bool packed) {
   if (shape.size() > 0 && packed) {

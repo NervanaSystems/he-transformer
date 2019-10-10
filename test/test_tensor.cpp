@@ -42,6 +42,7 @@ TEST(he_tensor, pack) {
   plain.pack();
 
   EXPECT_TRUE(plain.is_packed());
+  EXPECT_EQ(plain.get_packed_shape(), (Shape{1, 2}));
   EXPECT_EQ(plain.get_batch_size(), 2);
   EXPECT_EQ(plain.num_plaintexts(), 2);
   for (size_t i = 0; i < 2; ++i) {
@@ -66,6 +67,7 @@ TEST(he_tensor, unpack) {
   plain.unpack();
 
   EXPECT_FALSE(plain.is_packed());
+  EXPECT_EQ(plain.get_packed_shape(), (Shape{2, 2}));
   EXPECT_EQ(plain.num_plaintexts(), 4);
   EXPECT_EQ(plain.get_batch_size(), 1);
 

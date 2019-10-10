@@ -1133,6 +1133,9 @@ void HESealExecutable::generate_calls(
 
   std::vector<Shape> arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
+    NGRAPH_INFO << "arg " << arg_idx << " is "
+                << (args[arg_idx]->is_packed() ? "" : "not ")
+                << "packed, arg_shape " << args[arg_idx]->get_packed_shape();
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
 

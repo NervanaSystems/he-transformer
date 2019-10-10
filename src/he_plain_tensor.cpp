@@ -223,6 +223,7 @@ void HEPlainTensor::pack() {
 
   m_plaintexts = std::move(new_plaintexts);
   m_packed = true;
+  m_packed_shape = ngraph::he::HETensor::pack_shape(get_shape());
 }
 
 void HEPlainTensor::unpack() {
@@ -230,7 +231,6 @@ void HEPlainTensor::unpack() {
   if (!is_packed()) {
     return;
   }
-
   size_t batch_size = get_batch_size();
 
   std::vector<HEPlaintext> new_plaintexts;
@@ -245,6 +245,7 @@ void HEPlainTensor::unpack() {
   m_plaintexts = std::move(new_plaintexts);
   m_packed = false;
   m_batch_size = 1;
+  m_packed_shape = ngraph::he::HETensor::unpack_shape(get_shape(), batch_size);
 }
 
 }  // namespace he

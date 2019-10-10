@@ -56,6 +56,14 @@ class HETensor : public runtime::Tensor {
   /// \return Shape after packing along pack axis
   static Shape pack_shape(const Shape& shape, size_t pack_axis = 0);
 
+  /// \brief Expands shape along pack axis
+  /// \param[in] shape Input shape to pack
+  /// \param[in] pack_size New size of pack axis
+  /// \param[in] pack_axis Axis along which to pack
+  /// \return Shape after expanding along pack axis
+  static Shape unpack_shape(const Shape& shape, size_t pack_size,
+                            size_t pack_axis = 0);
+
   /// \brief Returns the batch size of a given shape
   /// \param[in] Shape Shape of the tensor
   /// \param[in] packed Whether or not batch-axis packing is used
