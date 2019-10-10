@@ -1621,7 +1621,11 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
-      const Shape arg0_shape = packed_arg_shapes[0];
+      Shape arg0_shape = unpacked_arg_shapes[0];
+
+      if (plaintext_packed(node_wrapper)) {
+        arg0_shape = packed_arg_shapes[0];
+      }
 
       switch (binary_op_type) {
         case BinaryOpType::CipherCipherToCipher: {
