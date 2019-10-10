@@ -1131,16 +1131,9 @@ void HESealExecutable::generate_calls(
     }
   };
 
-  std::vector<Shape> packed_arg_shapes{};
-  std::vector<Shape> unpacked_arg_shapes{};
+  std::vector<Shape> arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
-    Shape arg_shape = node.get_input_shape(arg_idx);
-    unpacked_arg_shapes.emplace_back(arg_shape);
-
-    // if (plaintext_packed(node_wrapper)) {
-    arg_shape = HETensor::pack_shape(arg_shape);
-    packed_arg_shapes.emplace_back(arg_shape);
-    // }
+    arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
 
   Shape out_shape{};
@@ -1196,7 +1189,7 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
-      Shape op_in_shape = unpacked_arg_shapes[0];
+      Shape op_in_shape = arg_shapes[0];
       Shape op_out_shape = out_shape;
 
       if (verbose) {
@@ -1255,11 +1248,11 @@ void HESealExecutable::generate_calls(
 
       // TODO: support packing
 
-      batch_norm_inference_seal(
-          eps, gamma->get_elements(), beta->get_elements(),
-          input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), unpacked_arg_shapes[2], m_batch_size,
-          m_he_seal_backend);
+      batch_norm_inference_seal(eps, gamma->get_elements(),
+                                beta->get_elements(), input->get_elements(),
+                                mean->get_elements(), variance->get_elements(),
+                                out0_cipher->get_elements(), arg_shapes[2],
+                                m_batch_size, m_he_seal_backend);
       break;
     }
     case OP_TYPEID::BoundedRelu: {
@@ -1305,7 +1298,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
-      Shape in_shape = unpacked_arg_shapes[0];
+      Shape in_shape = arg_shapes[0];
       Shape broadcast_out_shape = out_shape;
       if (out_shape[0] == m_batch_size) {
         broadcast_out_shape = out_shape;
@@ -1403,8 +1396,12 @@ void HESealExecutable::generate_calls(
       auto data_dilation_strides = c->get_data_dilation_strides();
 
       // TODO: enable packing
-      Shape in_shape0 = unpacked_arg_shapes[0];
-      Shape in_shape1 = unpacked_arg_shapes[1];
+      Shape in_shape0 = arg_shapes[0];
+      Shape in_shape1 = arg_shapes[1];
+
+      NGRAPH_INFO << "in_shape0 " << in_shape0;
+      NGRAPH_INFO << "in_shape1 " << in_shape1;
+      NGRAPH_INFO << "out_shape " << out_shape;
 
       switch (binary_op_type) {
         case BinaryOpType::CipherCipherToCipher: {
@@ -1458,8 +1455,8 @@ void HESealExecutable::generate_calls(
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
 
       // TODO: enable packed shapes
-      Shape in_shape0 = unpacked_arg_shapes[0];
-      Shape in_shape1 = unpacked_arg_shapes[1];
+      Shape in_shape0 = arg_shapes[0];
+      Shape in_shape1 = arg_shapes[1];
 
       if (verbose) {
         NGRAPH_HE_LOG(3) << in_shape0 << " dot " << in_shape1;
@@ -1518,7 +1515,7 @@ void HESealExecutable::generate_calls(
                          " doesn't match number of elements",
                          out0_cipher->num_ciphertexts());
             max_pool_seal(cipher_args[0]->get_elements(),
-                          out0_cipher->get_elements(), unpacked_arg_shapes[0],
+                          out0_cipher->get_elements(), arg_shapes[0],
                           out0_cipher->get_packed_shape(),
                           max_pool->get_window_shape(),
                           max_pool->get_window_movement_strides(),
@@ -1530,7 +1527,7 @@ void HESealExecutable::generate_calls(
         case UnaryOpType::PlainToPlain: {
           max_pool_seal(
               plain_args[0]->get_elements(), out0_plain->get_elements(),
-              unpacked_arg_shapes[0], out0_plain->get_packed_shape(),
+              arg_shapes[0], out0_plain->get_packed_shape(),
               max_pool->get_window_shape(),
               max_pool->get_window_movement_strides(),
               max_pool->get_padding_below(), max_pool->get_padding_above());
@@ -1625,11 +1622,7 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Pad: {
       const op::Pad* pad = static_cast<const op::Pad*>(&node);
-      Shape arg0_shape = unpacked_arg_shapes[0];
-
-      if (plaintext_packed(node_wrapper)) {
-        arg0_shape = packed_arg_shapes[0];
-      }
+      Shape arg0_shape = arg_shapes[0];
 
       switch (binary_op_type) {
         case BinaryOpType::CipherCipherToCipher: {
@@ -1801,12 +1794,11 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Slice: {
       const op::Slice* slice = static_cast<const op::Slice*>(&node);
-      Shape& in_shape = unpacked_arg_shapes[0];
+      Shape& in_shape = arg_shapes[0];
       Coordinate lower_bounds = slice->get_lower_bounds();
       Coordinate upper_bounds = slice->get_upper_bounds();
 
       if (plaintext_packed(node_wrapper)) {
-        in_shape = packed_arg_shapes[0];
         lower_bounds = HETensor::pack_shape(slice->get_lower_bounds());
         upper_bounds = HETensor::pack_shape(slice->get_upper_bounds());
       }
@@ -1871,7 +1863,7 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Sum: {
       const op::Sum* sum = static_cast<const op::Sum*>(&node);
-      Shape op_in_shape = unpacked_arg_shapes[0];
+      Shape op_in_shape = arg_shapes[0];
 
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {

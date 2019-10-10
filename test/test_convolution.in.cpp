@@ -70,7 +70,8 @@ auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
   };
 
   a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
-  b->set_op_annotations(annotation_from_flags(arg2_encrypted, packed));
+  // Weights should not be packed
+  b->set_op_annotations(annotation_from_flags(arg2_encrypted, false));
 
   auto tensor_from_flags = [&](const Shape& shape, bool encrypted) {
     if (encrypted && packed) {
@@ -98,7 +99,7 @@ auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
   EXPECT_TRUE(all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_real_unpacked) {
   conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
@@ -109,7 +110,40 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain) {
             false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_real_packed) {
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, false,
+            true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_plain_plain_complex_unpacked) {
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, true,
+            false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_complex_packed) {
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_plain_real_unpacked) {
   conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
@@ -120,7 +154,39 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_plain) {
             false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_cipher) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_plain_real_packed) {
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_cipher_plain_complex_unpacked) {
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_cipher_plain_complex_packed) {
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                          2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
@@ -131,7 +197,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_cipher) {
             false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_cipher) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_cipher_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
@@ -141,7 +208,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_cipher) {
             vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_2outputs_plain_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
@@ -151,7 +219,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_plain_plain) {
             false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_plain_cipher) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_2outputs_plain_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
@@ -161,7 +230,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_plain_cipher) {
             false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_cipher_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_2outputs_cipher_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
@@ -171,7 +241,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_cipher_plain) {
             true, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_cipher_cipher) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1image_2outputs_cipher_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{}, CoordinateDiff{}, Strides{},
             vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
@@ -181,7 +252,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_2outputs_cipher_cipher) {
             true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -193,7 +264,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_plain) {
             false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_cipher) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -205,7 +276,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_cipher) {
             false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -217,7 +288,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_plain) {
             true, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_cipher) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -229,7 +300,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_cipher) {
             true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1item_padded_1_1x1_1_plain_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -245,7 +317,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1_plain_plain) {
             false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1_plain_cipher) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1item_padded_1_1x1_1_plain_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -261,7 +334,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1_plain_cipher) {
             false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1_cipher_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1item_padded_1_1x1_1_cipher_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -278,7 +352,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_1_1x1_1_cipher_plain) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            convolution_2d_1item_padded_1_1x1_1_cipher_cipher) {
+            convolution_2d_1item_padded_1_1x1_1_cipher_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -294,7 +368,8 @@ NGRAPH_TEST(${BACKEND_NAME},
             true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1item_padded_2_3x4_5_plain_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -328,7 +403,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5_plain_plain) {
             false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5_plain_cipher) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1item_padded_2_3x4_5_plain_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -362,7 +438,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5_plain_cipher) {
             false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5_cipher_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_1item_padded_2_3x4_5_cipher_plain_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -397,7 +474,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_padded_2_3x4_5_cipher_plain) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            convolution_2d_1item_padded_2_3x4_5_cipher_cipher) {
+            convolution_2d_1item_padded_2_3x4_5_cipher_cipher_real_unpacked) {
   conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
             CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f, -8.f,
@@ -431,7 +508,7 @@ NGRAPH_TEST(${BACKEND_NAME},
             true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
       CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
@@ -447,7 +524,56 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain) {
       false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_real_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      false, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_plain_plain_complex_unpacked) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      false, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_complex_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      false, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
       CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
@@ -463,7 +589,57 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher) {
       false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher_real_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      false, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_plain_cipher_complex_unpacked) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      false, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_plain_cipher_complex_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      false, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
       CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
@@ -479,7 +655,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain) {
       true, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_cipher) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_cipher_cipher_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
       CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
@@ -495,7 +672,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_cipher) {
       true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded_plain_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_strided_padded_plain_plain_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
       CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
@@ -527,7 +705,7 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_strided_padded_plain_plain) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            convolution_2d_2items_strided_padded_plain_cipher) {
+            convolution_2d_2items_strided_padded_plain_cipher_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
       CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
@@ -559,7 +737,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            convolution_2d_2items_strided_padded_cipher_plain) {
+            convolution_2d_2items_strided_padded_cipher_plain_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
       CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
@@ -591,7 +769,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            convolution_2d_2items_strided_padded_cipher_cipher) {
+            convolution_2d_2items_strided_padded_cipher_cipher_real_unpacked) {
   conv_test(
       Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
       CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
