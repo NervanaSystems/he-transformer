@@ -56,8 +56,6 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
     } else if (!is_encrypted && !is_packed) {
       return HEOpAnnotations::server_ciphertext_unpacked_annotation();
     }
-    NGRAPH_INFO << "is_encrypted " << is_encrypted;
-    NGRAPH_INFO << "is_packed " << is_packed;
     throw ngraph_error("Logic error");
   };
 
@@ -74,8 +72,6 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
     } else if (!encrypted && !packed) {
       return he_backend->create_plain_tensor(element::f32, shape);
     }
-    NGRAPH_INFO << "encrypted " << encrypted;
-    NGRAPH_INFO << "packed" << packed;
     throw ngraph_error("Logic error");
   };
 
