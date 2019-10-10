@@ -660,6 +660,56 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_unpacked) {
       true, false, false, false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      true, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_cipher_plain_complex_unpacked) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      true, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_cipher_plain_complex_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      true, false, true, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_cipher_cipher_real_unpacked) {
   conv_test(
@@ -675,6 +725,56 @@ NGRAPH_TEST(${BACKEND_NAME},
                     -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
                     48.0f,   -66.0f, -42.0f, 72.0f},
       true, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_cipher_real_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      true, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_cipher_cipher_complex_unpacked) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      true, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            convolution_2d_2items_cipher_cipher_complex_packed) {
+  conv_test(
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
+      vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f, -8.f, 5.f,
+                    -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,  9.f,  -7.f, 3.f,  0.f,
+                    6.f,  -1.f, -4.f, -2.f, 7.f,  -0.f, -1.f, 7.f,  -4.f, -9.f},
+      vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
+      vector<float>{32.0f,   -18.0f, 56.0f,  56.0f,  -42.0f, -14.0f, -16.0f,
+                    46.0f,   -54.0f, -9.0f,  -30.0f, 48.0f,  78.0f,  -33.0f,
+                    -123.0f, -21.0f, -52.0f, -74.0f, 82.0f,  -30.0f, -48.0f,
+                    -10.0f,  8.0f,   64.0f,  138.0f, 30.0f,  -30.0f, 6.0f,
+                    48.0f,   -66.0f, -42.0f, 72.0f},
+      true, true, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
