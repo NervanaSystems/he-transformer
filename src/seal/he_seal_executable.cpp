@@ -1400,7 +1400,8 @@ void HESealExecutable::generate_calls(
       auto padding_above = c->get_padding_above();
       auto data_dilation_strides = c->get_data_dilation_strides();
 
-      Shape in_shape0 = packed_arg_shapes[0];
+      // TODO: enable packing
+      Shape in_shape0 = unpacked_arg_shapes[0];
       Shape in_shape1 = unpacked_arg_shapes[1];
 
       switch (binary_op_type) {
