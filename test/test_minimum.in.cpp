@@ -50,7 +50,7 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain) {
                         read_vector<float>(result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_batched) {
+NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_packed) {
   Shape shape{2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);

@@ -1253,10 +1253,12 @@ void HESealExecutable::generate_calls(
       NGRAPH_CHECK(mean != nullptr, "BatchNorm mean not plaintext");
       NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext");
 
+      // TODO: support packing
+
       batch_norm_inference_seal(
           eps, gamma->get_elements(), beta->get_elements(),
           input->get_elements(), mean->get_elements(), variance->get_elements(),
-          out0_cipher->get_elements(), packed_arg_shapes[2], m_batch_size,
+          out0_cipher->get_elements(), unpacked_arg_shapes[2], m_batch_size,
           m_he_seal_backend);
       break;
     }

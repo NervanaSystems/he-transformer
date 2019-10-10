@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "ngraph/pass/constant_folding.hpp"
 #include "ngraph/pass/core_fusion.hpp"
@@ -27,6 +28,7 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
@@ -48,6 +50,17 @@ class BatchNormInferenceTester {
                                                   Variance, epsilon);
     m_function = make_shared<Function>(
         BN, ParameterVector{Input, Gamma, Beta, Mean, Variance});
+
+    Input->set_op_annotations(
+        HEOpAnnotations::server_ciphertext_unpacked_annotation());
+    Gamma->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+    Beta->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+    Mean->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
+    Variance->set_op_annotations(
+        HEOpAnnotations::server_plaintext_unpacked_annotation());
 
     m_input = backend->create_cipher_tensor(etype, input_shape);
     m_gamma = backend->create_plain_tensor(etype, channel_shape);
