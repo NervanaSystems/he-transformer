@@ -2,10 +2,6 @@
 plain_tv_write_read_large_scalar_int64
 
 # HE_SEAL.minimum_plain_batched
-# HE_SEAL.mult_layer_cipher_cipher
-# HE_SEAL.mult_layer_cipher_plain
-# HE_SEAL.add_layer_cipher_cipher
-# HE_SEAL.add_layer_cipher_plain
 # HE_SEAL.const_broadcast_add_3
 # HE_SEAL.constant_abc
 # HE_SEAL.batch_norm_inference_0eps_f32
