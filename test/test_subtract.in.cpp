@@ -98,6 +98,14 @@ auto sub_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
+
+  for (size_t i = 0; i < exp_result.size(); ++i) {
+    NGRAPH_INFO << "Sub[ " << i << "]: (a=" << input_a[i]
+                << " ) - (b=" << input_b[i] << ") => "
+                << read_vector<float>(t_result)[i] << " (expected "
+                << exp_result[i] << ")";
+  }
+
   EXPECT_TRUE(all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
