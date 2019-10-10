@@ -31,6 +31,7 @@ void scalar_negate_seal(const SealCiphertextWrapper& arg,
     out->value() = -arg.value();
     return;
   }
+  out->complex_packing() = arg.complex_packing();
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
 }
 

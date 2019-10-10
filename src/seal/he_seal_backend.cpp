@@ -79,11 +79,6 @@ void HESealBackend::generate_context() {
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 
-  // TODO: remove once key numbers are known
-  std::stringstream ss;
-  m_relin_keys->save(ss);
-  NGRAPH_INFO << "key size " << ss.str().size();
-
   auto coeff_moduli = context_data->parms().coeff_modulus();
 
   print_encryption_parameters(m_encryption_params, *m_context);
