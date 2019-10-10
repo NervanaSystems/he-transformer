@@ -25,277 +25,109 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
+auto dot_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
+                   const vector<float>& input_a, const vector<float>& input_b,
+                   const vector<float>& output, const bool arg1_encrypted,
+                   const bool arg2_encrypted, const bool complex_packing,
+                   const bool packed) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  if (complex_packing) {
+    he_backend->update_encryption_parameters(
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
+  }
+
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = make_shared<op::Dot>(a, b);
+  auto f = make_shared<Function>(t, ParameterVector{a, b});
+
+  auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
+    if (is_encrypted && is_packed) {
+      return HEOpAnnotations::server_ciphertext_packed_annotation();
+    } else if (is_encrypted && !is_packed) {
+      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+    } else if (!is_encrypted && is_packed) {
+      return HEOpAnnotations::server_plaintext_packed_annotation();
+    } else if (!is_encrypted && !is_packed) {
+      return HEOpAnnotations::server_plaintext_unpacked_annotation();
+    }
+    throw ngraph_error("Logic error");
+  };
+
+  NGRAPH_INFO << "arg1_encrypted " << arg1_encrypted;
+  NGRAPH_INFO << "arg2_encrypted " << arg2_encrypted;
+
+  a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+  b->set_op_annotations(annotation_from_flags(arg2_encrypted, packed));
+
+  auto tensor_from_flags = [&](const Shape& shape, bool encrypted) {
+    if (encrypted && packed) {
+      return he_backend->create_packed_cipher_tensor(element::f32, shape);
+    } else if (encrypted && !packed) {
+      return he_backend->create_cipher_tensor(element::f32, shape);
+    } else if (!encrypted && packed) {
+      return he_backend->create_packed_plain_tensor(element::f32, shape);
+    } else if (!encrypted && !packed) {
+      return he_backend->create_plain_tensor(element::f32, shape);
+    }
+    throw ngraph_error("Logic error");
+  };
+
+  auto t_a = tensor_from_flags(shape_a, arg1_encrypted);
+  auto t_b = tensor_from_flags(shape_b, arg2_encrypted);
+  auto t_result =
+      tensor_from_flags(t->get_shape(), arg1_encrypted | arg2_encrypted);
+
+  copy_data(t_a, input_a);
+  copy_data(t_b, input_b);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(all_close(read_vector<float>(t_result), output, 1e-3f));
+};
+
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  Shape shape{4};
-  Shape shape_r{};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape);
-    auto b = make_shared<op::Parameter>(element::f32, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto t_a = he_backend->create_plain_tensor(element::f32, shape);
-    auto t_b = he_backend->create_plain_tensor(element::f32, shape);
-    auto t_result = he_backend->create_plain_tensor(element::f32, shape_r);
-    copy_data(t_a, vector<float>{2, 2, 3, 4});
-    copy_data(t_b, vector<float>{5, 6, 7, 8});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a, t_b});
-    EXPECT_TRUE(
-        all_close(read_vector<float>(t_result), vector<float>{75}, 1e-2f));
-  }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape);
-    auto b = make_shared<op::Parameter>(element::f64, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto t_a = he_backend->create_plain_tensor(element::f64, shape);
-    auto t_b = he_backend->create_plain_tensor(element::f64, shape);
-    auto t_result = he_backend->create_plain_tensor(element::f64, shape_r);
-    copy_data(t_a, vector<double>{2, 2, 3, 4});
-    copy_data(t_b, vector<double>{5, 6, 7, 8});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a, t_b});
-    EXPECT_TRUE(
-        all_close(read_vector<double>(t_result), vector<double>{75}, 1e-2));
-  }
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, false, false, false,
+           false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot1d) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape{4};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape);
-    auto b = make_shared<op::Parameter>(element::f32, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<float>{2, 2, 3, 4});
-      copy_data(t_b, vector<float>{5, 6, 7, 8});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(
-          all_close(read_vector<float>(t_result), vector<float>{75}, 1e-2f));
-    }
-  }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape);
-    auto b = make_shared<op::Parameter>(element::f64, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<double>{2, 2, 3, 4});
-      copy_data(t_b, vector<double>{5, 6, 7, 8});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(
-          all_close(read_vector<double>(t_result), vector<double>{75}, 1e-2));
-    }
-  }
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_plain_plain) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, false, false, false,
+           false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  Shape shape{4};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape);
-    auto b = make_shared<op::Parameter>(element::f32, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<float>{1, 2, 3, 4});
-      copy_data(t_b, vector<float>{-1, 0, 1, 2});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(
-          all_close(read_vector<float>(t_result), vector<float>{10}, 1e-2f));
-    }
-  }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape);
-    auto b = make_shared<op::Parameter>(element::f64, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<double>{1, 2, 3, 4});
-      copy_data(t_b, vector<double>{-1, 0, 1, 2});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(
-          all_close(read_vector<double>(t_result), vector<double>{10}, 1e-2));
-    }
-  }
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_plain_plain) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_matrix_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape_a{4, 4};
-  Shape shape_b{4};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape_a);
-    auto b = make_shared<op::Parameter>(element::f32, shape_b);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-                                   14, 15, 16});
-      copy_data(t_b, vector<float>{17, 18, 19, 20});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                            (vector<float>{190, 486, 782, 1078}), 1e-2f));
-    }
-  }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape_a);
-    auto b = make_shared<op::Parameter>(element::f64, shape_b);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<double>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-                                    14, 15, 16});
-      copy_data(t_b, vector<double>{17, 18, 19, 20});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(all_close(read_vector<double>(t_result),
-                            (vector<double>{190, 486, 782, 1078}), 1e-2));
-    }
-  }
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_plain) {
+  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape{};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape);
-    auto b = make_shared<op::Parameter>(element::f32, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<float>{8});
-      copy_data(t_b, vector<float>{6});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(
-          all_close(read_vector<float>(t_result), (vector<float>{48}), 1e-2f));
-    }
-  }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape);
-    auto b = make_shared<op::Parameter>(element::f64, shape);
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<double>{8});
-      copy_data(t_b, vector<double>{6});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(
-          all_close(read_vector<double>(t_result), (vector<double>{48}), 1e-2));
-    }
-  }
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_plain) {
+  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, true, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  auto packed_plaintext_annotation =
-      std::make_shared<ngraph::he::HEOpAnnotations>(false, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_cipher) {
+  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, false, true, false, false);
+}
 
-  Shape shape_a{3, 1};
-  Shape shape_b{1};
-  Shape shape_r{3};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape_a);
-    a->set_op_annotations(packed_plaintext_annotation);
-    auto b = op::Constant::create(element::f32, shape_b, {4});
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a});
-    auto t_a = he_backend->create_packed_plain_tensor(element::f32, shape_a);
-    auto t_result =
-        he_backend->create_packed_plain_tensor(element::f32, shape_r);
-    copy_data(t_a, vector<float>{1, 2, 3});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{4, 8, 12}),
-                          read_vector<float>(t_result), 1e-2f));
-  }
-  {
-    auto a = make_shared<op::Parameter>(element::f64, shape_a);
-    a->set_op_annotations(packed_plaintext_annotation);
-    auto b = op::Constant::create(element::f64, shape_b, {4});
-    auto t = make_shared<op::Dot>(a, b);
-    auto f = make_shared<Function>(t, ParameterVector{a});
-    auto t_a = he_backend->create_packed_plain_tensor(element::f64, shape_a);
-    auto t_result =
-        he_backend->create_packed_plain_tensor(element::f64, shape_r);
-    copy_data(t_a, vector<double>{1, 2, 3});
-    auto handle = backend->compile(f);
-    handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<double>{4, 8, 12}),
-                          read_vector<double>(t_result), 1e-2));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_cipher) {
+  dot_test(Shape{4, 4}, Shape{4}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, true, true, false, false);
 }

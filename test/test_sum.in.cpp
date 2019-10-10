@@ -56,7 +56,7 @@ auto sum_test = [](const ngraph::Shape& in_shape,
     } else if (!is_encrypted && is_packed) {
       return HEOpAnnotations::server_plaintext_packed_annotation();
     } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+      return HEOpAnnotations::server_plaintext_unpacked_annotation();
     }
     throw ngraph_error("Logic error");
   };

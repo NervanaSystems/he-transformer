@@ -27,36 +27,6 @@ using namespace std;
 using namespace ngraph;
 using namespace ngraph::he;
 
-/*
-auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto shape_a = Shape{1, 1, 5, 5};
-  auto shape_b = Shape{1, 1, 3, 3};
-  {
-    auto a = make_shared<op::Parameter>(element::f32, shape_a);
-    auto b = make_shared<op::Parameter>(element::f32, shape_b);
-    auto t = make_shared<op::Convolution>(a, b, Strides{1, 1}, Strides{1, 1});
-    auto f = make_shared<Function>(t, ParameterVector{a, b});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {a, b}, backend.get());
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto t_a = inputs[0];
-      auto t_b = inputs[1];
-      auto t_result = results[0];
-      copy_data(t_a, vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                                   2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                                   2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0});
-      copy_data(t_b,
-                vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b});
-      EXPECT_TRUE(all_close(read_vector<float>(t_result),
-                            vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, 1e-3f));
-    }
-  }
-  */
-
 static string s_manifest = "${MANIFEST}";
 
 auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
@@ -94,7 +64,7 @@ auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
     } else if (!is_encrypted && is_packed) {
       return HEOpAnnotations::server_plaintext_packed_annotation();
     } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+      return HEOpAnnotations::server_plaintext_unpacked_annotation();
     }
     throw ngraph_error("Logic error");
   };

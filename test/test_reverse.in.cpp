@@ -53,7 +53,7 @@ auto reverse_test = [](const Shape& shape_a, const AxisSet& axis_set,
     } else if (!is_encrypted && is_packed) {
       return HEOpAnnotations::server_plaintext_packed_annotation();
     } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+      return HEOpAnnotations::server_plaintext_unpacked_annotation();
     }
     throw ngraph_error("Logic error");
   };

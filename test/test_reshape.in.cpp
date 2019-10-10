@@ -54,7 +54,7 @@ auto reshape_test = [](const Shape& shape_a, const Shape& shape_r,
     } else if (!is_encrypted && is_packed) {
       return HEOpAnnotations::server_plaintext_packed_annotation();
     } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
+      return HEOpAnnotations::server_plaintext_unpacked_annotation();
     }
     throw ngraph_error("Logic error");
   };
