@@ -29,35 +29,6 @@ using namespace he;
 
 static string s_manifest = "${MANIFEST}";
 
-/*
-auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
-
-  Shape shape_a{2, 2, 3};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{12};
-  auto r = make_shared<op::Reshape>(A, AxisVector{0, 1, 2}, shape_r);
-  auto f = make_shared<Function>(r, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({r}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(
-        all_close((vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}),
-                  read_vector<float>(result), 1e-3f));
-  }
-  */
-
 auto reshape_test = [](const Shape& shape_a, const Shape& shape_r,
                        const AxisVector& axis_vector,
                        const vector<float>& input, const vector<float>& output,
@@ -209,7 +180,7 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose_plain_plain) {
 //         198.,  270.,  206.,  278.,  214.,  286.,  199.,  271.,  207.,
 //         279.,  215.,  287.,  200.,  272.,  208.,  280.,  216.,  288.])
 //
-NGRAPH_TEST(${BACKEND_NAME}, reshape_6d_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, reshape_6d_plain_plain) {
   vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
   for (int i = 0; i < 2 * 2 * 3 * 3 * 2 * 4; i++) {
     a_data[i] = float(i + 1);
