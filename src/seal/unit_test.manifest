@@ -1,2 +1,38 @@
 # Use of static cast to double means we don't support > 52-bit integers
 plain_tv_write_read_large_scalar_int64
+
+# HE_SEAL.perf_add
+# HE_SEAL.perf_square
+# HE_SEAL.perf_mult_plain
+# HE_SEAL.minimum_plain_batched
+# HE_SEAL.max_pool_1d_1channel_1image_cipher
+# HE_SEAL.max_pool_1d_1channel_2image_plain_batched
+# HE_SEAL.max_pool_1d_1channel_2image_cipher
+# HE_SEAL.max_pool_1d_1channel_2image_cipher_batched
+# HE_SEAL.max_pool_1d_2channel_2image_cipher
+# HE_SEAL.max_pool_2d_2channel_2image_cipher
+# HE_SEAL.mult_layer_cipher_cipher
+# HE_SEAL.mult_layer_cipher_plain
+# HE_SEAL.add_layer_cipher_cipher
+# HE_SEAL.add_layer_cipher_plain
+# HE_SEAL.const_broadcast_add_3
+# HE_SEAL.mobilenet_v2
+# HE_SEAL.constant_abc
+# HE_SEAL.concat_matrix_colwise
+# HE_SEAL.concat_matrix_rowise
+# HE_SEAL.concat_vector
+# HE_SEAL.concat_4d_tensor
+# HE_SEAL.concat_2d_tensor
+# HE_SEAL.broadcast_vector
+# HE_SEAL.broadcast_matrix
+# HE_SEAL.broadcast_tensor
+# HE_SEAL.broadcast_trivial
+# HE_SEAL.broadcast_vector_colwise
+# HE_SEAL.broadcast_vector_rowwise
+# HE_SEAL.broadcast_matrix_0
+# HE_SEAL.broadcast_matrix_1
+# HE_SEAL.broadcast_matrix_2
+# HE_SEAL.batch_norm_inference_0eps_f32
+# HE_SEAL.batch_norm_inference_f32
+# HE_SEAL.batch_norm_fusion_he
+# HE_SEAL.batch_norm_fusion_he_batch
