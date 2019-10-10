@@ -83,8 +83,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
 
         auto he_target_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
             target_op->get_op_annotations());
-        NGRAPH_CHECK(he_target_annotations != nullptr,
-                     "Target node doesn't have HEOpAnnotations");
+        NGRAPH_CHECK(he_target_annotations != nullptr, "Target node ",
+                     target_op->get_name(), " doesn't have HEOpAnnotations");
 
         if (he_op_annotations->encrypted()) {
           NGRAPH_HE_LOG(5) << "Setting node " << target_node->get_name()
