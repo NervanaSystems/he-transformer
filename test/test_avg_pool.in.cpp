@@ -63,7 +63,7 @@ auto avg_pool_test = [](const ngraph::Shape& shape_a,
   EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain_real_unpacked) {
   float denom = 3.0;
   avg_pool_test(
       Shape{1, 1, 14}, Shape{3}, Strides{},
@@ -76,7 +76,20 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain) {
       false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain) {
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_cipher_real_unpacked) {
+  float denom = 3.0;
+  avg_pool_test(
+      Shape{1, 1, 14}, Shape{3}, Strides{},
+      test::NDArray<float, 3>{{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
+          .get_vector(),
+      test::NDArray<float, 3>({{{1 / denom, 3 / denom, 3 / denom, 3 / denom,
+                                 4 / denom, 5 / denom, 5 / denom, 2 / denom,
+                                 2 / denom, 2 / denom, 2 / denom, 0 / denom}}})
+          .get_vector(),
+      true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_unpacked) {
   float denom = 3.0;
   avg_pool_test(
       Shape{2, 1, 14}, Shape{3}, Strides{},
@@ -91,6 +104,40 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain) {
              3 / denom}}})
           .get_vector(),
       false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_packed) {
+  float denom = 3.0;
+  avg_pool_test(
+      Shape{2, 1, 14}, Shape{3}, Strides{},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+          .get_vector(),
+      test::NDArray<float, 3>(
+          {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
+             5 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 0 / denom}},
+           {{3 / denom, 4 / denom, 2 / denom, 1 / denom, 0 / denom, 2 / denom,
+             2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom,
+             3 / denom}}})
+          .get_vector(),
+      false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_unpacked) {
+  float denom = 3.0;
+  avg_pool_test(
+      Shape{2, 1, 14}, Shape{3}, Strides{},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+          .get_vector(),
+      test::NDArray<float, 3>(
+          {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
+             5 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 0 / denom}},
+           {{3 / denom, 4 / denom, 2 / denom, 1 / denom, 0 / denom, 2 / denom,
+             2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom,
+             3 / denom}}})
+          .get_vector(),
+      true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_packed) {
@@ -110,7 +157,82 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_packed) {
       true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_plain_real_unpacked) {
+  float denom = 3.0;
+  avg_pool_test(
+      Shape{2, 2, 14}, Shape{3}, Strides{},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>(
+          {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
+             5 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 0 / denom},
+            {0 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 5 / denom,
+             5 / denom, 4 / denom, 3 / denom, 3 / denom, 3 / denom, 1 / denom}},
+
+           {{3 / denom, 4 / denom, 2 / denom, 1 / denom, 0 / denom, 2 / denom,
+             2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom, 3 / denom},
+            {3 / denom, 1 / denom, 1 / denom, 1 / denom, 3 / denom, 2 / denom,
+             2 / denom, 0 / denom, 1 / denom, 2 / denom, 4 / denom,
+             3 / denom}}})
+          .get_vector(),
+      false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_plain_real_packed) {
+  float denom = 3.0;
+  avg_pool_test(
+      Shape{2, 2, 14}, Shape{3}, Strides{},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>(
+          {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
+             5 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 0 / denom},
+            {0 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 5 / denom,
+             5 / denom, 4 / denom, 3 / denom, 3 / denom, 3 / denom, 1 / denom}},
+
+           {{3 / denom, 4 / denom, 2 / denom, 1 / denom, 0 / denom, 2 / denom,
+             2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom, 3 / denom},
+            {3 / denom, 1 / denom, 1 / denom, 1 / denom, 3 / denom, 2 / denom,
+             2 / denom, 0 / denom, 1 / denom, 2 / denom, 4 / denom,
+             3 / denom}}})
+          .get_vector(),
+      false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_cipher_real_unpacked) {
+  float denom = 3.0;
+  avg_pool_test(
+      Shape{2, 2, 14}, Shape{3}, Strides{},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>(
+          {{{1 / denom, 3 / denom, 3 / denom, 3 / denom, 4 / denom, 5 / denom,
+             5 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 0 / denom},
+            {0 / denom, 2 / denom, 2 / denom, 2 / denom, 2 / denom, 5 / denom,
+             5 / denom, 4 / denom, 3 / denom, 3 / denom, 3 / denom, 1 / denom}},
+
+           {{3 / denom, 4 / denom, 2 / denom, 1 / denom, 0 / denom, 2 / denom,
+             2 / denom, 3 / denom, 1 / denom, 1 / denom, 1 / denom, 3 / denom},
+            {3 / denom, 1 / denom, 1 / denom, 1 / denom, 3 / denom, 2 / denom,
+             2 / denom, 0 / denom, 1 / denom, 2 / denom, 4 / denom,
+             3 / denom}}})
+          .get_vector(),
+      true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_cipher_real_packed) {
   float denom = 3.0;
   avg_pool_test(
       Shape{2, 2, 14}, Shape{3}, Strides{},
@@ -186,6 +308,159 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_plain_real_unpacked) {
                 false, false, false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_plain_real_packed) {
+  float denom = 2 * 3;
+  avg_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>(
+                    {{{{6 / denom, 8 / denom, 5 / denom},  // img 0 chan 0
+                       {7 / denom, 5 / denom, 3 / denom},
+                       {5 / denom, 2 / denom, 5 / denom},
+                       {6 / denom, 5 / denom, 5 / denom}},
+
+                      {{5 / denom, 7 / denom, 6 / denom},  // img 0 chan 1
+                       {8 / denom, 6 / denom, 7 / denom},
+                       {7 / denom, 2 / denom, 3 / denom},
+                       {6 / denom, 1 / denom, 0 / denom}}},
+
+                     {{{5 / denom, 6 / denom, 5 / denom},  // img 1 chan 0
+                       {3 / denom, 5 / denom, 9 / denom},
+                       {3 / denom, 6 / denom, 9 / denom},
+                       {2 / denom, 3 / denom, 3 / denom}},
+
+                      {{5 / denom, 3 / denom, 1 / denom},  // img 1 chan 1
+                       {6 / denom, 5 / denom, 4 / denom},
+                       {7 / denom, 5 / denom, 6 / denom},
+                       {4 / denom, 2 / denom, 4 / denom}}}})
+                    .get_vector(),
+                false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_cipher_real_unpacked) {
+  float denom = 2 * 3;
+  avg_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>(
+                    {{{{6 / denom, 8 / denom, 5 / denom},  // img 0 chan 0
+                       {7 / denom, 5 / denom, 3 / denom},
+                       {5 / denom, 2 / denom, 5 / denom},
+                       {6 / denom, 5 / denom, 5 / denom}},
+
+                      {{5 / denom, 7 / denom, 6 / denom},  // img 0 chan 1
+                       {8 / denom, 6 / denom, 7 / denom},
+                       {7 / denom, 2 / denom, 3 / denom},
+                       {6 / denom, 1 / denom, 0 / denom}}},
+
+                     {{{5 / denom, 6 / denom, 5 / denom},  // img 1 chan 0
+                       {3 / denom, 5 / denom, 9 / denom},
+                       {3 / denom, 6 / denom, 9 / denom},
+                       {2 / denom, 3 / denom, 3 / denom}},
+
+                      {{5 / denom, 3 / denom, 1 / denom},  // img 1 chan 1
+                       {6 / denom, 5 / denom, 4 / denom},
+                       {7 / denom, 5 / denom, 6 / denom},
+                       {4 / denom, 2 / denom, 4 / denom}}}})
+                    .get_vector(),
+                true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_cipher_real_packed) {
+  float denom = 2 * 3;
+  avg_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>(
+                    {{{{6 / denom, 8 / denom, 5 / denom},  // img 0 chan 0
+                       {7 / denom, 5 / denom, 3 / denom},
+                       {5 / denom, 2 / denom, 5 / denom},
+                       {6 / denom, 5 / denom, 5 / denom}},
+
+                      {{5 / denom, 7 / denom, 6 / denom},  // img 0 chan 1
+                       {8 / denom, 6 / denom, 7 / denom},
+                       {7 / denom, 2 / denom, 3 / denom},
+                       {6 / denom, 1 / denom, 0 / denom}}},
+
+                     {{{5 / denom, 6 / denom, 5 / denom},  // img 1 chan 0
+                       {3 / denom, 5 / denom, 9 / denom},
+                       {3 / denom, 6 / denom, 9 / denom},
+                       {2 / denom, 3 / denom, 3 / denom}},
+
+                      {{5 / denom, 3 / denom, 1 / denom},  // img 1 chan 1
+                       {6 / denom, 5 / denom, 4 / denom},
+                       {7 / denom, 5 / denom, 6 / denom},
+                       {4 / denom, 2 / denom, 4 / denom}}}})
+                    .get_vector(),
+                true, false, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME},
             avg_pool_2d_1channel_1image_strided_plain_real_unpacked) {
   float denom = 2 * 3;
@@ -204,4 +479,24 @@ NGRAPH_TEST(${BACKEND_NAME},
                                            {6 / denom, 2 / denom, 4 / denom}}}})
                     .get_vector(),
                 false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            avg_pool_2d_1channel_1image_strided_cipher_real_unpacked) {
+  float denom = 2 * 3;
+  avg_pool_test(Shape{1, 1, 8, 8}, Shape{2, 3}, Strides{3, 2},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1, 2, 0, 0},
+                                           {0, 3, 2, 0, 0, 0, 1, 0},
+                                           {2, 0, 0, 0, 1, 0, 0, 0},
+                                           {2, 0, 1, 1, 2, 2, 3, 0},
+                                           {0, 2, 1, 0, 0, 0, 1, 0},
+                                           {2, 0, 3, 1, 0, 0, 0, 0},
+                                           {1, 2, 0, 0, 0, 1, 2, 0},
+                                           {1, 0, 2, 0, 0, 0, 1, 0}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{6 / denom, 5 / denom, 4 / denom},
+                                           {6 / denom, 5 / denom, 8 / denom},
+                                           {6 / denom, 2 / denom, 4 / denom}}}})
+                    .get_vector(),
+                true, false, false);
 }

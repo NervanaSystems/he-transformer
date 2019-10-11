@@ -77,8 +77,7 @@ make doc
 to create doxygen documentation in `$HE_TRANSFORMER/build/doc/doxygen`.
 
 #### 1b. Python bindings for client
-To build an experimental client-server model with python bindings, see the [python](https://github.com/NervanaSystems/he-transformer/tree/master/python) folder.
-***Note***: This feature is experimental. For best experience, you should skip this step.
+To build an client-server model with python bindings, see the [python](https://github.com/NervanaSystems/he-transformer/tree/master/python) folder.
 
 ### 2. Run C++ unit-tests
 Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`
