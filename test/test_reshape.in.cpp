@@ -62,10 +62,16 @@ auto reshape_test = [](const Shape& shape_a, const Shape& shape_r,
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012_plain_plain) {
-  reshape_test(Shape{2, 2, 3}, Shape{12}, AxisVector{0, 1, 2},
-               vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
-               vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, false,
-               false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false, true}) {
+        reshape_test(Shape{2, 2, 3}, Shape{12}, AxisVector{0, 1, 2},
+                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+                     arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012_plain_plain) {

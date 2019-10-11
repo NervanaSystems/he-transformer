@@ -74,17 +74,51 @@ auto dot_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain_real_unpacked) {
-  for (bool arg1_enc : vector<bool>{false, true}) {
-    for (bool arg2_enc : vector<bool>{false, true}) {
-      for (bool complex_packing : vector<bool>{false, true}) {
-        for (bool plaintext_packing : vector<bool>{false, true}) {
-          dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
-                   vector<float>{5, 6, 7, 8}, vector<float>{75}, arg1_enc,
-                   arg2_enc, complex_packing, plaintext_packing);
-        }
-      }
-    }
-  }
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, false, false, false,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_plain_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, false, false, true,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_cipher_real_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, false, true, false,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_plain_cipher_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, false, true, true,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_cipher_plain_real_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, true, false, false,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_cipher_plain_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, true, false, true,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_cipher_cipher_real_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, true, true, false,
+           false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_cipher_cipher_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{2, 2, 3, 4},
+           vector<float>{5, 6, 7, 8}, vector<float>{75}, true, true, true,
+           false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_plain_plain_real_unpacked) {
@@ -93,7 +127,95 @@ NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_plain_plain_real_unpacked) {
            false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_plain_plain_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, false, false, true,
+           false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_plain_cipher_real_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, false, true, false,
+           false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_plain_cipher_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, false, true, true,
+           false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_cipher_plain_real_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, true, false, false,
+           false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_cipher_plain_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, true, false, true,
+           false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_cipher_cipher_real_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, true, true, false,
+           false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_optimized_cipher_cipher_complex_unpacked) {
+  dot_test(Shape{4}, Shape{4}, vector<float>{1, 2, 3, 4},
+           vector<float>{-1, 0, 1, 2}, vector<float>{10}, true, true, true,
+           false);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_plain_plain_real_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_plain_plain_complex_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_plain_cipher_real_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            dot1d_matrix_vector_plain_cipher_complex_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_cipher_plain_real_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            dot1d_matrix_vector_cipher_plain_complex_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot1d_matrix_vector_cipher_cipher_real_unpacked) {
+  dot_test(Shape{4, 4}, Shape{4},
+           vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+           vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
+           false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            dot1d_matrix_vector_cipher_cipher_complex_unpacked) {
   dot_test(Shape{4, 4}, Shape{4},
            vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
            vector<float>{17, 18, 19, 20}, vector<float>{190, 486, 782, 1078},
@@ -105,17 +227,37 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_plain_real_unpacked) {
            vector<float>{48}, false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_plain_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_plain_complex_unpacked) {
   dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
-           vector<float>{48}, true, false, false, false);
+           vector<float>{48}, false, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_cipher_real_unpacked) {
   dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
-           vector<float>{48}, false, true, false, false);
+           vector<float>{48}, false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_plain_cipher_complex_unpacked) {
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_plain_real_unpacked) {
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_plain_complex_unpacked) {
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, false, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_cipher_real_unpacked) {
   dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
-           vector<float>{48}, true, true, false, false);
+           vector<float>{48}, false, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_cipher_complex_unpacked) {
+  dot_test(Shape{}, Shape{}, vector<float>{8}, vector<float>{6},
+           vector<float>{48}, false, false, false, false);
 }

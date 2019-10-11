@@ -67,11 +67,56 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_real_unpacked) {
                 false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_real_packed) {
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
+                vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false, false,
+                true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_1channel_1image_plain_complex_unpacked) {
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
+                vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false, true,
+                false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_complex_packed) {
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
+                vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false, true,
+                true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher_real_unpacked) {
   max_pool_test(Shape{1, 1, 14}, Shape{3},
                 vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true, false,
                 false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher_real_packed) {
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
+                vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true, false,
+                true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_1channel_1image_cipher_complex_unpacked) {
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
+                vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true, true,
+                false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_1channel_1image_cipher_complex_packed) {
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
+                vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true, true,
+                true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_real_unpacked) {
@@ -98,6 +143,31 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_real_packed) {
       false, false, true);
 }
 
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_1channel_2image_plain_complex_unpacked) {
+  max_pool_test(
+      Shape{2, 1, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
+          .get_vector(),
+      false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_complex_packed) {
+  max_pool_test(
+      Shape{2, 1, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
+          .get_vector(),
+      false, true, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_real_unpacked) {
   max_pool_test(
       Shape{2, 1, 14}, Shape{3},
@@ -122,6 +192,32 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_real_packed) {
       true, false, true);
 }
 
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_1channel_2image_cipher_complex_unpacked) {
+  max_pool_test(
+      Shape{2, 1, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
+          .get_vector(),
+      true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_1channel_2image_cipher_complex_packed) {
+  max_pool_test(
+      Shape{2, 1, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
+          .get_vector(),
+      true, true, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_unpacked) {
   max_pool_test(
       Shape{2, 2, 14}, Shape{3},
@@ -140,6 +236,60 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_unpacked) {
       false, false, false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_upacked) {
+  max_pool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_complex_unpacked) {
+  max_pool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_complex_packed) {
+  max_pool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      false, true, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_unpacked) {
   max_pool_test(
       Shape{2, 2, 14}, Shape{3},
@@ -156,6 +306,60 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_unpacked) {
                                 {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
           .get_vector(),
       true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_packed) {
+  max_pool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_complex_unpacked) {
+  max_pool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_complex_packed) {
+  max_pool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      true, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_unpacked) {
@@ -207,6 +411,153 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_unpacked) {
                 false, false, false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_packed) {
+  max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                           {3, 3, 2},
+                                           {2, 1, 2},
+                                           {2, 2, 2}},
+
+                                          {{3, 3, 3},  // img 0 chan 1
+                                           {3, 3, 3},
+                                           {3, 1, 2},
+                                           {3, 1, 0}}},
+
+                                         {{{2, 2, 2},  // img 1 chan 0
+                                           {2, 2, 3},
+                                           {2, 3, 3},
+                                           {2, 3, 3}},
+
+                                          {{2, 2, 1},  // img 1 chan 1
+                                           {2, 2, 2},
+                                           {2, 2, 2},
+                                           {1, 1, 2}}}})
+                    .get_vector(),
+                false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_complex_unpacked) {
+  max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                           {3, 3, 2},
+                                           {2, 1, 2},
+                                           {2, 2, 2}},
+
+                                          {{3, 3, 3},  // img 0 chan 1
+                                           {3, 3, 3},
+                                           {3, 1, 2},
+                                           {3, 1, 0}}},
+
+                                         {{{2, 2, 2},  // img 1 chan 0
+                                           {2, 2, 3},
+                                           {2, 3, 3},
+                                           {2, 3, 3}},
+
+                                          {{2, 2, 1},  // img 1 chan 1
+                                           {2, 2, 2},
+                                           {2, 2, 2},
+                                           {1, 1, 2}}}})
+                    .get_vector(),
+                false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_complex_packed) {
+  max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                           {3, 3, 2},
+                                           {2, 1, 2},
+                                           {2, 2, 2}},
+
+                                          {{3, 3, 3},  // img 0 chan 1
+                                           {3, 3, 3},
+                                           {3, 1, 2},
+                                           {3, 1, 0}}},
+
+                                         {{{2, 2, 2},  // img 1 chan 0
+                                           {2, 2, 3},
+                                           {2, 3, 3},
+                                           {2, 3, 3}},
+
+                                          {{2, 2, 1},  // img 1 chan 1
+                                           {2, 2, 2},
+                                           {2, 2, 2},
+                                           {1, 1, 2}}}})
+                    .get_vector(),
+                false, true, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_unpacked) {
   max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
                 test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
@@ -253,5 +604,153 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_unpacked) {
                                            {2, 2, 2},
                                            {1, 1, 2}}}})
                     .get_vector(),
-                false, false, false);
+                true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_packed) {
+  max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                           {3, 3, 2},
+                                           {2, 1, 2},
+                                           {2, 2, 2}},
+
+                                          {{3, 3, 3},  // img 0 chan 1
+                                           {3, 3, 3},
+                                           {3, 1, 2},
+                                           {3, 1, 0}}},
+
+                                         {{{2, 2, 2},  // img 1 chan 0
+                                           {2, 2, 3},
+                                           {2, 3, 3},
+                                           {2, 3, 3}},
+
+                                          {{2, 2, 1},  // img 1 chan 1
+                                           {2, 2, 2},
+                                           {2, 2, 2},
+                                           {1, 1, 2}}}})
+                    .get_vector(),
+                true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_complex_unpacked) {
+  max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                           {3, 3, 2},
+                                           {2, 1, 2},
+                                           {2, 2, 2}},
+
+                                          {{3, 3, 3},  // img 0 chan 1
+                                           {3, 3, 3},
+                                           {3, 1, 2},
+                                           {3, 1, 0}}},
+
+                                         {{{2, 2, 2},  // img 1 chan 0
+                                           {2, 2, 3},
+                                           {2, 3, 3},
+                                           {2, 3, 3}},
+
+                                          {{2, 2, 1},  // img 1 chan 1
+                                           {2, 2, 2},
+                                           {2, 2, 2},
+                                           {1, 1, 2}}}})
+                    .get_vector(),
+                true, true, false);
+}
+
+
+NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_complex_packed) {
+  max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
+                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                           {0, 3, 2, 0, 0},
+                                           {2, 0, 0, 0, 1},
+                                           {2, 0, 1, 1, 2},
+                                           {0, 2, 1, 0, 0}},
+
+                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                           {0, 2, 3, 0, 1},
+                                           {2, 0, 1, 0, 2},
+                                           {3, 1, 0, 0, 0},
+                                           {2, 0, 0, 0, 0}}},
+
+                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                           {0, 0, 2, 0, 1},
+                                           {0, 0, 1, 2, 3},
+                                           {2, 0, 0, 3, 0},
+                                           {0, 0, 0, 0, 0}},
+
+                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                           {0, 2, 0, 0, 0},
+                                           {1, 1, 2, 0, 2},
+                                           {1, 1, 1, 0, 1},
+                                           {1, 0, 0, 0, 2}}}})
+                    .get_vector(),
+                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                           {3, 3, 2},
+                                           {2, 1, 2},
+                                           {2, 2, 2}},
+
+                                          {{3, 3, 3},  // img 0 chan 1
+                                           {3, 3, 3},
+                                           {3, 1, 2},
+                                           {3, 1, 0}}},
+
+                                         {{{2, 2, 2},  // img 1 chan 0
+                                           {2, 2, 3},
+                                           {2, 3, 3},
+                                           {2, 3, 3}},
+
+                                          {{2, 2, 1},  // img 1 chan 1
+                                           {2, 2, 2},
+                                           {2, 2, 2},
+                                           {1, 1, 2}}}})
+                    .get_vector(),
+                true, true, true);
 }
