@@ -1523,10 +1523,24 @@ void HESealExecutable::generate_calls(
           break;
         }
         case BinaryOpType::PlainPlainToPlain: {
+          NGRAPH_INFO << "plain_args[0]";
+          for (const auto& elem : plain_args[0]->get_elements()) {
+            NGRAPH_INFO << elem;
+          }
+          NGRAPH_INFO << "plain_args[1]";
+          for (const auto& elem : plain_args[1]->get_elements()) {
+            NGRAPH_INFO << elem;
+          }
+
           dot_seal(plain_args[0]->get_elements(), plain_args[1]->get_elements(),
                    out0_plain->get_elements(), in_shape0, in_shape1,
                    out0_plain->get_packed_shape(),
                    dot->get_reduction_axes_count(), type, m_he_seal_backend);
+
+          NGRAPH_INFO << "out0_plain";
+          for (const auto& elem : out0_plain->get_elements()) {
+            NGRAPH_INFO << elem;
+          }
           break;
         }
         case BinaryOpType::None:

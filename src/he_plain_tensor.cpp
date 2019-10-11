@@ -230,6 +230,7 @@ void HEPlainTensor::pack() {
 void HEPlainTensor::unpack() {
   NGRAPH_INFO << "Unpacking plain tensor";
   if (!is_packed()) {
+    NGRAPH_INFO << "Tensor is already unpacked";
     return;
   }
   size_t batch_size = get_batch_size();
