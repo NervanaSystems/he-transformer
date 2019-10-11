@@ -51,6 +51,8 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
       HEOpAnnotations::server_ciphertext_unpacked_annotation());
   B->set_op_annotations(
       HEOpAnnotations::server_ciphertext_unpacked_annotation());
+  C->set_op_annotations(
+      HEOpAnnotations::server_ciphertext_unpacked_annotation());
 
   {
     copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
