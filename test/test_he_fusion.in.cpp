@@ -34,11 +34,10 @@ static string s_manifest = "${MANIFEST}";
 
 static void check_bounded_relu(Shape param_shape, float constant_val) {
   auto make_function = [](Shape input_shape, float alpha_val) {
-    auto relu_input =
-        make_shared<op::Parameter>(element::f32, input_shape);
+    auto relu_input = make_shared<op::Parameter>(element::f32, input_shape);
     auto relu = make_shared<op::Relu>(relu_input);
-    auto alpha = op::Constant::create<float>(
-        element::f32, input_shape, vector<float>(1.0f, alpha_val));
+    auto alpha = op::Constant::create<float>(element::f32, input_shape,
+                                             vector<float>(1.0f, alpha_val));
     auto min = make_shared<op::Minimum>(relu, alpha);
     auto f =
         make_shared<Function>(NodeVector{min}, ParameterVector{relu_input});
@@ -75,7 +74,7 @@ static void check_bounded_relu(Shape param_shape, float constant_val) {
   int_handle->call_with_validate({int_result}, {int_a});
 
   EXPECT_TRUE(test::he::all_close(read_vector<float>(he_result),
-                        read_vector<float>(int_result), 1e-3f));
+                                  read_vector<float>(int_result), 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, bounded_relu_fusion) {

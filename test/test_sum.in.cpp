@@ -47,10 +47,12 @@ auto sum_test = [](const Shape& in_shape, const AxisSet& axis_set,
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(arg1_encrypted, packed));
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
 
-  auto t_a = test::he::tensor_from_flags(*he_backend, in_shape, arg1_encrypted, packed););
-  auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(), arg1_encrypted, packed););
+  auto t_a = test::he::tensor_from_flags(*he_backend, in_shape, arg1_encrypted,
+                                         packed);
+  auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(),
+                                              arg1_encrypted, packed);
   copy_data(t_a, input);
 
   auto handle = backend->compile(f);

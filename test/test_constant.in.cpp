@@ -40,7 +40,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {});
     EXPECT_TRUE(test::he::all_close((vector<float>{0.1, 0.2, 0.3, 0.4}),
-                          read_vector<float>(result)));
+                                    read_vector<float>(result)));
   }
   {
     auto A = op::Constant::create(element::f64, shape, {0.1, 0.2, 0.3, 0.4});
@@ -49,7 +49,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {});
     EXPECT_TRUE(test::he::all_close((vector<double>{0.1, 0.2, 0.3, 0.4}),
-                          read_vector<double>(result)));
+                                    read_vector<double>(result)));
   }
 }
 

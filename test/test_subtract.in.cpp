@@ -46,9 +46,9 @@ auto sub_test = [](const Shape& shape, const bool arg1_encrypted,
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(arg1_encrypted, packed));
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
   b->set_op_annotations(
-      test::he::annotation_from_flags(arg2_encrypted, packed));
+      test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
   auto t_a =
       test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);

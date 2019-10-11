@@ -52,9 +52,9 @@ auto dot_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
   NGRAPH_INFO << "arg2_encrypted " << arg2_encrypted;
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(arg1_encrypted, packed));
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
   b->set_op_annotations(
-      test::he::annotation_from_flags(arg2_encrypted, packed));
+      test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
   auto t_a =
       test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);

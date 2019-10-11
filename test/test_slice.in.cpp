@@ -148,9 +148,9 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
                                  14, 15});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        test::he::all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
-                  read_vector<float>(t_result)));
+    EXPECT_TRUE(test::he::all_close(
+        (vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
+        read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -169,9 +169,9 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
                                  14, 15});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        test::he::all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
-                  read_vector<float>(t_result)));
+    EXPECT_TRUE(test::he::all_close(
+        (vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
+        read_vector<float>(t_result)));
   }
 }
 
@@ -200,8 +200,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
                                  14, 15});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        test::he::all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
+    EXPECT_TRUE(test::he::all_close((vector<float>{4, 7, 12, 15}),
+                                    read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -221,8 +221,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
                                  14, 15});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        test::he::all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
+    EXPECT_TRUE(test::he::all_close((vector<float>{4, 7, 12, 15}),
+                                    read_vector<float>(t_result)));
   }
 }
 

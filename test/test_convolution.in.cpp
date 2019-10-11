@@ -56,9 +56,10 @@ auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(arg1_encrypted, packed));
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
   // Weights should not be packed
-  b->set_op_annotations(test::he::annotation_from_flags(arg2_encrypted, false));
+  b->set_op_annotations(
+      test::he::annotation_from_flags(false, arg2_encrypted, false));
 
   auto t_a =
       test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);

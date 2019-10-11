@@ -72,8 +72,7 @@ class BatchNormInferenceTester {
 
   bool call(const vector<T>& input, const vector<T>& gamma,
             const vector<T>& beta, const vector<T>& mean,
-            const vector<T>& variance,
-            const vector<T>& normed_input) {
+            const vector<T>& variance, const vector<T>& normed_input) {
     copy_data(m_input, input);
     copy_data(m_gamma, gamma);
     copy_data(m_beta, beta);
@@ -242,8 +241,8 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
       0.f,    -2.f,   2.f,    0.f,    0.f,    0.f,    0.f,   -2.f,   -2.f};
 
   vector<float> weight_vals{1.25f, 2.25f,  5.25f, 6.25f, -1.25f, -1.25f,
-                                 3.25f, -4.25f, 7.25f, 8.25f, -1.25f, 0.f,
-                                 0.f,   0.f,    0.f,   -2.f};
+                            3.25f, -4.25f, 7.25f, 8.25f, -1.25f, 0.f,
+                            0.f,   0.f,    0.f,   -2.f};
 
   vector<float> gamma_vals{-0.9384f, 0.01875f};
   vector<float> beta_vals{11.0f, 1.3f};
@@ -255,17 +254,16 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
   auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
                         weight_vals, beta_vals, mean_vals, var_vals, et]() {
     auto input_parm = make_shared<op::Parameter>(et, shape_input);
-    auto weights =
-        make_shared<op::Constant>(et, shape_weights, weight_vals);
+    auto weights = make_shared<op::Constant>(et, shape_weights, weight_vals);
     double eps = 0.001;
     auto gamma = make_shared<op::Constant>(et, shape_norm, gamma_vals);
     auto beta = make_shared<op::Constant>(et, shape_norm, beta_vals);
     auto mean = make_shared<op::Constant>(et, shape_norm, mean_vals);
     auto var = make_shared<op::Constant>(et, shape_norm, var_vals);
-    auto conv = make_shared<op::Convolution>(input_parm, weights,
-                                                  Strides{1, 1}, Strides{1, 1});
-    auto bn = make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
-                                                       var, eps);
+    auto conv = make_shared<op::Convolution>(input_parm, weights, Strides{1, 1},
+                                             Strides{1, 1});
+    auto bn =
+        make_shared<op::BatchNormInference>(conv, gamma, beta, mean, var, eps);
     auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input_parm});
     return f;
   };

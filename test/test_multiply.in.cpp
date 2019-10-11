@@ -45,13 +45,16 @@ auto mult_test = [](const Shape& shape, const bool arg1_encrypted,
   auto t = make_shared<op::Multiply>(a, b);
   auto f = make_shared<Function>(t, ParameterVector{a, b});
   a->set_op_annotations(
-      test::he::annotation_from_flags(arg1_encrypted, packed));
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
   b->set_op_annotations(
-      test::he::annotation_from_flags(arg2_encrypted, packed));
+      test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
-  auto t_a = test::he::tensor_from_flags(arg1_encrypted);
-  auto t_b = test::he::tensor_from_flags(arg2_encrypted);
-  auto t_result = test::he::tensor_from_flags(arg1_encrypted | arg2_encrypted);
+  auto t_a =
+      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_b =
+      test::he::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::he::tensor_from_flags(
+      *he_backend, shape, arg1_encrypted | arg2_encrypted, packed);
 
   vector<float> input_a;
   vector<float> input_b;

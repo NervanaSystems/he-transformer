@@ -220,8 +220,7 @@ inline void multiply_plain(
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
-  multiply_plain_inplace(destination, value, he_seal_backend,
-                                     std::move(pool));
+  multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
 
 /// \brief Optimized encoding of single value into vector of coefficients
@@ -247,8 +246,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 /// \param[in] scale Scale at which to encode value
 /// \param[in] complex_packing Whether or not to use complex packing during
 /// encoding
-void encode(SealPlaintextWrapper& destination,
-            const HEPlaintext& plaintext,
+void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
             seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
             const ngraph::element::Type& element_type, double scale,
             bool complex_packing);
@@ -273,8 +271,7 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 /// \param[out] output Decoded values
 /// \param[in] input Plaintext to decode
 /// \param[in] ckks_encoder Used for decoding
-void decode(HEPlaintext& output,
-            const SealPlaintextWrapper& input,
+void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder);
 
 /// \brief Writes plaintext to byte output
@@ -282,16 +279,15 @@ void decode(HEPlaintext& output,
 /// \param[out] input Plaintext to write
 /// \param[in] type Datatype to write
 /// \param[in] count Number of values to write
-void decode(void* output, const HEPlaintext& input,
-            const element::Type& type, size_t count);
+void decode(void* output, const HEPlaintext& input, const element::Type& type,
+            size_t count);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to
 /// \param[in] input Ciphertext to decrypt
 /// \param[in] decryptor Used for decryption
 /// \param[in] ckks_encoder Used for decoding
-void decrypt(HEPlaintext& output,
-             const SealCiphertextWrapper& input,
+void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder);
 
 }  // namespace he

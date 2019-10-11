@@ -31,8 +31,8 @@ TEST(encryption_parameters, create) {
 
   seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
-  auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
-                                                  vector<int>{30, 30, 30});
+  auto coeff_modulus =
+      seal::CoeffModulus::Create(poly_modulus_degree, vector<int>{30, 30, 30});
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
@@ -74,8 +74,8 @@ TEST(encryption_parameters, save) {
 
   seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
-  auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
-                                                  vector<int>{30, 30, 30});
+  auto coeff_modulus =
+      seal::CoeffModulus::Create(poly_modulus_degree, vector<int>{30, 30, 30});
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 

@@ -60,8 +60,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_known_cipher_add) {
 
     exp_out[i] = arg0[i]->value() + arg1[i]->value();
   }
-  add_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                       count);
+  add_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];
@@ -85,8 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_add) {
     arg1.emplace_back(make_shared<SealCiphertextWrapper>());
     out.emplace_back(make_shared<SealCiphertextWrapper>());
 
-    he_backend->encrypt(arg0[i], HEPlaintext(i),
-                        ngraph::element::f32, false);
+    he_backend->encrypt(arg0[i], HEPlaintext(i), ngraph::element::f32, false);
     arg0[i]->known_value() = false;
 
     arg1[i]->known_value() = true;
@@ -94,8 +92,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_add) {
 
     exp_out[i] = i + arg1[i]->value();
   }
-  add_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                       count);
+  add_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     EXPECT_FALSE(out[i]->known_value());
@@ -126,8 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_plain_add) {
 
     exp_out[i] = arg0[i]->value() + arg1_val;
   }
-  add_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                       count);
+  add_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];
@@ -159,8 +155,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_known_cipher_mult) {
 
     exp_out[i] = arg0[i]->value() * arg1[i]->value();
   }
-  multiply_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                            count);
+  multiply_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];
@@ -186,8 +181,8 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_mult) {
     arg1.emplace_back(make_shared<SealCiphertextWrapper>());
     out.emplace_back(make_shared<SealCiphertextWrapper>());
 
-    he_backend->encrypt(arg0[i], HEPlaintext(arg0_val),
-                        ngraph::element::f32, false);
+    he_backend->encrypt(arg0[i], HEPlaintext(arg0_val), ngraph::element::f32,
+                        false);
     arg0[i]->known_value() = false;
 
     arg1[i]->known_value() = true;
@@ -195,8 +190,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_mult) {
 
     exp_out[i] = arg0_val * arg1_val;
   }
-  multiply_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                            count);
+  multiply_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     EXPECT_EQ(out[i]->known_value(), i == 0);
@@ -227,8 +221,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_plain_mult) {
 
     exp_out[i] = arg0[i]->value() * arg1_val;
   }
-  multiply_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                            count);
+  multiply_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];
@@ -254,8 +247,8 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_sub) {
     arg1.emplace_back(make_shared<SealCiphertextWrapper>());
     out.emplace_back(make_shared<SealCiphertextWrapper>());
 
-    he_backend->encrypt(arg0[i], HEPlaintext(arg0_val),
-                        ngraph::element::f32, false);
+    he_backend->encrypt(arg0[i], HEPlaintext(arg0_val), ngraph::element::f32,
+                        false);
     arg0[i]->known_value() = false;
 
     arg1[i]->known_value() = true;
@@ -263,8 +256,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_cipher_sub) {
 
     exp_out[i] = arg0_val - arg1_val;
   }
-  subtract_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                            count);
+  subtract_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     EXPECT_EQ(out[i]->known_value(), false);
@@ -295,8 +287,7 @@ NGRAPH_TEST(${BACKEND_NAME}, known_cipher_plain_sub) {
 
     exp_out[i] = arg0[i]->value() - arg1_val;
   }
-  subtract_seal(arg0, arg1, out, ngraph::element::f32, *he_backend,
-                            count);
+  subtract_seal(arg0, arg1, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];
@@ -326,8 +317,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_known_cipher_sub) {
 
     exp_out[i] = arg1_val - arg0[i]->value();
   }
-  subtract_seal(arg1, arg0, out, ngraph::element::f32, *he_backend,
-                            count);
+  subtract_seal(arg1, arg0, out, ngraph::element::f32, *he_backend, count);
 
   for (size_t i = 0; i < count; ++i) {
     auto c_out = out[i];

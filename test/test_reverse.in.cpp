@@ -46,7 +46,7 @@ auto reverse_test = [](const Shape& shape_a, const AxisSet& axis_set,
   auto f = make_shared<Function>(t, ParameterVector{a});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(arg1_encrypted, packed));
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
 
   auto t_a =
       test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
