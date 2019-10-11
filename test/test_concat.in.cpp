@@ -75,7 +75,7 @@ auto concat_test = [](const Shape& shape_a, const Shape& shape_b,
   EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_real_unpacked) {
   concat_test(
       Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
       vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
@@ -83,7 +83,63 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
       false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_real_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, true,
+      false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, true,
+      true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, true,
+      true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_real_unpacked) {
   concat_test(
       Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
       vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
@@ -91,21 +147,203 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
       false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_real_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_real_unpacked) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
               false, false);
 }
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_real_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              false, true);
+}
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_complex_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              true, false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_complex_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              true, true);
+}
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_real_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              false, false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_real_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              false, true);
+}
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_complex_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              true, false);
+}
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_complex_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              true, true);
+}
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_real_unpacked) {
   concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
               vector<float>{1}, vector<float>{2}, vector<float>{3},
               vector<float>{1, 2, 3}, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_real_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_complex_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_complex_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_real_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_real_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_complex_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_complex_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_real_unpacked) {
   concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
               vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
               false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_real_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_complex_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_complex_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_real_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_real_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_complex_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_complex_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              true, true);
 }
