@@ -62,99 +62,108 @@ auto sum_test = [](const Shape& in_shape, const AxisSet& axis_set,
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial) {
-  sum_test(Shape{2, 2}, AxisSet{}, vector<float>{1, 2, 3, 4},
-           vector<float>{1, 2, 3, 4}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_encrypted) {
-  sum_test(Shape{2, 2}, AxisSet{}, vector<float>{1, 2, 3, 4},
-           vector<float>{1, 2, 3, 4}, true, false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{2, 2}, AxisSet{}, vector<float>{1, 2, 3, 4},
+                 vector<float>{1, 2, 3, 4}, arg1_encrypted, complex_packing,
+                 packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d) {
-  sum_test(Shape{2, 2, 2, 2, 2}, AxisSet{},
-           vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-           vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-           false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_trivial_5d_encrypted) {
-  sum_test(Shape{2, 2, 2, 2, 2}, AxisSet{},
-           vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-           vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-           true, false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{2, 2, 2, 2, 2}, AxisSet{},
+                 vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                               1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                 vector<float>{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                               1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                 arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar) {
-  sum_test(Shape{2, 2}, AxisSet{0, 1}, vector<float>{1, 2, 3, 4},
-           vector<float>{10}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_to_scalar_encrypted) {
-  sum_test(Shape{2, 2}, AxisSet{0, 1}, vector<float>{1, 2, 3, 4},
-           vector<float>{10}, true, false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{2, 2}, AxisSet{0, 1}, vector<float>{1, 2, 3, 4},
+                 vector<float>{10}, arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns) {
-  sum_test(Shape{3, 2}, AxisSet{0}, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{9, 12}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_columns_encrypted) {
-  sum_test(Shape{3, 2}, AxisSet{0}, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{9, 12}, true, false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{3, 2}, AxisSet{0}, vector<float>{1, 2, 3, 4, 5, 6},
+                 vector<float>{9, 12}, arg1_encrypted, complex_packing,
+                 packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows) {
-  sum_test(Shape{3, 2}, AxisSet{1}, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{3, 7, 11}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_encrypted) {
-  sum_test(Shape{3, 2}, AxisSet{1}, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{3, 7, 11}, true, false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{3, 2}, AxisSet{1}, vector<float>{1, 2, 3, 4, 5, 6},
+                 vector<float>{3, 7, 11}, arg1_encrypted, complex_packing,
+                 packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero) {
-  sum_test(Shape{3, 0}, AxisSet{1}, vector<float>{}, vector<float>{0, 0, 0},
-           false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_rows_zero_encrypted) {
-  sum_test(Shape{3, 0}, AxisSet{1}, vector<float>{}, vector<float>{0, 0, 0},
-           true, false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+                 vector<float>{0, 0, 0}, arg1_encrypted, complex_packing,
+                 packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero) {
-  sum_test(Shape{0, 2}, AxisSet{0}, vector<float>{}, vector<float>{0, 0}, false,
-           false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_cols_zero_encrypted) {
-  sum_test(Shape{0, 2}, AxisSet{0}, vector<float>{}, vector<float>{0, 0}, true,
-           false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{0, 2}, AxisSet{0}, vector<float>{}, vector<float>{0, 0},
+                 arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero) {
-  sum_test(Shape{0}, AxisSet{0}, vector<float>{}, vector<float>{0}, false,
-           false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_vector_zero_encrypted) {
-  sum_test(Shape{0}, AxisSet{0}, vector<float>{}, vector<float>{0}, true, false,
-           false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{0}, AxisSet{0}, vector<float>{}, vector<float>{0},
+                 arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
-  sum_test(Shape{0, 0}, AxisSet{0, 1}, vector<float>{}, vector<float>{0}, false,
-           false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero_encrypted) {
-  sum_test(Shape{0, 0}, AxisSet{0, 1}, vector<float>{}, vector<float>{0}, true,
-           false, false);
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        sum_test(Shape{0, 0}, AxisSet{0, 1}, vector<float>{}, vector<float>{0},
+                 arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
