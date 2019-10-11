@@ -722,10 +722,10 @@ bool HESealExecutable::call(
                            << " from server";
           if (he_server_input->is_type<HESealCipherTensor>()) {
             he_input = he_server_input;
-
-            NGRAPH_INFO << "he_server_input->is_packed()? "
-                        << he_server_input->is_packed();
+            NGRAPH_HE_LOG(5)
+                << "Parameter " << param->get_name() << " is already encrypted";
           } else {
+            NGRAPH_HE_LOG(5) << "Encrypting parameter " << param->get_name();
             auto plain_input =
                 he_tensor_as_type<HEPlainTensor>(he_server_input);
 
@@ -746,7 +746,8 @@ bool HESealExecutable::call(
                       *m_he_seal_backend.get_ckks_encoder(),
                       *m_he_seal_backend.get_encryptor(), complex_packing());
             }
-            NGRAPH_DEBUG << "Done encrypting parameter " << param->get_name();
+            NGRAPH_HE_LOG(5)
+                << "Done encrypting parameter " << param->get_name();
             plain_input->reset();
             he_input = cipher_input;
           }
@@ -1157,10 +1158,6 @@ void HESealExecutable::generate_calls(
 
   std::vector<Shape> arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
-    NGRAPH_INFO << "arg " << arg_idx << " is "
-                << ((args[arg_idx]->is_packed()) ? "" : "not ")
-                << "packed, arg_shape " << args[arg_idx]->get_packed_shape();
-    NGRAPH_INFO << "args[arg_idx]->is_packed() " << args[arg_idx]->is_packed();
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
 
@@ -1427,10 +1424,6 @@ void HESealExecutable::generate_calls(
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = arg_shapes[1];
 
-      NGRAPH_INFO << "in_shape0 " << in_shape0;
-      NGRAPH_INFO << "in_shape1 " << in_shape1;
-      NGRAPH_INFO << "out_shape " << out_shape;
-
       switch (binary_op_type) {
         case BinaryOpType::CipherCipherToCipher: {
           convolution_seal(
@@ -1463,9 +1456,6 @@ void HESealExecutable::generate_calls(
           break;
         }
         case BinaryOpType::PlainPlainToPlain: {
-          NGRAPH_INFO << "Arg0 packed? " << plain_args[0]->is_packed();
-          NGRAPH_INFO << "Arg1 packed? " << plain_args[1]->is_packed();
-
           convolution_seal(
               plain_args[0]->get_elements(), plain_args[1]->get_elements(),
               out0_plain->get_elements(), in_shape0, in_shape1, out_shape,

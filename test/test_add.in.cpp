@@ -52,11 +52,11 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
       test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
   auto t_a =
-      test::he::tensor_from_flags(*he_backend, shape, packed, arg1_encrypted);
+      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
   auto t_b =
-      test::he::tensor_from_flags(*he_backend, shape, packed, arg2_encrypted);
-  auto t_result = test::he::tensor_from_flags(*he_backend, shape, packed,
-                                              arg1_encrypted | arg2_encrypted);
+      test::he::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::he::tensor_from_flags(
+      *he_backend, shape, arg1_encrypted | arg2_encrypted, packed);
 
   vector<float> input_a;
   vector<float> input_b;
