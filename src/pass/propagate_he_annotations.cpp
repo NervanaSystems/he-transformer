@@ -40,16 +40,14 @@ bool pass::PropagateHEAnnotations::run_on_function(
 
   NGRAPH_HE_LOG(3) << "Running Propagate HE Annotations pass";
 
-  auto plaintext_unpacked_annotation =
-      std::make_shared<HEOpAnnotations>(false, false, false);
-
   // First, set all ops without annotations to have plaintext unpacked
   // annotation
   for (auto node : nodes) {
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
       if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
-        op->set_op_annotations(plaintext_unpacked_annotation);
+        op->set_op_annotations(
+            HEOpAnnotations::server_plaintext_unpacked_annotation());
         NGRAPH_HE_LOG(5) << "Adding plaintext_unpacked_annotation to op "
                          << op->get_name();
       } else {
@@ -73,10 +71,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
       continue;
     }
     NGRAPH_HE_LOG(5) << "Op " << op->get_name();
-    auto he_op_annotations =
-        std::dynamic_pointer_cast<HEOpAnnotations>(op->get_op_annotations());
-    NGRAPH_CHECK(he_op_annotations != nullptr,
-                 "Node doesn't have HEOpAnnotations");
+    auto he_op_annotations = HEOpAnnotations::he_op_annotation(*op);
+    NGRAPH_HE_LOG(5) << "Annotation " << *he_op_annotations;
 
     for (const auto& output : node->outputs()) {
       for (const auto& target_input : output.get_target_inputs()) {
@@ -88,6 +84,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
             target_op->get_op_annotations());
         NGRAPH_CHECK(he_target_annotations != nullptr, "Target node ",
                      target_op->get_name(), " doesn't have HEOpAnnotations");
+        NGRAPH_HE_LOG(5) << "Target node " << target_op->get_name()
+                         << " has HE annotation " << *he_target_annotations;
 
         if (he_op_annotations->encrypted()) {
           NGRAPH_HE_LOG(5) << "Setting node " << target_node->get_name()

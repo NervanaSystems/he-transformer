@@ -1004,7 +1004,8 @@ void HESealExecutable::generate_calls(
     const element::Type& type, const NodeWrapper& node_wrapper,
     const std::vector<std::shared_ptr<HETensor>>& out,
     const std::vector<std::shared_ptr<HETensor>>& args) {
-  NGRAPH_HE_LOG(5) << "generating calls";
+  NGRAPH_HE_LOG(5) << "generating calls from " << args.size() << " arguments, "
+                   << out.size() << " outputs";
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
   std::string node_op = node.description();
@@ -1033,6 +1034,13 @@ void HESealExecutable::generate_calls(
   }
   if (verbose) {
     NGRAPH_HE_LOG(3) << ss.str();
+  }
+
+  for (const auto& out_tensor : out) {
+    NGRAPH_CHECK(out_tensor != nullptr, "Out tensor is nullptr");
+    NGRAPH_CHECK(out_tensor->is_type<HEPlainTensor>() !=
+                     out_tensor->is_type<HESealCipherTensor>(),
+                 "out tensor unknown type");
   }
 
   enum class UnaryOpType {
@@ -1083,7 +1091,18 @@ void HESealExecutable::generate_calls(
                out0_plain != nullptr) {
       binary_op_type = BinaryOpType::PlainPlainToPlain;
     } else {
-      NGRAPH_CHECK(false, "Unknown binary op");
+      NGRAPH_CHECK(out[0] != nullptr, "out0 == nullptr");
+      NGRAPH_INFO << "out[0]->is_type<HEPlainTensor>(),"
+                  << out[0]->is_type<HEPlainTensor>();
+      NGRAPH_INFO << "out[0]->is_type<HESealCipherTensor>(),"
+                  << out[0]->is_type<HESealCipherTensor>();
+      NGRAPH_CHECK(false, "Unknown binary op ", "Arg0 plain? ",
+                   args[0]->is_type<HEPlainTensor>(), ", Arg0 cipher? ",
+                   args[0]->is_type<HESealCipherTensor>(), ", Arg1 plain? ",
+                   args[1]->is_type<HEPlainTensor>(), ", Arg1 cipher? ",
+                   args[1]->is_type<HESealCipherTensor>(), ", Out0 plain? ",
+                   out[0]->is_type<HEPlainTensor>(), ", Out0 cipher? ",
+                   out[0]->is_type<HESealCipherTensor>());
     }
   }
 
