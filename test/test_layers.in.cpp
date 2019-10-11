@@ -33,7 +33,7 @@ static string s_manifest = "${MANIFEST}";
 // Test multiplying cipher with cipher at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -59,7 +59,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
 
     auto handle1 = backend->compile(f);
     handle1->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -72,7 +72,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
 
     auto handle2 = backend->compile(f);
     handle2->call_with_validate({result}, {b, a, c});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -84,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
 
     auto handle3 = backend->compile(f);
     handle3->call_with_validate({result}, {c, a, b});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -94,7 +94,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
 // Test multiplying cipher with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
 
@@ -123,7 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
 
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -153,7 +153,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
 
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {b, a, c});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -183,7 +183,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
 
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {c, a, b});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -193,7 +193,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
 // Test multiplying plain with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -214,7 +214,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   {
     auto handle1 = backend->compile(f);
     handle1->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -222,7 +222,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   {
     auto handle2 = backend->compile(f);
     handle2->call_with_validate({result}, {b, a, c});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -230,7 +230,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   {
     auto handle3 = backend->compile(f);
     handle3->call_with_validate({result}, {c, a, b});
-    EXPECT_TRUE(all_close(
+    EXPECT_TRUE(test::he::all_close(
         read_vector<float>(result),
         (test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
         1e-1f));
@@ -240,7 +240,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
 // Test adding cipher with cipher at different layer
 NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -267,7 +267,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {a, b, c});
-  EXPECT_TRUE(all_close(
+  EXPECT_TRUE(test::he::all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
 }
@@ -275,7 +275,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
 // Test adding cipher with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -302,7 +302,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {a, b, c});
-  EXPECT_TRUE(all_close(
+  EXPECT_TRUE(test::he::all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
 }
@@ -310,7 +310,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
 // Test adding plain with plain at different layer
 NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape{2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
@@ -330,7 +330,7 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {a, b, c});
-  EXPECT_TRUE(all_close(
+  EXPECT_TRUE(test::he::all_close(
       read_vector<float>(result),
       (test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
 }

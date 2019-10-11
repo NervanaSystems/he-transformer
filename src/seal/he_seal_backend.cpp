@@ -180,16 +180,16 @@ std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_cipher_tensor(
 
 std::shared_ptr<ngraph::runtime::Tensor>
 HESealBackend::create_packed_cipher_tensor(const element::Type& type,
-                                           const Shape& shape) {
-  auto rc = std::make_shared<HESealCipherTensor>(type, shape, *this, true);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+                                           const Shape& shape) const {
+  auto ret = std::make_shared<HESealCipherTensor>(type, shape, *this, true);
+  return std::static_pointer_cast<ngraph::runtime::Tensor>(ret);
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
 HESealBackend::create_packed_plain_tensor(const element::Type& type,
-                                          const Shape& shape) {
-  auto rc = std::make_shared<HEPlainTensor>(type, shape, true);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(rc);
+                                          const Shape& shape) const {
+  auto ret = std::make_shared<HEPlainTensor>(type, shape, true);
+  return std::static_pointer_cast<ngraph::runtime::Tensor>(ret);
 }
 
 std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(

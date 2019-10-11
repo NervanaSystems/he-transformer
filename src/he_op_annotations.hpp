@@ -75,6 +75,26 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
     return std::make_shared<HEOpAnnotations>(false, true, true);
   }
 
+  static inline std::shared_ptr<HEOpAnnotations>
+  client_plaintext_unpacked_annotation() {
+    return std::make_shared<HEOpAnnotations>(true, false, false);
+  }
+
+  static inline std::shared_ptr<HEOpAnnotations>
+  client_plaintext_packed_annotation() {
+    return std::make_shared<HEOpAnnotations>(true, false, true);
+  }
+
+  static inline std::shared_ptr<HEOpAnnotations>
+  client_ciphertext_unpacked_annotation() {
+    return std::make_shared<HEOpAnnotations>(true, true, false);
+  }
+
+  static inline std::shared_ptr<HEOpAnnotations>
+  client_ciphertext_packed_annotation() {
+    return std::make_shared<HEOpAnnotations>(true, true, true);
+  }
+
  private:
   bool m_from_client = false;
   bool m_encrypted = false;

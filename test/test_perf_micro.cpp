@@ -34,7 +34,7 @@ static string s_manifest = "${MANIFEST}";
 
 TEST(perf_micro, encode) {
   auto perf_test = [](size_t poly_modulus_degree,
-                      const std::vector<int>& coeff_modulus_bits) {
+                      const vector<int>& coeff_modulus_bits) {
     int add_test_cnt = 100;
     int mult_test_cnt = 30;
     int encode_test_cnt = 100;
@@ -67,7 +67,7 @@ TEST(perf_micro, encode) {
     Evaluator evaluator(context);
 
     // he-transformer setup
-    auto he_parms = ngraph::he::HESealEncryptionParameters(
+    auto he_parms = HESealEncryptionParameters(
         "HE_SEAL", poly_modulus_degree, coeff_modulus_bits, 128, 0, false);
     auto he_seal_backend = HESealBackend(he_parms);
 
@@ -79,7 +79,7 @@ TEST(perf_micro, encode) {
       Plaintext plain(seal_capacity);
       double input{1.23};
       double scale = pow(2.0, 22);
-      std::vector<std::uint64_t> he_plain;
+      vector<uint64_t> he_plain;
       auto parms_id = context->first_parms_id();
 
       // [Encoding]
@@ -96,20 +96,20 @@ TEST(perf_micro, encode) {
 
         // HE encoder
         time_start = chrono::high_resolution_clock::now();
-        ngraph::he::encode(input, ngraph::element::f32, scale, parms_id,
-                           he_plain, he_seal_backend, pool);
-        ngraph::he::encode(input, ngraph::element::f32, scale, parms_id,
-                           he_plain, he_seal_backend, pool);
-        ngraph::he::encode(input, ngraph::element::f32, scale, parms_id,
-                           he_plain, he_seal_backend, pool);
+        encode(input, ngraph::element::f32, scale, parms_id, he_plain,
+               he_seal_backend, pool);
+        encode(input, ngraph::element::f32, scale, parms_id, he_plain,
+               he_seal_backend, pool);
+        encode(input, ngraph::element::f32, scale, parms_id, he_plain,
+               he_seal_backend, pool);
         time_end = chrono::high_resolution_clock::now();
         time_he_encode_sum +=
             chrono::duration_cast<chrono::nanoseconds>(time_end - time_start);
 
         if (test_run == 0) {
-          auto seal_plain_capacity = plain.capacity() * sizeof(std::uint64_t);
+          auto seal_plain_capacity = plain.capacity() * sizeof(uint64_t);
           NGRAPH_INFO << "seal::Plaintext capacity " << seal_plain_capacity;
-          auto he_capacity = sizeof(std::uint64_t) * he_plain.size();
+          auto he_capacity = sizeof(uint64_t) * he_plain.size();
           NGRAPH_INFO << "he plaintext capacity " << he_capacity;
           NGRAPH_INFO << "Memmory improvement: "
                       << seal_plain_capacity / float(he_capacity) << "\n";
@@ -178,40 +178,35 @@ TEST(perf_micro, encode) {
     auto time_he_add_plain_avg =
         time_he_add_plain_sum.count() / add_test_cnt;  // - time_he_encode_avg;
 
-    std::cout << "time_seal_encode_avg (ns) " << time_seal_encode_avg
-              << std::endl;
-    std::cout << "time_he_encode_avg (ns) " << time_he_encode_avg << std::endl;
-    std::cout << "Runtime improvement: "
-              << (time_seal_encode_avg / float(time_he_encode_avg)) << "\n";
+    cout << "time_seal_encode_avg (ns) " << time_seal_encode_avg << endl;
+    cout << "time_he_encode_avg (ns) " << time_he_encode_avg << endl;
+    cout << "Runtime improvement: "
+         << (time_seal_encode_avg / float(time_he_encode_avg)) << "\n";
 
-    std::cout << "time_seal_multiply_plain_avg (ns) "
-              << time_seal_multiply_plain_avg << std::endl;
-    std::cout << "time_he_multiply_plain_avg (ns) "
-              << time_he_multiply_plain_avg << std::endl;
-    std::cout << "Runtime improvement: "
-              << (time_seal_multiply_plain_avg /
-                  float(time_he_multiply_plain_avg))
-              << "\n";
+    cout << "time_seal_multiply_plain_avg (ns) " << time_seal_multiply_plain_avg
+         << endl;
+    cout << "time_he_multiply_plain_avg (ns) " << time_he_multiply_plain_avg
+         << endl;
+    cout << "Runtime improvement: "
+         << (time_seal_multiply_plain_avg / float(time_he_multiply_plain_avg))
+         << "\n";
 
-    std::cout << "time_seal_add_plain_avg (ns) " << time_seal_add_plain_avg
-              << std::endl;
-    std::cout << "time_he_add_plain_avg (ns) " << time_he_add_plain_avg
-              << std::endl;
-    std::cout << "Runtime improvement: "
-              << (time_seal_add_plain_avg / float(time_he_add_plain_avg))
-              << "\n";
+    cout << "time_seal_add_plain_avg (ns) " << time_seal_add_plain_avg << endl;
+    cout << "time_he_add_plain_avg (ns) " << time_he_add_plain_avg << endl;
+    cout << "Runtime improvement: "
+         << (time_seal_add_plain_avg / float(time_he_add_plain_avg)) << "\n";
   };
 
-  std::vector<size_t> poly_modulus_degrees{4096, 8192, 16384};
+  vector<size_t> poly_modulus_degrees{4096, 8192, 16384};
 
   // Bit-widths of default BFV parameters
-  std::vector<std::vector<int>> coeff_modulus_bits{
+  vector<vector<int>> coeff_modulus_bits{
       {36, 37}, {30, 30, 30, 30}, {30, 30, 30, 30, 30, 30, 30, 30, 30}};
 
   for (size_t parm_ind = 0; parm_ind < poly_modulus_degrees.size();
        ++parm_ind) {
     size_t poly_modulus_degree = poly_modulus_degrees[parm_ind];
-    std::vector<int> coeff_moduli = coeff_modulus_bits[parm_ind];
+    vector<int> coeff_moduli = coeff_modulus_bits[parm_ind];
 
     perf_test(poly_modulus_degree, coeff_moduli);
   }

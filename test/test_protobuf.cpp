@@ -40,7 +40,7 @@ TEST(protobuf, serialize_cipher) {
   f.set_function("123");
   *message.mutable_function() = f;
 
-  std::stringstream s;
+  stringstream s;
   message.SerializeToOstream(&s);
 
   he_proto::TCPMessage deserialize;
@@ -55,38 +55,38 @@ TEST(tcp_message, create) {
   he_proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
-  std::stringstream s;
+  stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::TCPMessage tcp_message(std::move(proto_msg));
+  TCPMessage tcp_message(move(proto_msg));
   EXPECT_EQ(1, 1);
 }
 
 TEST(tcp_message, encode_decode) {
-  using data_buffer = std::vector<char>;
+  using data_buffer = vector<char>;
   data_buffer buffer;
   buffer.resize(20);
 
   size_t encode_size = 10;
-  ngraph::he::TCPMessage::encode_header(buffer, encode_size);
-  size_t decoded_size = ngraph::he::TCPMessage::decode_header(buffer);
+  TCPMessage::encode_header(buffer, encode_size);
+  size_t decoded_size = TCPMessage::decode_header(buffer);
   EXPECT_EQ(decoded_size, encode_size);
 }
 
 TEST(tcp_message, pack_unpack) {
-  using data_buffer = std::vector<char>;
+  using data_buffer = vector<char>;
 
   he_proto::TCPMessage proto_msg;
   he_proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
-  std::stringstream s;
+  stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::TCPMessage message1(std::move(proto_msg));
+  TCPMessage message1(move(proto_msg));
 
   data_buffer buffer;
   message1.pack(buffer);
 
-  ngraph::he::TCPMessage message2;
+  TCPMessage message2;
   message2.unpack(buffer);
 
   EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(
@@ -120,35 +120,33 @@ TEST(seal_cipher_wrapper, load_save) {
   encoder.encode(input, scale, plain);
   seal::Ciphertext c;
   encryptor.encrypt(plain, c);
-  std::stringstream ss_save;
+  stringstream ss_save;
   c.save(ss_save);
 
   he_proto::SealCiphertextWrapper proto_cipher;
 
-  ngraph::he::SealCiphertextWrapper cipher;
+  SealCiphertextWrapper cipher;
   cipher.ciphertext() = c;
   cipher.complex_packing() = true;
   cipher.known_value() = false;
 
-  typedef std::chrono::high_resolution_clock Clock;
+  typedef chrono::high_resolution_clock Clock;
   auto t1 = Clock::now();
   cipher.save(proto_cipher);
   auto t2 = Clock::now();
-  NGRAPH_INFO
-      << "Save time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-      << "us";
+  NGRAPH_INFO << "Save time "
+              << chrono::duration_cast<chrono::microseconds>(t2 - t1).count()
+              << "us";
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> cipher_load;
+  shared_ptr<SealCiphertextWrapper> cipher_load;
   auto t3 = Clock::now();
-  ngraph::he::SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
+  SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
   auto t4 = Clock::now();
-  NGRAPH_INFO
-      << "Load time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count()
-      << "us";
+  NGRAPH_INFO << "Load time "
+              << chrono::duration_cast<chrono::microseconds>(t4 - t3).count()
+              << "us";
 
-  std::stringstream ss_load;
+  stringstream ss_load;
   cipher_load->ciphertext().save(ss_load);
 
   EXPECT_EQ(cipher.complex_packing(), cipher_load->complex_packing());
@@ -167,29 +165,27 @@ TEST(seal_cipher_wrapper, load_save_known_value) {
 
   he_proto::SealCiphertextWrapper proto_cipher;
 
-  ngraph::he::SealCiphertextWrapper cipher;
+  SealCiphertextWrapper cipher;
   cipher.ciphertext() = seal::Ciphertext();
   cipher.complex_packing() = false;
   cipher.known_value() = true;
   cipher.value() = 1.23;
 
-  typedef std::chrono::high_resolution_clock Clock;
+  typedef chrono::high_resolution_clock Clock;
   auto t1 = Clock::now();
   cipher.save(proto_cipher);
   auto t2 = Clock::now();
-  NGRAPH_INFO
-      << "Save time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-      << "us";
+  NGRAPH_INFO << "Save time "
+              << chrono::duration_cast<chrono::microseconds>(t2 - t1).count()
+              << "us";
 
-  std::shared_ptr<ngraph::he::SealCiphertextWrapper> cipher_load;
+  shared_ptr<SealCiphertextWrapper> cipher_load;
   auto t3 = Clock::now();
-  ngraph::he::SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
+  SealCiphertextWrapper::load(cipher_load, proto_cipher, context);
   auto t4 = Clock::now();
-  NGRAPH_INFO
-      << "Load time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count()
-      << "us";
+  NGRAPH_INFO << "Load time "
+              << chrono::duration_cast<chrono::microseconds>(t4 - t3).count()
+              << "us";
 
   EXPECT_EQ(cipher.complex_packing(), cipher_load->complex_packing());
   EXPECT_EQ(cipher.known_value(), cipher_load->known_value());
@@ -198,26 +194,25 @@ TEST(seal_cipher_wrapper, load_save_known_value) {
 
 TEST(seal_cipher_tensor, save) {
   auto backend = runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  auto parms =
-      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto parms = HESealEncryptionParameters::default_real_packing_parms();
   he_backend->update_encryption_parameters(parms);
 
   Shape shape{2};
   auto a = he_backend->create_cipher_tensor(element::f32, shape);
   copy_data(a, vector<float>{5, 6});
 
-  auto he_tensor = dynamic_pointer_cast<ngraph::he::HESealCipherTensor>(a);
+  auto he_tensor = dynamic_pointer_cast<HESealCipherTensor>(a);
   EXPECT_TRUE(he_tensor != nullptr);
 
-  std::vector<he_proto::SealCipherTensor> protos;
+  vector<he_proto::SealCipherTensor> protos;
 
   he_tensor->save_to_proto(protos);
 
   EXPECT_EQ(protos.size(), 1);
   EXPECT_EQ(protos[0].name(), he_tensor->get_name());
 
-  std::vector<uint64_t> expected_shape{shape};
+  vector<uint64_t> expected_shape{shape};
   for (size_t shape_idx = 0; shape_idx < expected_shape.size(); ++shape_idx) {
     EXPECT_EQ(protos[0].shape(shape_idx), expected_shape[shape_idx]);
   }

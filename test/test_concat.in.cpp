@@ -25,73 +25,51 @@
 
 using namespace std;
 using namespace ngraph;
-using namespace he;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-auto concat_test =
-    [](const Shape& shape_a, const Shape& shape_b, const Shape& shape_c,
-       size_t concat_axis, const vector<float>& input_a,
-       const vector<float>& input_b, const vector<float>& input_c,
-       const vector<float>& output, const bool arg1_encrypted,
-       const bool complex_packing, const bool packed) {
-      auto backend = runtime::Backend::create("${BACKEND_NAME}");
-      auto he_backend = static_cast<he::HESealBackend*>(backend.get());
+auto concat_test = [](const Shape& shape_a, const Shape& shape_b,
+                      const Shape& shape_c, size_t concat_axis,
+                      const vector<float>& input_a,
+                      const vector<float>& input_b,
+                      const vector<float>& input_c, const vector<float>& output,
+                      const bool arg1_encrypted, const bool complex_packing,
+                      const bool packed) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
 
-      if (complex_packing) {
-        he_backend->update_encryption_parameters(
-            he::HESealEncryptionParameters::default_complex_packing_parms());
-      }
+  if (complex_packing) {
+    he_backend->update_encryption_parameters(
+        he::HESealEncryptionParameters::default_complex_packing_parms());
+  }
 
-      auto a = make_shared<op::Parameter>(element::f32, shape_a);
-      auto b = make_shared<op::Parameter>(element::f32, shape_b);
-      auto c = make_shared<op::Parameter>(element::f32, shape_c);
-      auto t = make_shared<op::Concat>(NodeVector{a, b, c}, concat_axis);
-      auto f = make_shared<Function>(t, ParameterVector{a, b, c});
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto c = make_shared<op::Parameter>(element::f32, shape_c);
+  auto t = make_shared<op::Concat>(NodeVector{a, b, c}, concat_axis);
+  auto f = make_shared<Function>(t, ParameterVector{a, b, c});
 
-      auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
-        if (is_encrypted && is_packed) {
-          return HEOpAnnotations::server_ciphertext_packed_annotation();
-        } else if (is_encrypted && !is_packed) {
-          return HEOpAnnotations::server_ciphertext_unpacked_annotation();
-        } else if (!is_encrypted && is_packed) {
-          return HEOpAnnotations::server_plaintext_packed_annotation();
-        } else if (!is_encrypted && !is_packed) {
-          return HEOpAnnotations::server_plaintext_unpacked_annotation();
-        }
-        throw ngraph_error("Logic error");
-      };
+  a->set_op_annotations(
+      test::he::annotation_from_flags(arg1_encrypted, packed));
+  b->set_op_annotations(
+      test::he::annotation_from_flags(arg1_encrypted, packed));
+  c->set_op_annotations(
+      test::he::annotation_from_flags(arg1_encrypted, packed));
 
-      a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
-      b->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
-      c->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+  auto t_a = test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed););
+  auto t_b = test::he::tensor_from_flags(*he_backend, shape_b, arg1_encrypted, packed););
+  auto t_c = test::he::tensor_from_flags(*he_backend, shape_c, arg1_encrypted, packed););
+  auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(), arg1_encrypted, packed););
 
-      auto tensor_from_flags = [&](const Shape& shape, bool encrypted) {
-        if (encrypted && packed) {
-          return he_backend->create_packed_cipher_tensor(element::f32, shape);
-        } else if (encrypted && !packed) {
-          return he_backend->create_cipher_tensor(element::f32, shape);
-        } else if (!encrypted && packed) {
-          return he_backend->create_packed_plain_tensor(element::f32, shape);
-        } else if (!encrypted && !packed) {
-          return he_backend->create_plain_tensor(element::f32, shape);
-        }
-        throw ngraph_error("Logic error");
-      };
+  copy_data(t_a, input_a);
+  copy_data(t_b, input_b);
+  copy_data(t_c, input_c);
 
-      auto t_a = tensor_from_flags(shape_a, arg1_encrypted);
-      auto t_b = tensor_from_flags(shape_b, arg1_encrypted);
-      auto t_c = tensor_from_flags(shape_c, arg1_encrypted);
-      auto t_result = tensor_from_flags(t->get_shape(), arg1_encrypted);
-
-      copy_data(t_a, input_a);
-      copy_data(t_b, input_b);
-      copy_data(t_c, input_c);
-
-      auto handle = backend->compile(f);
-      handle->call_with_validate({t_result}, {t_a, t_b, t_c});
-      EXPECT_TRUE(all_close(read_vector<float>(t_result), output, 1e-3f));
-    };
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b, t_c});
+  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+};
 
 NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
   concat_test(

@@ -127,7 +127,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
-      const element::Type& element_type, const Shape& shape);
+      const element::Type& element_type, const Shape& shape) const;
 
   /// \brief Creates a plaintext tensor using plaintext packing along the batch
   /// (i.e. first) axis
@@ -135,14 +135,13 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
-      const element::Type& element_type, const Shape& shape);
+      const element::Type& element_type, const Shape& shape) const;
 
   /// \brief Creates a plaintext tensor
   /// \param[in] element_type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \param[in] packed Whether or not to use plaintext packing
   /// \param[in] name Name of the created tensor
-
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
       const element::Type& element_type, const Shape& shape,

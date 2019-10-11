@@ -29,56 +29,31 @@ using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-auto relu_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
+auto relu_test = [](const Shape& shape, const bool arg1_encrypted,
                     const bool complex_packing, const bool packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        HESealEncryptionParameters::default_complex_packing_parms());
   }
 
   auto a = make_shared<op::Parameter>(element::f32, shape);
   auto t = make_shared<op::Relu>(a);
   auto f = make_shared<Function>(t, ParameterVector{a});
+  a->set_op_annotations(
+      test::he::annotation_from_flags(arg1_encrypted, packed));
 
-  auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
-    if (is_encrypted && is_packed) {
-      return HEOpAnnotations::server_ciphertext_packed_annotation();
-    } else if (is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
-    } else if (!is_encrypted && is_packed) {
-      return HEOpAnnotations::server_plaintext_packed_annotation();
-    } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_plaintext_unpacked_annotation();
-    }
-    throw ngraph_error("Logic error");
-  };
+  auto t_a =
+      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_result =
+      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
 
-  a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
+  vector<float> input_a;
+  vector<float> exp_result;
 
-  auto tensor_from_flags = [&](bool encrypted) {
-    if (encrypted && packed) {
-      return he_backend->create_packed_cipher_tensor(element::f32, shape);
-    } else if (encrypted && !packed) {
-      return he_backend->create_cipher_tensor(element::f32, shape);
-    } else if (!encrypted && packed) {
-      return he_backend->create_packed_plain_tensor(element::f32, shape);
-    } else if (!encrypted && !packed) {
-      return he_backend->create_plain_tensor(element::f32, shape);
-    }
-    throw ngraph_error("Logic error");
-  };
-
-  auto t_a = tensor_from_flags(arg1_encrypted);
-  auto t_result = tensor_from_flags(arg1_encrypted);
-
-  std::vector<float> input_a;
-  std::vector<float> exp_result;
-
-  for (int i = 0; i < ngraph::shape_size(shape); ++i) {
+  for (int i = 0; i < shape_size(shape); ++i) {
     if (i % 2 == 0) {
       input_a.emplace_back(i);
     } else {
@@ -90,37 +65,38 @@ auto relu_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(
+      test::he::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_plain_real_unpacked) {
-  relu_test(ngraph::Shape{2, 3}, false, false, false);
+  relu_test(Shape{2, 3}, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_plain_real_packed) {
-  relu_test(ngraph::Shape{2, 3}, false, false, true);
+  relu_test(Shape{2, 3}, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_plain_complex_unpacked) {
-  relu_test(ngraph::Shape{2, 3}, false, true, false);
+  relu_test(Shape{2, 3}, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_plain_complex_packed) {
-  relu_test(ngraph::Shape{2, 3}, false, true, true);
+  relu_test(Shape{2, 3}, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_cipher_real_unpacked) {
-  relu_test(ngraph::Shape{2, 3}, true, false, false);
+  relu_test(Shape{2, 3}, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_cipher_real_packed) {
-  relu_test(ngraph::Shape{2, 3}, true, false, true);
+  relu_test(Shape{2, 3}, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_cipher_complex_unpacked) {
-  relu_test(ngraph::Shape{2, 3}, true, true, false);
+  relu_test(Shape{2, 3}, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, relu_2_3_cipher_complex_packed) {
-  relu_test(ngraph::Shape{2, 3}, true, true, true);
+  relu_test(Shape{2, 3}, true, true, true);
 }

@@ -118,8 +118,8 @@ TEST(seal_example, seal_ckks_complex_conjugate) {
   decryptor.decrypt(encrypted, plain);
   encoder.decode(plain, output);
 
-  EXPECT_TRUE(std::abs(exp_output[0] - output[0]) < 0.1);
-  EXPECT_TRUE(std::abs(exp_output[1] - output[1]) < 0.1);
+  EXPECT_TRUE(abs(exp_output[0] - output[0]) < 0.1);
+  EXPECT_TRUE(abs(exp_output[1] - output[1]) < 0.1);
 }
 
 TEST(seal_util, save) {
@@ -155,20 +155,18 @@ TEST(seal_util, save) {
 
   void* buffer = ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher));
 
-  auto t1 = std::chrono::high_resolution_clock::now();
+  auto t1 = chrono::high_resolution_clock::now();
   ngraph::he::save(cipher, buffer);
-  auto t2 = std::chrono::high_resolution_clock::now();
+  auto t2 = chrono::high_resolution_clock::now();
   ngraph::he::load(cipher_load, context, buffer);
-  auto t3 = std::chrono::high_resolution_clock::now();
+  auto t3 = chrono::high_resolution_clock::now();
 
-  NGRAPH_INFO
-      << "save time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-      << "us";
-  NGRAPH_INFO
-      << "load time "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
-      << "us";
+  NGRAPH_INFO << "save time "
+              << chrono::duration_cast<chrono::microseconds>(t2 - t1).count()
+              << "us";
+  NGRAPH_INFO << "load time "
+              << chrono::duration_cast<chrono::microseconds>(t3 - t2).count()
+              << "us";
 
   EXPECT_EQ(cipher_load.parms_id(), cipher.parms_id());
   EXPECT_EQ(cipher_load.is_ntt_form(), cipher.is_ntt_form());

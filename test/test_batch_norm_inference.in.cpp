@@ -70,10 +70,10 @@ class BatchNormInferenceTester {
     m_normed_input = backend->create_cipher_tensor(etype, input_shape);
   }
 
-  bool call(const std::vector<T>& input, const std::vector<T>& gamma,
-            const std::vector<T>& beta, const std::vector<T>& mean,
-            const std::vector<T>& variance,
-            const std::vector<T>& normed_input) {
+  bool call(const vector<T>& input, const vector<T>& gamma,
+            const vector<T>& beta, const vector<T>& mean,
+            const vector<T>& variance,
+            const vector<T>& normed_input) {
     copy_data(m_input, input);
     copy_data(m_gamma, gamma);
     copy_data(m_beta, beta);
@@ -83,18 +83,18 @@ class BatchNormInferenceTester {
     handle->call_with_validate({m_normed_input},
                                {m_input, m_gamma, m_beta, m_mean, m_variance});
     auto res_normed_input = read_vector<T>(m_normed_input);
-    return all_close(normed_input, res_normed_input);
+    return test::he::all_close(normed_input, res_normed_input);
   }
 
  protected:
   ngraph::he::HESealBackend* m_he_backend;
-  std::shared_ptr<Function> m_function;
-  std::shared_ptr<ngraph::runtime::Tensor> m_input;
-  std::shared_ptr<ngraph::runtime::Tensor> m_gamma;
-  std::shared_ptr<ngraph::runtime::Tensor> m_beta;
-  std::shared_ptr<ngraph::runtime::Tensor> m_mean;
-  std::shared_ptr<ngraph::runtime::Tensor> m_variance;
-  std::shared_ptr<ngraph::runtime::Tensor> m_normed_input;
+  shared_ptr<Function> m_function;
+  shared_ptr<ngraph::runtime::Tensor> m_input;
+  shared_ptr<ngraph::runtime::Tensor> m_gamma;
+  shared_ptr<ngraph::runtime::Tensor> m_beta;
+  shared_ptr<ngraph::runtime::Tensor> m_mean;
+  shared_ptr<ngraph::runtime::Tensor> m_variance;
+  shared_ptr<ngraph::runtime::Tensor> m_normed_input;
 };
 
 template <typename T>
@@ -231,7 +231,7 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
   Shape shape_weights{2, 8, 1, 1};
   Shape shape_norm{2};
 
-  std::vector<float> input{
+  vector<float> input{
       1.25f,  2.25f,  5.25f,  6.25f,  -1.25f, -1.25f, 3.25f, -4.25f, 7.25f,
       8.25f,  -1.25f, -1.25f, 1.25f,  2.25f,  -3.25f, 2.25f, 4.25f,  4.25f,
       1.25f,  2.25f,  -4.25f, 2.25f,  4.25f,  4.25f,  0.f,   0.f,    -1.f,
@@ -241,30 +241,30 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
       -1.25f, -2.25f, 4.25f,  2.25f,  4.25f,  4.25f,  0.f,   0.f,    1.f,
       0.f,    -2.f,   2.f,    0.f,    0.f,    0.f,    0.f,   -2.f,   -2.f};
 
-  std::vector<float> weight_vals{1.25f, 2.25f,  5.25f, 6.25f, -1.25f, -1.25f,
+  vector<float> weight_vals{1.25f, 2.25f,  5.25f, 6.25f, -1.25f, -1.25f,
                                  3.25f, -4.25f, 7.25f, 8.25f, -1.25f, 0.f,
                                  0.f,   0.f,    0.f,   -2.f};
 
-  std::vector<float> gamma_vals{-0.9384f, 0.01875f};
-  std::vector<float> beta_vals{11.0f, 1.3f};
-  std::vector<float> mean_vals{0.12f, 0.31f};
-  std::vector<float> var_vals{0.01f, 0.11f};
+  vector<float> gamma_vals{-0.9384f, 0.01875f};
+  vector<float> beta_vals{11.0f, 1.3f};
+  vector<float> mean_vals{0.12f, 0.31f};
+  vector<float> var_vals{0.01f, 0.11f};
 
   auto et = element::f32;
 
   auto make_function = [shape_input, shape_weights, shape_norm, gamma_vals,
                         weight_vals, beta_vals, mean_vals, var_vals, et]() {
-    auto input_parm = std::make_shared<op::Parameter>(et, shape_input);
+    auto input_parm = make_shared<op::Parameter>(et, shape_input);
     auto weights =
-        std::make_shared<op::Constant>(et, shape_weights, weight_vals);
+        make_shared<op::Constant>(et, shape_weights, weight_vals);
     double eps = 0.001;
-    auto gamma = std::make_shared<op::Constant>(et, shape_norm, gamma_vals);
-    auto beta = std::make_shared<op::Constant>(et, shape_norm, beta_vals);
-    auto mean = std::make_shared<op::Constant>(et, shape_norm, mean_vals);
-    auto var = std::make_shared<op::Constant>(et, shape_norm, var_vals);
-    auto conv = std::make_shared<op::Convolution>(input_parm, weights,
+    auto gamma = make_shared<op::Constant>(et, shape_norm, gamma_vals);
+    auto beta = make_shared<op::Constant>(et, shape_norm, beta_vals);
+    auto mean = make_shared<op::Constant>(et, shape_norm, mean_vals);
+    auto var = make_shared<op::Constant>(et, shape_norm, var_vals);
+    auto conv = make_shared<op::Convolution>(input_parm, weights,
                                                   Strides{1, 1}, Strides{1, 1});
-    auto bn = std::make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
+    auto bn = make_shared<op::BatchNormInference>(conv, gamma, beta, mean,
                                                        var, eps);
     auto f = make_shared<Function>(NodeVector{bn}, ParameterVector{input_parm});
     return f;

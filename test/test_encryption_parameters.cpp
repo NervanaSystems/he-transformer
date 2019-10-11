@@ -21,6 +21,7 @@
 #include "seal/seal.h"
 
 using namespace std;
+using namespace ngraph;
 using namespace ngraph::he;
 
 TEST(encryption_parameters, create) {
@@ -31,7 +32,7 @@ TEST(encryption_parameters, create) {
   seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
   auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
-                                                  std::vector<int>{30, 30, 30});
+                                                  vector<int>{30, 30, 30});
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
@@ -74,14 +75,14 @@ TEST(encryption_parameters, save) {
   seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
   auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
-                                                  std::vector<int>{30, 30, 30});
+                                                  vector<int>{30, 30, 30});
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
   auto he_parms = HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 128, 1.23, false);
 
-  std::stringstream ss;
+  stringstream ss;
 
   he_parms.save(ss);
 
@@ -94,7 +95,7 @@ TEST(encryption_parameters, save) {
 }
 
 TEST(encryption_parameters, from_string) {
-  std::string config = R"(
+  string config = R"(
     {
         "scheme_name" : "HE_SEAL",
         "poly_modulus_degree" : 2048,

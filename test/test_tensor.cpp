@@ -34,7 +34,7 @@ TEST(he_tensor, pack) {
 
   HEPlainTensor plain(element::f32, shape, false);
 
-  std::vector<HEPlaintext> elements;
+  vector<HEPlaintext> elements;
   for (size_t i = 0; i < shape_size(shape); ++i) {
     elements.push_back(HEPlaintext(i));
   }
@@ -59,9 +59,9 @@ TEST(he_tensor, unpack) {
 
   HEPlainTensor plain(element::f32, shape, true);
 
-  std::vector<HEPlaintext> elements;
-  elements.push_back(HEPlaintext(std::vector<double>{0, 1}));
-  elements.push_back(HEPlaintext(std::vector<double>{2, 3}));
+  vector<HEPlaintext> elements;
+  elements.push_back(HEPlaintext(vector<double>{0, 1}));
+  elements.push_back(HEPlaintext(vector<double>{2, 3}));
   plain.set_elements(elements);
 
   plain.unpack();

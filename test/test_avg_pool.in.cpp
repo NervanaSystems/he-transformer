@@ -48,42 +48,19 @@ auto avg_pool_test = [](const ngraph::Shape& shape_a,
   auto t = make_shared<op::AvgPool>(a, window_shape, window_movement_strides);
   auto f = make_shared<Function>(t, ParameterVector{a});
 
-  auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
-    if (is_encrypted && is_packed) {
-      return HEOpAnnotations::server_ciphertext_packed_annotation();
-    } else if (is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
-    } else if (!is_encrypted && is_packed) {
-      return HEOpAnnotations::server_plaintext_packed_annotation();
-    } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_plaintext_unpacked_annotation();
-    }
-    throw ngraph_error("Logic error");
-  };
+  a->set_op_annotations(
+      test::he::annotation_from_flags(arg1_encrypted, packed));
 
-  a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
-
-  auto tensor_from_flags = [&](const Shape& shape, bool encrypted) {
-    if (encrypted && packed) {
-      return he_backend->create_packed_cipher_tensor(element::f32, shape);
-    } else if (encrypted && !packed) {
-      return he_backend->create_cipher_tensor(element::f32, shape);
-    } else if (!encrypted && packed) {
-      return he_backend->create_packed_plain_tensor(element::f32, shape);
-    } else if (!encrypted && !packed) {
-      return he_backend->create_plain_tensor(element::f32, shape);
-    }
-    throw ngraph_error("Logic error");
-  };
-
-  auto t_a = tensor_from_flags(shape_a, arg1_encrypted);
-  auto t_result = tensor_from_flags(t->get_shape(), arg1_encrypted);
+  auto t_a =
+      test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+  auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(),
+                                              arg1_encrypted, packed);
 
   copy_data(t_a, input_a);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain) {

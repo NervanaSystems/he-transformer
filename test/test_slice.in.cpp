@@ -31,7 +31,7 @@ static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{};
   Shape shape_r{};
@@ -77,7 +77,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4};
   Shape shape_r{3, 2};
@@ -99,8 +99,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
                                  15, 16});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{2, 3, 6, 7, 10, 11}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(test::he::all_close((vector<float>{2, 3, 6, 7, 10, 11}),
+                                    read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -119,14 +119,14 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
                                  15, 16});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{2, 3, 6, 7, 10, 11}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(test::he::all_close((vector<float>{2, 3, 6, 7, 10, 11}),
+                                    read_vector<float>(t_result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{16};
   Shape shape_r{12};
@@ -149,7 +149,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(
-        all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
+        test::he::all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
                   read_vector<float>(t_result)));
   }
   {
@@ -170,14 +170,14 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(
-        all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
+        test::he::all_close((vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}),
                   read_vector<float>(t_result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4};
   Shape shape_r{2, 2};
@@ -201,7 +201,7 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(
-        all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
+        test::he::all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -222,13 +222,13 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
     EXPECT_TRUE(
-        all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
+        test::he::all_close((vector<float>{4, 7, 12, 15}), read_vector<float>(t_result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4, 4};
   Shape shape_r{2, 2, 2};
@@ -255,8 +255,9 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
                             52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(
+        test::he::all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
+                            read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -280,14 +281,15 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
                             52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(
+        test::he::all_close((vector<float>{21, 22, 25, 26, 37, 38, 41, 42}),
+                            read_vector<float>(t_result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4, 4};
   Shape shape_r{2, 2, 2};
@@ -314,8 +316,9 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(
+        test::he::all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
+                            read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -340,14 +343,15 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(
+        test::he::all_close((vector<float>{1, 3, 9, 11, 33, 35, 41, 43}),
+                            read_vector<float>(t_result)));
   }
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   Shape shape_a{4, 4, 4};
   Shape shape_r{2, 2, 2};
@@ -374,8 +378,9 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(
+        test::he::all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
+                            read_vector<float>(t_result)));
   }
   {
     auto a = make_shared<op::Parameter>(element::f32, shape_a);
@@ -399,7 +404,8 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
                             53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64});
     auto handle = backend->compile(f);
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
-                          read_vector<float>(t_result)));
+    EXPECT_TRUE(
+        test::he::all_close((vector<float>{1, 4, 9, 12, 33, 36, 41, 44}),
+                            read_vector<float>(t_result)));
   }
 }

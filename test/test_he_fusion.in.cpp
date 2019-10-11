@@ -28,17 +28,18 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
 static void check_bounded_relu(Shape param_shape, float constant_val) {
   auto make_function = [](Shape input_shape, float alpha_val) {
     auto relu_input =
-        std::make_shared<op::Parameter>(element::f32, input_shape);
-    auto relu = std::make_shared<op::Relu>(relu_input);
+        make_shared<op::Parameter>(element::f32, input_shape);
+    auto relu = make_shared<op::Relu>(relu_input);
     auto alpha = op::Constant::create<float>(
-        element::f32, input_shape, std::vector<float>(1.0f, alpha_val));
-    auto min = std::make_shared<op::Minimum>(relu, alpha);
+        element::f32, input_shape, vector<float>(1.0f, alpha_val));
+    auto min = make_shared<op::Minimum>(relu, alpha);
     auto f =
         make_shared<Function>(NodeVector{min}, ParameterVector{relu_input});
     return f;
@@ -73,7 +74,7 @@ static void check_bounded_relu(Shape param_shape, float constant_val) {
   copy_data(int_a, args[0]);
   int_handle->call_with_validate({int_result}, {int_a});
 
-  EXPECT_TRUE(all_close(read_vector<float>(he_result),
+  EXPECT_TRUE(test::he::all_close(read_vector<float>(he_result),
                         read_vector<float>(int_result), 1e-3f));
 }
 

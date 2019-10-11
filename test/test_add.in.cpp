@@ -46,41 +46,21 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   auto t = make_shared<op::Add>(a, b);
   auto f = make_shared<Function>(t, ParameterVector{a, b});
 
-  auto annotation_from_flags = [](bool is_encrypted, bool is_packed) {
-    if (is_encrypted && is_packed) {
-      return HEOpAnnotations::server_ciphertext_packed_annotation();
-    } else if (is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_ciphertext_unpacked_annotation();
-    } else if (!is_encrypted && is_packed) {
-      return HEOpAnnotations::server_plaintext_packed_annotation();
-    } else if (!is_encrypted && !is_packed) {
-      return HEOpAnnotations::server_plaintext_unpacked_annotation();
-    }
-    throw ngraph_error("Logic error");
-  };
-  a->set_op_annotations(annotation_from_flags(arg1_encrypted, packed));
-  b->set_op_annotations(annotation_from_flags(arg2_encrypted, packed));
+  a->set_op_annotations(
+      test::he::annotation_from_flags(arg1_encrypted, packed));
+  b->set_op_annotations(
+      test::he::annotation_from_flags(arg2_encrypted, packed));
 
-  auto tensor_from_flags = [&](bool encrypted) {
-    if (encrypted && packed) {
-      return he_backend->create_packed_cipher_tensor(element::f32, shape);
-    } else if (encrypted && !packed) {
-      return he_backend->create_cipher_tensor(element::f32, shape);
-    } else if (!encrypted && packed) {
-      return he_backend->create_packed_plain_tensor(element::f32, shape);
-    } else if (!encrypted && !packed) {
-      return he_backend->create_plain_tensor(element::f32, shape);
-    }
-    throw ngraph_error("Logic error");
-  };
+  auto t_a =
+      test::he::tensor_from_flags(*he_backend, shape, packed, arg1_encrypted);
+  auto t_b =
+      test::he::tensor_from_flags(*he_backend, shape, packed, arg2_encrypted);
+  auto t_result = test::he::tensor_from_flags(*he_backend, shape, packed,
+                                              arg1_encrypted | arg2_encrypted);
 
-  auto t_a = tensor_from_flags(arg1_encrypted);
-  auto t_b = tensor_from_flags(arg2_encrypted);
-  auto t_result = tensor_from_flags(arg1_encrypted | arg2_encrypted);
-
-  std::vector<float> input_a;
-  std::vector<float> input_b;
-  std::vector<float> exp_result;
+  vector<float> input_a;
+  vector<float> input_b;
+  vector<float> exp_result;
 
   for (int i = 0; i < ngraph::shape_size(shape); ++i) {
     input_a.emplace_back(i);
@@ -97,7 +77,8 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(
+      test::he::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_plain_real_unpacked) {
