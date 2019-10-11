@@ -891,13 +891,13 @@ bool HESealExecutable::call(
                           });
         }
 
-        // Avoid broadcasting from constant to output with batch size first
-        // dimension. This happens because not every constant is packed, for
-        // examples convolution kernels.
-        if (shape.size() > 0 && shape[0] == m_batch_size &&
+        // TODO: avoid broadcasting from constant to output with batch size
+        // first dimension. This happens because not every constant is packed,
+        // for example convolution kernels.
+        /* if (shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
           packed_out = true;
-        }
+        } */
 
         if (encrypted_out) {
           auto out_tensor = std::static_pointer_cast<HETensor>(
