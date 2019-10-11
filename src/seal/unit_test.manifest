@@ -3,3 +3,11 @@ plain_tv_write_read_large_scalar_int64
 
 # This doesn't seem to be a valid use of compelx packing, but need to check more thoroughly
 convolution_2d_2items_plain_cipher_complex_packed
+
+# Might need to add "packed" attribute to HEPlaintext, or modify broadcast call
+broadcast_scalar_vector_plain_real_packed
+broadcast_scalar_vector_plain_complex_packed
+broadcast_scalar_matrix_plain_real_packed
+broadcast_scalar_matrix_plain_complex_packed
+broadcast_scalar_tensor_plain_real_packed
+broadcast_scalar_tensor_plain_complex_packed

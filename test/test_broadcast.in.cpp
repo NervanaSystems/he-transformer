@@ -60,122 +60,122 @@ auto broadcast_test = [](const Shape& shape_a, const Shape& shape_r,
   EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_plain_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_real_unpacked) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_plain_real_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_real_packed) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_plain_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_complex_unpacked) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_plain_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_complex_packed) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_cipher_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_real_unpacked) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_cipher_real_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_real_packed) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_cipher_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_complex_unpacked) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_cipher_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_complex_packed) {
   broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_plain_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_real_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_plain_real_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_real_packed) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_plain_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_complex_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_plain_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_complex_packed) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_cipher_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_real_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_cipher_real_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_real_packed) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_cipher_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_complex_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_cipher_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_complex_packed) {
   broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
                  vector<float>{6, 6, 6, 6}, true, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_plain_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_plain_real_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_packed) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_plain_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_plain_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_packed) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_cipher_real_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_cipher_real_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_packed) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_cipher_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_unpacked) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor_cipher_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_packed) {
   broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
                  vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, true);
 }

@@ -1345,6 +1345,8 @@ void HESealExecutable::generate_calls(
 
       NGRAPH_INFO << "in_shape " << in_shape;
       NGRAPH_INFO << "broadcast_out_shape " << broadcast_out_shape;
+      NGRAPH_INFO << "arg0->is_packed() " << args[0]->is_packed();
+      NGRAPH_INFO << "out0->is_packed() " << out[0]->is_packed();
 
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
