@@ -7,12 +7,12 @@ pip install numpy
 
 To run on the CKKS backend,
 ```bash
-python ax.py --backend=HE_SEAL
+python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
 ```
 
 To run on the CPU backend,
 ```bash
-python ax.py --backend=CPU
+python $HE_TRANSFORMER/examples/ax.py --backend=CPU
 ```
 
 #  Client-server model
@@ -23,7 +23,7 @@ The client uses python bindings. See the `python` folder for instructions to bui
 
 For a simple demonstration of a server-client approach, run
 ```bash
-python ax.py --backend=HE_SEAL --enable_client=yes
+python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --enable_client=yes
 ```
 By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag, for example
 ```bash
@@ -35,7 +35,7 @@ This will discard the Tensorflow inputs and instead wait for a client to connect
 
 To start the client, in a separate terminal on the same host (with the ngraph-tf bridge python environment active), run
 ```bash
-python pyclient.py
+python $HE_TRANSFORMER/examples/pyclient.py
 ```
 
 Once the computation is complete, the output will be returned to the client and decrypted. The server will attempt decrypt the output as well; however, since it does not have the client's secret key, the output will be meaningless.
@@ -72,7 +72,7 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
   * `NAIVE_RESCALING`. For comparison purposes only. No need to enable.
   * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`. *Note*, `NGRAPH_HE_LOG_LEVEL` should be set to at least 3 when using `NGRAPH_VOPS`
   * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly;
-    - `NGRAPH_HE_LOG_LEVEL=0 [default]` has debug info
+    - `NGRAPH_HE_LOG_LEVEL=0 [default]` will print minimal amount of information
     - `NGRAPH_HE_LOG_LEVEL=1` will print encryption parameters
     - `NGRAPH_HE_LOG_LEVEL=3` will print op information (when `NGRAPH_VOPS` is enabled)
     - `NGRAPH_HE_LOG_LEVEL=4` will print communication information
