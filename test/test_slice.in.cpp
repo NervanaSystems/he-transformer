@@ -63,124 +63,112 @@ auto slice_test = [](const ngraph::Shape& shape, const Coordinate& lower_bounds,
   EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_scalar_plain_real_unpacked) {
-  slice_test(Shape{}, Coordinate{}, Coordinate{}, Strides{}, vector<float>{312},
-             vector<float>{312}, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_scalar) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(Shape{}, Coordinate{}, Coordinate{}, Strides{},
+                   vector<float>{312}, vector<float>{312}, arg1_encrypted,
+                   complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_scalar_encrypted_real_unpacked) {
-  slice_test(Shape{}, Coordinate{}, Coordinate{}, Strides{}, vector<float>{312},
-             vector<float>{312}, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_matrix) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(Shape{4, 4}, Coordinate{0, 1}, Coordinate{3, 3}, Strides{},
+                   vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                                 15, 16},
+                   vector<float>{2, 3, 6, 7, 10, 11}, arg1_encrypted,
+                   complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_plain_real_unpacked) {
-  slice_test(
-      Shape{4, 4}, Coordinate{0, 1}, Coordinate{3, 3}, Strides{},
-      vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-      vector<float>{2, 3, 6, 7, 10, 11}, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_vector) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(
+            Shape{16}, Coordinate{2}, Coordinate{14}, Strides{},
+            vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_encrypted_real_unpacked) {
-  slice_test(
-      Shape{4, 4}, Coordinate{0, 1}, Coordinate{3, 3}, Strides{},
-      vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-      vector<float>{2, 3, 6, 7, 10, 11}, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(
+            Shape{4, 4}, Coordinate{1, 0}, Coordinate{4, 4}, Strides{2, 3},
+            vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            vector<float>{4, 7, 12, 15}, arg1_encrypted, complex_packing,
+            packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_vector_plain_real_unpacked) {
-  slice_test(
-      Shape{16}, Coordinate{2}, Coordinate{14}, Strides{},
-      vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-      vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}, false, false,
-      false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(
+            Shape{4, 4, 4}, Coordinate{1, 1, 1}, Coordinate{3, 3, 3}, Strides{},
+            vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                          26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+                          39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                          52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63},
+            vector<float>{21, 22, 25, 26, 37, 38, 41, 42}, arg1_encrypted,
+            complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_vector_encrypted_real_unpacked) {
-  slice_test(
-      Shape{16}, Coordinate{2}, Coordinate{14}, Strides{},
-      vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-      vector<float>{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}, true, false,
-      false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(
+            Shape{4, 4, 4}, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
+            Strides{2, 2, 2},
+            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
+                          14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                          27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                          40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+                          53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64},
+            vector<float>{1, 3, 9, 11, 33, 35, 41, 43}, arg1_encrypted,
+            complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided_plain_real_unpacked) {
-  slice_test(
-      Shape{4, 4}, Coordinate{1, 0}, Coordinate{4, 4}, Strides{2, 3},
-      vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-      vector<float>{4, 7, 12, 15}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, slice_matrix_strided_encrypted_real_unpacked) {
-  slice_test(
-      Shape{4, 4}, Coordinate{1, 0}, Coordinate{4, 4}, Strides{2, 3},
-      vector<float>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-      vector<float>{4, 7, 12, 15}, true, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, slice_3d_plain_real_unpacked) {
-  slice_test(
-      Shape{4, 4, 4}, Coordinate{1, 1, 1}, Coordinate{3, 3, 3}, Strides{},
-      vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
-                    13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-                    26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-                    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
-                    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63},
-      vector<float>{21, 22, 25, 26, 37, 38, 41, 42}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, slice_3d_encrypted_real_unpacked) {
-  slice_test(Shape{4, 4, 4}, Coordinate{1, 1, 1}, Coordinate{3, 3, 3},
-             Strides{},
-             vector<float>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
-                           13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-                           26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-                           39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
-                           52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63},
-             vector<float>{21, 22, 25, 26, 37, 38, 41, 42}, true, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_plain_real_unpacked) {
-  slice_test(Shape{4, 4, 4}, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
-             Strides{2, 2, 2},
-             vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
-                           14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-                           27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-                           40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-                           53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64},
-             vector<float>{1, 3, 9, 11, 33, 35, 41, 43}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_encrypted_real_unpacked) {
-  slice_test(Shape{4, 4, 4}, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
-             Strides{2, 2, 2},
-             vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
-                           14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-                           27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-                           40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-                           53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64},
-             vector<float>{1, 3, 9, 11, 33, 35, 41, 43}, true, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME},
-            slice_3d_strided_different_strides_plain_real_unpacked) {
-  slice_test(Shape{4, 4, 4}, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
-             Strides{2, 2, 3},
-             vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
-                           14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-                           27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-                           40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-                           53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64},
-             vector<float>{1, 4, 9, 12, 33, 36, 41, 44}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME},
-            slice_3d_strided_different_strides_encrypted_real_unpacked) {
-  slice_test(Shape{4, 4, 4}, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
-             Strides{2, 2, 3},
-             vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
-                           14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
-                           27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-                           40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-                           53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64},
-             vector<float>{1, 4, 9, 12, 33, 36, 41, 44}, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        slice_test(
+            Shape{4, 4, 4}, Coordinate{0, 0, 0}, Coordinate{4, 4, 4},
+            Strides{2, 2, 3},
+            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
+                          14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                          27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+                          40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+                          53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64},
+            vector<float>{1, 4, 9, 12, 33, 36, 41, 44}, arg1_encrypted,
+            complex_packing, packing);
+      }
+    }
+  }
 }
