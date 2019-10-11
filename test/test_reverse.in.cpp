@@ -60,161 +60,266 @@ auto reverse_test = [](const Shape& shape_a, const AxisSet& axis_set,
   EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_0d_plain_plain) {
-  reverse_test(Shape{}, AxisSet{}, vector<float>{6}, vector<float>{6}, false,
-               false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{}, AxisSet{}, vector<float>{6}, vector<float>{6},
+                     arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange_plain_plain) {
-  reverse_test(Shape{8}, AxisSet{}, vector<float>{0, 1, 2, 3, 4, 5, 6, 7},
-               vector<float>{0, 1, 2, 3, 4, 5, 6, 7}, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{8}, AxisSet{}, vector<float>{0, 1, 2, 3, 4, 5, 6, 7},
+                     vector<float>{0, 1, 2, 3, 4, 5, 6, 7}, arg1_encrypted,
+                     complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0_plain_plain) {
-  reverse_test(Shape{8}, AxisSet{0}, vector<float>{0, 1, 2, 3, 4, 5, 6, 7},
-               vector<float>{7, 6, 5, 4, 3, 2, 1, 0}, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_0) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{8}, AxisSet{0},
+                     vector<float>{0, 1, 2, 3, 4, 5, 6, 7},
+                     vector<float>{7, 6, 5, 4, 3, 2, 1, 0}, arg1_encrypted,
+                     complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange_plain_plain) {
-  reverse_test(
-      Shape{4, 3}, AxisSet{},
-      test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
-          .get_vector(),
-      test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
-          .get_vector(),
-      false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_nochange) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{4, 3}, AxisSet{},
+                     test::NDArray<float, 2>(
+                         {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
+                         .get_vector(),
+                     test::NDArray<float, 2>(
+                         {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
+                         .get_vector(),
+                     arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0_plain_plain) {
-  reverse_test(
-      Shape{4, 3}, AxisSet{0},
-      test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
-          .get_vector(),
-      test::NDArray<float, 2>({{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}})
-          .get_vector(),
-      false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_0) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{4, 3}, AxisSet{0},
+                     test::NDArray<float, 2>(
+                         {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
+                         .get_vector(),
+                     test::NDArray<float, 2>(
+                         {{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}})
+                         .get_vector(),
+                     arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1_plain_plain) {
-  reverse_test(
-      Shape{4, 3}, AxisSet{1},
-      test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
-          .get_vector(),
-      test::NDArray<float, 2>({{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}})
-          .get_vector(),
-      false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_1) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{4, 3}, AxisSet{1},
+                     test::NDArray<float, 2>(
+                         {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
+                         .get_vector(),
+                     test::NDArray<float, 2>(
+                         {{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}})
+                         .get_vector(),
+                     arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01_plain_plain) {
-  reverse_test(
-      Shape{4, 3}, AxisSet{0, 1},
-      test::NDArray<float, 2>({{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
-          .get_vector(),
-      test::NDArray<float, 2>({{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}})
-          .get_vector(),
-      false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_2d_01) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(Shape{4, 3}, AxisSet{0, 1},
+                     test::NDArray<float, 2>(
+                         {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}})
+                         .get_vector(),
+                     test::NDArray<float, 2>(
+                         {{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}})
+                         .get_vector(),
+                     arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_nochange) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{0},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}},
-                    {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_0) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{0},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}},
+                 {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{1},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
-                    {{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_1) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{1},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}},
+                 {{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{2},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
-                    {{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_2) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{2},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}},
+                 {{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{0, 1},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
-                    {{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_01) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{0, 1},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{21, 22, 23}, {18, 19, 20}, {15, 16, 17}, {12, 13, 14}},
+                 {{9, 10, 11}, {6, 7, 8}, {3, 4, 5}, {0, 1, 2}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{0, 2},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
-                    {{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_02) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{0, 2},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{14, 13, 12}, {17, 16, 15}, {20, 19, 18}, {23, 22, 21}},
+                 {{2, 1, 0}, {5, 4, 3}, {8, 7, 6}, {11, 10, 9}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{1, 2},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
-                    {{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_12) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{1, 2},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}},
+                 {{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012_plain_plain) {
-  reverse_test(Shape{2, 4, 3}, AxisSet{0, 1, 2},
-               test::NDArray<float, 3>(
-                   {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
-                    {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
-                   .get_vector(),
-               test::NDArray<float, 3>(
-                   {{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
-                    {{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}})
-                   .get_vector(),
-               false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
+  for (bool arg1_encrypted : vector<bool>{false, true}) {
+    for (bool complex_packing : vector<bool>{false, true}) {
+      for (bool packing : vector<bool>{false}) {
+        reverse_test(
+            Shape{2, 4, 3}, AxisSet{0, 1, 2},
+            test::NDArray<float, 3>(
+                {{{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {9, 10, 11}},
+                 {{12, 13, 14}, {15, 16, 17}, {18, 19, 20}, {21, 22, 23}}})
+                .get_vector(),
+            test::NDArray<float, 3>(
+                {{{23, 22, 21}, {20, 19, 18}, {17, 16, 15}, {14, 13, 12}},
+                 {{11, 10, 9}, {8, 7, 6}, {5, 4, 3}, {2, 1, 0}}})
+                .get_vector(),
+            arg1_encrypted, complex_packing, packing);
+      }
+    }
+  }
 }
