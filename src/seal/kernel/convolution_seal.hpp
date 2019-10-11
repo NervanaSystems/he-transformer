@@ -556,11 +556,6 @@ inline void convolution_seal(
     HESealBackend& he_seal_backend, bool verbose = true) {
   CoordinateTransform output_transform(out_shape);
 
-  NGRAPH_INFO << "Conv plain plain";
-  NGRAPH_INFO << "arg0_shape " << arg0_shape;
-  NGRAPH_INFO << "arg1_shape " << arg1_shape;
-  NGRAPH_INFO << "out_shape " << out_shape;
-
   // Store output coordinates for parallelization
   std::vector<ngraph::Coordinate> out_coords;
   for (const Coordinate& out_coord : output_transform) {
@@ -574,7 +569,6 @@ inline void convolution_seal(
 #pragma omp parallel for
   for (size_t out_coord_idx = 0; out_coord_idx < out_transform_size;
        ++out_coord_idx) {
-    NGRAPH_INFO << "Conv[" << out_coord_idx << "] of " << out_transform_size;
     const Coordinate& out_coord = out_coords[out_coord_idx];
 
     size_t batch_index = out_coord[batch_axis_result];

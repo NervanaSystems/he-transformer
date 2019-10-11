@@ -603,9 +603,7 @@ auto server_client_maxpool_test = [](const Shape& shape,
       test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
   auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(),
                                               arg1_encrypted, packed);
-
   size_t batch_size = static_pointer_cast<HETensor>(t_dummy)->get_batch_size();
-  NGRAPH_INFO << "Batch size " << batch_size;
 
   // Used for dummy server inputs
   float DUMMY_FLOAT = 99;
@@ -629,7 +627,8 @@ auto server_client_maxpool_test = [](const Shape& shape,
   EXPECT_TRUE(test::he::all_close(results, output));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_max_pool_1d_1channel_1image_encrypted_real_unpacked) {
   server_client_maxpool_test(
       Shape{1, 1, 14}, Shape{3},
       vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
@@ -637,7 +636,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_max_pool_1d_1channel_1image_plain) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            server_client_max_pool_1d_1channel_2image_plain_packed) {
+            server_client_max_pool_1d_1channel_2image_encrypted_real_packed) {
   server_client_maxpool_test(
       Shape{2, 1, 14}, Shape{3},
       test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
@@ -649,155 +648,66 @@ NGRAPH_TEST(${BACKEND_NAME},
       true, false, true);
 }
 
-
 NGRAPH_TEST(${BACKEND_NAME},
-            server_client_max_pool_1d_2channel_2image_plain_packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
-
-  size_t batch_size = 2;
-
-  Shape shape_a{2, 2, 14};
-  Shape window_shape{3};
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2, 12};
-  auto f = make_shared<Function>(make_shared<op::MaxPool>(a, window_shape),
-                                 ParameterVector{a});
-
-  a->set_op_annotations(HEOpAnnotations::client_ciphertext_packed_annotation());
-
-  // Server inputs which are not used
-  auto t_dummy = he_backend->create_packed_plain_tensor(element::f32, shape_a);
-  auto t_result =
-      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
-
-  // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>(shape_size(shape_a), DUMMY_FLOAT));
-
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs =
-        test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                  {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-                                 {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                  {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-            .get_vector();
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {a->get_name(), make_pair("encrypt", inputs)}});
-
-    auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
-  });
-
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
-  handle->call_with_validate({t_result}, {t_dummy});
-
-  client_thread.join();
-  EXPECT_TRUE(test::he::all_close(
-      results,
-      (test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                 {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                                {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                 {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-           .get_vector()),
-      1e-3f));
+            server_client_max_pool_1d_2channel_2image_encrypted_real_packed) {
+  server_client_maxpool_test(
+      Shape{2, 2, 14}, Shape{3},
+      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+          .get_vector(),
+      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+          .get_vector(),
+      true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
-            server_client_max_pool_2d_2channel_2image_plain_packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
-
-  size_t batch_size = 2;
-
-  Shape shape_a{2, 2, 5, 5};
-  Shape window_shape{2, 3};
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2, 4, 3};
-  auto f = make_shared<Function>(make_shared<op::MaxPool>(a, window_shape),
-                                 ParameterVector{a});
-
-  a->set_op_annotations(HEOpAnnotations::client_ciphertext_packed_annotation());
-
-  // Server inputs which are not used
-  auto t_dummy = he_backend->create_packed_plain_tensor(element::f32, shape_a);
-  auto t_result =
-      he_backend->create_packed_cipher_tensor(element::f32, shape_r);
-
-  // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>(shape_size(shape_a), DUMMY_FLOAT));
-
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs =
-        test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                   {0, 3, 2, 0, 0},
-                                   {2, 0, 0, 0, 1},
-                                   {2, 0, 1, 1, 2},
-                                   {0, 2, 1, 0, 0}},
-
-                                  {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                   {0, 2, 3, 0, 1},
-                                   {2, 0, 1, 0, 2},
-                                   {3, 1, 0, 0, 0},
-                                   {2, 0, 0, 0, 0}}},
-
-                                 {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                   {0, 0, 2, 0, 1},
-                                   {0, 0, 1, 2, 3},
-                                   {2, 0, 0, 3, 0},
-                                   {0, 0, 0, 0, 0}},
-
-                                  {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                   {0, 2, 0, 0, 0},
-                                   {1, 1, 2, 0, 2},
-                                   {1, 1, 1, 0, 1},
-                                   {1, 0, 0, 0, 2}}}})
-            .get_vector();
-
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {a->get_name(), make_pair("encrypt", inputs)}});
-
-    auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
-  });
-
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
-  handle->call_with_validate({t_result}, {t_dummy});
-
-  client_thread.join();
-  EXPECT_TRUE(test::he::all_close(
-      results,
-      (test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                  {3, 3, 2},
-                                  {2, 1, 2},
-                                  {2, 2, 2}},
-
-                                 {{3, 3, 3},  // img 0 chan 1
-                                  {3, 3, 3},
-                                  {3, 1, 2},
-                                  {3, 1, 0}}},
-
-                                {{{2, 2, 2},  // img 1 chan 0
-                                  {2, 2, 3},
-                                  {2, 3, 3},
-                                  {2, 3, 3}},
-
-                                 {{2, 2, 1},  // img 1 chan 1
-                                  {2, 2, 2},
-                                  {2, 2, 2},
-                                  {1, 1, 2}}}})
-           .get_vector()),
-      1e-3f));
+            server_client_max_pool_2d_2channel_2image_encrypted_real_packed) {
+  server_client_maxpool_test(
+      Shape{2, 2, 5, 5}, Shape{2, 3},
+      test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                 {0, 3, 2, 0, 0},
+                                 {2, 0, 0, 0, 1},
+                                 {2, 0, 1, 1, 2},
+                                 {0, 2, 1, 0, 0}},
+                                {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                 {0, 2, 3, 0, 1},
+                                 {2, 0, 1, 0, 2},
+                                 {3, 1, 0, 0, 0},
+                                 {2, 0, 0, 0, 0}}},
+                               {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                 {0, 0, 2, 0, 1},
+                                 {0, 0, 1, 2, 3},
+                                 {2, 0, 0, 3, 0},
+                                 {0, 0, 0, 0, 0}},
+                                {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                 {0, 2, 0, 0, 0},
+                                 {1, 1, 2, 0, 2},
+                                 {1, 1, 1, 0, 1},
+                                 {1, 0, 0, 0, 2}}}})
+          .get_vector(),
+      test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                 {3, 3, 2},
+                                 {2, 1, 2},
+                                 {2, 2, 2}},
+                                {{3, 3, 3},  // img 0 chan 1
+                                 {3, 3, 3},
+                                 {3, 1, 2},
+                                 {3, 1, 0}}},
+                               {{{2, 2, 2},  // img 1 chan 0
+                                 {2, 2, 3},
+                                 {2, 3, 3},
+                                 {2, 3, 3}},
+                                {{2, 2, 1},  // img 1 chan 1
+                                 {2, 2, 2},
+                                 {2, 2, 2},
+                                 {1, 1, 2}}}})
+          .get_vector(),
+      true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
