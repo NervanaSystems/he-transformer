@@ -1290,8 +1290,6 @@ void HESealExecutable::generate_calls(
       NGRAPH_CHECK(mean != nullptr, "BatchNorm mean not plaintext");
       NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not plaintext");
 
-      // TODO: support packing
-
       batch_norm_inference_seal(eps, gamma->get_elements(),
                                 beta->get_elements(), input->get_elements(),
                                 mean->get_elements(), variance->get_elements(),
@@ -1344,9 +1342,9 @@ void HESealExecutable::generate_calls(
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
       Shape in_shape = arg_shapes[0];
       Shape broadcast_out_shape = out_shape;
-      if (out_shape[0] == m_batch_size) {
-        broadcast_out_shape = out_shape;
-      }
+
+      NGRAPH_INFO << "in_shape " << in_shape;
+      NGRAPH_INFO << "broadcast_out_shape " << broadcast_out_shape;
 
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
@@ -1439,7 +1437,6 @@ void HESealExecutable::generate_calls(
       auto padding_above = c->get_padding_above();
       auto data_dilation_strides = c->get_data_dilation_strides();
 
-      // TODO: enable packing
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = arg_shapes[1];
 
@@ -1491,7 +1488,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
 
-      // TODO: enable packed shapes
       Shape in_shape0 = arg_shapes[0];
       Shape in_shape1 = arg_shapes[1];
 
