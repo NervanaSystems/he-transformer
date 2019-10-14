@@ -212,19 +212,26 @@ void HEPlainTensor::pack() {
 
   m_batch_size = HETensor::batch_size(get_shape(), true);
 
+  NGRAPH_INFO << "Batch size " << m_batch_size;
+  NGRAPH_INFO << "old num_plaintexts " << num_plaintexts();
+
   std::vector<HEPlaintext> new_plaintexts(num_plaintexts() / m_batch_size);
   for (size_t i = 0; i < new_plaintexts.size(); ++i) {
+    new_plaintexts[i] = HEPlaintext();
   }
 
   for (size_t plain_idx = 0; plain_idx < m_plaintexts.size(); ++plain_idx) {
-    auto new_val = m_plaintexts[plain_idx].values()[0];
-    size_t new_plain_idx = plain_idx % new_plaintexts.size();
-    new_plaintexts[new_plain_idx].values().emplace_back(new_val);
+    auto& values = m_plaintexts[plain_idx].values();
+    if (values.size() != 0) {
+      size_t new_plain_idx = plain_idx % new_plaintexts.size();
+      new_plaintexts[new_plain_idx].values().emplace_back(values[0]);
+    }
   }
 
   m_plaintexts = std::move(new_plaintexts);
   m_packed = true;
   m_packed_shape = ngraph::he::HETensor::pack_shape(get_shape());
+  NGRAPH_INFO << "Done packing plain tensor";
 }
 
 void HEPlainTensor::unpack() {

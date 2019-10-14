@@ -858,7 +858,7 @@ bool HESealExecutable::call(
     }
     ngraph::descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
 
-    auto he_output = he_outputs[output_count];
+    auto& he_output = he_outputs[output_count];
 
     if (HEOpAnnotations::has_he_annotation(*output)) {
       auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
