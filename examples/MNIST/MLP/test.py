@@ -40,7 +40,7 @@ from mnist_util import load_mnist_data, \
                        conv2d_stride_2_valid, \
                        str2bool, \
                        server_argument_parser, \
-                       client_config_from_flags
+                       server_config_from_flags
 
 
 def load_pb_file(filename):
@@ -66,7 +66,7 @@ def test_mnist_mlp(FLAGS):
         x_input = tf.compat.v1.get_default_graph().get_tensor_by_name(
             "import/input:0")
 
-        config = client_config_from_flags(FLAGS, x_input.name)
+        config = server_config_from_flags(FLAGS, x_input.name)
 
         print('config', config)
 

@@ -13,7 +13,7 @@ This trains the network briefly and stores the network weights.
 To test the network, with encrypted data,
 ```
 python test.py --batch_size=4096 \
-               --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N13_L7.json
+               --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N13_L7.json \
                --encrypt_data=True
 ```
 

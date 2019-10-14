@@ -38,7 +38,7 @@ from mnist_util import load_mnist_data, \
                        conv2d_stride_2_valid, \
                        str2bool, \
                        server_argument_parser, \
-                       client_config_from_flags
+                       server_config_from_flags
 
 
 def cryptonets_relu_test_squashed(x):
@@ -77,7 +77,7 @@ def test_cryptonets_relu(FLAGS):
     # Create the model
     y_conv = cryptonets_relu_test_squashed(x)
 
-    config = client_config_from_flags(FLAGS, x.name)
+    config = server_config_from_flags(FLAGS, x.name)
     print('config', config)
 
     with tf.compat.v1.Session(config=config) as sess:

@@ -21,21 +21,21 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def client_config_from_flags(FLAGS, tensor_param_name):
+def server_config_from_flags(FLAGS, tensor_param_name):
     rewriter_options = rewriter_config_pb2.RewriterConfig()
     rewriter_options.meta_optimizer_iterations = (
         rewriter_config_pb2.RewriterConfig.ONE)
     rewriter_options.min_graph_nodes = -1
-    client_config = rewriter_options.custom_optimizers.add()
-    client_config.name = "ngraph-optimizer"
-    client_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
-    client_config.parameter_map["device_id"].s = b''
-    client_config.parameter_map[
+    server_config = rewriter_options.custom_optimizers.add()
+    server_config.name = "ngraph-optimizer"
+    server_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
+    server_config.parameter_map["device_id"].s = b''
+    server_config.parameter_map[
         "encryption_parameters"].s = FLAGS.encryption_parameters.encode()
-    client_config.parameter_map['enable_client'].s = (str(
+    server_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
     if FLAGS.enable_client:
-        client_config.parameter_map[tensor_param_name].s = b'client_input'
+        server_config.parameter_map[tensor_param_name].s = b'client_input'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(
@@ -47,7 +47,7 @@ def client_config_from_flags(FLAGS, tensor_param_name):
 
 
 def main(FLAGS):
-    config = client_config_from_flags(FLAGS, '')
+    config = server_config_from_flags(FLAGS, '')
     config = ngraph_bridge.update_config(config)
     sess = tf.Session(config=config)
     set_session(sess)

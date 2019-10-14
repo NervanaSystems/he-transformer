@@ -33,7 +33,7 @@ from util import get_imagenet_inference_labels, \
                  get_validation_labels, \
                  str2bool, \
                  server_argument_parser, \
-                 client_config_from_flags
+                 server_config_from_flags
 
 
 def print_nodes(filename):
@@ -80,7 +80,7 @@ def main(FLAGS):
     else:
         x_test = get_validation_images(FLAGS)
 
-    config = client_config_from_flags(FLAGS, 'input')
+    config = server_config_from_flags(FLAGS, 'input')
 
     sess = tf.compat.v1.Session(config=config)
     graph_def = load_model(FLAGS.model)

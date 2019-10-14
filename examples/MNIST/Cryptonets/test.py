@@ -37,7 +37,7 @@ from mnist_util import load_mnist_data, \
                        conv2d_stride_2_valid, \
                        str2bool, \
                        server_argument_parser, \
-                       client_config_from_flags
+                       server_config_from_flags
 
 
 def cryptonets_test_squashed(x):
@@ -67,7 +67,7 @@ def test_mnist_cnn(FLAGS):
     # Create the model
     y_conv = cryptonets_test_squashed(x)
 
-    config = client_config_from_flags(FLAGS, x.name)
+    config = server_config_from_flags(FLAGS, x.name)
 
     print('config', config)
 
