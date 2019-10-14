@@ -209,6 +209,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
   }
 
   for (const auto& name : get_client_tensor_names()) {
+    NGRAPH_HE_LOG(3) << "get_client_tensor_names " << name;
     bool matching_param = false;
     bool has_tag = false;
     for (auto& param : function->get_parameters()) {

@@ -106,10 +106,10 @@ class HESealExecutable : public runtime::Executable {
   }
 
   /// \brief Checks whether or not the client supports the function
-  /// \returns True if function is supported, false otherwise.
+  /// \throws ngraph_error if function is unsupported
   /// Currently, we only support functions with a single client parameter and
   /// single results
-  bool client_supports_function();
+  void check_client_supports_function();
 
   /// \brief Processes a message from the client
   /// \param[in] message Message to process

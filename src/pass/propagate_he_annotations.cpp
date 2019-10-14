@@ -48,7 +48,7 @@ bool pass::PropagateHEAnnotations::run_on_function(
       if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
         op->set_op_annotations(
             HEOpAnnotations::server_plaintext_unpacked_annotation());
-        NGRAPH_HE_LOG(5) << "Adding plaintext_unpacked_annotation to op "
+        NGRAPH_HE_LOG(5) << "Adding server plaintext_unpacked_annotation to op "
                          << op->get_name();
       } else {
         auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(

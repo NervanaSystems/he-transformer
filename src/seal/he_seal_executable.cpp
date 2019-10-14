@@ -105,7 +105,9 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
-  m_function = clone_function(*function);
+  // TODO: use clone_function? (check
+  // https://github.com/NervanaSystems/ngraph/pull/3773 is merged)
+  m_function = function;
 
   NGRAPH_HE_LOG(3) << "Creating Executable";
   for (const auto& param : m_function->get_parameters()) {
@@ -206,7 +208,7 @@ void HESealExecutable::set_batch_size(size_t batch_size) {
   NGRAPH_HE_LOG(5) << "Server set batch size to " << m_batch_size;
 }
 
-bool HESealExecutable::client_supports_function() {
+void HESealExecutable::check_client_supports_function() {
   NGRAPH_INFO << "Check client supports function";
   // Check if single parameter is from client
   size_t from_client_count = 0;
@@ -219,27 +221,17 @@ bool HESealExecutable::client_supports_function() {
       NGRAPH_INFO << "Param not from client";
     }
   }
-  NGRAPH_INFO << "get_results().size() " << get_results().size();
-  if (get_results().size() != 1) {
-    NGRAPH_WARN << "HESealExecutable only supports output size 1 (got "
-                << get_results().size() << ")";
-    return false;
-  }
-
-  NGRAPH_INFO << "from_client_count " << from_client_count;
-  if (from_client_count == 0) {
-    return false;
-  }
-  return true;
+  NGRAPH_CHECK(get_results().size() == 1,
+               "HESealExecutable only supports output size 1 (got ",
+               get_results().size(), ")");
+  NGRAPH_CHECK(from_client_count > 0, "Expected > 0 parameters from client");
 }
 
 bool HESealExecutable::server_setup() {
   if (!m_server_setup) {
     NGRAPH_HE_LOG(1) << "Enable client";
 
-    if (!client_supports_function()) {
-      return false;
-    }
+    check_client_supports_function();
 
     NGRAPH_HE_LOG(1) << "Starting server";
     start_server();

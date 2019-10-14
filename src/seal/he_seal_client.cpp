@@ -47,7 +47,12 @@ HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
                            const HETensorConfigMap<double>& inputs)
     : m_batch_size{batch_size}, m_is_done{false}, m_input_config{inputs} {
-  NGRAPH_HE_LOG(5) << "Creating HESealClient";
+  NGRAPH_HE_LOG(5) << "Creating HESealClient from config";
+  for (const auto& elem : m_input_config) {
+    NGRAPH_INFO << elem.first;
+  }
+  NGRAPH_INFO << "m_input_config.size() " << m_input_config.size();
+
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only one input parameter");
 

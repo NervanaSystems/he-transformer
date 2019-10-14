@@ -116,7 +116,7 @@ class HESealClient {
   /// \brief Returns decrypted results
   /// \warning Will lock until results are ready
   inline std::vector<double> get_results() {
-    NGRAPH_HE_LOG(1) << "Client waiting for results";
+    NGRAPH_INFO << "Client waiting for results";
 
     std::unique_lock<std::mutex> mlock(m_is_done_mutex);
     m_is_done_cond.wait(mlock, std::bind(&HESealClient::is_done, this));

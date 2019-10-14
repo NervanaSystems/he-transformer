@@ -160,8 +160,8 @@ def cpp_flag(compiler):
     """Return the -std=c++[11/14] compiler flag.
     The c++14 is prefered over c++11 (when it is available).
     """
-    if has_flag(compiler, '-std=c++1z'):
-        return '-std=c++1z'
+    if has_flag(compiler, '-std=c++17'):
+        return '-std=c++17'
     elif has_flag(compiler, '-std=c++14'):
         return '-std=c++14'
     elif has_flag(compiler, '-std=c++11'):
@@ -178,6 +178,7 @@ def add_platform_specific_link_args(link_args):
         link_args += ['-z', 'noexecstack']
         link_args += ['-z', 'relro']
         link_args += ['-z', 'now']
+        link_args += ['-z', 'flto']
 
 
 class BuildExt(build_ext):
