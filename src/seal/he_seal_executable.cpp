@@ -184,11 +184,12 @@ HESealExecutable::~HESealExecutable() {
 }
 
 void HESealExecutable::update_he_op_annotations() {
+  NGRAPH_HE_LOG(3) << "Upadting HE op annotations";
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<pass::PropagateHEAnnotations>();
   pass_manager_he.run_passes(m_function);
   m_is_compiled = true;
-  NGRAPH_HE_LOG(3) << "Done running optimization passes";
+
   m_wrapped_nodes.clear();
   for (const std::shared_ptr<Node>& node : m_function->get_ordered_ops()) {
     m_wrapped_nodes.emplace_back(node);
@@ -805,6 +806,9 @@ bool HESealExecutable::call(
 
     he_inputs.emplace_back(he_input);
   }
+
+  NGRAPH_HE_LOG(3) << "Updating HE op annotations";
+  update_he_op_annotations();
 
   NGRAPH_HE_LOG(3) << "Converting outputs to HETensor";
   std::vector<std::shared_ptr<HETensor>> he_outputs;
