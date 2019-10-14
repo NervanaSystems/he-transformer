@@ -115,6 +115,8 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       m_encrypted_tensor_names.insert(tensor_name);
     } else if (lower_setting == "plain") {
       m_plaintext_tensor_names.insert(tensor_name);
+    } else if (lower_setting == "packed") {
+      m_packed_tensor_names.insert(tensor_name);
     }
 
     // Check whether client is enabled
@@ -237,9 +239,8 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
         auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
             param->get_op_annotations());
         if (current_annotation == nullptr) {
-          auto encrypted_annotation =
-              std::make_shared<HEOpAnnotations>(false, true, false);
-          param->set_op_annotations(encrypted_annotation);
+          param->set_op_annotations(
+              HEOpAnnotations::server_ciphertext_unpacked_annotation());
         } else {
           current_annotation->set_encrypted(true);
         }
@@ -259,11 +260,31 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
         auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
             param->get_op_annotations());
         if (current_annotation == nullptr) {
-          auto encrypted_annotation =
-              std::make_shared<HEOpAnnotations>(false, false, false);
-          param->set_op_annotations(encrypted_annotation);
+          param->set_op_annotations(
+              HEOpAnnotations::server_plaintext_unpacked_annotation());
         } else {
           current_annotation->set_encrypted(false);
+        }
+        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
+                         << param->get_shape() << ") as plaintext";
+      }
+    }
+  }
+
+  NGRAPH_HE_LOG(3) << "Setting packed tags";
+  for (const auto& name : get_packed_tensor_names()) {
+    NGRAPH_HE_LOG(5) << "Packed tensor name " << name;
+    for (auto& param : function->get_parameters()) {
+      if (param_originates_from_name(*param, name)) {
+        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
+                         << param->get_shape() << ") as packed";
+        auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
+            param->get_op_annotations());
+        if (current_annotation == nullptr) {
+          param->set_op_annotations(
+              HEOpAnnotations::server_plaintext_packed_annotation());
+        } else {
+          current_annotation->set_packed(true);
         }
         NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
                          << param->get_shape() << ") as plaintext";

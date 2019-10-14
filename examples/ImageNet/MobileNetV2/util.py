@@ -214,7 +214,7 @@ def server_argument_parser():
         'Filename containing json description of encryption parameters, or json description itself'
     )
     parser.add_argument(
-        '--encrypt_data',
+        '--encrypt_server_data',
         type=str2bool,
         default=False,
         help=
@@ -238,8 +238,10 @@ def server_config_from_flags(FLAGS, tensor_param_name):
         FLAGS.enable_client)).encode()
     if FLAGS.enable_client:
         server_config.parameter_map[tensor_param_name].s = b'client_input'
-    elif FLAGS.encrypt_data:
+    elif FLAGS.encrypt_server_data:
         server_config.parameter_map[tensor_param_name].s = b'encrypt'
+    if FLAGS.pack_data:
+        server_config parameter_map[tensor_param_name].s = b'packed'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

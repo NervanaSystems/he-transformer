@@ -14,7 +14,7 @@ To test the network, with encrypted data,
 ```
 python test.py --batch_size=4096 \
                --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N13_L7.json \
-               --encrypt_data=True
+               --encrypt_server_data=True
 ```
 
 This runs inference on the Cryptonets network with encrypted data using the SEAL CKKS backend.

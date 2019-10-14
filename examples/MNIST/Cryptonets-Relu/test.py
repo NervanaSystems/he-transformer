@@ -108,9 +108,9 @@ if __name__ == '__main__':
 
     if unparsed:
         print('Unparsed flags:', unparsed)
-    if FLAGS.encrypt_data and FLAGS.enable_client:
+    if FLAGS.encrypt_server_data and FLAGS.enable_client:
         raise Exception(
-            "encrypt_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
+            "encrypt_server_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
         )
 
     test_cryptonets_relu(FLAGS)

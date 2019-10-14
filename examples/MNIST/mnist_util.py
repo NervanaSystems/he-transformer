@@ -118,11 +118,16 @@ def server_argument_parser():
         'Filename containing json description of encryption parameters, or json description itself'
     )
     parser.add_argument(
-        '--encrypt_data',
+        '--encrypt_server_data',
         type=str2bool,
         default=False,
         help=
         'Encrypt server data (should not be used when enable_client is used)')
+    parser.add_argument(
+        '--pack_data',
+        type=str2bool,
+        default=True,
+        help='Use plaintext packing on data')
 
     return parser
 
@@ -133,19 +138,23 @@ def server_config_from_flags(FLAGS, tensor_param_name):
         rewriter_config_pb2.RewriterConfig.ONE)
     rewriter_options.min_graph_nodes = -1
     server_config = rewriter_options.custom_optimizers.add()
-    server_config name = "ngraph-optimizer"
-    server_config parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
-    server_config parameter_map["device_id"].s = b''
-    server_config parameter_map[
+    server_config.name = "ngraph-optimizer"
+    server_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
+    server_config.parameter_map["device_id"].s = b''
+    server_config.parameter_map[
         "encryption_parameters"].s = FLAGS.encryption_parameters.encode()
-    server_config parameter_map['enable_client'].s = (str(
-        FLAGS.enable_client)).encode()
+    server_config.parameter_map['enable_client'].s = str(
+        FLAGS.enable_client).encode()
+
     if FLAGS.enable_client:
-        server_config parameter_map[tensor_param_name].s = b'client_input'
-    elif FLAGS.encrypt_data:
-        server_config parameter_map[tensor_param_name].s = b'encrypt'
+        server_config.parameter_map[tensor_param_name].s = b'client_input'
+    elif FLAGS.encrypt_server_data:
+        server_config.parameter_map[tensor_param_name].s = b'encrypt'
     else:
-        server_config parameter_map[tensor_param_name].s = b'plain'
+        server_config.parameter_map[tensor_param_name].s = b'plain'
+
+    if FLAGS.pack_data:
+        server_config.parameter_map[tensor_param_name].s = b'packed'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

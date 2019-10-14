@@ -16,6 +16,7 @@
 
 #include <functional>
 #include <limits>
+#include <tuple>
 #include <unordered_set>
 
 #include "he_op_annotations.hpp"
@@ -141,7 +142,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
 
   NGRAPH_HE_LOG(3) << "Running optimization passes";
   ngraph::pass::Manager pass_manager;
-  pass_manager.set_pass_visualization(true);
+  pass_manager.set_pass_visualization(false);
   pass_manager.set_pass_serialization(false);
 
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
@@ -153,10 +154,19 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   }
 
   NGRAPH_HE_LOG(4) << "Running passes";
+
+  using Clock = std::chrono::high_resolution_clock;
+  auto t1 = Clock::now();
   pass_manager.run_passes(m_function);
+  auto t2 = Clock::now();
+
+  NGRAPH_INFO
+      << "Passes took "
+      << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
+      << "ms";
 
   ngraph::pass::Manager pass_manager_he;
-  pass_manager_he.set_pass_visualization(true);
+  pass_manager_he.set_pass_visualization(false);
   pass_manager_he.set_pass_serialization(false);
   pass_manager_he.register_pass<pass::HEFusion>();
   pass_manager_he.register_pass<pass::HELiveness>();
@@ -165,6 +175,8 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
         return m_he_seal_backend.is_supported(op);
       });
   pass_manager_he.run_passes(m_function);
+
+  NGRAPH_HE_LOG(4) << "Running HE passes";
 
   update_he_op_annotations();
 }
@@ -1041,37 +1053,53 @@ void HESealExecutable::generate_calls(
   bool verbose = verbose_op(node);
   std::string node_op = node.description();
 
-  std::vector<std::shared_ptr<HESealCipherTensor>> cipher_args;
-  std::vector<std::shared_ptr<HEPlainTensor>> plain_args;
+  auto parse_he_tensors =
+      [](const std::vector<std::shared_ptr<HETensor>>& tensors,
+         const bool print_output, const std::string& prefix = "") {
+        std::string delimiter{" "};
 
-  std::stringstream ss;
-  ss << "Inputs: ";
-  for (const auto& arg : args) {
-    std::string delimiter = " ";
-    NGRAPH_CHECK(
-        arg->is_type<HEPlainTensor>() != arg->is_type<HESealCipherTensor>(),
-        "he_input unknown type");
+        std::stringstream ss;
+        ss << prefix;
 
-    if (arg->is_type<HESealCipherTensor>()) {
-      cipher_args.emplace_back(he_tensor_as_type<HESealCipherTensor>(arg));
-      plain_args.emplace_back(nullptr);
-      ss << "Cipher" << delimiter;
-    } else {
-      cipher_args.emplace_back(nullptr);
-      plain_args.emplace_back(he_tensor_as_type<HEPlainTensor>(arg));
-      ss << "Plain" << delimiter;
-    }
-    delimiter = ", ";
-  }
-  if (verbose) {
-    NGRAPH_HE_LOG(3) << ss.str();
-  }
+        std::vector<std::shared_ptr<HESealCipherTensor>> cipher_tensors;
+        std::vector<std::shared_ptr<HEPlainTensor>> plain_tensors;
 
-  for (const auto& out_tensor : out) {
-    NGRAPH_CHECK(out_tensor != nullptr, "Out tensor is nullptr");
-    NGRAPH_CHECK(out_tensor->is_type<HEPlainTensor>() !=
-                     out_tensor->is_type<HESealCipherTensor>(),
-                 "out tensor unknown type");
+        for (const auto& tensor : tensors) {
+          NGRAPH_CHECK(tensor->is_type<HEPlainTensor>() !=
+                           tensor->is_type<HESealCipherTensor>(),
+                       "he_input unknown type");
+
+          if (tensor->is_type<HESealCipherTensor>()) {
+            cipher_tensors.emplace_back(
+                he_tensor_as_type<HESealCipherTensor>(tensor));
+            plain_tensors.emplace_back(nullptr);
+            ss << "Cipher" << delimiter;
+          } else {
+            cipher_tensors.emplace_back(nullptr);
+            plain_tensors.emplace_back(
+                he_tensor_as_type<HEPlainTensor>(tensor));
+            ss << "Plain" << delimiter;
+          }
+        }
+        if (print_output) {
+          NGRAPH_HE_LOG(3) << ss.str();
+        }
+        return std::make_tuple(plain_tensors, cipher_tensors);
+      };
+
+  auto parsed_args = parse_he_tensors(args, true, "Inputs: ");
+  auto parsed_out = parse_he_tensors(out, true, "Outputs: ");
+
+  auto plain_args = std::get<0>(parsed_args);
+  auto cipher_args = std::get<1>(parsed_args);
+
+  if (args.size() > 0) {
+    NGRAPH_INFO << "(plain_args[0] == nullptr)? " << (plain_args[0] == nullptr);
+    NGRAPH_INFO << "(cipher_args[0] == nullptr)? "
+                << (cipher_args[0] == nullptr);
+    NGRAPH_INFO << "(plain_args[1] == nullptr)? " << (plain_args[1] == nullptr);
+    NGRAPH_INFO << "(cipher_args[1] == nullptr)? "
+                << (cipher_args[1] == nullptr);
   }
 
   enum class UnaryOpType {
@@ -1148,7 +1176,7 @@ void HESealExecutable::generate_calls(
                        << " ciphertexts";
     }
 
-    typedef std::chrono::high_resolution_clock Clock;
+    using Clock = std::chrono::high_resolution_clock;
     auto t1 = Clock::now();
     size_t new_chain_index = std::numeric_limits<size_t>::max();
 
@@ -1803,6 +1831,7 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Result: {
       size_t output_size = args[0]->get_batched_element_count();
+      NGRAPH_INFO << "output_size " << output_size;
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
           result_seal(cipher_args[0]->get_elements(),

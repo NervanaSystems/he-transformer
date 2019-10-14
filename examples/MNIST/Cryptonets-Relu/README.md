@@ -37,7 +37,7 @@ To test the network using encrypted inputs, run
 ```bash
 python test.py --batch_size=1024 \
                --backend=HE_SEAL \
-               --encrypt_data=yes \
+               --encrypt_server_data=yes \
                --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
 ```
 

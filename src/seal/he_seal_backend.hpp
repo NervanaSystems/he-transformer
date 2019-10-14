@@ -337,15 +337,19 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_client_tensor_names;
   }
 
-  /// \brief Returns set of tensors to be encrypted
+  /// \brief Returns set of parameter tensors to be encrypted
   inline std::unordered_set<std::string> get_encrypted_tensor_names() const {
     return m_encrypted_tensor_names;
   }
 
-  /// \brief Returns set of tensors to remain plaintext. These tensors should
-  /// correspond to the function input which may be packed.
+  /// \brief Returns set of parameter tensors to remain plaintext.
   inline std::unordered_set<std::string> get_plaintext_tensor_names() const {
     return m_plaintext_tensor_names;
+  }
+
+  /// \brief Returns set of parameter tensors to be packed.
+  inline std::unordered_set<std::string> get_packed_tensor_names() const {
+    return m_packed_tensor_names;
   }
 
  private:
@@ -373,6 +377,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::unordered_set<std::string> m_client_tensor_names;
   std::unordered_set<std::string> m_encrypted_tensor_names;
   std::unordered_set<std::string> m_plaintext_tensor_names;
+  std::unordered_set<std::string> m_packed_tensor_names;
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",
