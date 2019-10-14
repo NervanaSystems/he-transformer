@@ -1065,8 +1065,6 @@ void HESealExecutable::generate_calls(
     const element::Type& type, const NodeWrapper& node_wrapper,
     const std::vector<std::shared_ptr<HETensor>>& out,
     const std::vector<std::shared_ptr<HETensor>>& args) {
-  NGRAPH_HE_LOG(5) << "generating calls from " << args.size() << " arguments, "
-                   << out.size() << " outputs";
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
   std::string node_op = node.description();

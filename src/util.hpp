@@ -203,9 +203,6 @@ map_to_double_map(
       outputs;
 
   for (const auto& elem : inputs) {
-    NGRAPH_INFO << "Map to double map";
-    NGRAPH_INFO << "elem.first " << elem.first;
-    NGRAPH_INFO << "elem.second.first " << elem.second.first;
     std::vector<double> double_inputs{elem.second.second.begin(),
                                       elem.second.second.end()};
     outputs.insert(

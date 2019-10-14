@@ -93,19 +93,24 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   /// \brief Sets a configuration for the backend
   /// \paran[in] config Configuration map. It should contain entries in one of
-  /// three forms:
+  /// the following forms:
   ///     1) {tensor_name : "client_input"}, which indicates the specified
   ///     tensor should be loaded from the client. Note, the tensor may or may
   ///     not be encrypted, as determined by the client.
-  ///      2) {enable_client : "True" /"False"}, which indicates whether or not
+  ///     2) {enable_client : "True" /"False"}, which indicates whether or not
   ///      the client should be enabled
   ///     3) {tensor_name : "encrypt"}, which indicates the specified
   ///     tensor should be encrypted. By default, tensors may or may not be
   ///     encrypted. Setting this option will encrypt the plaintext tensor of
   ///     name tensor_name if not already encrypted and it is not a client
   ///     input.
-  ///     4) {"encryption_parameters" : "filename or json string"}, which sets
-  ///     the encryption parameters to use.
+  ///     4) {tensor_name : "packed"}, which indicates the specified tensor
+  ///     should use plaintext packing.
+  ///     5) {"encryption_parameters" : "filename
+  ///     or json string"}, which sets the encryption parameters to use.
+  ///
+  ///     Note, entries with the same tensor key should be comma-separated, for
+  ///     instance: {tensor_name : "client_input,encrypt,packed"}
   ///
   ///  \warning Specfying entries of form 1) without an entry of form 2) will
   ///  not load the tensors from the client
