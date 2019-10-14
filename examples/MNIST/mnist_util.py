@@ -154,7 +154,7 @@ def server_config_from_flags(FLAGS, tensor_param_name):
         server_config.parameter_map[tensor_param_name].s = b'plain'
 
     if FLAGS.pack_data:
-        server_config.parameter_map[tensor_param_name].s = b'packed'
+        server_config.parameter_map[tensor_param_name].s += b',packed'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

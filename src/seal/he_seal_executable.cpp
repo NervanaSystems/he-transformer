@@ -768,6 +768,11 @@ bool HESealExecutable::call(
             NGRAPH_HE_LOG(5) << "Encrypting parameter " << param->get_name();
             auto plain_input =
                 he_tensor_as_type<HEPlainTensor>(he_server_input);
+            if (current_annotation->packed()) {
+              plain_input->pack();
+            } else {
+              plain_input->unpack();
+            }
 
             auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
                 m_he_seal_backend.create_cipher_tensor(
@@ -852,7 +857,20 @@ bool HESealExecutable::call(
       throw ngraph_error("One of function's outputs isn't op::Result");
     }
     ngraph::descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
-    tensor_map.insert({tv, he_outputs[output_count++]});
+
+    auto he_output = he_outputs[output_count];
+
+    if (HEOpAnnotations::has_he_annotation(*output)) {
+      auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
+      if (he_output->is_type<HEPlainTensor>()) {
+        if (he_op_annotation->packed()) {
+          std::static_pointer_cast<HEPlainTensor>(he_output)->pack();
+        } else {
+          std::static_pointer_cast<HEPlainTensor>(he_output)->unpack();
+        }
+      }
+    }
+    tensor_map.insert({tv, he_output});
   }
 
   // for each ordered op in the graph
@@ -1092,15 +1110,6 @@ void HESealExecutable::generate_calls(
 
   auto plain_args = std::get<0>(parsed_args);
   auto cipher_args = std::get<1>(parsed_args);
-
-  if (args.size() > 0) {
-    NGRAPH_INFO << "(plain_args[0] == nullptr)? " << (plain_args[0] == nullptr);
-    NGRAPH_INFO << "(cipher_args[0] == nullptr)? "
-                << (cipher_args[0] == nullptr);
-    NGRAPH_INFO << "(plain_args[1] == nullptr)? " << (plain_args[1] == nullptr);
-    NGRAPH_INFO << "(cipher_args[1] == nullptr)? "
-                << (cipher_args[1] == nullptr);
-  }
 
   enum class UnaryOpType {
     None,

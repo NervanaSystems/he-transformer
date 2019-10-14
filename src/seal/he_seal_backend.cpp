@@ -105,18 +105,21 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
   for (const auto& config_opt : config) {
     std::string option = ngraph::to_lower(config_opt.first);
     std::string setting = config_opt.second;
-    std::string lower_setting = ngraph::to_lower(config_opt.second);
+    std::vector<std::string> lower_settings =
+        ngraph::split(ngraph::to_lower(config_opt.second), ',');
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
     std::string tensor_name = option.substr(0, option.find(":", 0));
 
-    if (lower_setting == "client_input") {
-      m_client_tensor_names.insert(tensor_name);
-    } else if (lower_setting == "encrypt") {
-      m_encrypted_tensor_names.insert(tensor_name);
-    } else if (lower_setting == "plain") {
-      m_plaintext_tensor_names.insert(tensor_name);
-    } else if (lower_setting == "packed") {
-      m_packed_tensor_names.insert(tensor_name);
+    for (const auto& lower_setting : lower_settings) {
+      if (lower_setting == "client_input") {
+        m_client_tensor_names.insert(tensor_name);
+      } else if (lower_setting == "encrypt") {
+        m_encrypted_tensor_names.insert(tensor_name);
+      } else if (lower_setting == "plain") {
+        m_plaintext_tensor_names.insert(tensor_name);
+      } else if (lower_setting == "packed") {
+        m_packed_tensor_names.insert(tensor_name);
+      }
     }
 
     // Check whether client is enabled

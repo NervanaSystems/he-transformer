@@ -53,7 +53,8 @@ bool pass::PropagateHEAnnotations::run_on_function(
       } else {
         auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
             op->get_op_annotations());
-        NGRAPH_HE_LOG(5) << "Op has annotation: " << *he_op_annotations;
+        NGRAPH_HE_LOG(5) << "Op " << op->get_name()
+                         << " has annotation: " << *he_op_annotations;
       }
     } else {
       NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not an op";
