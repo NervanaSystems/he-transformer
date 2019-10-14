@@ -5,19 +5,24 @@ The examples rely on numpy, so first run
 pip install numpy
 ```
 
-To run on the CKKS backend,
-```bash
-python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
-```
-
 To run on the CPU backend,
 ```bash
 python $HE_TRANSFORMER/examples/ax.py --backend=CPU
 ```
 
+To run on the CKKS backend,
+```bash
+python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
+```
+
+By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag, for example
+```bash
+python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
+ ```
+
 #  Client-server model
-In pratice, the public key and secret key will not reside on the same object.
-Instead, a client will provide the server with encrypted data.
+In practice, the public key and secret key will not be stored in the same location.
+Instead, a client will provide the backend with encrypted data.
 
 The client uses python bindings. See the `python` folder for instructions to build he-transformer with python bindings.
 
@@ -25,14 +30,8 @@ For a simple demonstration of a server-client approach, run
 ```bash
 python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --enable_client=yes
 ```
-By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag, for example
-```bash
---encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
- ```
-
 
 This will discard the Tensorflow inputs and instead wait for a client to connect and provide encrypted inputs.
-
 To start the client, in a separate terminal on the same host (with the ngraph-tf bridge python environment active), run
 ```bash
 python $HE_TRANSFORMER/examples/pyclient.py

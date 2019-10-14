@@ -19,6 +19,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -109,17 +110,16 @@ class HESealClient {
     m_tcp_client->write_message(std::move(message));
   }
 
-  /// \brief Returns whether or not the function has completed evaluation
+  /// \brief Returns whether or not the function is done evaluating
   inline bool is_done() { return m_is_done; }
 
   /// \brief Returns decrypted results
-  /// \warning Will sleep until results are ready
-  /// TODO: better solution
+  /// \warning Will lock until results are ready
   inline std::vector<double> get_results() {
     NGRAPH_HE_LOG(1) << "Client waiting for results";
-    while (!is_done()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
+
+    std::unique_lock<std::mutex> mlock(m_is_done_mutex);
+    m_is_done_cond.wait(mlock, std::bind(&HESealClient::is_done, this));
     return m_results;
   }
 
@@ -149,7 +149,10 @@ class HESealClient {
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   size_t m_batch_size;
   bool m_is_done;
-  // Function inputs
+  std::condition_variable m_is_done_cond;
+  std::mutex m_is_done_mutex;
+
+  // Function inputs and configuration
   HETensorConfigMap<double> m_input_config;
   std::vector<double> m_results;  // Function outputs
 

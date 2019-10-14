@@ -479,7 +479,10 @@ void HESealClient::handle_message(const TCPMessage& message) {
 void HESealClient::close_connection() {
   NGRAPH_HE_LOG(5) << "Closing connection";
   m_tcp_client->close();
+
+  std::lock_guard<std::mutex> guard(m_is_done_mutex);
   m_is_done = true;
+  m_is_done_cond.notify_all();
 }
 
 }  // namespace he

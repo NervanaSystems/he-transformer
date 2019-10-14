@@ -107,8 +107,7 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
     std::string setting = config_opt.second;
     std::string lower_setting = ngraph::to_lower(config_opt.second);
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
-    std::string tensor_name =
-        config_opt.first.substr(0, config_opt.first.find(":", 0));
+    std::string tensor_name = option.substr(0, option.find(":", 0));
 
     if (lower_setting == "client_input") {
       m_client_tensor_names.insert(tensor_name);

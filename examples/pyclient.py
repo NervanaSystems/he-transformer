@@ -29,9 +29,6 @@ def main(FLAGS):
         FLAGS.hostname, port, batch_size,
         {'client_parameter_name': ('encrypt', data)})
 
-    while not client.is_done():
-        time.sleep(1)
-
     results = client.get_results()
 
     print('results', results)

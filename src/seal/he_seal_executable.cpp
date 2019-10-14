@@ -105,9 +105,10 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
+  m_function = clone_function(*function);
 
   NGRAPH_HE_LOG(3) << "Creating Executable";
-  for (const auto& param : function->get_parameters()) {
+  for (const auto& param : m_function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (HEOpAnnotations::has_he_annotation(*param)) {
       std::string from_client_str = from_client(*param) ? "" : "not ";
@@ -138,7 +139,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
 
   NGRAPH_HE_LOG(3) << "Running optimization passes";
   ngraph::pass::Manager pass_manager;
-  pass_manager.set_pass_visualization(false);
+  pass_manager.set_pass_visualization(true);
   pass_manager.set_pass_serialization(false);
 
   pass_manager.register_pass<ngraph::pass::LikeReplacement>();
@@ -150,10 +151,10 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   }
 
   NGRAPH_HE_LOG(4) << "Running passes";
-  pass_manager.run_passes(function);
+  pass_manager.run_passes(m_function);
 
   ngraph::pass::Manager pass_manager_he;
-  pass_manager_he.set_pass_visualization(false);
+  pass_manager_he.set_pass_visualization(true);
   pass_manager_he.set_pass_serialization(false);
   pass_manager_he.register_pass<pass::HEFusion>();
   pass_manager_he.register_pass<pass::HELiveness>();
@@ -161,17 +162,9 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
       [this](const ngraph::Node& op) {
         return m_he_seal_backend.is_supported(op);
       });
-  pass_manager_he.register_pass<pass::PropagateHEAnnotations>();
-  pass_manager_he.run_passes(function);
-  m_is_compiled = true;
-  NGRAPH_HE_LOG(3) << "Done running optimization passes";
+  pass_manager_he.run_passes(m_function);
 
-  for (const std::shared_ptr<Node>& node : function->get_ordered_ops()) {
-    m_wrapped_nodes.emplace_back(node);
-  }
-
-  NGRAPH_HE_LOG(3) << "Setting parameters and results";
-  set_parameters_and_results(*function);
+  update_he_op_annotations();
 }
 
 HESealExecutable::~HESealExecutable() {
@@ -188,6 +181,19 @@ HESealExecutable::~HESealExecutable() {
   }
 }
 
+void HESealExecutable::update_he_op_annotations() {
+  ngraph::pass::Manager pass_manager_he;
+  pass_manager_he.register_pass<pass::PropagateHEAnnotations>();
+  pass_manager_he.run_passes(m_function);
+  m_is_compiled = true;
+  NGRAPH_HE_LOG(3) << "Done running optimization passes";
+  m_wrapped_nodes.clear();
+  for (const std::shared_ptr<Node>& node : m_function->get_ordered_ops()) {
+    m_wrapped_nodes.emplace_back(node);
+  }
+  set_parameters_and_results(*m_function);
+}
+
 void HESealExecutable::set_batch_size(size_t batch_size) {
   size_t max_batch_size = m_he_seal_backend.get_ckks_encoder()->slot_count();
   if (complex_packing()) {
@@ -200,27 +206,40 @@ void HESealExecutable::set_batch_size(size_t batch_size) {
   NGRAPH_HE_LOG(5) << "Server set batch size to " << m_batch_size;
 }
 
-void HESealExecutable::check_client_supports_function() {
+bool HESealExecutable::client_supports_function() {
+  NGRAPH_INFO << "Check client supports function";
   // Check if single parameter is from client
   size_t from_client_count = 0;
   for (const auto& param : get_parameters()) {
+    NGRAPH_INFO << "Checking param " << param->get_name();
     if (from_client(*param)) {
       from_client_count++;
       NGRAPH_HE_LOG(5) << "Parameter " << param->get_name() << " from client";
+    } else {
+      NGRAPH_INFO << "Param not from client";
     }
-    NGRAPH_CHECK(from_client_count == 1, "Function specifies ",
-                 from_client_count, " parameters from client, expected 1");
-
-    NGRAPH_CHECK(get_results().size() == 1,
-                 "HESealExecutable only supports output size 1 (got ",
-                 get_results().size(), "");
   }
+  NGRAPH_INFO << "get_results().size() " << get_results().size();
+  if (get_results().size() != 1) {
+    NGRAPH_WARN << "HESealExecutable only supports output size 1 (got "
+                << get_results().size() << ")";
+    return false;
+  }
+
+  NGRAPH_INFO << "from_client_count " << from_client_count;
+  if (from_client_count == 0) {
+    return false;
+  }
+  return true;
 }
 
-void HESealExecutable::server_setup() {
+bool HESealExecutable::server_setup() {
   if (!m_server_setup) {
     NGRAPH_HE_LOG(1) << "Enable client";
-    check_client_supports_function();
+
+    if (!client_supports_function()) {
+      return false;
+    }
 
     NGRAPH_HE_LOG(1) << "Starting server";
     start_server();
@@ -243,7 +262,6 @@ void HESealExecutable::server_setup() {
 
     NGRAPH_HE_LOG(3) << "Server writing parameters message";
     m_session->write_message(std::move(parms_message));
-
     m_server_setup = true;
 
     // Set client inputs to dummy values
@@ -258,6 +276,7 @@ void HESealExecutable::server_setup() {
       NGRAPH_HE_LOG(1) << "Client already setup";
     }
   }
+  return true;
 }
 
 void HESealExecutable::accept_connection() {
@@ -676,7 +695,9 @@ bool HESealExecutable::call(
   NGRAPH_HE_LOG(3) << "HESealExecutable::call validated inputs";
 
   if (m_enable_client) {
-    server_setup();
+    if (!server_setup()) {
+      return false;
+    }
   }
 
   if (complex_packing()) {
@@ -705,9 +726,23 @@ bool HESealExecutable::call(
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
       he_input = std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
+
+      if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
+              param->get_op_annotations())) {
+        NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
+                         << " has annotation " << *current_annotation;
+        if (he_input->is_type<HESealCipherTensor>()) {
+          NGRAPH_HE_LOG(5) << "Parameter is encrypted";
+          current_annotation->set_encrypted(true);
+        }
+        NGRAPH_CHECK(
+            current_annotation->packed() == he_input->is_packed(),
+            "Parameter annotation ", *current_annotation, " does not match ",
+            (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
+      }
     } else {
-      NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name() << " ("
-                       << param_shape << ") from server";
+      NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
+                       << "(shape {" << param_shape << "}) from server";
 
       auto he_server_input =
           std::static_pointer_cast<HETensor>(server_inputs[input_idx]);

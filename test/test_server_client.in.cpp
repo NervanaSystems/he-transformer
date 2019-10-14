@@ -41,6 +41,10 @@ static string s_manifest = "${MANIFEST}";
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
+
   size_t batch_size = 1;
 
   Shape shape{batch_size, 3};
@@ -78,7 +82,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy, t_c});
   client_thread.join();
   EXPECT_TRUE(
@@ -88,6 +92,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t batch_size = 1;
 
   Shape shape{batch_size, 3};
@@ -126,7 +133,6 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
   handle->call_with_validate({t_result}, {t_dummy, t_c});
   client_thread.join();
   EXPECT_TRUE(
@@ -136,6 +142,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
@@ -169,7 +178,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
   client_thread.join();
   EXPECT_TRUE(
@@ -179,6 +188,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
@@ -213,7 +225,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -223,6 +235,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
@@ -257,7 +272,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -267,6 +282,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
@@ -304,7 +322,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -314,6 +332,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
@@ -351,7 +372,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -362,6 +383,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
@@ -399,7 +423,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -413,6 +437,9 @@ auto server_client_relu_packed_test = [](size_t element_count,
                                          double bound_value = 0.) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
@@ -476,7 +503,7 @@ auto server_client_relu_packed_test = [](size_t element_count,
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -510,6 +537,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_3) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t slot_count = he_backend->get_ckks_encoder()->slot_count() * 2;
   server_client_relu_packed_test(10, slot_count, true, false);
 }
@@ -517,6 +547,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots_complex) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t slot_count = he_backend->get_ckks_encoder()->slot_count();
   server_client_relu_packed_test(10, slot_count, false, false);
 }
@@ -549,6 +582,9 @@ NGRAPH_TEST(${BACKEND_NAME},
             server_client_bounded_relu_packed_all_slots_complex) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t slot_count = he_backend->get_ckks_encoder()->slot_count() * 2;
   server_client_relu_packed_test(10, slot_count, true, true, 7.0);
 }
@@ -556,6 +592,9 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_all_slots) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t slot_count = he_backend->get_ckks_encoder()->slot_count();
   server_client_relu_packed_test(10, slot_count, false, true, 8.0);
 }
@@ -585,6 +624,9 @@ auto server_client_maxpool_test = [](const Shape& shape,
                                      const bool packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
@@ -620,7 +662,7 @@ auto server_client_maxpool_test = [](const Shape& shape,
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
@@ -714,6 +756,9 @@ NGRAPH_TEST(${BACKEND_NAME},
             server_client_pad_max_pool_1d_1channel_1image_plain) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
+  std::string error_str;
+  he_backend->set_config(
+      std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t batch_size = 1;
 
   Shape shape_a{1, 1, 12};
@@ -751,7 +796,7 @@ NGRAPH_TEST(${BACKEND_NAME},
   });
 
   auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
-  handle->enable_client();
+
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();

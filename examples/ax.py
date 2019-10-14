@@ -64,7 +64,7 @@ def main(FLAGS):
     b = tf.compat.v1.placeholder(
         tf.float32, shape=(1, 4), name='client_parameter_name')
     c = tf.compat.v1.placeholder(tf.float32, shape=(1, 4))
-    f = (a + b) * a + c
+    f = c * (a + b)
 
     # Create config to load parameter b from client
     config = client_config_from_flags(FLAGS, b.name)

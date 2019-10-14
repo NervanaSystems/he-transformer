@@ -57,11 +57,14 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Shuts down the TCP session if client is enabled
   ~HESealExecutable() override;
 
-  /// \brief TODO
-  void server_setup();
+  /// \brief Prepares for inference on the function using a server
+  /// \returns True if setup was successful, false otherwise
+  bool server_setup();
 
-  /// \brief TODO
+  /// \brief Starts the server, which awaits a connection from a client
   void start_server();
+
+  void update_he_op_annotations();
 
   /// \brief Calls the executable on the given input tensors.
   /// If the client is enabled, the inputs are dummy values and ignored.
@@ -103,11 +106,10 @@ class HESealExecutable : public runtime::Executable {
   }
 
   /// \brief Checks whether or not the client supports the function
-  /// \throws ngraph_error if function is unsupported
+  /// \returns True if function is supported, false otherwise.
   /// Currently, we only support functions with a single client parameter and
   /// single results
-  /// TODO: rename; return bool
-  void check_client_supports_function();
+  bool client_supports_function();
 
   /// \brief Processes a message from the client
   /// \param[in] message Message to process
@@ -180,13 +182,6 @@ class HESealExecutable : public runtime::Executable {
                m_verbose_ops.end();
   }
 
-  /// \brief Sets up the client
-  /// TODO: remove
-  inline void enable_client() {
-    m_enable_client = true;
-    server_setup();
-  }
-
   /// \brief Returns the batch size
   inline size_t batch_size() const { return m_batch_size; }
 
@@ -200,8 +195,10 @@ class HESealExecutable : public runtime::Executable {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
+      NGRAPH_HE_LOG(5) << "Op has he annotation " << *he_annotation;
       return he_annotation->from_client();
     }
+    NGRAPH_HE_LOG(5) << "Op has no he annotation";
     return false;
   }
 
@@ -225,6 +222,7 @@ class HESealExecutable : public runtime::Executable {
   HESealBackend& m_he_seal_backend;
   bool m_is_compiled;
   bool m_verbose_all_ops;
+  std::shared_ptr<Function> m_function;
 
   bool m_sent_inference_shape{false};
   bool m_client_public_key_set{false};

@@ -218,7 +218,7 @@ class SealCiphertextWrapper {
   /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
   /// \param[out] dst Destination to load ciphertext wrapper to
   /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context TODO
+  /// \param[in] context SEAL context of ciphertext to load
   static inline void load(SealCiphertextWrapper& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
@@ -238,7 +238,7 @@ class SealCiphertextWrapper {
   /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
   /// \param[out] dst Destination to load ciphertext wrapper to
   /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context TODO
+  /// \param[in] context SEAL context of ciphertext to load
   static inline void load(std::shared_ptr<SealCiphertextWrapper>& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
