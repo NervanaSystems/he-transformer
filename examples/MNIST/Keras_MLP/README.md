@@ -1,4 +1,4 @@
-This example demonstrates a simple deep learning model on the MNIST dataset. It demonstrates how to save a model in protobuf format with frozen weights.
+This example demonstrates a simple deep learning model on the MNIST dataset using tf.keras.
 
 # Train the network
 First, train the network using
@@ -15,8 +15,7 @@ source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST/MLP
 python test.py --batch_size=100 \
                --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json \
-               --encrypt_data=true
+               --encrypt_server_data=true
 ```
 
 See the [Cryptonets-Relu example](https://github.com/NervanaSystems/he-transformer/blob/master/examples/MNIST/Cryptonets-Relu/README.md) for more details and possible configurations to try.
-

@@ -167,6 +167,13 @@ void HEPlainTensor::read(void* target, size_t n) const {
           copy_batch_values_to_src(i, target, type_values_src);
           break;
         }
+        case element::Type_t::i32: {
+          std::vector<int32_t> int32_values{values.begin(), values.end()};
+          void* type_values_src =
+              static_cast<void*>(const_cast<int32_t*>(int32_values.data()));
+          copy_batch_values_to_src(i, target, type_values_src);
+          break;
+        }
         case element::Type_t::i64: {
           std::vector<int64_t> int64_values{values.begin(), values.end()};
           void* type_values_src =
@@ -176,7 +183,7 @@ void HEPlainTensor::read(void* target, size_t n) const {
         }
         case element::Type_t::i8:
         case element::Type_t::i16:
-        case element::Type_t::i32:
+
         case element::Type_t::u8:
         case element::Type_t::u16:
         case element::Type_t::u32:

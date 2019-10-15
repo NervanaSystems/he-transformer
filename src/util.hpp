@@ -102,12 +102,14 @@ inline double type_to_double(const void* src,
     case element::Type_t::f64:
       return static_cast<double>(*static_cast<const double*>(src));
       break;
+    case element::Type_t::i32:
+      return static_cast<double>(*static_cast<const int32_t*>(src));
+      break;
     case element::Type_t::i64:
       return static_cast<double>(*static_cast<const int64_t*>(src));
       break;
     case element::Type_t::i8:
     case element::Type_t::i16:
-    case element::Type_t::i32:
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:

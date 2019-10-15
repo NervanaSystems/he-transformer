@@ -377,7 +377,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;
 
   std::unordered_set<size_t> m_supported_element_types{
-      element::f32.hash(), element::i64.hash(), element::f64.hash()};
+      element::f32.hash(), element::i32.hash(), element::i64.hash(),
+      element::f64.hash()};
 
   std::unordered_set<std::string> m_client_tensor_names;
   std::unordered_set<std::string> m_encrypted_tensor_names;
