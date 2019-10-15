@@ -49,7 +49,7 @@ def test_mnist_mlp(FLAGS):
     model = tf.keras.models.load_model('model.h5')
     model.summary()
 
-    # Remove activation layer
+    # Remove final activation layer, since softmax isn't supported
     model.pop()
     model.summary()
 
@@ -57,6 +57,16 @@ def test_mnist_mlp(FLAGS):
 
     y_pred = model.predict(x_test[0:FLAGS.batch_size])
     print('Test pred:', y_pred)
+
+    y_test_batch = y_test[0:FLAGS.batch_size]
+    y_label_batch = np.argmax(y_test_batch, 1)
+
+    correct_prediction = np.equal(np.argmax(y_pred, 1), y_label_batch)
+    error_count = np.size(correct_prediction) - np.sum(correct_prediction)
+    test_accuracy = np.mean(correct_prediction)
+
+    print('Error count:', error_count, 'of', FLAGS.batch_size, 'elements.')
+    print('Accuracy: ', test_accuracy)
 
 
 if __name__ == '__main__':

@@ -154,16 +154,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   }
 
   NGRAPH_HE_LOG(4) << "Running passes";
-
-  using Clock = std::chrono::high_resolution_clock;
-  auto t1 = Clock::now();
   pass_manager.run_passes(m_function);
-  auto t2 = Clock::now();
-
-  NGRAPH_INFO
-      << "Passes took "
-      << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count()
-      << "ms";
 
   ngraph::pass::Manager pass_manager_he;
   pass_manager_he.set_pass_visualization(false);
@@ -174,9 +165,9 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
       [this](const ngraph::Node& op) {
         return m_he_seal_backend.is_supported(op);
       });
-  pass_manager_he.run_passes(m_function);
 
   NGRAPH_HE_LOG(4) << "Running HE passes";
+  pass_manager_he.run_passes(m_function);
 
   update_he_op_annotations();
 }
