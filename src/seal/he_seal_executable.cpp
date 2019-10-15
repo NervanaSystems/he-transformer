@@ -33,6 +33,7 @@
 #include "kernel/convolution_seal.hpp"
 #include "kernel/dot_seal.hpp"
 #include "kernel/max_pool_seal.hpp"
+#include "kernel/max_seal.hpp"
 #include "kernel/minimum_seal.hpp"
 #include "kernel/multiply_seal.hpp"
 #include "kernel/negate_seal.hpp"
@@ -55,6 +56,7 @@
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/max.hpp"
 #include "ngraph/op/max_pool.hpp"
 #include "ngraph/op/pad.hpp"
 #include "ngraph/op/passthrough.hpp"
@@ -1593,6 +1595,40 @@ void HESealExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::Max: {
+      const op::Max* max = static_cast<const op::Max*>(&node);
+      switch (unary_op_type) {
+        case UnaryOpType::CipherToCipher: {
+          if (m_enable_client) {
+            NGRAPH_CHECK(false, "Max not implemented for server");
+          } else {
+            NGRAPH_WARN << "Performing Max without client is not "
+                           "privacy-preserving";
+            size_t output_size = cipher_args[0]->get_batched_element_count();
+            NGRAPH_CHECK(output_size == cipher_args[0]->num_ciphertexts(),
+                         "output size ", output_size,
+                         " doesn't match number of elements",
+                         out0_cipher->num_ciphertexts());
+            max_seal(cipher_args[0]->get_elements(),
+                     out0_cipher->get_elements(), arg_shapes[0],
+                     out0_cipher->get_packed_shape(), max->get_reduction_axes(),
+                     m_he_seal_backend);
+          }
+          break;
+        }
+        case UnaryOpType::PlainToPlain: {
+          max_seal(plain_args[0]->get_elements(), out0_plain->get_elements(),
+                   arg_shapes[0], out0_plain->get_packed_shape(),
+                   max->get_reduction_axes());
+          break;
+        }
+        case UnaryOpType::PlainToCipher:
+        case UnaryOpType::CipherToPlain:
+        case UnaryOpType::None:
+          NGRAPH_CHECK(false, "Unsupported op types");
+      }
+      break;
+    }
     case OP_TYPEID::MaxPool: {
       const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       switch (unary_op_type) {
@@ -2052,7 +2088,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::LessEq:
     case OP_TYPEID::Log:
     case OP_TYPEID::LRN:
-    case OP_TYPEID::Max:
     case OP_TYPEID::Maximum:
     case OP_TYPEID::MaxPoolBackprop:
     case OP_TYPEID::Min:

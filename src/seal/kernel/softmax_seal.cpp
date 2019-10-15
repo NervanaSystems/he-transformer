@@ -17,8 +17,11 @@
 #include <memory>
 #include <vector>
 
+#include "ngraph/coordinate_transform.hpp"
+#include "ngraph/shape_util.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/max_seal.hpp"
 #include "seal/kernel/softmax_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
@@ -30,6 +33,18 @@ namespace he {
 void softmax_seal(const std::vector<HEPlaintext>& arg,
                   std::vector<HEPlaintext>& out, const Shape& shape,
                   const AxisSet& axes) {
+  /* auto temp_shape = reduce(shape, axes);
+  auto temp_elements = shape_size(temp_shape);
+
+  CoordinateTransform transform(shape);
+  CoordinateTransform temp_transform(temp_shape);
+  for (const Coordinate& coord : transform) {
+    Coordinate temp_coord = reduce(coord, axes);
+    out[transform.index(coord)] =
+        std::exp(arg[transform.index(coord)] -
+                 temp_ptr[temp_transform.index(temp_coord)]);
+  } */
+
   NGRAPH_CHECK(false, "Softmax plain plain uniumpleneted");
 }
 

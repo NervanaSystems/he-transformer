@@ -428,7 +428,6 @@ class HESealBackend : public ngraph::runtime::Backend {
       "LessEq",
       "Log",
       "LRN",
-      "Max",
       "Maximum",
       "MaxPoolBackprop",
       "Min",
