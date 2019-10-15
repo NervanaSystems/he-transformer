@@ -78,6 +78,7 @@ def test_mnist_cnn(FLAGS):
         y_conv_val = y_conv.eval(feed_dict={x: x_test, y_: y_test})
         elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
+        print('y_conv_val', np.round(y_conv_val, 2))
 
     y_test_batch = y_test[:FLAGS.batch_size]
     y_label_batch = np.argmax(y_test_batch, 1)
