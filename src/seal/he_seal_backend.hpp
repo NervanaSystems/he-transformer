@@ -463,7 +463,6 @@ class HESealBackend : public ngraph::runtime::Backend {
       "Sign",
       "Sin",
       "Sinh",
-      "Softmax",
       "Sqrt",
       "StopGradient",
       "Tan",

@@ -42,6 +42,7 @@
 #include "kernel/result_seal.hpp"
 #include "kernel/reverse_seal.hpp"
 #include "kernel/slice_seal.hpp"
+#include "kernel/softmax_seal.hpp"
 #include "kernel/subtract_seal.hpp"
 #include "kernel/sum_seal.hpp"
 #include "logging/ngraph_he_log.hpp"
@@ -61,6 +62,7 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/op/reverse.hpp"
 #include "ngraph/op/slice.hpp"
+#include "ngraph/op/softmax.hpp"
 #include "ngraph/op/sum.hpp"
 #include "ngraph/pass/assign_layout.hpp"
 #include "ngraph/pass/constant_folding.hpp"
@@ -1919,6 +1921,34 @@ void HESealExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::Softmax: {
+      const op::Softmax* softmax = static_cast<const op::Softmax*>(&node);
+      switch (unary_op_type) {
+        case UnaryOpType::CipherToCipher: {
+          if (m_enable_client) {
+            NGRAPH_CHECK(false, "Client softmax not implemented");
+          } else {
+            NGRAPH_WARN << "Performing Softmax without client is not "
+                           "privacy-preserving";
+            softmax_seal(cipher_args[0]->get_elements(),
+                         out0_cipher->get_elements(), arg_shapes[0],
+                         softmax->get_axes(), m_he_seal_backend);
+          }
+          break;
+        }
+        case UnaryOpType::PlainToPlain: {
+          softmax_seal(plain_args[0]->get_elements(),
+                       out0_plain->get_elements(), arg_shapes[0],
+                       softmax->get_axes());
+          break;
+        }
+        case UnaryOpType::CipherToPlain:
+        case UnaryOpType::PlainToCipher:
+        case UnaryOpType::None:
+          NGRAPH_CHECK(false, "Unsupported op types");
+      }
+      break;
+    }
     case OP_TYPEID::Subtract: {
       switch (binary_op_type) {
         case BinaryOpType::CipherCipherToCipher: {
@@ -2057,7 +2087,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Sign:
     case OP_TYPEID::Sin:
     case OP_TYPEID::Sinh:
-    case OP_TYPEID::Softmax:
     case OP_TYPEID::Sqrt:
     case OP_TYPEID::StopGradient:
     case OP_TYPEID::Tan:

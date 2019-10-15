@@ -22,6 +22,7 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow import keras
 from keras.datasets import mnist
+from keras.models import Model
 from keras import losses
 from keras.backend.tensorflow_backend import set_session
 
@@ -41,21 +42,24 @@ from mnist_util import load_mnist_data, \
 
 
 def test_mnist_mlp(FLAGS):
-    config = server_config_from_flags(FLAGS, '')
-    config = ngraph_bridge.update_config(config)
-    sess = tf.Session(config=config)
-    set_session(sess)
-
-    model = tf.keras.models.load_model('model.h5')
-    model.summary()
-
-    # Remove final activation layer, since softmax isn't supported
-    model.pop()
-    model.summary()
-
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    y_pred = model.predict(x_test[0:FLAGS.batch_size])
+    # Set ngraph-bridge configuration
+    config = server_config_from_flags(FLAGS, 'input')
+    config = ngraph_bridge.update_config(config)
+    sess = tf.compat.v1.Session(config=config)
+    set_session(sess)
+
+    # Load saved model
+    model = tf.keras.models.load_model('model.h5')
+    # model.summary()
+    # Remove final activation layer, since softmax isn't supported
+    model.layers.pop()
+
+    model2 = Model(model.input, model.layers[-1].output)
+    model2.summary()
+
+    y_pred = model2.predict(x_test[0:FLAGS.batch_size])
     print('Test pred:', y_pred)
 
     y_test_batch = y_test[0:FLAGS.batch_size]

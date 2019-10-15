@@ -21,8 +21,8 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow import keras
-from keras.models import Sequential
-from keras.layers import Activation, Dense, Flatten
+from keras.models import Model
+from keras.layers import Activation, Dense, Flatten, Input
 from keras.layers import Conv2D, MaxPooling2D
 from keras import losses
 
@@ -44,17 +44,22 @@ def main(FLAGS):
     print('x_train', x_train.shape)
     print('y_train', y_train.shape)
 
-    model = Sequential()
-    model.add(
-        Conv2D(
-            32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28,
-                                                                    1)))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(10, name='output'))
-    model.add(Activation('softmax'))
+    x = Input(
+        shape=(
+            28,
+            28,
+            1,
+        ), name='input')
+
+    y = Conv2D(32, kernel_size=(3, 3), activation='relu')(x)
+    y = Conv2D(64, (3, 3), activation='relu')(y)
+    y = MaxPooling2D(pool_size=(2, 2))(y)
+    y = Flatten()(y)
+    y = Dense(128, activation='relu')(y)
+    y = Dense(10, name='output')(y)
+    y = Activation('softmax')(y)
+
+    model = Model(inputs=x, outputs=y)
 
     model.compile(
         optimizer='adam',
