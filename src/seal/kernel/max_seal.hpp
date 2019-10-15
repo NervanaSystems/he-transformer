@@ -34,6 +34,9 @@ inline void max_seal(const std::vector<HEPlaintext>& arg,
   size_t batch_size = 1;
   if (arg.size() > 0) {
     batch_size = arg[0].num_values();
+    if (batch_size == 0) {
+      batch_size = 1;
+    }
   }
 
   HEPlaintext min_val(std::vector<double>(
@@ -60,7 +63,7 @@ inline void max_seal(const std::vector<HEPlaintext>& arg,
       }
     }
 
-    // TODO: remove
+    // TODO: remove?
     out[out_idx].set_values(cur_max);
   }
 }

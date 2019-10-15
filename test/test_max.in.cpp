@@ -221,169 +221,169 @@ NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_cipher_complex_packed) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_plain_real_unpacked) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_plain_real_packed) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_plain_complex_unpacked) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_plain_complex_packed) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_cipher_real_unpacked) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_cipher_real_packed) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_cipher_complex_unpacked) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_rows_zero_cipher_complex_packed) {
-  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{3, 3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{3, 0}, AxisSet{1}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_plain_real_unpacked) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_plain_real_packed) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_plain_complex_unpacked) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_plain_complex_packed) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_cipher_real_unpacked) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_cipher_real_packed) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_cipher_complex_unpacked) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_matrix_cols_zero_cipher_complex_packed) {
-  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{3, 3},
-           vector<float>{std::numeric_limits<float>::infinity(),
+  max_test(Shape{0, 2}, AxisSet{0}, vector<float>{},
+           vector<float>{-std::numeric_limits<float>::infinity(),
                          -std::numeric_limits<float>::infinity()},
            true, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_plain_real_unpacked) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, false, false,
            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_plain_real_packed) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, false, false,
            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_plain_complex_unpacked) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, false, true,
            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_plain_complex_packed) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, false, true,
            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_cipher_real_unpacked) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, true, false,
            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_cipher_real_packed) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, true, false,
            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_cipher_complex_unpacked) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, true, true,
            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_vector_zero_cipher_complex_packed) {
-  max_test(Shape{0}, AxisSet{0}, vector<float>{3},
+  max_test(Shape{0}, AxisSet{0}, vector<float>{},
            vector<float>{-std::numeric_limits<float>::infinity()}, true, true,
            true);
 }
@@ -565,56 +565,56 @@ NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_matrix_least_sig_cipher_complex_packed) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_plain_real_unpacked) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_plain_real_packed) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_plain_complex_unpacked) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_plain_complex_packed) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_cipher_real_unpacked) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_cipher_real_packed) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_cipher_complex_unpacked) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_vector_cipher_complex_packed) {
-  max_test(Shape{3, 3, 3}, AxisSet{2},
+  max_test(Shape{3, 3, 3}, AxisSet{0, 1},
            vector<float>{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
                          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27},
            vector<float>{25, 26, 27}, true, true, true);
