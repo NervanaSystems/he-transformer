@@ -861,11 +861,22 @@ bool HESealExecutable::call(
 
     if (HEOpAnnotations::has_he_annotation(*output)) {
       auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
+
       if (he_output->is_type<HEPlainTensor>()) {
-        if (he_op_annotation->packed()) {
-          std::static_pointer_cast<HEPlainTensor>(he_output)->pack();
+        if (he_op_annotation->encrypted() ) {
+        NGRAPH_HE_LOG(5) << "Creating cipher tensor result";
+        auto plain_he_output = std::static_pointer_cast<HEPlainTensor>(he_output);
+
+        he_output = std::static_pointer_cast<HESealCipherTensor>(
+                m_he_seal_backend.create_cipher_tensor(
+                    plain_he_output->get_element_type(), plain_he_output->get_shape(),
+                    he_op_annotation->packed(), plain_he_output->get_name()));
         } else {
-          std::static_pointer_cast<HEPlainTensor>(he_output)->unpack();
+            if (he_op_annotation->packed()) {
+              std::static_pointer_cast<HEPlainTensor>(he_output)->pack();
+            } else {
+              std::static_pointer_cast<HEPlainTensor>(he_output)->unpack();
+            }
         }
       }
     }

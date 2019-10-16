@@ -63,7 +63,7 @@ void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
     }
     chain_ind0 = he_seal_backend.get_chain_index(arg0);
   }
-  NGRAPH_CHECK(chain_ind0 == chain_ind1);
+  NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain indices don't match (", chain_ind0, " != ", chain_ind1,")");
   match_scale(arg0, arg1);
 }
 

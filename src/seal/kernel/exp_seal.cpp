@@ -47,7 +47,7 @@ void exp_seal(const std::vector<HEPlaintext>& arg,
 void scalar_exp_seal_known_value(const SealCiphertextWrapper& arg,
                                  std::shared_ptr<SealCiphertextWrapper>& out) {
   auto exp = [](double d) { return std::exp(d); };
-  NGRAPH_CHECK(arg.known_value());
+  NGRAPH_CHECK(arg.known_value(), "Unknown arg value");
   out->known_value() = true;
   out->value() = exp(arg.value());
 }

@@ -75,7 +75,7 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
 
   if (add_zero) {
     SealCiphertextWrapper tmp(arg0);
-    NGRAPH_CHECK(tmp.complex_packing() == arg0.complex_packing());
+    NGRAPH_CHECK(tmp.complex_packing() == arg0.complex_packing(), "Complex packing types don't match");
     out = std::make_shared<SealCiphertextWrapper>(tmp);
     out->complex_packing() = tmp.complex_packing();
 

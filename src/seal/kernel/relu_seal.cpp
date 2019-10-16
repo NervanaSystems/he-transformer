@@ -46,7 +46,7 @@ void relu_seal(const std::vector<HEPlaintext>& arg,
 void scalar_relu_seal_known_value(const SealCiphertextWrapper& arg,
                                   std::shared_ptr<SealCiphertextWrapper>& out) {
   auto relu = [](double d) { return d > 0 ? d : 0.; };
-  NGRAPH_CHECK(arg.known_value());
+  NGRAPH_CHECK(arg.known_value(), "Unknown arg value");
   out->known_value() = true;
   out->value() = relu(arg.value());
 }

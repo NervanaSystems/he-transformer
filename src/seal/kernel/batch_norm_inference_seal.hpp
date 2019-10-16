@@ -64,10 +64,10 @@ void batch_norm_inference_seal(
     std::vector<double> channel_mean_vals = channel_mean.values();
     std::vector<double> channel_var_vals = channel_var.values();
 
-    NGRAPH_CHECK(channel_gamma_vals.size() == 1);
-    NGRAPH_CHECK(channel_beta_vals.size() == 1);
-    NGRAPH_CHECK(channel_mean_vals.size() == 1);
-    NGRAPH_CHECK(channel_var_vals.size() == 1);
+    NGRAPH_CHECK(channel_gamma_vals.size() == 1, "wrong number of gamma values");
+    NGRAPH_CHECK(channel_beta_vals.size() == 1, "wrong number of beta values");
+    NGRAPH_CHECK(channel_mean_vals.size() == 1, "wrong number of mean values");
+    NGRAPH_CHECK(channel_var_vals.size() == 1, "wrong number of var values");
 
     double scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
     double bias =
