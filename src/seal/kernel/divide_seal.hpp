@@ -26,26 +26,26 @@
 
 namespace ngraph {
 namespace he {
-void scalar_subtract_seal(SealCiphertextWrapper& arg0,
-                          SealCiphertextWrapper& arg1,
-                          std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend);
+void scalar_divide_seal(SealCiphertextWrapper& arg0,
+                        SealCiphertextWrapper& arg1,
+                        std::shared_ptr<SealCiphertextWrapper>& out,
+                        const element::Type& element_type,
+                        HESealBackend& he_seal_backend);
 
-void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-                          std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend);
+void scalar_divide_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+                        std::shared_ptr<SealCiphertextWrapper>& out,
+                        const element::Type& element_type,
+                        HESealBackend& he_seal_backend);
 
-void scalar_subtract_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
-                          std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend);
+void scalar_divide_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
+                        std::shared_ptr<SealCiphertextWrapper>& out,
+                        const element::Type& element_type,
+                        HESealBackend& he_seal_backend);
 
-void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
-                          HEPlaintext& out);
+void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                        HEPlaintext& out);
 
-inline void subtract_seal(
+inline void divide_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
@@ -56,12 +56,12 @@ inline void subtract_seal(
                "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(*arg0[i], *arg1[i], out[i], element_type,
-                         he_seal_backend);
+    scalar_divide_seal(*arg0[i], *arg1[i], out[i], element_type,
+                       he_seal_backend);
   }
 }
 
-inline void subtract_seal(
+inline void divide_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
     const std::vector<HEPlaintext>& arg1,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
@@ -71,12 +71,12 @@ inline void subtract_seal(
                "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(*arg0[i], arg1[i], out[i], element_type,
-                         he_seal_backend);
+    scalar_divide_seal(*arg0[i], arg1[i], out[i], element_type,
+                       he_seal_backend);
   }
 }
 
-inline void subtract_seal(
+inline void divide_seal(
     const std::vector<HEPlaintext>& arg0,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
@@ -86,17 +86,17 @@ inline void subtract_seal(
                "Unsupported type ", element_type);
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(arg0[i], *arg1[i], out[i], element_type,
-                         he_seal_backend);
+    scalar_divide_seal(arg0[i], *arg1[i], out[i], element_type,
+                       he_seal_backend);
   }
 }
 
-inline void subtract_seal(std::vector<HEPlaintext>& arg0,
-                          std::vector<HEPlaintext>& arg1,
-                          std::vector<HEPlaintext>& out, size_t count) {
+inline void divide_seal(std::vector<HEPlaintext>& arg0,
+                        std::vector<HEPlaintext>& arg1,
+                        std::vector<HEPlaintext>& out, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(arg0[i], arg1[i], out[i]);
+    scalar_divide_seal(arg0[i], arg1[i], out[i]);
   }
 }
 }  // namespace he

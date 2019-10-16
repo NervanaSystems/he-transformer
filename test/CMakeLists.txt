@@ -31,6 +31,8 @@ set(BACKEND_TEST_SRC
     test_concat.in.cpp
     test_constant.in.cpp
     test_convolution.in.cpp
+    test_divide.in.cpp
+    test_exp.in.cpp
     test_dot.in.cpp
     test_he_fusion.in.cpp
     test_known_values.in.cpp

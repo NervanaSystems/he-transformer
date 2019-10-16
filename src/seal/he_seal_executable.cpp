@@ -31,6 +31,7 @@
 #include "kernel/concat_seal.hpp"
 #include "kernel/constant_seal.hpp"
 #include "kernel/convolution_seal.hpp"
+#include "kernel/divide_seal.hpp"
 #include "kernel/dot_seal.hpp"
 #include "kernel/max_pool_seal.hpp"
 #include "kernel/max_seal.hpp"
@@ -55,7 +56,9 @@
 #include "ngraph/op/concat.hpp"
 #include "ngraph/op/constant.hpp"
 #include "ngraph/op/convolution.hpp"
+#include "ngraph/op/divide.hpp"
 #include "ngraph/op/dot.hpp"
+#include "ngraph/op/exp.hpp"
 #include "ngraph/op/max.hpp"
 #include "ngraph/op/max_pool.hpp"
 #include "ngraph/op/pad.hpp"
@@ -1283,7 +1286,7 @@ void HESealExecutable::generate_calls(
         }
         case BinaryOpType::PlainPlainToPlain: {
           add_seal(plain_args[0]->get_elements(), plain_args[1]->get_elements(),
-                   out0_plain->get_elements(), type, m_he_seal_backend,
+                   out0_plain->get_elements(),
                    out0_plain->get_batched_element_count());
           break;
         }
@@ -1541,6 +1544,34 @@ void HESealExecutable::generate_calls(
               window_movement_strides, window_dilation_strides, padding_below,
               padding_above, data_dilation_strides, 0, 1, 1, 0, 0, 1, false,
               type, m_batch_size, m_he_seal_backend, verbose);
+          break;
+        }
+        case BinaryOpType::None:
+          NGRAPH_CHECK(false, "Unsupported op types");
+      }
+      break;
+    }
+    case OP_TYPEID::Divide: {
+      Shape in_shape0 = arg_shapes[0];
+      Shape in_shape1 = arg_shapes[1];
+
+      switch (binary_op_type) {
+        case BinaryOpType::CipherCipherToCipher: {
+          NGRAPH_CHECK(false, "Divide C/C unimplemented");
+          break;
+        }
+        case BinaryOpType::CipherPlainToCipher: {
+          NGRAPH_CHECK(false, "Divide C/P unimplemented");
+          break;
+        }
+        case BinaryOpType::PlainCipherToCipher: {
+          NGRAPH_CHECK(false, "Divide P/C unimplemented");
+          break;
+        }
+        case BinaryOpType::PlainPlainToPlain: {
+          divide_seal(plain_args[0]->get_elements(),
+                      plain_args[1]->get_elements(), out0_plain->get_elements(),
+                      out0_plain->get_batched_element_count());
           break;
         }
         case BinaryOpType::None:
@@ -2015,7 +2046,7 @@ void HESealExecutable::generate_calls(
         case BinaryOpType::PlainPlainToPlain: {
           subtract_seal(plain_args[0]->get_elements(),
                         plain_args[1]->get_elements(),
-                        out0_plain->get_elements(), type, m_he_seal_backend,
+                        out0_plain->get_elements(),
                         out0_plain->get_batched_element_count());
           break;
         }
@@ -2027,7 +2058,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Sum: {
       const op::Sum* sum = static_cast<const op::Sum*>(&node);
       Shape op_in_shape = arg_shapes[0];
-
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
           sum_seal(cipher_args[0]->get_elements(), out0_cipher->get_elements(),
@@ -2037,8 +2067,7 @@ void HESealExecutable::generate_calls(
         }
         case UnaryOpType::PlainToPlain: {
           sum_seal(plain_args[0]->get_elements(), out0_plain->get_elements(),
-                   op_in_shape, out_shape, sum->get_reduction_axes(), type,
-                   m_he_seal_backend);
+                   op_in_shape, out_shape, sum->get_reduction_axes());
           break;
         }
         case UnaryOpType::CipherToPlain:
@@ -2071,7 +2100,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Cos:
     case OP_TYPEID::Cosh:
     case OP_TYPEID::Dequantize:
-    case OP_TYPEID::Divide:
     case OP_TYPEID::DynBroadcast:
     case OP_TYPEID::DynPad:
     case OP_TYPEID::DynReshape:

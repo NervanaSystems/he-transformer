@@ -71,11 +71,8 @@ inline void scalar_add_seal(const HEPlaintext& arg0,
 /// \param[in] arg0 Plaintext argument to add
 /// \param[in] arg1 Plaintext argument to add
 /// \param[out] out Stores the plaintext sum
-/// \param[in] element_type datatype of the addition
-/// \param[in] he_seal_backend Backend with which to perform addition
 void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
-                     HEPlaintext& out, const element::Type& element_type,
-                     HESealBackend& he_seal_backend);
+                     HEPlaintext& out);
 
 /// \brief Adds vectors of ciphertexts element-wise
 /// \param[in] arg0 Vector of ciphertext arguments to add
@@ -138,19 +135,13 @@ inline void add_seal(const std::vector<HEPlaintext>& arg0,
 /// \param[in] arg0 Vector of plaintext arguments to add
 /// \param[in] arg1 Vector of plaintext arguments to add
 /// \param[out] out Vector of the plaintext sum
-/// \param[in] element_type datatype of the addition
-/// \param[in] he_seal_backend Backend with which to perform addition
 /// \param[in] count Number of elements to add. TODO: remove
 inline void add_seal(std::vector<HEPlaintext>& arg0,
                      std::vector<HEPlaintext>& arg1,
-                     std::vector<HEPlaintext>& out,
-                     const element::Type& element_type,
-                     HESealBackend& he_seal_backend, size_t count) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
+                     std::vector<HEPlaintext>& out, size_t count) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_add_seal(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
+    scalar_add_seal(arg0[i], arg1[i], out[i]);
   }
 }
 }  // namespace he

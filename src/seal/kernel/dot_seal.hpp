@@ -530,7 +530,7 @@ inline void dot_seal(const std::vector<HEPlaintext>& arg0,
         sum = prod;
         first_add = false;
       } else {
-        scalar_add_seal(prod, sum, sum, element_type, he_seal_backend);
+        scalar_add_seal(prod, sum, sum);
       }
     }
     // Write the sum back.

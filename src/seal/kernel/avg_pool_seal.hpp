@@ -227,9 +227,8 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
           sum = arg[input_batch_transform.index(input_batch_coord)];
           first_add = false;
         } else {
-          scalar_add_seal(sum,
-                          arg[input_batch_transform.index(input_batch_coord)],
-                          sum, element::f32, he_seal_backend);
+          scalar_add_seal(
+              sum, arg[input_batch_transform.index(input_batch_coord)], sum);
         }
         n_elements++;
       }

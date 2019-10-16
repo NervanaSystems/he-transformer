@@ -57,11 +57,7 @@ inline void sum_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
 
 inline void sum_seal(std::vector<HEPlaintext>& arg,
                      std::vector<HEPlaintext>& out, const Shape& in_shape,
-                     const Shape& out_shape, const AxisSet& reduction_axes,
-                     const element::Type& element_type,
-                     HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type", element_type);
+                     const Shape& out_shape, const AxisSet& reduction_axes) {
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& output_coord : output_transform) {
@@ -76,7 +72,7 @@ inline void sum_seal(std::vector<HEPlaintext>& arg,
     auto& output = out[output_transform.index(output_coord)];
 
     auto tmp = HEPlaintext(output.values());
-    scalar_add_seal(input, tmp, output, element_type, he_seal_backend);
+    scalar_add_seal(input, tmp, output);
   }
 }
 }  // namespace he

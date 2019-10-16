@@ -64,7 +64,7 @@ inline void max_seal(const std::vector<HEPlaintext>& arg,
     }
 
     // TODO: remove?
-    out[out_idx].set_values(cur_max);
+    // out[out_idx].set_values(cur_max);
   }
 }
 

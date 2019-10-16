@@ -104,12 +104,7 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
 }
 
 void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
-                     HEPlaintext& out,
-                     const ngraph::element::Type& element_type,
-                     HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-
+                     HEPlaintext& out) {
   const std::vector<double>& arg0_vals = arg0.values();
   const std::vector<double>& arg1_vals = arg1.values();
   std::vector<double> out_vals;
