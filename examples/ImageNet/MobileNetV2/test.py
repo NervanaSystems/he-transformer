@@ -19,21 +19,21 @@ from tensorflow.python.platform import gfile
 import numpy as np
 import json
 import argparse
-import os
 import time
 import PIL
 from PIL import Image
 import multiprocessing as mp
 import util
+import ngraph_bridge
 
 from util import get_imagenet_inference_labels, \
                  get_imagenet_training_labels, \
                  get_validation_image, \
                  get_validation_images, \
                  get_validation_labels, \
-                 str2bool
-
-FLAGS = None
+                 str2bool, \
+                 server_argument_parser, \
+                 server_config_from_flags
 
 
 def print_nodes(filename):
@@ -56,9 +56,8 @@ def load_model(filename):
 
 
 def main(FLAGS):
-    using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
 
-    if using_client:
+    if FLAGS.enable_client:
         print('Using client')
     else:
         print('Not using client')
@@ -71,25 +70,27 @@ def main(FLAGS):
     assert (
         sorted(imagenet_training_labels) == sorted(imagenet_inference_labels))
 
-    if not using_client:
-        validation_nums = get_validation_labels(FLAGS)
-        x_test = get_validation_images(FLAGS)
-        validation_labels = imagenet_inference_labels[validation_nums]
-    else:
+    validation_nums = get_validation_labels(FLAGS)
+    validation_labels = imagenet_inference_labels[validation_nums]
+
+    if FLAGS.enable_client:
+        # Server input is dummy
         x_test = np.random.rand(FLAGS.batch_size, FLAGS.image_size,
                                 FLAGS.image_size, 3)
+    else:
+        x_test = get_validation_images(FLAGS)
 
-    if FLAGS.ngraph:
-        import ngraph_bridge
-        print(ngraph_bridge.__version__)
+    config = server_config_from_flags(FLAGS, 'input')
 
-    config = tf.compat.v1.ConfigProto()
-    config.intra_op_parallelism_threads = 44
-    config.inter_op_parallelism_threads = 44
-    if FLAGS.ngraph:
-        config = ngraph_bridge.update_config(config)
     sess = tf.compat.v1.Session(config=config)
     graph_def = load_model(FLAGS.model)
+
+    for node in graph_def.node:
+        if 'FusedBatchNorm' in node.name or 'Pow' in node.name:
+            print(node)
+
+    #print('node names', [n.name for n in graph_def.node])
+
     tf.import_graph_def(graph_def, name='')
 
     input_tensor = sess.graph.get_tensor_by_name('input:0')
@@ -111,7 +112,7 @@ def main(FLAGS):
     else:
         top5 = np.flip(y_pred.argsort()[:, -5:], axis=1)
 
-    if not using_client:
+    if not FLAGS.enable_client:
         preds = imagenet_training_labels[top5]
 
         if FLAGS.batch_size < 10:
@@ -124,7 +125,7 @@ def main(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = server_argument_parser()
     parser.add_argument(
         '--data_dir',
         type=str,
@@ -161,7 +162,6 @@ if __name__ == '__main__':
         help='crop to this size before resizing to image_size')
     parser.add_argument(
         '--ngraph', type=str2bool, default=False, help='use ngraph backend')
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
     parser.add_argument(
         '--start_batch', type=int, default=0, help='Test data start index')
 

@@ -30,15 +30,14 @@ namespace ngraph {
 namespace he {
 /// \brief Class representing a session over TCP
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
-  using data_buffer = ngraph::he::TCPMessage::data_buffer;
-  size_t header_length = ngraph::he::TCPMessage::header_length;
+  using data_buffer = TCPMessage::data_buffer;
+  size_t header_length = TCPMessage::header_length;
 
  public:
   /// \brief Constructs a session with a given message handler
   TCPSession(tcp::socket socket,
-             std::function<void(const ngraph::he::TCPMessage&)> message_handler)
+             std::function<void(const TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
-        m_writing(false),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
   /// \brief Start the session
@@ -87,7 +86,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   /// \brief Adds a message to the message-writing queue
   /// \param[in,out] message Message to write
-  void write_message(ngraph::he::TCPMessage&& message) {
+  void write_message(TCPMessage&& message) {
     bool write_in_progress = is_writing();
     m_message_queue.emplace_back(std::move(message));
     if (!write_in_progress) {
@@ -129,19 +128,18 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   }
 
  private:
-  std::deque<ngraph::he::TCPMessage> m_message_queue;
+  std::deque<TCPMessage> m_message_queue;
   TCPMessage m_read_message;
 
   data_buffer m_read_buffer;
   data_buffer m_write_buffer;
   tcp::socket m_socket;
-  bool m_writing;
   std::condition_variable m_is_writing;
   std::mutex m_write_mtx;
 
   inline static std::string s_expected_teardown_message{"End of file"};
 
-  std::function<void(const ngraph::he::TCPMessage&)> m_message_callback;
+  std::function<void(const TCPMessage&)> m_message_callback;
 };
 }  // namespace he
 }  // namespace ngraph

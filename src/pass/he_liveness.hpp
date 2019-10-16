@@ -28,7 +28,7 @@ class HELiveness : public ngraph::pass::FunctionPass {
  public:
   /// \brief Performs HELiveness pass on given function
   /// \param[in,out] function Function to perform pass on
-  /// \returns false
+  /// \returns false, indicating the function has not been modified
   bool run_on_function(std::shared_ptr<ngraph::Function> function) override;
 };
 }  // namespace pass

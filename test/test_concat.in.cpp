@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -24,195 +25,332 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise) {
+auto concat_test = [](const Shape& shape_a, const Shape& shape_b,
+                      const Shape& shape_c, size_t concat_axis,
+                      const vector<float>& input_a,
+                      const vector<float>& input_b,
+                      const vector<float>& input_c, const vector<float>& output,
+                      const bool arg1_encrypted, const bool complex_packing,
+                      const bool packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
 
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_b{2, 3};
-  auto B = make_shared<op::Parameter>(element::f32, shape_b);
-  Shape shape_c{2, 3};
-  auto C = make_shared<op::Parameter>(element::f32, shape_c);
-  Shape shape_r{2, 8};
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 1);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 8, 16});
-    copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
-    copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
-        vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13},
-        read_vector<float>(result)));
+  if (complex_packing) {
+    he_backend->update_encryption_parameters(
+        he::HESealEncryptionParameters::default_complex_packing_parms());
   }
+
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = make_shared<op::Parameter>(element::f32, shape_b);
+  auto c = make_shared<op::Parameter>(element::f32, shape_c);
+  auto t = make_shared<op::Concat>(NodeVector{a, b, c}, concat_axis);
+  auto f = make_shared<Function>(t, ParameterVector{a, b, c});
+
+  a->set_op_annotations(
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  b->set_op_annotations(
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  c->set_op_annotations(
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+
+  auto t_a =
+      test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+  auto t_b =
+      test::he::tensor_from_flags(*he_backend, shape_b, arg1_encrypted, packed);
+  auto t_c =
+      test::he::tensor_from_flags(*he_backend, shape_c, arg1_encrypted, packed);
+  auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(),
+                                              arg1_encrypted, packed);
+
+  copy_data(t_a, input_a);
+  copy_data(t_b, input_b);
+  copy_data(t_c, input_c);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b, t_c});
+  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+};
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_real_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_b{3, 2};
-  auto B = make_shared<op::Parameter>(element::f32, shape_b);
-  Shape shape_c{3, 2};
-  auto C = make_shared<op::Parameter>(element::f32, shape_c);
-  Shape shape_r{8, 2};
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 8, 16});
-    copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
-    copy_data(c, vector<float>{2, 3, 5, 7, 11, 13});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(
-        vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13},
-        read_vector<float>(result)));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_vector) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_b{6};
-  auto B = make_shared<op::Parameter>(element::f32, shape_b);
-  Shape shape_c{2};
-  auto C = make_shared<op::Parameter>(element::f32, shape_c);
-  Shape shape_r{12};
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 8, 16});
-    copy_data(b, vector<float>{1, 2, 4, 8, 16, 32});
-    copy_data(c, vector<float>{18, 19});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(
-        all_close(vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19},
-                  read_vector<float>(result)));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape{1, 1, 1, 1};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
-  auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
-
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1});
-    copy_data(b, vector<float>{2});
-    copy_data(c, vector<float>{3});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_plain_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_real_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, true,
+      false, false);
+}
 
-  Shape shape{1, 1};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
-  auto C = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Concat>(NodeVector{A, B, C}, 0);
-  auto f = make_shared<Function>(t, ParameterVector{A, B, C});
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, false,
+      false, true);
+}
 
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A, B, C}, backend.get(), true);
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, true,
+      true, false);
+}
 
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_colwise_cipher_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{2, 3}, Shape{2, 3}, 1, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 1, 2, 4, 2, 3, 5, 8, 16, 8, 16, 32, 7, 11, 13}, true,
+      true, true);
+}
 
-    auto a = inputs[0];
-    auto b = inputs[1];
-    auto c = inputs[2];
-    auto result = results[0];
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_real_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      false, false);
+}
 
-    copy_data(a, vector<float>{1});
-    copy_data(b, vector<float>{2});
-    copy_data(c, vector<float>{3});
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      false, true);
+}
 
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a, b, c});
-    EXPECT_TRUE(all_close(vector<float>{1, 2, 3}, read_vector<float>(result)));
-  }
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_plain_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, false,
+      true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_real_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_real_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_complex_unpacked) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_matrix_rowise_cipher_complex_packed) {
+  concat_test(
+      Shape{2, 2}, Shape{3, 2}, Shape{3, 2}, 0, vector<float>{2, 4, 8, 16},
+      vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{2, 3, 5, 7, 11, 13},
+      vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 2, 3, 5, 7, 11, 13}, true,
+      true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_real_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_real_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_complex_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_complex_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
+              true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_real_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_real_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_complex_unpacked) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_complex_packed) {
+  concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
+              vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
+              vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
+              true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_real_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_real_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_complex_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_plain_complex_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_real_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_real_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_complex_unpacked) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_4d_tensor_cipher_complex_packed) {
+  concat_test(Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, Shape{1, 1, 1, 1}, 0,
+              vector<float>{1}, vector<float>{2}, vector<float>{3},
+              vector<float>{1, 2, 3}, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_real_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_real_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_complex_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_plain_complex_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, false,
+              true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_real_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_real_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_complex_unpacked) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_complex_packed) {
+  concat_test(Shape{1, 1}, Shape{1, 1}, Shape{1, 1}, 0, vector<float>{1},
+              vector<float>{2}, vector<float>{3}, vector<float>{1, 2, 3}, true,
+              true, true);
 }

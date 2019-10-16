@@ -26,6 +26,7 @@
 #include <thread>
 #include <vector>
 
+#include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
@@ -47,35 +48,23 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] function Function in the executable
   /// \param[in] enable_performance_collection Unused: TODO use
   /// \param[in] he_seal_backend Backend storing encryption context
-  /// \param[in] encrypt_data Whether or not to encrypt the data
-  /// \param[in] encrypt_model Whether or not to encrypt the model
-  /// \param[in] pack_data Whether or not to pack the data using plaintext
-  /// packing
-  /// \param[in] complex_packing Whether or not to use complex packing
   /// \param[in] enable_client Whether or not to rely on a client to store the
   /// secret key
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
-                   ngraph::he::HESealBackend& he_seal_backend,
-                   bool encrypt_data, bool encrypt_model, bool pack_data,
-                   bool complex_packing, bool enable_client);
+                   HESealBackend& he_seal_backend, bool enable_client);
 
-  ~HESealExecutable() override {
-    if (m_enable_client) {
-      m_thread.join();
+  /// \brief Shuts down the TCP session if client is enabled
+  ~HESealExecutable() override;
 
-      // m_acceptor and m_io_context both free the socket? so avoid double-free
-      m_acceptor->close();
-      m_acceptor = nullptr;
-      m_session = nullptr;
-    }
-  }
+  /// \brief Prepares for inference on the function using a server
+  /// \returns True if setup was successful, false otherwise
+  bool server_setup();
 
-  /// \brief TODO
-  void server_setup();
-
-  /// \brief TODO
+  /// \brief Starts the server, which awaits a connection from a client
   void start_server();
+
+  void update_he_op_annotations();
 
   /// \brief Calls the executable on the given input tensors.
   /// If the client is enabled, the inputs are dummy values and ignored.
@@ -111,10 +100,15 @@ class HESealExecutable : public runtime::Executable {
 
   void accept_connection();
 
-  /// \brief Checks whether or not the server supports the function
+  /// \brief Returns whether or not encryption parameters use complex packing
+  inline bool complex_packing() const {
+    return m_he_seal_backend.get_encryption_parameters().complex_packing();
+  }
+
+  /// \brief Checks whether or not the client supports the function
   /// \throws ngraph_error if function is unsupported
-  /// Currently, we only support functions with a single parameter
-  /// TODO: rename; return bool
+  /// Currently, we only support functions with a single client parameter and
+  /// single results
   void check_client_supports_function();
 
   /// \brief Processes a message from the client
@@ -174,7 +168,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
-  bool verbose_op(const ngraph::Node& op) {
+  inline bool verbose_op(const ngraph::Node& op) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
@@ -182,27 +176,53 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node dessccription verbosity is on or off
   /// \param[in] description Node description determine verbosity of
-  bool verbose_op(const std::string& description) {
+  inline bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(description)) !=
                m_verbose_ops.end();
   }
 
-  /// \brief Sets up the client
-  /// TODO: remove
-  void enable_client() {
-    m_enable_client = true;
-    server_setup();
+  /// \brief Returns the batch size
+  inline size_t batch_size() const { return m_batch_size; }
+
+  /// \brief Returns the batch size
+  void set_batch_size(size_t batch_size);
+
+  /// \brief Returns whether or not operation node should be received from
+  /// client. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation, should be Constant or Parameter node
+  inline bool from_client(const ngraph::op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
+      NGRAPH_HE_LOG(5) << "Op has he annotation " << *he_annotation;
+      return he_annotation->from_client();
+    }
+    NGRAPH_HE_LOG(5) << "Op has no he annotation";
+    return false;
+  }
+
+  /// \brief Returns whether or not operation node should be packed using
+  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation, should be Constant or Parameter node
+  inline bool plaintext_packed(const NodeWrapper& node_wrapper) {
+    return plaintext_packed(*node_wrapper.get_op());
+  }
+
+  inline bool plaintext_packed(const ngraph::op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
+      return he_annotation->packed();
+    }
+    return false;
   }
 
  private:
   HESealBackend& m_he_seal_backend;
-  bool m_encrypt_data;
-  bool m_encrypt_model;
-  bool m_pack_data;
   bool m_is_compiled;
-  bool m_complex_packing;
   bool m_verbose_all_ops;
+  std::shared_ptr<Function> m_function;
 
   bool m_sent_inference_shape{false};
   bool m_client_public_key_set{false};
@@ -220,21 +240,18 @@ class HESealExecutable : public runtime::Executable {
 
   // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;
-  std::thread m_thread;
+  std::thread m_message_handling_thread;
   boost::asio::io_context m_io_context;
 
   // (Encrypted) inputs to compiled function
-  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_inputs;
+  std::vector<std::shared_ptr<HETensor>> m_client_inputs;
   std::vector<size_t> m_client_load_idx;
   // (Encrypted) outputs of compiled function
-  std::vector<std::shared_ptr<ngraph::he::HETensor>> m_client_outputs;
+  std::vector<std::shared_ptr<HETensor>> m_client_outputs;
 
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      m_relu_ciphertexts;
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      m_max_pool_ciphertexts;
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>
-      m_minimum_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_relu_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_max_pool_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_minimum_ciphertexts;
 
   std::set<std::string> m_verbose_ops;
 
@@ -244,7 +261,6 @@ class HESealExecutable : public runtime::Executable {
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
   size_t m_relu_done_count;
-  size_t m_relu_idx_offset{0};
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when max_pool is done
@@ -275,8 +291,7 @@ class HESealExecutable : public runtime::Executable {
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
 
-  bool m_stop_const_fold{
-      ngraph::he::flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
+  bool m_stop_const_fold{flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
 }  // namespace he
 }  // namespace ngraph

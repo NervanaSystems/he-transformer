@@ -31,13 +31,9 @@ class SealCiphertextWrapper;
 class SealPlaintextWrapper;
 class HESealBackend;
 
-/// \brief Prints the given SEAL context
-/// \param[in] context SEAL context to print
-void print_seal_context(const seal::SEALContext& context);
-
 /// \brief Chooses a default scale for the given list of coefficient moduli
 /// \param[in] coeff_moduli List of coefficient moduli
-/// \returns Scale
+/// \returns Chosen scale
 inline double choose_scale(
     const std::vector<seal::SmallModulus>& coeff_moduli) {
   if (coeff_moduli.size() > 2) {
@@ -48,6 +44,26 @@ inline double choose_scale(
     // Enable a single multiply
     return sqrt(static_cast<double>(coeff_moduli.back().value() / 256.0));
   }
+}
+
+/// \brief Returns SEAL's security level type from the number of bits of
+/// security
+/// \param[in] bits Bits of security
+inline seal::sec_level_type seal_security_level(size_t bits) {
+  auto sec_level = seal::sec_level_type::none;
+  if (bits == 128) {
+    sec_level = seal::sec_level_type::tc128;
+  } else if (bits == 192) {
+    sec_level = seal::sec_level_type::tc192;
+  } else if (bits == 256) {
+    sec_level = seal::sec_level_type::tc256;
+  } else if (bits == 0) {
+    NGRAPH_WARN
+        << "Parameter selection does not enforce minimum security level";
+  } else {
+    throw ngraph_error("Invalid security level " + std::to_string(bits));
+  }
+  return sec_level;
 }
 
 /// \brief Returns the smallest chain index of a vector of ciphertexts
@@ -119,11 +135,12 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
                       seal::Ciphertext& destination,
                       const HESealBackend& he_seal_backend) {
   destination = encrypted;
-  ngraph::he::add_plain_inplace(destination, value, he_seal_backend);
+  add_plain_inplace(destination, value, he_seal_backend);
 }
 
 /// \brief Multiples each element in a polynomial with a scalar modulo
-/// modulus_value. Assumes the scalar, poly, and modulus value are all < 30 bits
+/// modulus_value. Assumes the scalar, poly, and modulus value are all < 30
+/// bits
 /// \param[in] poly Polynomial to be multiplied
 /// \param[in] coeff_count Number of terms in the polynomial
 /// \param[in] scalar Value with which to multiply
@@ -203,8 +220,7 @@ inline void multiply_plain(
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
-  ngraph::he::multiply_plain_inplace(destination, value, he_seal_backend,
-                                     std::move(pool));
+  multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
 
 /// \brief Optimized encoding of single value into vector of coefficients
@@ -230,8 +246,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 /// \param[in] scale Scale at which to encode value
 /// \param[in] complex_packing Whether or not to use complex packing during
 /// encoding
-void encode(ngraph::he::SealPlaintextWrapper& destination,
-            const ngraph::he::HEPlaintext& plaintext,
+void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
             seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
             const ngraph::element::Type& element_type, double scale,
             bool complex_packing);
@@ -246,8 +261,8 @@ void encode(ngraph::he::SealPlaintextWrapper& destination,
 /// \param[in] encryptor Used for encrypting
 /// \param[in] complex_packing Whether or not to use complex packing during
 /// encoding
-void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
-             const ngraph::he::HEPlaintext& input, seal::parms_id_type parms_id,
+void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
+             const HEPlaintext& input, seal::parms_id_type parms_id,
              const ngraph::element::Type& element_type, double scale,
              seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
              bool complex_packing);
@@ -256,8 +271,7 @@ void encrypt(std::shared_ptr<ngraph::he::SealCiphertextWrapper>& output,
 /// \param[out] output Decoded values
 /// \param[in] input Plaintext to decode
 /// \param[in] ckks_encoder Used for decoding
-void decode(ngraph::he::HEPlaintext& output,
-            const ngraph::he::SealPlaintextWrapper& input,
+void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder);
 
 /// \brief Writes plaintext to byte output
@@ -265,16 +279,15 @@ void decode(ngraph::he::HEPlaintext& output,
 /// \param[out] input Plaintext to write
 /// \param[in] type Datatype to write
 /// \param[in] count Number of values to write
-void decode(void* output, const ngraph::he::HEPlaintext& input,
-            const element::Type& type, size_t count);
+void decode(void* output, const HEPlaintext& input, const element::Type& type,
+            size_t count);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to
 /// \param[in] input Ciphertext to decrypt
 /// \param[in] decryptor Used for decryption
 /// \param[in] ckks_encoder Used for decoding
-void decrypt(ngraph::he::HEPlaintext& output,
-             const ngraph::he::SealCiphertextWrapper& input,
+void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder);
 
 }  // namespace he

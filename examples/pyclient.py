@@ -25,11 +25,9 @@ def main(FLAGS):
     port = 34000
     batch_size = 1
 
-    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size, data,
-                                      False)
-
-    while not client.is_done():
-        time.sleep(1)
+    client = pyhe_client.HESealClient(
+        FLAGS.hostname, port, batch_size,
+        {'client_parameter_name': ('encrypt', data)})
 
     results = client.get_results()
 

@@ -19,12 +19,15 @@
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
-void ngraph::he::scalar_multiply_seal(
-    ngraph::he::SealCiphertextWrapper& arg0,
-    ngraph::he::SealCiphertextWrapper& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
+namespace ngraph {
+namespace he {
+
+void scalar_multiply_seal(SealCiphertextWrapper& arg0,
+                          SealCiphertextWrapper& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          HESealBackend& he_seal_backend,
+                          const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg0.known_value() && arg1.known_value()) {
@@ -142,12 +145,11 @@ void ngraph::he::scalar_multiply_seal(
   }
 }
 
-void ngraph::he::scalar_multiply_seal(
-    ngraph::he::SealCiphertextWrapper& arg0,
-    const ngraph::he::HEPlaintext& arg1,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool) {
+void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+                          std::shared_ptr<SealCiphertextWrapper>& out,
+                          const element::Type& element_type,
+                          HESealBackend& he_seal_backend,
+                          const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg0.known_value()) {
@@ -188,9 +190,9 @@ void ngraph::he::scalar_multiply_seal(
   } else {
     // Never complex-pack for multiplication
     auto p = SealPlaintextWrapper(false);
-    ngraph::he::encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
-                       arg0.ciphertext().parms_id(), element_type,
-                       arg0.ciphertext().scale(), false);
+    encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
+           arg0.ciphertext().parms_id(), element_type,
+           arg0.ciphertext().scale(), false);
 
     size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
     size_t chain_ind1 = he_seal_backend.get_chain_index(p.plaintext());
@@ -218,12 +220,10 @@ void ngraph::he::scalar_multiply_seal(
                "mult out is not he_seal_backend.complex_packing()");
 }
 
-void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
-                                      const ngraph::he::HEPlaintext& arg1,
-                                      ngraph::he::HEPlaintext& out,
-                                      const element::Type& element_type,
-                                      HESealBackend& he_seal_backend,
-                                      const seal::MemoryPoolHandle& pool) {
+void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                          HEPlaintext& out, const element::Type& element_type,
+                          HESealBackend& he_seal_backend,
+                          const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   NGRAPH_CHECK(arg0.num_values() > 0,
@@ -255,3 +255,6 @@ void ngraph::he::scalar_multiply_seal(const ngraph::he::HEPlaintext& arg0,
   }
   out.set_values(out_vals);
 }
+
+}  // namespace he
+}  // namespace ngraph

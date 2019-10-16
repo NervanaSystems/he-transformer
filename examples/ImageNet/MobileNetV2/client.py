@@ -36,8 +36,6 @@ from util import get_imagenet_inference_labels, \
 import util
 import numpy as np
 
-FLAGS = None
-
 
 def print_nodes(filename):
     graph_def = read_pb_file(filename)
@@ -68,8 +66,6 @@ def get_imagenet_labels():
 
 
 def main(FLAGS):
-    util.VAL_IMAGE_FLAGS = FLAGS
-
     imagenet_inference_labels = get_imagenet_inference_labels()
     imagenet_training_labels = get_imagenet_training_labels()
     assert (

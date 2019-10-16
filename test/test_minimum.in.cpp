@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -24,6 +25,7 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
@@ -33,6 +35,11 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain) {
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto f = make_shared<Function>(make_shared<op::Minimum>(A, B),
                                  ParameterVector{A, B});
+
+  A->set_op_annotations(
+      HEOpAnnotations::server_plaintext_unpacked_annotation());
+  B->set_op_annotations(
+      HEOpAnnotations::server_plaintext_unpacked_annotation());
 
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -46,19 +53,22 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain) {
 
   auto handle = he_backend->compile(f);
   handle->call_with_validate({result}, {a, b});
-  EXPECT_TRUE(all_close((vector<float>{1, 2, -8, 8, -.5, 0, 1, 1}),
-                        read_vector<float>(result)));
+  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -.5, 0, 1, 1}),
+                                  read_vector<float>(result)));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_batched) {
+NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_packed) {
   Shape shape{2, 2, 2};
   auto A = make_shared<op::Parameter>(element::f32, shape);
   auto B = make_shared<op::Parameter>(element::f32, shape);
   auto f = make_shared<Function>(make_shared<op::Minimum>(A, B),
                                  ParameterVector{A, B});
 
+  A->set_op_annotations(HEOpAnnotations::server_plaintext_packed_annotation());
+  B->set_op_annotations(HEOpAnnotations::server_plaintext_packed_annotation());
+
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   // Create some tensors for input/output
   auto a = he_backend->create_packed_plain_tensor(element::f32, shape);
@@ -69,6 +79,6 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_batched) {
 
   auto handle = he_backend->compile(f);
   handle->call_with_validate({result}, {a, b});
-  EXPECT_TRUE(all_close((vector<float>{1, 2, -8, 8, -.5, 0, 1, 1}),
-                        read_vector<float>(result)));
+  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -.5, 0, 1, 1}),
+                                  read_vector<float>(result)));
 }

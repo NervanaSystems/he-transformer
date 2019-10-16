@@ -50,15 +50,11 @@ class HEPlainTensor : public HETensor {
   void read(void* target, size_t n) const override;
 
   /// \brief Returns the plaintexts in the tensor
-  inline std::vector<ngraph::he::HEPlaintext>& get_elements() {
-    return m_plaintexts;
-  }
+  inline std::vector<HEPlaintext>& get_elements() { return m_plaintexts; }
 
   /// \brief Returns the plaintext at a given index
   /// \param[in] index Index from which to return the plaintext
-  inline ngraph::he::HEPlaintext& get_element(size_t index) {
-    return m_plaintexts[index];
-  }
+  inline HEPlaintext& get_element(size_t index) { return m_plaintexts[index]; }
 
   /// \brief Clears the plaintexts
   inline void reset() { m_plaintexts.clear(); }
@@ -69,7 +65,13 @@ class HEPlainTensor : public HETensor {
   /// \brief Sets the tensor to the given plaintexts
   /// \throws ngraph_error if wrong number of elements are used
   /// \param[in] elements Plaintexts to set the tensor to
-  void set_elements(const std::vector<ngraph::he::HEPlaintext>& elements);
+  void set_elements(const std::vector<HEPlaintext>& elements);
+
+  /// \brief Packs a tensor. If tensor is already packed, does nothing
+  void pack();
+
+  /// \brief Unpacks a tensor. If tensor is already unpacked, does nothing
+  void unpack();
 
   /// \brief Returns type information about the tensor
   /// /returns a reference to a HETensorTypeInfo object
@@ -78,9 +80,30 @@ class HEPlainTensor : public HETensor {
   /// \brief Represents a HEPlainTensor type
   static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::plain};
 
+  /// \brief Writes plaintexts to vector of protobufs
+  /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
+  /// multiple protobuf messages.
+  /// \param[out] protos Target to write plaintexts to
+  /// \param[in] name Name of the tensor to save
+  inline void save_to_proto(std::vector<he_proto::PlainTensor>& protos,
+                            const std::string& name = "") {
+    // TODO: support large shapes
+    protos.resize(1);
+    protos[0].set_name(name);
+    protos[0].set_packed(is_packed());
+
+    std::vector<uint64_t> int_shape{get_shape()};
+    *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+
+    protos[0].set_offset(0);
+
+    for (const auto& plaintext : m_plaintexts) {
+      plaintext.save(*protos[0].add_plaintexts());
+    }
+  }
+
  private:
-  std::vector<ngraph::he::HEPlaintext> m_plaintexts;
-  size_t m_num_elements;  // TODO: remove if unused
+  std::vector<HEPlaintext> m_plaintexts;
 };
 }  // namespace he
 }  // namespace ngraph

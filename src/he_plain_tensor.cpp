@@ -19,15 +19,19 @@
 #include "he_plain_tensor.hpp"
 #include "util.hpp"
 
-ngraph::he::HEPlainTensor::HEPlainTensor(const element::Type& element_type,
-                                         const Shape& shape, const bool packed,
-                                         const std::string& name)
-    : ngraph::he::HETensor(element_type, shape, packed, name) {
-  m_num_elements = m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
-  m_plaintexts.resize(m_num_elements);
+namespace ngraph {
+namespace he {
+
+HEPlainTensor::HEPlainTensor(const element::Type& element_type,
+                             const Shape& shape, const bool packed,
+                             const std::string& name)
+    : HETensor(element_type, shape, packed, name) {
+  size_t num_elements =
+      m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
+  m_plaintexts.resize(num_elements);
 }
 
-void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
+void HEPlainTensor::write(const void* source, size_t n) {
   check_io_bounds(source, n / m_batch_size);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
@@ -75,7 +79,7 @@ void ngraph::he::HEPlainTensor::write(const void* source, size_t n) {
   }
 }
 
-void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
+void HEPlainTensor::read(void* target, size_t n) const {
   check_io_bounds(target, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
 
@@ -163,6 +167,13 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
           copy_batch_values_to_src(i, target, type_values_src);
           break;
         }
+        case element::Type_t::i32: {
+          std::vector<int32_t> int32_values{values.begin(), values.end()};
+          void* type_values_src =
+              static_cast<void*>(const_cast<int32_t*>(int32_values.data()));
+          copy_batch_values_to_src(i, target, type_values_src);
+          break;
+        }
         case element::Type_t::i64: {
           std::vector<int64_t> int64_values{values.begin(), values.end()};
           void* type_values_src =
@@ -172,7 +183,7 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
         }
         case element::Type_t::i8:
         case element::Type_t::i16:
-        case element::Type_t::i32:
+
         case element::Type_t::u8:
         case element::Type_t::u16:
         case element::Type_t::u32:
@@ -189,8 +200,7 @@ void ngraph::he::HEPlainTensor::read(void* target, size_t n) const {
   }
 }
 
-void ngraph::he::HEPlainTensor::set_elements(
-    const std::vector<ngraph::he::HEPlaintext>& elements) {
+void HEPlainTensor::set_elements(const std::vector<HEPlaintext>& elements) {
   if (elements.size() != get_element_count() / m_batch_size) {
     NGRAPH_ERR << "m_batch_size " << m_batch_size;
     NGRAPH_ERR << "get_element_count " << get_element_count();
@@ -199,3 +209,52 @@ void ngraph::he::HEPlainTensor::set_elements(
   }
   m_plaintexts = elements;
 }
+
+void HEPlainTensor::pack() {
+  if (is_packed()) {
+    return;
+  }
+
+  m_batch_size = HETensor::batch_size(get_shape(), true);
+
+  std::vector<HEPlaintext> new_plaintexts(num_plaintexts() / m_batch_size);
+  for (size_t i = 0; i < new_plaintexts.size(); ++i) {
+    new_plaintexts[i] = HEPlaintext();
+  }
+
+  for (size_t plain_idx = 0; plain_idx < m_plaintexts.size(); ++plain_idx) {
+    auto& values = m_plaintexts[plain_idx].values();
+    if (values.size() != 0) {
+      size_t new_plain_idx = plain_idx % new_plaintexts.size();
+      new_plaintexts[new_plain_idx].values().emplace_back(values[0]);
+    }
+  }
+
+  m_plaintexts = std::move(new_plaintexts);
+  m_packed = true;
+  m_packed_shape = ngraph::he::HETensor::pack_shape(get_shape());
+}
+
+void HEPlainTensor::unpack() {
+  if (!is_packed()) {
+    return;
+  }
+  size_t batch_size = get_batch_size();
+
+  std::vector<HEPlaintext> new_plaintexts;
+  for (size_t batch_idx = 0; batch_idx < batch_size; ++batch_idx) {
+    for (size_t i = 0; i < m_plaintexts.size(); ++i) {
+      auto vals = m_plaintexts[i].values();
+      new_plaintexts.emplace_back(
+          HEPlaintext(m_plaintexts[i].values()[batch_idx]));
+    }
+  }
+
+  m_plaintexts = std::move(new_plaintexts);
+  m_packed = false;
+  m_batch_size = 1;
+  m_packed_shape = ngraph::he::HETensor::unpack_shape(get_shape(), batch_size);
+}
+
+}  // namespace he
+}  // namespace ngraph

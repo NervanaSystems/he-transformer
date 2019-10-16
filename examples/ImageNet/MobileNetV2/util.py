@@ -24,6 +24,8 @@ import time
 import PIL
 from PIL import Image
 import multiprocessing as mp
+from functools import partial
+from tensorflow.core.protobuf import rewriter_config_pb2
 
 
 def get_imagenet_training_labels():
@@ -96,13 +98,10 @@ def center_crop2(im, new_size):
     return im
 
 
-VAL_IMAGE_FLAGS = None
-
-
-def get_validation_image(i):
+def get_validation_image(i, FLAGS):
     image_num_str = str(i + 1).zfill(8)
-    data_dir = VAL_IMAGE_FLAGS.data_dir
-    crop_size = VAL_IMAGE_FLAGS.crop_size
+    data_dir = FLAGS.data_dir
+    crop_size = FLAGS.crop_size
 
     image_prefix = 'validation_images/ILSVRC2012_val_' + image_num_str
     image_suffix = '.JPEG'
@@ -111,36 +110,32 @@ def get_validation_image(i):
     crop_filename = os.path.join(data_dir, image_prefix + '_crop' + '.png')
 
     filename = os.path.join(data_dir, image_name)
-    if VAL_IMAGE_FLAGS.batch_size < 10:
+    if FLAGS.batch_size < 10:
         print('opening image at', filename)
     if not os.path.isfile(filename):
         print('Cannot find image ', filename)
         exit(1)
 
-    if VAL_IMAGE_FLAGS.load_cropped_images:
+    if FLAGS.load_cropped_images:
         im = Image.open(crop_filename)
     else:
         im = Image.open(filename)
         im = center_crop2(im, crop_size)
-        im = im.resize(
-            (VAL_IMAGE_FLAGS.image_size, VAL_IMAGE_FLAGS.image_size),
-            PIL.Image.LANCZOS)
+        im = im.resize((FLAGS.image_size, FLAGS.image_size), PIL.Image.LANCZOS)
 
     # Fix grey images
     if im.mode != "RGB":
         im = im.convert(mode="RGB")
-    assert (im.size == (VAL_IMAGE_FLAGS.image_size,
-                        VAL_IMAGE_FLAGS.image_size))
+    assert (im.size == (FLAGS.image_size, FLAGS.image_size))
 
-    if VAL_IMAGE_FLAGS.save_images:
+    if FLAGS.save_images:
         im.save(crop_filename, "PNG")
     im = np.array(im, dtype=np.float)
 
-    assert (im.shape == (VAL_IMAGE_FLAGS.image_size,
-                         VAL_IMAGE_FLAGS.image_size, 3))
+    assert (im.shape == (FLAGS.image_size, FLAGS.image_size, 3))
 
     # Standardize to [-1,1]
-    if VAL_IMAGE_FLAGS.standardize:
+    if FLAGS.standardize:
         im = im / 255.
         means = [0.485, 0.456, 0.406]
         stds = [0.229, 0.224, 0.225]
@@ -156,15 +151,16 @@ def get_validation_image(i):
 
 def get_validation_images(FLAGS, crop=False):
     print('getting validation images')
-    VAL_IMAGE_FLAGS = FLAGS
+    FLAGS = FLAGS
     images = np.empty((FLAGS.batch_size, FLAGS.image_size, FLAGS.image_size,
                        3))
-    pool = mp.Pool()
     end_idx = min(FLAGS.start_batch + FLAGS.batch_size, 50000)
 
-    images[:] = pool.map(get_validation_image, range(FLAGS.start_batch,
-                                                     end_idx))
-    pool.close()
+    with mp.Pool() as pool:
+        images[:] = pool.map(
+            partial(get_validation_image, FLAGS=FLAGS),
+            range(FLAGS.start_batch, end_idx))
+
     print('got validation images')
     return images
 
@@ -195,3 +191,62 @@ def accuracy(preds, truth):
     print('Accuracy on', num_preds, 'predictions:')
     print('top1_acc', np.round(top1_acc, 3))
     print('top5_acc', np.round(top5_acc, 3))
+
+
+def server_argument_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
+    parser.add_argument(
+        '--enable_client',
+        type=str2bool,
+        default=False,
+        help='Enable the client')
+    parser.add_argument(
+        '--backend',
+        type=str,
+        default='HE_SEAL',
+        help='Name of backend to use')
+    parser.add_argument(
+        '--encryption_parameters',
+        type=str,
+        default='',
+        help=
+        'Filename containing json description of encryption parameters, or json description itself'
+    )
+    parser.add_argument(
+        '--encrypt_server_data',
+        type=str2bool,
+        default=False,
+        help=
+        'Encrypt server data (should not be used when enable_client is used)')
+
+    return parser
+
+
+def server_config_from_flags(FLAGS, tensor_param_name):
+    rewriter_options = rewriter_config_pb2.RewriterConfig()
+    rewriter_options.meta_optimizer_iterations = (
+        rewriter_config_pb2.RewriterConfig.ONE)
+    rewriter_options.min_graph_nodes = -1
+    server_config = rewriter_options.custom_optimizers.add()
+    server_config.name = "ngraph-optimizer"
+    server_config.parameter_map["ngraph_backend"].s = FLAGS.backend.encode()
+    server_config.parameter_map["device_id"].s = b''
+    server_config.parameter_map[
+        "encryption_parameters"].s = FLAGS.encryption_parameters.encode()
+    server_config.parameter_map['enable_client'].s = (str(
+        FLAGS.enable_client)).encode()
+    if FLAGS.enable_client:
+        server_config.parameter_map[tensor_param_name].s = b'client_input'
+    elif FLAGS.encrypt_server_data:
+        server_config.parameter_map[tensor_param_name].s = b'encrypt'
+    if FLAGS.pack_data:
+        server_config parameter_map[tensor_param_name].s = b'packed'
+
+    config = tf.compat.v1.ConfigProto()
+    config.MergeFrom(
+        tf.compat.v1.ConfigProto(
+            graph_options=tf.compat.v1.GraphOptions(
+                rewrite_options=rewriter_options)))
+
+    return config

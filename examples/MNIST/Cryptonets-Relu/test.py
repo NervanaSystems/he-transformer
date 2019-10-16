@@ -29,12 +29,16 @@ import tensorflow as tf
 import model
 import ngraph_bridge
 import os
+from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
-
-FLAGS = None
+from mnist_util import load_mnist_data, \
+                       get_variable, \
+                       conv2d_stride_2_valid, \
+                       str2bool, \
+                       server_argument_parser, \
+                       server_config_from_flags
 
 
 def cryptonets_relu_test_squashed(x):
@@ -67,13 +71,16 @@ def cryptonets_relu_test_squashed(x):
 def test_cryptonets_relu(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
+    x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1], name='input')
     y_ = tf.compat.v1.placeholder(tf.float32, [None, 10])
 
     # Create the model
     y_conv = cryptonets_relu_test_squashed(x)
 
-    with tf.compat.v1.Session() as sess:
+    config = server_config_from_flags(FLAGS, x.name)
+    print('config', config)
+
+    with tf.compat.v1.Session(config=config) as sess:
         x_test = x_test[:FLAGS.batch_size]
         y_test = y_test[:FLAGS.batch_size]
         start_time = time.time()
@@ -81,8 +88,7 @@ def test_cryptonets_relu(FLAGS):
         elasped_time = (time.time() - start_time)
         print("total time(s)", np.round(elasped_time, 3))
 
-    using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
-    if not using_client:
+    if not FLAGS.enable_client:
         y_test_batch = y_test[:FLAGS.batch_size]
         y_label_batch = np.argmax(y_test_batch, 1)
 
@@ -97,8 +103,14 @@ def test_cryptonets_relu(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-
+    parser = server_argument_parser()
     FLAGS, unparsed = parser.parse_known_args()
+
+    if unparsed:
+        print('Unparsed flags:', unparsed)
+    if FLAGS.encrypt_server_data and FLAGS.enable_client:
+        raise Exception(
+            "encrypt_server_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
+        )
+
     test_cryptonets_relu(FLAGS)

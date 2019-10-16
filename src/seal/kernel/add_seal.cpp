@@ -18,14 +18,13 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
 
-using namespace ngraph::he;
-
-void ngraph::he::scalar_add_seal(SealCiphertextWrapper& arg0,
-                                 SealCiphertextWrapper& arg1,
-                                 std::shared_ptr<SealCiphertextWrapper>& out,
-                                 const ngraph::element::Type& element_type,
-                                 HESealBackend& he_seal_backend,
-                                 const seal::MemoryPoolHandle& pool) {
+namespace ngraph {
+namespace he {
+void scalar_add_seal(SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
+                     std::shared_ptr<SealCiphertextWrapper>& out,
+                     const ngraph::element::Type& element_type,
+                     HESealBackend& he_seal_backend,
+                     const seal::MemoryPoolHandle& pool) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg0.known_value() && arg1.known_value()) {
@@ -58,11 +57,10 @@ void ngraph::he::scalar_add_seal(SealCiphertextWrapper& arg0,
   out->complex_packing() = he_seal_backend.complex_packing();
 }
 
-void ngraph::he::scalar_add_seal(SealCiphertextWrapper& arg0,
-                                 const HEPlaintext& arg1,
-                                 std::shared_ptr<SealCiphertextWrapper>& out,
-                                 const ngraph::element::Type& element_type,
-                                 HESealBackend& he_seal_backend) {
+void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+                     std::shared_ptr<SealCiphertextWrapper>& out,
+                     const ngraph::element::Type& element_type,
+                     HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   if (arg0.known_value()) {
@@ -77,7 +75,7 @@ void ngraph::he::scalar_add_seal(SealCiphertextWrapper& arg0,
 
   if (add_zero) {
     SealCiphertextWrapper tmp(arg0);
-    NGRAPH_CHECK(tmp.complex_packing() == arg0.complex_packing());
+    NGRAPH_CHECK(tmp.complex_packing() == arg0.complex_packing(), "Complex packing types don't match");
     out = std::make_shared<SealCiphertextWrapper>(tmp);
     out->complex_packing() = tmp.complex_packing();
 
@@ -105,13 +103,8 @@ void ngraph::he::scalar_add_seal(SealCiphertextWrapper& arg0,
   out->known_value() = false;
 }
 
-void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
-                                 const HEPlaintext& arg1, HEPlaintext& out,
-                                 const ngraph::element::Type& element_type,
-                                 HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-
+void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                     HEPlaintext& out) {
   const std::vector<double>& arg0_vals = arg0.values();
   const std::vector<double>& arg1_vals = arg1.values();
   std::vector<double> out_vals;
@@ -133,3 +126,6 @@ void ngraph::he::scalar_add_seal(const HEPlaintext& arg0,
   }
   out.set_values(out_vals);
 }
+
+}  // namespace he
+}  // namespace ngraph

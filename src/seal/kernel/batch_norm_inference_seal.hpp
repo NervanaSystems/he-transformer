@@ -64,10 +64,10 @@ void batch_norm_inference_seal(
     std::vector<double> channel_mean_vals = channel_mean.values();
     std::vector<double> channel_var_vals = channel_var.values();
 
-    NGRAPH_CHECK(channel_gamma_vals.size() == 1);
-    NGRAPH_CHECK(channel_beta_vals.size() == 1);
-    NGRAPH_CHECK(channel_mean_vals.size() == 1);
-    NGRAPH_CHECK(channel_var_vals.size() == 1);
+    NGRAPH_CHECK(channel_gamma_vals.size() == 1, "wrong number of gamma values");
+    NGRAPH_CHECK(channel_beta_vals.size() == 1, "wrong number of beta values");
+    NGRAPH_CHECK(channel_mean_vals.size() == 1, "wrong number of mean values");
+    NGRAPH_CHECK(channel_var_vals.size() == 1, "wrong number of var values");
 
     double scale = channel_gamma_vals[0] / std::sqrt(channel_var_vals[0] + eps);
     double bias =
@@ -82,11 +82,10 @@ void batch_norm_inference_seal(
 
     auto output = he_seal_backend.create_empty_ciphertext();
 
-    ngraph::he::scalar_multiply_seal(*input[input_index], plain_scale, output,
-                                     element::f32, he_seal_backend);
+    scalar_multiply_seal(*input[input_index], plain_scale, output, element::f32,
+                         he_seal_backend);
 
-    ngraph::he::scalar_add_seal(*output, plain_bias, output, element::f32,
-                                he_seal_backend);
+    scalar_add_seal(*output, plain_bias, output, element::f32, he_seal_backend);
     normed_input[input_index] = output;
   }
 };

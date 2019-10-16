@@ -16,15 +16,16 @@
 
 #pragma once
 
-#include <array>
 #include <complex>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
+#include "protos/message.pb.h"
 
 namespace ngraph {
 namespace he {
@@ -36,7 +37,7 @@ namespace he {
 template <typename T>
 inline void complex_vec_to_real_vec(std::vector<T>& output,
                                     const std::vector<std::complex<T>>& input) {
-  NGRAPH_CHECK(output.size() == 0);
+  NGRAPH_CHECK(output.size() == 0, "Output vector is not empty");
   output.reserve(input.size() * 2);
   for (const std::complex<T>& value : input) {
     output.emplace_back(value.real());
@@ -52,7 +53,7 @@ inline void complex_vec_to_real_vec(std::vector<T>& output,
 template <typename T>
 inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
                                     const std::vector<T>& input) {
-  NGRAPH_CHECK(output.size() == 0);
+  NGRAPH_CHECK(output.size() == 0, "Output vector is not empty");
   output.reserve(input.size() / 2);
   std::vector<T> complex_parts(2, 0);
   for (size_t i = 0; i < input.size(); ++i) {
@@ -73,8 +74,9 @@ inline bool flag_to_bool(const char* flag, bool default_value = false) {
   if (flag == nullptr) {
     return default_value;
   }
-  static std::unordered_set<std::string> on_map{"1", "y", "yes"};
-  static std::unordered_set<std::string> off_map{"0", "n", "no"};
+  static std::unordered_set<std::string> on_map{"1", "on", "y", "yes", "true"};
+  static std::unordered_set<std::string> off_map{"0", "off", "n", "no",
+                                                 "false"};
   std::string flag_str = ngraph::to_lower(std::string(flag));
 
   if (on_map.find(flag_str) != on_map.end()) {
@@ -100,12 +102,14 @@ inline double type_to_double(const void* src,
     case element::Type_t::f64:
       return static_cast<double>(*static_cast<const double*>(src));
       break;
+    case element::Type_t::i32:
+      return static_cast<double>(*static_cast<const int32_t*>(src));
+      break;
     case element::Type_t::i64:
       return static_cast<double>(*static_cast<const int64_t*>(src));
       break;
     case element::Type_t::i8:
     case element::Type_t::i16:
-    case element::Type_t::i32:
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:
@@ -132,7 +136,7 @@ inline std::vector<double> type_vec_to_double_vec(
   std::vector<double> ret(n);
   char* src_with_offset = static_cast<char*>(const_cast<void*>(src));
   for (size_t i = 0; i < n; ++i) {
-    ret[i] = ngraph::he::type_to_double(src_with_offset, element_type);
+    ret[i] = type_to_double(src_with_offset, element_type);
     ++src_with_offset;
   }
   return ret;
@@ -189,6 +193,41 @@ inline void double_vec_to_type_vec(void* target,
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
       break;
   }
+}
+
+template <typename T>
+inline std::unordered_map<std::string,
+                          std::pair<std::string, std::vector<double>>>
+map_to_double_map(
+    const std::unordered_map<std::string,
+                             std::pair<std::string, std::vector<T>>>& inputs) {
+  std::unordered_map<std::string, std::pair<std::string, std::vector<double>>>
+      outputs;
+
+  for (const auto& elem : inputs) {
+    std::vector<double> double_inputs{elem.second.second.begin(),
+                                      elem.second.second.end()};
+    outputs.insert(
+        {elem.first, std::make_pair(elem.second.first, double_inputs)});
+  }
+  return outputs;
+}
+
+inline ngraph::Shape proto_shape_to_ngraph_shape(
+    const google::protobuf::RepeatedField<google::protobuf::uint64>&
+        proto_shape) {
+  std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
+  return ngraph::Shape{dims};
+}
+
+inline bool param_originates_from_name(const ngraph::op::Parameter& param,
+                                       const std::string& name) {
+  if (param.get_name() == name) {
+    return true;
+  }
+  return std::any_of(param.get_provenance_tags().begin(),
+                     param.get_provenance_tags().end(),
+                     [&](const std::string& tag) { return tag == name; });
 }
 
 }  // namespace he

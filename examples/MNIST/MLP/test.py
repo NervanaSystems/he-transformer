@@ -31,12 +31,16 @@ import ngraph_bridge
 import os
 from tensorflow.python.tools import freeze_graph
 from tensorflow.python.tools import optimize_for_inference_lib
+from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from mnist_util import load_mnist_data, get_variable, conv2d_stride_2_valid
-
-FLAGS = None
+from mnist_util import load_mnist_data, \
+                       get_variable, \
+                       conv2d_stride_2_valid, \
+                       str2bool, \
+                       server_argument_parser, \
+                       server_config_from_flags
 
 
 def load_pb_file(filename):
@@ -60,20 +64,22 @@ def test_mnist_mlp(FLAGS):
         y_conv = tf.compat.v1.get_default_graph().get_tensor_by_name(
             "import/output:0")
         x_input = tf.compat.v1.get_default_graph().get_tensor_by_name(
-            "import/Placeholder:0")
-        sess = tf.compat.v1.Session()
+            "import/input:0")
 
-        start_time = time.time()
-        y_conv_val = y_conv.eval(
-            session=sess, feed_dict={
-                x_input: x_test,
-            })
-        elasped_time = (time.time() - start_time)
-        print("total time(s)", np.round(elasped_time, 3))
+        config = server_config_from_flags(FLAGS, x_input.name)
 
-    using_client = (os.environ.get('NGRAPH_ENABLE_CLIENT') is not None)
+        print('config', config)
 
-    if not using_client:
+        with tf.compat.v1.Session(config=config) as sess:
+            start_time = time.time()
+            y_conv_val = y_conv.eval(
+                session=sess, feed_dict={
+                    x_input: x_test,
+                })
+            elasped_time = (time.time() - start_time)
+            print("total time(s)", np.round(elasped_time, 3))
+
+    if not FLAGS.enable_client:
         y_test_batch = y_test[:FLAGS.batch_size]
         y_label_batch = np.argmax(y_test_batch, 1)
 
@@ -88,8 +94,14 @@ def test_mnist_mlp(FLAGS):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
-
+    parser = server_argument_parser()
     FLAGS, unparsed = parser.parse_known_args()
+
+    if unparsed:
+        print('Unparsed flags:', unparsed)
+    if FLAGS.encrypt_server_data and FLAGS.enable_client:
+        raise Exception(
+            "encrypt_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
+        )
+
     test_mnist_mlp(FLAGS)

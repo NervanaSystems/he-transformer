@@ -33,7 +33,7 @@ class SupportedOps : public ngraph::pass::FunctionPass {
   SupportedOps(std::function<bool(const ngraph::Node&)> is_supported)
       : m_is_supported(is_supported) {}
 
-  /// \brief Returns true if function is supported
+  /// \brief Returns false, indicating the function has not been modified
   /// \throws ngraph_error is function is not supported
   /// \param[in,out] function Function which to run pass on
   bool run_on_function(std::shared_ptr<ngraph::Function> function) override;

@@ -1,10 +1,10 @@
 # MobileNet V2 example
 
 This folder demonstrates an example of inference on MobileNetV2.
-Note: this is a work in progress, and requires ~150GB memory.
+Note: this is a work in progress, and requires ~50GB memory.
 Runtime will be very slow without many cores.
 
-See here: https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
+See https://github.com/tensorflow/models/tree/master/research/slim/nets/mobilenet
 for a description.
 
 # Setup
@@ -12,7 +12,12 @@ for a description.
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 ```
-Also be sure the `pyhe_client` wheel has been installed
+Also ensure the `pyhe_client` wheel has been installed (see `python` folder for instructions).
+
+The examples rely on numpy and pillow, so run
+```bash
+pip install numpy pillow
+```
 
 2. Build Tensorflow graph transforms and add them to your path:
 
@@ -30,11 +35,6 @@ export PATH=$HE_TRANSFORMER/build/ext_ngraph_tf/src/ext_ngraph_tf/build_cmake/te
 3. To download the models and optimize for inference, call
 ```bash
 python get_models.py
-```
-
-4. To enable image processing, run
-```bash
-pip install pillow
 ```
 
 # Image-Net evaluation
@@ -61,21 +61,23 @@ For the remaining instructions, run```bash
 export DATA_DIR=path_to_your_data_dir
 ```
 
-4. To run inference using TensorFlow on unencrypted data, call
+## CPU backend
+To run inference using the CPU backend on unencrypted data, call
 ```bash
 python test.py \
   --data_dir=$DATA_DIR \
-  --batch_size=300
+  --batch_size=300 \
+  --backend=CPU
 ```
 
+##
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
-NGRAPH_TF_BACKEND=HE_SEAL \
 STOP_CONST_FOLD=1 \
 python test.py \
 --data_dir=$DATA_DIR \
---ngraph=true \
---batch_size=300
+--batch_size=300 \
+--backend=HE_SEAL
 ```
 Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
 For large batch sizes, const folding incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.

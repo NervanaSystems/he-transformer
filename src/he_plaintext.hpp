@@ -16,11 +16,9 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "ngraph/assertion.hpp"
-#include "seal/seal.h"
+#include "protos/message.pb.h"
 
 namespace ngraph {
 namespace he {
@@ -32,50 +30,56 @@ class HEPlaintext {
 
   /// \brief Constructs a plaintext from the given values
   /// \param[in] values Values stored in the plaintext
-  HEPlaintext(const std::vector<double>& values) : m_values(values) {
-    if (values.size() > 0) {
-      m_first_val = values[0];
-    }
-  }
+  HEPlaintext(const std::vector<double>& values) : m_values(values) {}
 
   /// \brief Constructs a plaintext storing a single value
   /// \param[in] value Value stored in the plaintext
-  HEPlaintext(const double value)
-      : m_first_val(value), m_values{std::vector<double>{value}} {}
+  HEPlaintext(const double value) : m_values{std::vector<double>{value}} {}
 
   /// \brief Returns a reference to the stored values
-  const std::vector<double>& values() const { return m_values; }
+  inline const std::vector<double>& values() const { return m_values; }
+
+  /// \brief Returns a reference to the stored values
+  inline std::vector<double>& values() { return m_values; }
 
   /// \brief Returns the first value stored in the plaintext
-  double first_value() const { return m_first_val; }
+  inline double first_value() const { return m_values[0]; }
 
   /// \brief Sets the plaintext to store a single value
   /// \param[in] value Value to store in the plaintext
-  void set_value(const double value) {
-    m_first_val = value;
+  inline void set_value(const double value) {
     m_values = std::vector<double>{value};
   }
 
   /// \brief Sets the plaintext to store the given values
   /// \param[in] values Values to store in the plaintext
-  void set_values(const std::vector<double>& values) {
+  inline void set_values(const std::vector<double>& values) {
     m_values = values;
-    if (values.size() > 0) {
-      m_first_val = m_values[0];
-    }
   }
 
   /// \brief returns whether or not the plaintext stores a single value
-  bool is_single_value() const { return num_values() == 1; }
+  inline bool is_single_value() const { return num_values() == 1; }
 
   /// \brief Returns the number of values stored in the plaintext
-  size_t num_values() const { return m_values.size(); }
+  inline size_t num_values() const { return m_values.size(); }
 
-  static constexpr size_t type_byte_size = sizeof(double);
+  /// \brief Saves the  plaintext o a protobuf message
+  /// \param[out] proto Protobuf to store the plaintext in
+  inline void save(he_proto::Plaintext& proto) const {
+    for (const auto& value : m_values) {
+      proto.add_value(value);
+    }
+  }
 
  private:
-  double m_first_val{0.0};
   std::vector<double> m_values;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
+  for (const auto& value : plain.values()) {
+    os << value << " ";
+  }
+  return os;
+}
 }  // namespace he
 }  // namespace ngraph

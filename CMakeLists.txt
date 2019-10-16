@@ -20,24 +20,27 @@ cmake_minimum_required(VERSION 3.10)
 # Global project name
 project(he_transformer LANGUAGES CXX)
 
-# CXX flags
-if(DEFINED CMAKE_CXX_CLAGS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -std=gnu++1z -Wall")
-else()
-  set(CMAKE_CXX_FLAGS "-std=c++1z -std=gnu++1z -Wall")
-endif()
+# Cmake flags SEAL requires C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -march=native -Wno-deprecated-declarations")
-
+    "${CMAKE_CXX_FLAGS} -Wall -march=native -Wno-deprecated-declarations")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
+
+# This allows libhe_seal_backend.so to find libraries in the same directory
+set(CMAKE_INSTALL_RPATH "\$ORIGIN")
+
+# These variables are undocumented but useful.
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   message(STATUS "Setting clang flags...")
   include(cmake/clang_flags.cmake)
 endif()
-
-set(CMAKE_INSTALL_MESSAGE LAZY)
 
 if(CMAKE_BUILD_TYPE)
   set(RELEASE_TYPES
@@ -56,16 +59,9 @@ endif()
 
 include(cmake/sdl.cmake)
 
-# These variables are undocumented but useful.
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
 # For ngraph/log
 set(PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 add_definitions(-DPROJECT_ROOT_DIR="${PROJECT_ROOT_DIR}")
-
-# This allows libhe_seal_backend.so to find libraries in the same directory
-set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 # he-transformer headers
 set(HE_TRANSFORMER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)

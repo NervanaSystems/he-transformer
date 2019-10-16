@@ -23,36 +23,26 @@ import os
 from mnist_util import load_mnist_data, str2bool
 import pyhe_client
 
-FLAGS = None
-
 
 def test_mnist_cnn(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
-    batch_size = FLAGS.batch_size
-    x_test_batch = x_test[:batch_size]
+    x_test_batch = x_test[:FLAGS.batch_size]
     y_test_batch = y_test[:FLAGS.batch_size]
 
     data = x_test_batch.flatten('C')
-    print('Client batch size from FLAG:', batch_size)
-
-    complex_packing = False
-    if ('NGRAPH_COMPLEX_PACK' in os.environ):
-        complex_packing = str2bool(os.environ['NGRAPH_COMPLEX_PACK'])
-    print('complex_packing?', complex_packing)
+    print('Client batch size from FLAG:', FLAGS.batch_size)
 
     port = 34000
-    client = pyhe_client.HESealClient(FLAGS.hostname, port, batch_size, data,
-                                      complex_packing)
 
-    print('Sleeping until client is done')
-    while not client.is_done():
-        time.sleep(1)
+    encrypt_str = 'encrypt' if FLAGS.encrypt_data else 'plain'
+    client = pyhe_client.HESealClient(FLAGS.hostname, port, FLAGS.batch_size,
+                                      {'input': (encrypt_str, data)})
 
     results = client.get_results()
     results = np.round(results, 2)
 
-    y_pred_reshape = np.array(results).reshape(batch_size, 10)
+    y_pred_reshape = np.array(results).reshape(FLAGS.batch_size, 10)
     with np.printoptions(precision=3, suppress=True):
         print(y_pred_reshape)
 
@@ -61,10 +51,10 @@ def test_mnist_cnn(FLAGS):
     y_true = y_test_batch.argmax(axis=1)
 
     correct = np.sum(np.equal(y_pred, y_true))
-    acc = correct / float(batch_size)
+    acc = correct / float(FLAGS.batch_size)
     print('pred size', len(y_pred))
     print('correct', correct)
-    print('Accuracy (batch size', batch_size, ') =', acc * 100., '%')
+    print('Accuracy (batch size', FLAGS.batch_size, ') =', acc * 100., '%')
 
 
 if __name__ == '__main__':
@@ -72,6 +62,11 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size')
     parser.add_argument(
         '--hostname', type=str, default='localhost', help='Hostname of server')
+    parser.add_argument(
+        '--encrypt_data',
+        type=str2bool,
+        default=True,
+        help='Whether or not to encrypt client data')
 
     FLAGS, unparsed = parser.parse_known_args()
 

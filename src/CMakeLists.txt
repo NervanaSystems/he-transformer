@@ -17,25 +17,36 @@
 # HE transformer sources
 set(HE_SRC
     # main
-    he_plain_tensor.cpp he_tensor.cpp node_wrapper.cpp
+    he_plain_tensor.cpp
+    he_tensor.cpp
+    node_wrapper.cpp
+    he_op_annotations.cpp
     # pass
-    pass/he_fusion.cpp pass/he_liveness.cpp pass/supported_ops.cpp
+    pass/he_fusion.cpp
+    pass/he_liveness.cpp
+    pass/propagate_he_annotations.cpp
+    pass/supported_ops.cpp
     # op
     op/bounded_relu.cpp
     # seal kernels
-    seal/kernel/constant_seal.cpp
-    seal/kernel/pad_seal.cpp
-    seal/kernel/subtract_seal.cpp
-    seal/kernel/result_seal.cpp
     seal/kernel/add_seal.cpp
+    seal/kernel/constant_seal.cpp
+    seal/kernel/divide_seal.cpp
+    seal/kernel/exp_seal.cpp
+    seal/kernel/pad_seal.cpp
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
+    seal/kernel/relu_seal.cpp
+    seal/kernel/result_seal.cpp
+    seal/kernel/softmax_seal.cpp
+    seal/kernel/subtract_seal.cpp
     # seal backend
-    seal/seal_util.cpp
-    seal/he_seal_cipher_tensor.cpp
-    seal/he_seal_executable.cpp
     seal/he_seal_backend.cpp
+    seal/he_seal_cipher_tensor.cpp
     seal/he_seal_client.cpp
+    seal/he_seal_encryption_parameters.cpp
+    seal/he_seal_executable.cpp
+    seal/seal_util.cpp
     # protobuf files
     ${message_proto_srcs})
 

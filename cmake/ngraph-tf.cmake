@@ -20,7 +20,7 @@ set(EXTERNAL_NGRAPH_INSTALL_DIR ${EXTERNAL_INSTALL_DIR})
 set(NGRAPH_TF_CMAKE_PREFIX ext_ngraph_tf)
 
 set(NGRAPH_TF_REPO_URL https://github.com/tensorflow/ngraph-bridge.git)
-set(NGRAPH_TF_GIT_LABEL v0.18.1)
+set(NGRAPH_TF_GIT_LABEL cad093d84cc3a1ce212d8a96c67217321b44309b)
 
 set(NGRAPH_TF_SRC_DIR
     ${CMAKE_BINARY_DIR}/${NGRAPH_TF_CMAKE_PREFIX}/src/${NGRAPH_TF_CMAKE_PREFIX})
@@ -55,6 +55,9 @@ if(${USE_PREBUILT_TF})
     "${ng_tf_build_flags} --use_tensorflow_from_location=${NGRAPH_TF_BUILD_DIR}"
     )
 endif()
+
+# TODO: enable other options
+set(ng_tf_build_flags "--use_grappler_optimizer")
 
 ExternalProject_Add(ext_ngraph_tf
                     GIT_REPOSITORY ${NGRAPH_TF_REPO_URL}

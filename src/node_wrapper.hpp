@@ -1,3 +1,4 @@
+
 //*****************************************************************************
 // Copyright 2018-2019 Intel Corporation
 //
@@ -19,6 +20,7 @@
 #include <memory>
 
 #include "ngraph/node.hpp"
+#include "ngraph/op/op.hpp"
 
 namespace ngraph {
 namespace he {
@@ -45,6 +47,8 @@ class ngraph::he::NodeWrapper {
 
   std::shared_ptr<const Node> get_node() const { return m_node; }
   ngraph::he::OP_TYPEID get_typeid() const { return m_typeid; }
+
+  std::shared_ptr<const ngraph::op::Op> get_op() const;
 
  private:
   std::shared_ptr<const ngraph::Node> m_node;

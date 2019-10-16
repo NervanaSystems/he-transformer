@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
@@ -24,54 +25,196 @@
 
 using namespace std;
 using namespace ngraph;
+using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector) {
+auto broadcast_test = [](const Shape& shape_a, const Shape& shape_r,
+                         const AxisSet& axis_set, const vector<float>& input,
+                         const vector<float>& output, const bool arg1_encrypted,
+                         const bool complex_packing, const bool packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
+  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
 
-  {
-    Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f32, shape_a);
-    Shape shape_r{4};
-    auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-    auto f = make_shared<Function>(t, ParameterVector{A});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto a = inputs[0];
-      auto result = results[0];
-      copy_data(a, vector<float>{6});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({result}, {a});
-      EXPECT_TRUE(
-          all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
-    }
+  if (complex_packing) {
+    he_backend->update_encryption_parameters(
+        he::HESealEncryptionParameters::default_complex_packing_parms());
   }
-  {
-    Shape shape_a{};
-    auto A = make_shared<op::Parameter>(element::f64, shape_a);
-    Shape shape_r{4};
-    auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-    auto f = make_shared<Function>(t, ParameterVector{A});
-    auto tensors_list =
-        generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-    for (auto tensors : tensors_list) {
-      auto results = get<0>(tensors);
-      auto inputs = get<1>(tensors);
-      auto a = inputs[0];
-      auto result = results[0];
-      copy_data(a, vector<double>{6});
-      auto handle = backend->compile(f);
-      handle->call_with_validate({result}, {a});
-      EXPECT_TRUE(
-          all_close((vector<double>{6, 6, 6, 6}), read_vector<double>(result)));
-    }
-  }
+
+  auto a = make_shared<op::Parameter>(element::f32, shape_a);
+  auto t = make_shared<op::Broadcast>(a, shape_r, axis_set);
+  auto f = make_shared<Function>(t, ParameterVector{a});
+
+  a->set_op_annotations(
+      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+
+  auto t_a =
+      test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+  auto t_result =
+      test::he::tensor_from_flags(*he_backend, shape_r, arg1_encrypted, packed);
+
+  copy_data(t_a, input);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a});
+  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+};
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_real_unpacked) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_real_packed) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_complex_unpacked) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_complex_packed) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_real_unpacked) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_real_packed) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_complex_unpacked) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_complex_packed) {
+  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_real_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_real_packed) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_complex_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_complex_packed) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_real_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_real_packed) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_complex_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_complex_packed) {
+  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6}, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_packed) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_packed) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_packed) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_unpacked) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_packed) {
+  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
+                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial_plain_real_unpacked) {
+  broadcast_test(Shape{2, 2, 2}, Shape{2, 2, 2}, AxisSet{},
+                 vector<float>{2, 4, 6, 8, 16, 32, 64, 128},
+                 vector<float>{2, 4, 6, 8, 16, 32, 64, 128}, false, false,
+                 false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise_plain_real_unpacked) {
+  broadcast_test(Shape{3}, Shape{3, 4}, AxisSet{1}, vector<float>{1, 2, 3},
+                 vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, false,
+                 false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise_plain_real_unpacked) {
+  broadcast_test(Shape{4}, Shape{3, 4}, AxisSet{0}, vector<float>{1, 2, 3, 4},
+                 vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}, false,
+                 false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0_plain_real_unpacked) {
+  broadcast_test(Shape{2, 2}, Shape{2, 2, 2}, AxisSet{0},
+                 vector<float>{1, 2, 3, 4},
+                 vector<float>{1, 2, 3, 4, 1, 2, 3, 4}, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1_plain_real_unpacked) {
+  broadcast_test(Shape{2, 2}, Shape{2, 2, 2}, AxisSet{1},
+                 vector<float>{1, 2, 3, 4},
+                 vector<float>{1, 2, 1, 2, 3, 4, 3, 4}, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2_plain_real_unpacked) {
+  broadcast_test(Shape{2, 2}, Shape{2, 2, 2}, AxisSet{2},
+                 vector<float>{1, 2, 3, 4},
+                 vector<float>{1, 1, 2, 2, 3, 3, 4, 4}, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
@@ -83,238 +226,4 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
                    make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1}),
                    ParameterVector{A}),
                ngraph_error);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{6});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(
-        all_close((vector<float>{6, 6, 6, 6}), read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2, 2};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1, 2});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{6});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{6, 6, 6, 6, 6, 6, 6, 6}),
-                          read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape{2, 2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Broadcast>(A, shape, AxisSet{});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{2, 4, 6, 8, 16, 32, 64, 128});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{2, 4, 6, 8, 16, 32, 64, 128}),
-                          read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{3};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{3, 4};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{1});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1, 2, 3});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}),
-                          read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-
-  Shape shape_a{4};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{3, 4};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1, 2, 3, 4});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}),
-                          read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2, 2};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{0});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1, 2, 3, 4});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{1, 2, 3, 4, 1, 2, 3, 4}),
-                          read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2, 2};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{1});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1, 2, 3, 4});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{1, 2, 1, 2, 3, 4, 3, 4}),
-                          read_vector<float>(result)));
-  }
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  he_backend->set_pack_data(false);
-
-  Shape shape_a{2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{2, 2, 2};
-  auto t = make_shared<op::Broadcast>(A, shape_r, AxisSet{2});
-  auto f = make_shared<Function>(t, ParameterVector{A});
-  // Create some tensors for input/output
-  auto tensors_list =
-      generate_plain_cipher_tensors({t}, {A}, backend.get(), true);
-  for (auto tensors : tensors_list) {
-    auto results = get<0>(tensors);
-    auto inputs = get<1>(tensors);
-
-    auto a = inputs[0];
-    auto result = results[0];
-
-    copy_data(a, vector<float>{1, 2, 3, 4});
-
-    auto handle = backend->compile(f);
-    handle->call_with_validate({result}, {a});
-    EXPECT_TRUE(all_close((vector<float>{1, 1, 2, 2, 3, 3, 4, 4}),
-                          read_vector<float>(result)));
-  }
 }

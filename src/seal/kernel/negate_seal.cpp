@@ -16,10 +16,13 @@
 
 #include "seal/kernel/negate_seal.hpp"
 
-void ngraph::he::scalar_negate_seal(
-    const ngraph::he::SealCiphertextWrapper& arg,
-    std::shared_ptr<ngraph::he::SealCiphertextWrapper>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend) {
+namespace ngraph {
+namespace he {
+
+void scalar_negate_seal(const SealCiphertextWrapper& arg,
+                        std::shared_ptr<SealCiphertextWrapper>& out,
+                        const element::Type& element_type,
+                        const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
 
@@ -28,11 +31,12 @@ void ngraph::he::scalar_negate_seal(
     out->value() = -arg.value();
     return;
   }
+  out->complex_packing() = arg.complex_packing();
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
 }
 
-void ngraph::he::scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
-                                    const element::Type& element_type) {
+void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
+                        const element::Type& element_type) {
   const std::vector<double>& arg_vals = arg.values();
   std::vector<double> out_vals(arg.num_values());
 
@@ -40,3 +44,6 @@ void ngraph::he::scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
                  std::negate<double>());
   out.set_values(out_vals);
 }
+
+}  // namespace he
+}  // namespace ngraph

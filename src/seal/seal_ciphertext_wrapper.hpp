@@ -44,41 +44,41 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
 /// \param[in] cipher Ciphertext to write
 /// \param[out] destination Where to save ciphertext to
 inline void save(const seal::Ciphertext& cipher, void* destination) {
-  {
-    static constexpr std::array<size_t, 6> offsets = {
-        sizeof(seal::parms_id_type),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            2 * sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            3 * sizeof(uint64_t),
-        sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-            3 * sizeof(uint64_t) + sizeof(double),
-    };
+  static constexpr std::array<size_t, 6> offsets = {
+      sizeof(seal::parms_id_type),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          2 * sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          3 * sizeof(uint64_t),
+      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
+          3 * sizeof(uint64_t) + sizeof(double),
+  };
 
-    bool is_ntt_form = cipher.is_ntt_form();
-    uint64_t size = cipher.size();
-    uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
-    uint64_t coeff_mod_count = cipher.coeff_mod_count();
+  bool is_ntt_form = cipher.is_ntt_form();
+  uint64_t size = cipher.size();
+  uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
+  uint64_t coeff_mod_count = cipher.coeff_mod_count();
 
-    char* dst_char = static_cast<char*>(destination);
-    std::memcpy(destination, (void*)&cipher.parms_id(),
-                sizeof(seal::parms_id_type));
-    std::memcpy(static_cast<void*>(dst_char + offsets[0]), (void*)&is_ntt_form,
-                sizeof(seal::SEAL_BYTE));
-    std::memcpy(static_cast<void*>(dst_char + offsets[1]), (void*)&size,
-                sizeof(uint64_t));
-    std::memcpy(static_cast<void*>(dst_char + offsets[2]),
-                (void*)&polynomial_modulus_degree, sizeof(uint64_t));
-    std::memcpy(static_cast<void*>(dst_char + offsets[3]),
-                (void*)&coeff_mod_count, sizeof(uint64_t));
-    std::memcpy(static_cast<void*>(dst_char + offsets[4]),
-                (void*)&cipher.scale(), sizeof(double));
-    std::memcpy(static_cast<void*>(dst_char + offsets[5]), (void*)cipher.data(),
-                8 * cipher.uint64_count());
-  }
+  char* dst_char = static_cast<char*>(destination);
+  std::memcpy(destination,
+              const_cast<void*>(static_cast<const void*>(&cipher.parms_id())),
+              sizeof(seal::parms_id_type));
+  std::memcpy(static_cast<void*>(dst_char + offsets[0]),
+              static_cast<void*>(&is_ntt_form), sizeof(seal::SEAL_BYTE));
+  std::memcpy(static_cast<void*>(dst_char + offsets[1]),
+              static_cast<void*>(&size), sizeof(uint64_t));
+  std::memcpy(static_cast<void*>(dst_char + offsets[2]),
+              static_cast<void*>(&polynomial_modulus_degree), sizeof(uint64_t));
+  std::memcpy(static_cast<void*>(dst_char + offsets[3]),
+              static_cast<void*>(&coeff_mod_count), sizeof(uint64_t));
+  std::memcpy(static_cast<void*>(dst_char + offsets[4]),
+              const_cast<void*>(static_cast<const void*>(&cipher.scale())),
+              sizeof(double));
+  std::memcpy(
+      const_cast<void*>(static_cast<const void*>(dst_char + offsets[5])),
+      static_cast<const void*>(cipher.data()), 8 * cipher.uint64_count());
 }
 
 /// \brief Loads a serialized ciphertext
@@ -208,7 +208,7 @@ class SealCiphertextWrapper {
     }
 
     // TODO: save directly to protobuf
-    size_t stream_size = ngraph::he::ciphertext_size(m_ciphertext);
+    size_t stream_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
     cipher_str.resize(stream_size);
     ngraph::he::save(m_ciphertext, cipher_str.data());
@@ -218,8 +218,8 @@ class SealCiphertextWrapper {
   /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
   /// \param[out] dst Destination to load ciphertext wrapper to
   /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context TODO
-  static inline void load(ngraph::he::SealCiphertextWrapper& dst,
+  /// \param[in] context SEAL context of ciphertext to load
+  static inline void load(SealCiphertextWrapper& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
     dst.complex_packing() = src.complex_packing();
@@ -238,12 +238,11 @@ class SealCiphertextWrapper {
   /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
   /// \param[out] dst Destination to load ciphertext wrapper to
   /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context TODO
-  static inline void load(
-      std::shared_ptr<ngraph::he::SealCiphertextWrapper>& dst,
-      const he_proto::SealCiphertextWrapper& src,
-      std::shared_ptr<seal::SEALContext> context) {
-    dst = std::make_shared<ngraph::he::SealCiphertextWrapper>();
+  /// \param[in] context SEAL context of ciphertext to load
+  static inline void load(std::shared_ptr<SealCiphertextWrapper>& dst,
+                          const he_proto::SealCiphertextWrapper& src,
+                          std::shared_ptr<seal::SEALContext> context) {
+    dst = std::make_shared<SealCiphertextWrapper>();
     load(*dst, src, context);
   }
 
@@ -253,44 +252,6 @@ class SealCiphertextWrapper {
   bool m_known_value;
   float m_value{0.0f};
 };
-
-/// \brief Saves a list of ciphertexts to a protobuf message
-/// \param[in] ciphers_begin Iterator at beginning of ciphertext wrapper list
-/// \param[in] ciphers_end Iterator at end of ciphertext wrapper list
-/// \param[out] proto_msg Protobuf message to save ciphertexts to
-inline void save_to_proto(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
-        ciphers_begin,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>::const_iterator
-        ciphers_end,
-    he_proto::TCPMessage& proto_msg) {
-  size_t ciphers_size = 0;
-  for (auto it = ciphers_begin; it != ciphers_end; ++it) {
-    proto_msg.add_ciphers();
-    ciphers_size++;
-  }
-#pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < ciphers_size; ++cipher_idx) {
-    auto cipher_wrapper = *(ciphers_begin + cipher_idx);
-    cipher_wrapper->save(*proto_msg.mutable_ciphers(cipher_idx));
-  }
-}
-
-/// \brief Saves a vector of ciphertexts to a protobuf message
-/// \param[in] ciphers Vector of ciphertext wrappers to save
-/// \param[out] proto_msg Protobuf message to save ciphertexts to
-inline void save_to_proto(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    he_proto::TCPMessage& proto_msg) {
-  proto_msg.mutable_ciphers()->Reserve(ciphers.size());
-  for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
-    proto_msg.add_ciphers();
-  }
-#pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < ciphers.size(); ++cipher_idx) {
-    ciphers[cipher_idx]->save(*proto_msg.mutable_ciphers(cipher_idx));
-  }
-}
 
 }  // namespace he
 }  // namespace ngraph

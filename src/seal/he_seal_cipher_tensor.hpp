@@ -60,8 +60,7 @@ class HESealCipherTensor : public HETensor {
   /// \param[in] complex_packing Whether or not to encode elements using complex
   /// packing
   static void write(
-      std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
-          destination,
+      std::vector<std::shared_ptr<SealCiphertextWrapper>>& destination,
       const void* source, size_t num_bytes, size_t batch_size,
       const element::Type& element_type, seal::parms_id_type parms_id,
       double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
@@ -85,8 +84,7 @@ class HESealCipherTensor : public HETensor {
   /// \param[in] decryptor Decryptor used for decrpytion
   static void read(
       void* target,
-      const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
-          ciphertexts,
+      const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphertexts,
       size_t num_bytes, size_t batch_size, const element::Type& element_type,
       seal::CKKSEncoder& ckks_encoder, seal::Decryptor& decryptor);
 
@@ -94,8 +92,7 @@ class HESealCipherTensor : public HETensor {
   /// \param[in] elements Ciphertexts to store in the tensor
   /// \throws ngraph_error if incorrect number of ciphertexts is used
   void set_elements(
-      const std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
-          elements);
+      const std::vector<std::shared_ptr<SealCiphertextWrapper>>& elements);
 
   /// \brief Writes the encrypted ciphertexts to a stream
   /// \param[in,out] stream Stream to which ciphertexts are written
@@ -114,17 +111,52 @@ class HESealCipherTensor : public HETensor {
     }
   }
 
+  /// \brief Writes encrypted ciphertexts to vector of protobufs.
+  /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
+  /// multiple protobuf messages.
+  /// \param[out] protos Target to write encrypted cipehertexts to
+  inline void save_to_proto(
+      std::vector<he_proto::SealCipherTensor>& protos) const {
+    save_to_proto(protos, m_ciphertexts, get_shape(), is_packed(), get_name());
+  }
+
+  /// \brief Writes encrypted ciphertexts to vector of protobufs
+  /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
+  /// multiple protobuf messages.
+  /// \param[out] protos Target to write encrypted cipehertexts to
+  /// \param[in] ciphertexts Ciphertexts to save
+  /// \param[in] shape Shape the vector of ciphertexts represents
+  /// \param[in] packed Whether or not the cipher tensor uses plaintext packing
+  /// \param[in] name Name of the tensor to save
+  static inline void save_to_proto(
+      std::vector<he_proto::SealCipherTensor>& protos,
+      const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphertexts,
+      const ngraph::Shape& shape, const bool packed,
+      const std::string& name = "") {
+    // TODO: support large shapes
+    protos.resize(1);
+    protos[0].set_name(name);
+    protos[0].set_packed(packed);
+
+    std::vector<uint64_t> int_shape{shape};
+    *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+
+    protos[0].set_offset(0);
+
+    for (const auto& cipher : ciphertexts) {
+      cipher->save(*protos[0].add_ciphertexts());
+    }
+  }
+
   /// \brief Returns the ciphertexts stored in the tensor
-  inline std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>>&
-  get_elements() {
+  inline std::vector<std::shared_ptr<SealCiphertextWrapper>>& get_elements() {
     return m_ciphertexts;
   }
 
   /// \brief Returns the ciphertext stored at a specific index in the tensor
   /// \param[in] index Index at which to return the ciphertext
   /// \throws ngraph_error if index is out of bounds
-  inline std::shared_ptr<ngraph::he::SealCiphertextWrapper>& get_element(
-      size_t index) {
+  inline std::shared_ptr<SealCiphertextWrapper>& get_element(size_t index) {
     NGRAPH_CHECK(index < m_ciphertexts.size(), "Index ", index,
                  " out of bounds for vector of size ", m_ciphertexts.size());
     return m_ciphertexts[index];
@@ -141,7 +173,7 @@ class HESealCipherTensor : public HETensor {
   static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::cipher};
 
  private:
-  std::vector<std::shared_ptr<ngraph::he::SealCiphertextWrapper>> m_ciphertexts;
+  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_ciphertexts;
   size_t m_num_elements;
   const HESealBackend& m_he_seal_backend;
 };

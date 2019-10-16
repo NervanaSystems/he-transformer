@@ -35,9 +35,8 @@ from mnist_util import load_mnist_data, \
     avg_pool_3x3_same_size, \
     get_train_batch
 
-FLAGS = None
 
-
+# Squash weights and save as W_squash.txt
 def squash_layers():
     print("Squashing layers")
     tf.compat.v1.reset_default_graph()
@@ -81,7 +80,7 @@ def squash_layers():
     print("Squashed layers")
 
 
-def main(_):
+def main(FLAGS):
     (x_train, y_train, x_test, y_test) = load_mnist_data()
 
     x = tf.compat.v1.placeholder(tf.float32, [None, 28, 28, 1])
@@ -139,7 +138,6 @@ def main(_):
             print("saving", filename)
             np.savetxt(str(filename), weight)
 
-    # Squash weights and save as W_squash.txt
     squash_layers()
 
 
@@ -153,4 +151,5 @@ if __name__ == '__main__':
     parser.add_argument(
         '--batch_size', type=int, default=50, help='Batch Size')
     FLAGS, unparsed = parser.parse_known_args()
-    tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
+
+    main(FLAGS)

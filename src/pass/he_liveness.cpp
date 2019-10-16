@@ -30,18 +30,17 @@
 #include "ngraph/util.hpp"
 #include "pass/he_liveness.hpp"
 
-using namespace std;
-using namespace ngraph;
-
+namespace ngraph {
+namespace he {
 bool ngraph::he::pass::HELiveness::run_on_function(
-    shared_ptr<Function> function) {
-  list<shared_ptr<Node>> ops = function->get_ordered_ops();
+    std::shared_ptr<Function> function) {
+  std::list<std::shared_ptr<Node>> ops = function->get_ordered_ops();
 
-  unordered_set<descriptor::Tensor*> persistent_tensors;
-  unordered_set<descriptor::Tensor*> output_tensors;
+  std::unordered_set<descriptor::Tensor*> persistent_tensors;
+  std::unordered_set<descriptor::Tensor*> output_tensors;
 
   // Only result nodes are persistent
-  for (const shared_ptr<op::Result>& node : function->get_results()) {
+  for (const std::shared_ptr<op::Result>& node : function->get_results()) {
     for (auto& output : node->outputs()) {
       descriptor::Tensor& tensor = output.get_tensor();
       persistent_tensors.insert(&tensor);
@@ -49,12 +48,12 @@ bool ngraph::he::pass::HELiveness::run_on_function(
     }
   }
 
-  unordered_set<descriptor::Tensor*> currently_live;
+  std::unordered_set<descriptor::Tensor*> currently_live;
   for (auto it = ops.rbegin(); it != ops.rend(); it++) {
-    const shared_ptr<Node>& node = *it;
+    const std::shared_ptr<Node>& node = *it;
     node->liveness_new_list.clear();
     node->liveness_free_list.clear();
-    unordered_set<descriptor::Tensor*> input_tensor_decls;
+    std::unordered_set<descriptor::Tensor*> input_tensor_decls;
     for (auto& input : node->inputs()) {
       descriptor::Tensor& tensor = input.get_tensor();
       if (persistent_tensors.find(&tensor) == persistent_tensors.end()) {
@@ -62,7 +61,7 @@ bool ngraph::he::pass::HELiveness::run_on_function(
       }
     }
 
-    unordered_set<descriptor::Tensor*> output_tensor_decls;
+    std::unordered_set<descriptor::Tensor*> output_tensor_decls;
     for (auto& output : node->outputs()) {
       descriptor::Tensor& tensor = output.get_tensor();
       if (persistent_tensors.find(&tensor) == persistent_tensors.end()) {
@@ -70,9 +69,10 @@ bool ngraph::he::pass::HELiveness::run_on_function(
       }
     }
 
-    unordered_set<descriptor::Tensor*> free_tensor_decls;
-    unordered_set<descriptor::Tensor*> new_tensor_decls;
-    unordered_set<descriptor::Tensor*> all_tensor_decls = input_tensor_decls;
+    std::unordered_set<descriptor::Tensor*> free_tensor_decls;
+    std::unordered_set<descriptor::Tensor*> new_tensor_decls;
+    std::unordered_set<descriptor::Tensor*> all_tensor_decls =
+        input_tensor_decls;
     all_tensor_decls.insert(output_tensor_decls.begin(),
                             output_tensor_decls.end());
 
@@ -100,3 +100,6 @@ bool ngraph::he::pass::HELiveness::run_on_function(
   }
   return false;
 }
+
+}  // namespace he
+}  // namespace ngraph

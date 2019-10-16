@@ -40,7 +40,7 @@ inline std::vector<std::vector<size_t>> max_pool_seal(
     out_size++;
   }
   NGRAPH_CHECK(out_size == shape_size(out_shape), "out size ", out_size,
-               " != shape_size(out_shape) ", join(out_shape, "x"));
+               " != shape_size(out_shape) ", out_shape);
 
   std::vector<std::vector<size_t>> maximize_list(shape_size(out_shape));
 
