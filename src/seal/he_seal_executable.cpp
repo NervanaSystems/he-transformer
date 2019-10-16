@@ -1945,6 +1945,7 @@ void HESealExecutable::generate_calls(
           break;
         }
         case UnaryOpType::CipherToPlain: {
+          NGRAPH_INFO << "Result tensor packed? " << out0_plain->is_packed();
           result_seal(cipher_args[0]->get_elements(),
                       out0_plain->get_elements(), output_size,
                       m_he_seal_backend);
