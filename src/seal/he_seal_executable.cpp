@@ -221,16 +221,12 @@ void HESealExecutable::set_batch_size(size_t batch_size) {
 }
 
 void HESealExecutable::check_client_supports_function() {
-  NGRAPH_INFO << "Check client supports function";
   // Check if single parameter is from client
   size_t from_client_count = 0;
   for (const auto& param : get_parameters()) {
-    NGRAPH_INFO << "Checking param " << param->get_name();
     if (from_client(*param)) {
       from_client_count++;
       NGRAPH_HE_LOG(5) << "Parameter " << param->get_name() << " from client";
-    } else {
-      NGRAPH_INFO << "Param not from client";
     }
   }
   NGRAPH_CHECK(get_results().size() == 1,
@@ -862,13 +858,12 @@ bool HESealExecutable::call(
     if (HEOpAnnotations::has_he_annotation(*output)) {
       auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
 
+      // TODO: better matching between annotation / tensor
       if (he_output->is_type<HEPlainTensor>()) {
-        if (!he_op_annotation->encrypted()) {
-          if (he_op_annotation->packed()) {
-            std::static_pointer_cast<HEPlainTensor>(he_output)->pack();
-          } else {
-            std::static_pointer_cast<HEPlainTensor>(he_output)->unpack();
-          }
+        if (he_op_annotation->packed()) {
+          std::static_pointer_cast<HEPlainTensor>(he_output)->pack();
+        } else {
+          std::static_pointer_cast<HEPlainTensor>(he_output)->unpack();
         }
       }
     }
@@ -927,6 +922,8 @@ bool HESealExecutable::call(
         const Shape& shape = op->get_output_shape(i);
         const element::Type& element_type = op->get_output_element_type(i);
         std::string name = op->output(i).get_tensor().get_name();
+
+        NGRAPH_HE_LOG(5) << "Creating output tensor";
 
         // TODO: remove case once Constant becomes an op
         // (https://github.com/NervanaSystems/ngraph/pull/3752)
@@ -1160,10 +1157,6 @@ void HESealExecutable::generate_calls(
       binary_op_type = BinaryOpType::PlainPlainToPlain;
     } else {
       NGRAPH_CHECK(out[0] != nullptr, "out0 == nullptr");
-      NGRAPH_INFO << "out[0]->is_type<HEPlainTensor>(),"
-                  << out[0]->is_type<HEPlainTensor>();
-      NGRAPH_INFO << "out[0]->is_type<HESealCipherTensor>(),"
-                  << out[0]->is_type<HESealCipherTensor>();
       NGRAPH_CHECK(false, "Unknown binary op ", "Arg0 plain? ",
                    args[0]->is_type<HEPlainTensor>(), ", Arg0 cipher? ",
                    args[0]->is_type<HESealCipherTensor>(), ", Arg1 plain? ",
@@ -1410,11 +1403,6 @@ void HESealExecutable::generate_calls(
       AxisSet broadcast_axes = broadcast->get_broadcast_axes();
       Shape in_shape = arg_shapes[0];
       Shape broadcast_out_shape = out_shape;
-
-      NGRAPH_INFO << "in_shape " << in_shape;
-      NGRAPH_INFO << "broadcast_out_shape " << broadcast_out_shape;
-      NGRAPH_INFO << "arg0->is_packed() " << args[0]->is_packed();
-      NGRAPH_INFO << "out0->is_packed() " << out[0]->is_packed();
 
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
@@ -1945,7 +1933,6 @@ void HESealExecutable::generate_calls(
           break;
         }
         case UnaryOpType::CipherToPlain: {
-          NGRAPH_INFO << "Result tensor packed? " << out0_plain->is_packed();
           result_seal(cipher_args[0]->get_elements(),
                       out0_plain->get_elements(), output_size,
                       m_he_seal_backend);
