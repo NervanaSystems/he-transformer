@@ -2013,6 +2013,10 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Softmax: {
       const op::Softmax* softmax = static_cast<const op::Softmax*>(&node);
+      auto axes = softmax->get_axes();
+      NGRAPH_CHECK(!args[0]->is_packed() || (axes.find(0) == axes.end()),
+                   "Softmax axes cannot contain 0 for packed tensors");
+
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
           if (m_enable_client) {

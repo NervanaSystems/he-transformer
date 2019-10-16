@@ -56,8 +56,13 @@ auto softmax_test = [](const Shape& shape_a, const AxisSet &axes,
   copy_data(t_a, input_a);
 
   auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  if (packed && (axes.find(0) != axes.end())) {
+    EXPECT_ANY_THROW((handle->call_with_validate({t_result}, {t_a})));
+  } else {
+    handle->call_with_validate({t_result}, {t_a});
+    EXPECT_TRUE(
+        test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  }
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, softmax_all_plain_real_unpacked) {
