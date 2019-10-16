@@ -56,8 +56,8 @@ def main(FLAGS):
     y = MaxPooling2D(pool_size=(2, 2))(y)
     y = Flatten()(y)
     y = Dense(128, activation='relu')(y)
-    y = Dense(10, name='output')(y)
-    y = Activation('softmax')(y)
+    y = Dense(10)(y)
+    y = Activation('softmax', name='output')(y)
 
     model = Model(inputs=x, outputs=y)
 

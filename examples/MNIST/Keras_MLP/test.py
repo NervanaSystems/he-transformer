@@ -52,14 +52,9 @@ def test_mnist_mlp(FLAGS):
 
     # Load saved model
     model = tf.keras.models.load_model('model.h5')
-    # model.summary()
-    # Remove final activation layer, since softmax isn't supported
-    model.layers.pop()
+    model.summary()
 
-    model2 = Model(model.input, model.layers[-1].output)
-    model2.summary()
-
-    y_pred = model2.predict(x_test[0:FLAGS.batch_size])
+    y_pred = model.predict(x_test[0:FLAGS.batch_size])
     print('Test pred:', y_pred)
 
     y_test_batch = y_test[0:FLAGS.batch_size]

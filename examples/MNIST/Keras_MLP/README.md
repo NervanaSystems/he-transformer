@@ -3,7 +3,7 @@ This example demonstrates a simple deep learning model on the MNIST dataset usin
 # Train the network
 First, train the network using
 ```bash
-python train.py [--train_loop_count=20000]
+python train.py [--epochs=4]
 ```
 This trains the network briefly and stores the network weights.
 
