@@ -1921,7 +1921,6 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Result: {
       size_t output_size = args[0]->get_batched_element_count();
-      NGRAPH_INFO << "output_size " << output_size;
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
           result_seal(cipher_args[0]->get_elements(),
