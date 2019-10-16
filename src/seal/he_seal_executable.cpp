@@ -1630,7 +1630,15 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Exp: {
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
-          NGRAPH_CHECK(false, "Exp C/C unimplemented");
+          if (m_enable_client) {
+            NGRAPH_CHECK(false, "Exp not implemented for client-aided model");
+          } else {
+            NGRAPH_WARN << "Performing Exp without client is not "
+                           "privacy-preserving";
+            exp_seal(
+                cipher_args[0]->get_elements(), out0_cipher->get_elements(),
+                cipher_args[0]->get_batched_element_count(), m_he_seal_backend);
+          }
           break;
         }
         case UnaryOpType::PlainToPlain: {
@@ -1654,7 +1662,7 @@ void HESealExecutable::generate_calls(
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
           if (m_enable_client) {
-            NGRAPH_CHECK(false, "Max not implemented for server");
+            NGRAPH_CHECK(false, "Max not implemented for client-aided model");
           } else {
             NGRAPH_WARN << "Performing Max without client is not "
                            "privacy-preserving";
