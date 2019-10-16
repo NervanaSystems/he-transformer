@@ -29,10 +29,10 @@ using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-auto softmax_test = [](const Shape& shape_a, const AxisSet &axes,
-                        const vector<float>& input_a,
-                        const vector<float>& output, const bool arg1_encrypted,
-                        const bool complex_packing, const bool packed) {
+auto softmax_test = [](const Shape& shape_a, const AxisSet& axes,
+                       const vector<float>& input_a,
+                       const vector<float>& output, const bool arg1_encrypted,
+                       const bool complex_packing, const bool packed) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<HESealBackend*>(backend.get());
 
@@ -67,703 +67,144 @@ auto softmax_test = [](const Shape& shape_a, const AxisSet &axes,
 
 NGRAPH_TEST(${BACKEND_NAME}, softmax_all_plain_real_unpacked) {
   auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, false, false,
-                false);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, softmax_all_plain_real_packed) {
   auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, false, false,
-                true);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME},
-            softmax_all_plain_complex_unpacked) {
-              auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, false, true,
-                false);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_all_plain_complex_unpacked) {
+  auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, softmax_all_plain_complex_packed) {
   auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, false, true,
-                true);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, softmax_all_cipher_real_unpacked) {
   auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, true, false,
-                false);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, softmax_all_cipher_real_packed) {
   auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, true, false,
-                true);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME},
-            softmax_all_cipher_complex_unpacked) {
-              auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, true, true,
-                false);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_all_cipher_complex_unpacked) {
+  auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               true, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME},
-            softmax_all_cipher_complex_packed) {
-              auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
-  softmax_test(Shape{2,3}, AxisSet{0,1},
-                vector<float>{-3, -2, -1, 0, 1, 2},
-                vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d, expf(0) / d, expf(1) / d, expf(2) / d}, true, true,
-                true);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_all_cipher_complex_packed) {
+  auto d = expf(-3) + expf(-2) + expf(-1) + expf(0) + expf(1) + expf(2);
+  softmax_test(Shape{2, 3}, AxisSet{0, 1}, vector<float>{-3, -2, -1, 0, 1, 2},
+               vector<float>{expf(-3) / d, expf(-2) / d, expf(-1) / d,
+                             expf(0) / d, expf(1) / d, expf(2) / d},
+               true, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_1channel_2image_plain_real_unpacked) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_plain_real_unpacked) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_1channel_2image_plain_real_packed) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      false, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_plain_real_packed) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME},
-            softmax_1d_1channel_2image_plain_complex_unpacked) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      false, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_plain_complex_unpacked) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_1channel_2image_plain_complex_packed) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      false, true, true);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_plain_complex_packed) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_1channel_2image_cipher_real_unpacked) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_cipher_real_unpacked) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_1channel_2image_cipher_real_packed) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      true, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_cipher_real_packed) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME},
-            softmax_1d_1channel_2image_cipher_complex_unpacked) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      true, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_cipher_complex_unpacked) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               true, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME},
-            softmax_1d_1channel_2image_cipher_complex_packed) {
-  softmax_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
-          .get_vector(),
-      true, true, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_plain_real_unpacked) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_plain_real_upacked) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      false, false, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_plain_complex_unpacked) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      false, true, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_plain_complex_packed) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      false, true, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_cipher_real_unpacked) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      true, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_cipher_real_packed) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      true, false, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_cipher_complex_unpacked) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      true, true, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_1d_2channel_2image_cipher_complex_packed) {
-  softmax_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
-          .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
-          .get_vector(),
-      true, true, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_plain_real_unpacked) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_plain_real_packed) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                false, false, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_plain_complex_unpacked) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                false, true, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_plain_complex_packed) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                false, true, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_cipher_real_unpacked) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                true, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_cipher_real_packed) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                true, false, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_cipher_complex_unpacked) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                true, true, false);
-}
-
-
-NGRAPH_TEST(${BACKEND_NAME}, softmax_2d_2channel_2image_cipher_complex_packed) {
-  softmax_test(Shape{2, 2, 5, 5}, Shape{2, 3},
-                test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                           {0, 3, 2, 0, 0},
-                                           {2, 0, 0, 0, 1},
-                                           {2, 0, 1, 1, 2},
-                                           {0, 2, 1, 0, 0}},
-
-                                          {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                           {0, 2, 3, 0, 1},
-                                           {2, 0, 1, 0, 2},
-                                           {3, 1, 0, 0, 0},
-                                           {2, 0, 0, 0, 0}}},
-
-                                         {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                           {0, 0, 2, 0, 1},
-                                           {0, 0, 1, 2, 3},
-                                           {2, 0, 0, 3, 0},
-                                           {0, 0, 0, 0, 0}},
-
-                                          {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                           {0, 2, 0, 0, 0},
-                                           {1, 1, 2, 0, 2},
-                                           {1, 1, 1, 0, 1},
-                                           {1, 0, 0, 0, 2}}}})
-                    .get_vector(),
-                test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                           {3, 3, 2},
-                                           {2, 1, 2},
-                                           {2, 2, 2}},
-
-                                          {{3, 3, 3},  // img 0 chan 1
-                                           {3, 3, 3},
-                                           {3, 1, 2},
-                                           {3, 1, 0}}},
-
-                                         {{{2, 2, 2},  // img 1 chan 0
-                                           {2, 2, 3},
-                                           {2, 3, 3},
-                                           {2, 3, 3}},
-
-                                          {{2, 2, 1},  // img 1 chan 1
-                                           {2, 2, 2},
-                                           {2, 2, 2},
-                                           {1, 1, 2}}}})
-                    .get_vector(),
-                true, true, true);
+NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_cipher_complex_packed) {
+  auto d0 = expf(-10) + expf(-20) + expf(-30);
+  auto d1 = expf(-40) + expf(-50) + expf(-60);
+  softmax_test(Shape{2, 3}, AxisSet{1},
+               vector<float>{-10, -20, -30, -40, -50, -60},
+               vector<float>{expf(-10) / d0, expf(-20) / d0, expf(-30) / d0,
+                             expf(-40) / d1, expf(-50) / d1, expf(-60) / d1},
+               true, true, true);
 }
