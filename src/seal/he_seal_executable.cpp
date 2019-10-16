@@ -33,6 +33,7 @@
 #include "kernel/convolution_seal.hpp"
 #include "kernel/divide_seal.hpp"
 #include "kernel/dot_seal.hpp"
+#include "kernel/exp_seal.hpp"
 #include "kernel/max_pool_seal.hpp"
 #include "kernel/max_seal.hpp"
 #include "kernel/minimum_seal.hpp"
@@ -1626,6 +1627,24 @@ void HESealExecutable::generate_calls(
       }
       break;
     }
+    case OP_TYPEID::Exp: {
+      switch (unary_op_type) {
+        case UnaryOpType::CipherToCipher: {
+          NGRAPH_CHECK(false, "Exp C/C unimplemented");
+          break;
+        }
+        case UnaryOpType::PlainToPlain: {
+          exp_seal(plain_args[0]->get_elements(), out0_plain->get_elements(),
+                   out0_plain->get_batched_element_count());
+          break;
+        }
+        case UnaryOpType::PlainToCipher:
+        case UnaryOpType::CipherToPlain:
+        case UnaryOpType::None:
+          NGRAPH_CHECK(false, "Unsupported op types");
+      }
+      break;
+    }
     case OP_TYPEID::Max: {
       const op::Max* max = static_cast<const op::Max*>(&node);
       auto reduction_axes = max->get_reduction_axes();
@@ -2108,7 +2127,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::EmbeddingLookup:
     case OP_TYPEID::Equal:
     case OP_TYPEID::Erf:
-    case OP_TYPEID::Exp:
     case OP_TYPEID::Floor:
     case OP_TYPEID::Gather:
     case OP_TYPEID::GatherND:

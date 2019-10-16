@@ -30,24 +30,24 @@ namespace he {
 void scalar_exp_seal(const HEPlaintext& arg, HEPlaintext& out);
 
 void exp_seal(const std::vector<HEPlaintext>& arg,
-               std::vector<HEPlaintext>& out, size_t count);
+              std::vector<HEPlaintext>& out, size_t count);
 
 void scalar_exp_seal_known_value(const SealCiphertextWrapper& arg,
-                                  std::shared_ptr<SealCiphertextWrapper>& out);
+                                 std::shared_ptr<SealCiphertextWrapper>& out);
 
 void scalar_exp_seal(const SealCiphertextWrapper& arg,
-                      std::shared_ptr<SealCiphertextWrapper>& out,
-                      const seal::parms_id_type& parms_id, double scale,
-                      seal::CKKSEncoder& ckks_encoder,
-                      seal::Encryptor& encryptor, seal::Decryptor& decryptor);
+                     std::shared_ptr<SealCiphertextWrapper>& out,
+                     const seal::parms_id_type& parms_id, double scale,
+                     seal::CKKSEncoder& ckks_encoder,
+                     seal::Encryptor& encryptor, seal::Decryptor& decryptor);
 
 void scalar_exp_seal(const SealCiphertextWrapper& arg,
-                      std::shared_ptr<SealCiphertextWrapper>& out,
-                      const HESealBackend& he_seal_backend);
+                     std::shared_ptr<SealCiphertextWrapper>& out,
+                     const HESealBackend& he_seal_backend);
 
 void exp_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-               std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-               size_t count, const HESealBackend& he_seal_backend);
+              std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+              size_t count, const HESealBackend& he_seal_backend);
 
 }  // namespace he
 }  // namespace ngraph
