@@ -1597,6 +1597,10 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Max: {
       const op::Max* max = static_cast<const op::Max*>(&node);
+      auto reduction_axes = max->get_reduction_axes();
+      NGRAPH_CHECK(!args[0]->is_packed() ||
+                       (reduction_axes.find(0) == reduction_axes.end()),
+                   "Max reduction axes cannot contain 0 for packed tensors");
       switch (unary_op_type) {
         case UnaryOpType::CipherToCipher: {
           if (m_enable_client) {

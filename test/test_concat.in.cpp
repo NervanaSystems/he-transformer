@@ -209,42 +209,49 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_real_unpacked) {
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
               false, false);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_real_packed) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
               false, true);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_complex_unpacked) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
               true, false);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_plain_complex_packed) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, false,
               true, true);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_real_unpacked) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
               false, false);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_real_packed) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
               false, true);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_complex_unpacked) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},
               vector<float>{2, 4, 8, 16, 1, 2, 4, 8, 16, 32, 18, 19}, true,
               true, false);
 }
+
 NGRAPH_TEST(${BACKEND_NAME}, concat_vector_cipher_complex_packed) {
   concat_test(Shape{4}, Shape{6}, Shape{2}, 0, vector<float>{2, 4, 8, 16},
               vector<float>{1, 2, 4, 8, 16, 32}, vector<float>{18, 19},

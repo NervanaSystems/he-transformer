@@ -73,7 +73,18 @@ inline void max_seal(
     std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
     const Shape& in_shape, const Shape& out_shape,
     const AxisSet& reduction_axes, const HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(false, "Max cipher cipher unimplemented");
+  std::vector<HEPlaintext> plain_arg(arg.size());
+  std::vector<HEPlaintext> plain_out(out.size());
+  for (size_t arg_idx = 0; arg_idx < arg.size(); ++arg_idx) {
+    he_seal_backend.decrypt(plain_arg[arg_idx], *arg[arg_idx]);
+  }
+
+  max_seal(plain_arg, plain_out, in_shape, out_shape, reduction_axes);
+
+  for (size_t out_idx = 0; out_idx < out.size(); ++out_idx) {
+    he_seal_backend.encrypt(out[out_idx], plain_out[out_idx], element::f32,
+                            he_seal_backend.complex_packing());
+  }
 }
 
 }  // namespace he
