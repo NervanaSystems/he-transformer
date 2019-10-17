@@ -204,11 +204,14 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] op Graph operation, should be Constant or Parameter node
+  /// \param[in] node_wrapper Wrapper of graph operation
   inline bool plaintext_packed(const NodeWrapper& node_wrapper) {
     return plaintext_packed(*node_wrapper.get_op());
   }
 
+  /// \brief Returns whether or not operation node should be packed using
+  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation
   inline bool plaintext_packed(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =

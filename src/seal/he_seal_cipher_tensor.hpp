@@ -76,7 +76,7 @@ class HESealCipherTensor : public HETensor {
   /// \brief Read bytes from a vector of ciphertexts after decrpyting and
   /// decoding
   /// \param[out] target Pointer to destination for data
-  /// \param[in] /// ciphertexts Ciphertexts to decrypt and decode
+  /// \param[in] ciphertexts Ciphertexts to decrypt and decode
   /// \param[in] num_bytes Number of bytes to read, must be a multiple of the
   /// batch size
   /// \param[in] batch_size Packing factor to use

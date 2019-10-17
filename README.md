@@ -72,7 +72,7 @@ cmake .. -DNGRAPH_HE_DOC_BUILD_ENABLE=ON
 ```
 and call
 ```bash
-make doc
+make docs
 ```
 to create doxygen documentation in `$HE_TRANSFORMER/build/doc/doxygen`.
 

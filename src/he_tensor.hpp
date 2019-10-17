@@ -65,7 +65,7 @@ class HETensor : public runtime::Tensor {
                             size_t pack_axis = 0);
 
   /// \brief Returns the batch size of a given shape
-  /// \param[in] Shape Shape of the tensor
+  /// \param[in] shape Shape of the tensor
   /// \param[in] packed Whether or not batch-axis packing is used
   static uint64_t batch_size(const Shape& shape, const bool packed);
 

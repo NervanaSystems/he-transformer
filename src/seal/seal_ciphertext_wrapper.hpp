@@ -71,7 +71,7 @@ class SealCiphertextWrapper {
   SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
 
   /// \brief Create an unknown-valued ciphertext
-  /// \param[in] complex_packign Whether or not to use complex packing
+  /// \param[in] complex_packing Whether or not to use complex packing
   SealCiphertextWrapper(bool complex_packing)
       : m_complex_packing(complex_packing), m_known_value(false) {}
 
