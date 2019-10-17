@@ -156,9 +156,9 @@ TEST(seal_util, save) {
   std::byte* buffer = reinterpret_cast<std::byte*>(ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher)));
 
   auto t1 = chrono::high_resolution_clock::now();
-  ngraph::he::save(cipher, buffer);
+  auto save_size = ngraph::he::save(cipher, buffer);
   auto t2 = chrono::high_resolution_clock::now();
-  ngraph::he::load(cipher_load, context, buffer);
+  ngraph::he::load(cipher_load, context, buffer, save_size);
   auto t3 = chrono::high_resolution_clock::now();
 
   NGRAPH_INFO << "save time "

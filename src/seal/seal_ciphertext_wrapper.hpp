@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <memory>
 #include <cstddef>
+#include <memory>
 
 #include "ngraph/check.hpp"
 #include "protos/message.pb.h"
@@ -35,7 +35,8 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
 /// \param[in] cipher Ciphertext to write
 /// \param[out] destination Where to save ciphertext to
 /// \returns The size in bytes of the saved ciphertext
-inline std::size_t save(const seal::Ciphertext& cipher, std::byte* destination) {
+inline std::size_t save(const seal::Ciphertext& cipher,
+                        std::byte* destination) {
   return cipher.save(destination, ciphertext_size(cipher));
 }
 
@@ -43,9 +44,11 @@ inline std::size_t save(const seal::Ciphertext& cipher, std::byte* destination) 
 /// \param[out] cipher De-serialized ciphertext
 /// \param[in] context Encryption context to verify ciphertext validity against
 /// \param[in] src Pointer to data to load from
+/// \param[in] size Number of bytes available in the memory location
 inline void load(seal::Ciphertext& cipher,
-                 std::shared_ptr<seal::SEALContext> context, const std::byte* src) {
-  cipher.load(context, src, ciphertext_size(cipher));
+                 std::shared_ptr<seal::SEALContext> context,
+                 const std::byte* src, const std::size_t size) {
+  cipher.load(context, src, size);
 }
 
 /// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
@@ -129,7 +132,8 @@ class SealCiphertextWrapper {
 
     // TODO: save directly to protobuf
     size_t cipher_size = ciphertext_size(m_ciphertext);
-    std::byte* cipher_data = static_cast<std::byte*>(ngraph::ngraph_malloc(cipher_size));
+    std::byte* cipher_data =
+        static_cast<std::byte*>(ngraph::ngraph_malloc(cipher_size));
 
     size_t save_size = ngraph::he::save(m_ciphertext, cipher_data);
     proto_cipher.set_ciphertext(static_cast<void*>(cipher_data), save_size);
@@ -151,9 +155,9 @@ class SealCiphertextWrapper {
     } else {
       // TODO: load from string directly
       const std::string& cipher_str = src.ciphertext();
-      ngraph::he::load(
-          dst.ciphertext(), context,
-          reinterpret_cast<const std::byte*>(cipher_str.data()));
+      ngraph::he::load(dst.ciphertext(), context,
+                       reinterpret_cast<const std::byte*>(cipher_str.data()),
+                       cipher_str.size());
     }
   }
 
