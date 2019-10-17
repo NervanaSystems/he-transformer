@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "he_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -133,6 +134,8 @@ class HESealCipherTensor : public HETensor {
       const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphertexts,
       const ngraph::Shape& shape, const bool packed,
       const std::string& name = "") {
+    NGRAPH_HE_LOG(5) << "Saving tensor " << name << " shape " << shape
+                     << " to proto";
     // TODO: support large shapes
     protos.resize(1);
     protos[0].set_name(name);
@@ -146,6 +149,8 @@ class HESealCipherTensor : public HETensor {
     for (const auto& cipher : ciphertexts) {
       cipher->save(*protos[0].add_ciphertexts());
     }
+    NGRAPH_HE_LOG(5) << "Done saving tensor " << name << " shape " << shape
+                     << " to proto";
   }
 
   /// \brief Returns the ciphertexts stored in the tensor

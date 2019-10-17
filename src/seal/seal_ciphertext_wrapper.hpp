@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <memory>
 
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "protos/message.pb.h"
 #include "seal/seal.h"
@@ -28,7 +29,7 @@ namespace he {
 /// \brief Returns the size in bytes required to serialize a ciphertext
 /// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
-  return cipher.save_size(seal::Serialization::compr_mode_default);
+  return cipher.save_size(seal::compr_mode_type::none);
 }
 
 /// \brief Serializes the ciphertext and writes to a destination
@@ -37,7 +38,8 @@ inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
 /// \returns The size in bytes of the saved ciphertext
 inline std::size_t save(const seal::Ciphertext& cipher,
                         std::byte* destination) {
-  return cipher.save(destination, ciphertext_size(cipher));
+  return cipher.save(destination, ciphertext_size(cipher),
+                     seal::compr_mode_type::none);
 }
 
 /// \brief Loads a serialized ciphertext
@@ -124,6 +126,8 @@ class SealCiphertextWrapper {
   /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
   /// ciphertext
   inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
+    using Clock = std::chrono::high_resolution_clock;
+    auto t1 = Clock::now();
     proto_cipher.set_complex_packing(complex_packing());
     proto_cipher.set_known_value(known_value());
     if (known_value()) {
@@ -135,10 +139,45 @@ class SealCiphertextWrapper {
     std::byte* cipher_data =
         static_cast<std::byte*>(ngraph::ngraph_malloc(cipher_size));
 
-    size_t save_size = ngraph::he::save(m_ciphertext, cipher_data);
-    proto_cipher.set_ciphertext(static_cast<void*>(cipher_data), save_size);
+    auto t2 = Clock::now();
 
-    ngraph::ngraph_free(cipher_data);
+    size_t save_size = ngraph::he::save(m_ciphertext, cipher_data);
+
+    auto t3 = Clock::now();
+    proto_cipher.set_allocated_ciphertext(static_cast<void*>(cipher_data),
+                                          save_size);
+
+    auto t4 = Clock::now();
+
+    // ngraph::ngraph_free(cipher_data);
+
+    auto t5 = Clock::now();
+
+    NGRAPH_HE_LOG(3) << "malloc took "
+                     << std::chrono::duration_cast<std::chrono::microseconds>(
+                            t2 - t1)
+                            .count()
+                     << "us";
+    NGRAPH_HE_LOG(3) << "save took "
+                     << std::chrono::duration_cast<std::chrono::microseconds>(
+                            t3 - t2)
+                            .count()
+                     << "us";
+    NGRAPH_HE_LOG(3) << "set_ciphertext took "
+                     << std::chrono::duration_cast<std::chrono::microseconds>(
+                            t4 - t3)
+                            .count()
+                     << "us";
+    NGRAPH_HE_LOG(3) << "ngraph_free took "
+                     << std::chrono::duration_cast<std::chrono::microseconds>(
+                            t5 - t4)
+                            .count()
+                     << "us";
+    NGRAPH_HE_LOG(3) << "Total save took "
+                     << std::chrono::duration_cast<std::chrono::microseconds>(
+                            t5 - t1)
+                            .count()
+                     << "us with save size " << save_size;
   }
 
   /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
