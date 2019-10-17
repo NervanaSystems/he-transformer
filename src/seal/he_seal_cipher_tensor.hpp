@@ -95,23 +95,6 @@ class HESealCipherTensor : public HETensor {
   void set_elements(
       const std::vector<std::shared_ptr<SealCiphertextWrapper>>& elements);
 
-  /// \brief Writes the encrypted ciphertexts to a stream
-  /// \param[in,out] stream Stream to which ciphertexts are written
-  void save_elements(std::ostream& stream) const {
-    NGRAPH_CHECK(m_ciphertexts.size() > 0, "Cannot save 0 ciphertexts");
-
-    size_t cipher_size = m_ciphertexts[0]->size();
-    for (auto& ciphertext : m_ciphertexts) {
-      NGRAPH_CHECK(cipher_size == ciphertext->size(), "Cipher size ",
-                   ciphertext->size(), " doesn't match expected ", cipher_size);
-
-      if (ciphertext->known_value()) {
-        throw ngraph_error("Can't save known-valued ciphertext");
-      }
-      ciphertext->save(stream);
-    }
-  }
-
   /// \brief Writes encrypted ciphertexts to vector of protobufs.
   /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
   /// multiple protobuf messages.
@@ -134,8 +117,6 @@ class HESealCipherTensor : public HETensor {
       const std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphertexts,
       const ngraph::Shape& shape, const bool packed,
       const std::string& name = "") {
-    NGRAPH_HE_LOG(5) << "Saving tensor " << name << " shape " << shape
-                     << " to proto";
     // TODO: support large shapes
     protos.resize(1);
     protos[0].set_name(name);
@@ -143,14 +124,11 @@ class HESealCipherTensor : public HETensor {
 
     std::vector<uint64_t> int_shape{shape};
     *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
-
     protos[0].set_offset(0);
 
     for (const auto& cipher : ciphertexts) {
       cipher->save(*protos[0].add_ciphertexts());
     }
-    NGRAPH_HE_LOG(5) << "Done saving tensor " << name << " shape " << shape
-                     << " to proto";
   }
 
   /// \brief Returns the ciphertexts stored in the tensor
