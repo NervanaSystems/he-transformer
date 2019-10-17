@@ -21,7 +21,7 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 set(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
-set(SEAL_GIT_TAG origin/3.3.2)
+set(SEAL_GIT_TAG 3.4.1)
 
 set(SEAL_USE_CXX17 ON)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -44,6 +44,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   add_compile_options(-Wno-documentation-unknown-command)
   add_compile_options(-Wno-inconsistent-missing-destructor-override)
   add_compile_options(-Wno-extra-semi)
+  add_compile_options(-Wno-old-style-cast)
 endif()
 message(STATUS "SEAL_CXX_FLAGS ${SEAL_CXX_FLAGS}")
 
@@ -68,5 +69,8 @@ ExternalProject_Get_Property(ext_seal SOURCE_DIR)
 add_library(libseal STATIC IMPORTED)
 set_target_properties(libseal
                       PROPERTIES IMPORTED_LOCATION
-                                 ${EXTERNAL_INSTALL_LIB_DIR}/libseal.a)
+                                 ${EXTERNAL_INSTALL_LIB_DIR}/libseal-3.4.a)
+
+set(SEAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
+
 add_dependencies(libseal ext_seal)

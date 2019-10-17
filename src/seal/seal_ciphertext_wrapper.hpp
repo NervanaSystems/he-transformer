@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "protos/message.pb.h"
 #include "seal/seal.h"
@@ -27,105 +29,28 @@ namespace he {
 /// \brief Returns the size in bytes required to serialize a ciphertext
 /// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
-  // TODO: figure out why the extra 8 bytes
-  size_t expected_size = 8;
-  expected_size += sizeof(seal::parms_id_type);
-  expected_size += sizeof(seal::SEAL_BYTE);
-  // size64, poly_modulus_degere, coeff_mod_count
-  expected_size += 3 * sizeof(uint64_t);
-  // scale
-  expected_size += sizeof(double);
-  // data
-  expected_size += 8 * cipher.uint64_count();
-  return expected_size;
+  return cipher.save_size(seal::compr_mode_type::none);
 }
 
 /// \brief Serializes the ciphertext and writes to a destination
 /// \param[in] cipher Ciphertext to write
 /// \param[out] destination Where to save ciphertext to
-inline void save(const seal::Ciphertext& cipher, void* destination) {
-  static constexpr std::array<size_t, 6> offsets = {
-      sizeof(seal::parms_id_type),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          2 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t) + sizeof(double),
-  };
-
-  bool is_ntt_form = cipher.is_ntt_form();
-  uint64_t size = cipher.size();
-  uint64_t polynomial_modulus_degree = cipher.poly_modulus_degree();
-  uint64_t coeff_mod_count = cipher.coeff_mod_count();
-
-  char* dst_char = static_cast<char*>(destination);
-  std::memcpy(destination,
-              const_cast<void*>(static_cast<const void*>(&cipher.parms_id())),
-              sizeof(seal::parms_id_type));
-  std::memcpy(static_cast<void*>(dst_char + offsets[0]),
-              static_cast<void*>(&is_ntt_form), sizeof(seal::SEAL_BYTE));
-  std::memcpy(static_cast<void*>(dst_char + offsets[1]),
-              static_cast<void*>(&size), sizeof(uint64_t));
-  std::memcpy(static_cast<void*>(dst_char + offsets[2]),
-              static_cast<void*>(&polynomial_modulus_degree), sizeof(uint64_t));
-  std::memcpy(static_cast<void*>(dst_char + offsets[3]),
-              static_cast<void*>(&coeff_mod_count), sizeof(uint64_t));
-  std::memcpy(static_cast<void*>(dst_char + offsets[4]),
-              const_cast<void*>(static_cast<const void*>(&cipher.scale())),
-              sizeof(double));
-  std::memcpy(
-      const_cast<void*>(static_cast<const void*>(dst_char + offsets[5])),
-      static_cast<const void*>(cipher.data()), 8 * cipher.uint64_count());
+/// \returns The size in bytes of the saved ciphertext
+inline std::size_t save(const seal::Ciphertext& cipher,
+                        std::byte* destination) {
+  return cipher.save(destination, ciphertext_size(cipher),
+                     seal::compr_mode_type::none);
 }
 
 /// \brief Loads a serialized ciphertext
 /// \param[out] cipher De-serialized ciphertext
 /// \param[in] context Encryption context to verify ciphertext validity against
 /// \param[in] src Pointer to data to load from
+/// \param[in] size Number of bytes available in the memory location
 inline void load(seal::Ciphertext& cipher,
-                 std::shared_ptr<seal::SEALContext> context, void* src) {
-  seal::SEAL_BYTE is_ntt_form_byte;
-  uint64_t size64 = 0;
-  seal::parms_id_type parms_id{};
-
-  static constexpr std::array<size_t, 6> offsets = {
-      sizeof(seal::parms_id_type),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) + sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          2 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t),
-      sizeof(seal::parms_id_type) + sizeof(seal::SEAL_BYTE) +
-          3 * sizeof(uint64_t) + sizeof(double),
-  };
-
-  char* char_src = static_cast<char*>(src);
-  std::memcpy(&parms_id, src, sizeof(seal::parms_id_type));
-
-  seal::Ciphertext new_cipher(context, parms_id);
-
-  std::memcpy(&is_ntt_form_byte, static_cast<void*>(char_src + offsets[0]),
-              sizeof(seal::SEAL_BYTE));
-  std::memcpy(&size64, static_cast<void*>(char_src + offsets[1]),
-              sizeof(uint64_t));
-  std::memcpy(&new_cipher.scale(), static_cast<void*>(char_src + offsets[4]),
-              sizeof(double));
-  bool ntt_form = (is_ntt_form_byte == seal::SEAL_BYTE(0)) ? false : true;
-
-  new_cipher.resize(context, parms_id, size64);
-
-  new_cipher.is_ntt_form() = ntt_form;
-  void* data_src = static_cast<void*>(char_src + offsets[5]);
-  std::memcpy(&new_cipher[0], data_src,
-              new_cipher.uint64_count() * sizeof(std::uint64_t));
-  cipher = std::move(new_cipher);
-
-  NGRAPH_CHECK(seal::is_valid_for(cipher, context),
-               "ciphertext data is invalid");
+                 std::shared_ptr<seal::SEALContext> context,
+                 const std::byte* src, const std::size_t size) {
+  cipher.load(context, src, size);
 }
 
 /// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
@@ -146,7 +71,7 @@ class SealCiphertextWrapper {
   SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
 
   /// \brief Create an unknown-valued ciphertext
-  /// \param[in] complex_packign Whether or not to use complex packing
+  /// \param[in] complex_packing Whether or not to use complex packing
   SealCiphertextWrapper(bool complex_packing)
       : m_complex_packing(complex_packing), m_known_value(false) {}
 
@@ -166,14 +91,10 @@ class SealCiphertextWrapper {
   /// \brief Returns the underyling SEAL ciphertext
   inline const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
-  /// \brief Serializes the ciphertext to a stream
-  /// \param[out] Stream to serialize the ciphertext to
-  inline void save(std::ostream& stream) const { m_ciphertext.save(stream); }
-
   /// \brief Returns the size of the underlying ciphertext
   inline size_t size() const { return m_ciphertext.size(); }
 
-  /// \brief Returns whether or not ciphertext represents a known value
+  /// \brief Returns whether or not the ciphertext represents a known value
   inline bool known_value() const { return m_known_value; }
 
   /// \brief Returns whether or not ciphertext represents a known value
@@ -207,11 +128,15 @@ class SealCiphertextWrapper {
       proto_cipher.set_value(value());
     }
 
-    // TODO: save directly to protobuf
-    size_t stream_size = ciphertext_size(m_ciphertext);
+    size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
-    cipher_str.resize(stream_size);
-    ngraph::he::save(m_ciphertext, cipher_str.data());
+    cipher_str.resize(cipher_size);
+
+    size_t save_size = ngraph::he::save(
+        m_ciphertext, reinterpret_cast<std::byte*>(cipher_str.data()));
+
+    NGRAPH_CHECK(save_size == cipher_size, "Save size != cipher size");
+
     proto_cipher.set_ciphertext(std::move(cipher_str));
   }
 
@@ -229,9 +154,9 @@ class SealCiphertextWrapper {
     } else {
       // TODO: load from string directly
       const std::string& cipher_str = src.ciphertext();
-      ngraph::he::load(
-          dst.ciphertext(), context,
-          static_cast<void*>(const_cast<char*>(cipher_str.data())));
+      ngraph::he::load(dst.ciphertext(), context,
+                       reinterpret_cast<const std::byte*>(cipher_str.data()),
+                       cipher_str.size());
     }
   }
 

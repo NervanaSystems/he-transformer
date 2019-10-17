@@ -136,7 +136,8 @@ void HESealEncryptionParameters::save(std::ostream& stream) const {
                sizeof(m_complex_packing));
   stream.write(reinterpret_cast<const char*>(&m_security_level),
                sizeof(m_security_level));
-  seal::EncryptionParameters::Save(m_seal_encryption_parameters, stream);
+
+  m_seal_encryption_parameters.save(stream);
 }
 
 HESealEncryptionParameters HESealEncryptionParameters::load(
@@ -151,7 +152,8 @@ HESealEncryptionParameters HESealEncryptionParameters::load(
   uint64_t security_level;
   stream.read(reinterpret_cast<char*>(&security_level), sizeof(security_level));
 
-  auto seal_encryption_parameters = seal::EncryptionParameters::Load(stream);
+  seal::EncryptionParameters seal_encryption_parameters;
+  seal_encryption_parameters.load(stream);
 
   return HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
                                     security_level, scale, complex_packing);

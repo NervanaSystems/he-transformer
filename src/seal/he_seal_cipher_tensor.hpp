@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "he_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -75,7 +76,7 @@ class HESealCipherTensor : public HETensor {
   /// \brief Read bytes from a vector of ciphertexts after decrpyting and
   /// decoding
   /// \param[out] target Pointer to destination for data
-  /// \param[in] /// ciphertexts Ciphertexts to decrypt and decode
+  /// \param[in] ciphertexts Ciphertexts to decrypt and decode
   /// \param[in] num_bytes Number of bytes to read, must be a multiple of the
   /// batch size
   /// \param[in] batch_size Packing factor to use
@@ -93,23 +94,6 @@ class HESealCipherTensor : public HETensor {
   /// \throws ngraph_error if incorrect number of ciphertexts is used
   void set_elements(
       const std::vector<std::shared_ptr<SealCiphertextWrapper>>& elements);
-
-  /// \brief Writes the encrypted ciphertexts to a stream
-  /// \param[in,out] stream Stream to which ciphertexts are written
-  void save_elements(std::ostream& stream) const {
-    NGRAPH_CHECK(m_ciphertexts.size() > 0, "Cannot save 0 ciphertexts");
-
-    size_t cipher_size = m_ciphertexts[0]->size();
-    for (auto& ciphertext : m_ciphertexts) {
-      NGRAPH_CHECK(cipher_size == ciphertext->size(), "Cipher size ",
-                   ciphertext->size(), " doesn't match expected ", cipher_size);
-
-      if (ciphertext->known_value()) {
-        throw ngraph_error("Can't save known-valued ciphertext");
-      }
-      ciphertext->save(stream);
-    }
-  }
 
   /// \brief Writes encrypted ciphertexts to vector of protobufs.
   /// Due to 2GB limit in protobuf, the cipher tensor may be spread across
@@ -140,7 +124,6 @@ class HESealCipherTensor : public HETensor {
 
     std::vector<uint64_t> int_shape{shape};
     *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
-
     protos[0].set_offset(0);
 
     for (const auto& cipher : ciphertexts) {

@@ -37,7 +37,6 @@ void result_seal(const std::vector<HEPlaintext>& arg,
 void result_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
                  std::vector<HEPlaintext>& out, size_t count,
                  const HESealBackend& he_seal_backend) {
-  NGRAPH_INFO << "count " << count;
   NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
                " does not match result input size ", arg.size());
 

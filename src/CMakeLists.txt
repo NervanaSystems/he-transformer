@@ -60,7 +60,9 @@ add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend
                            PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
                                   ${EXTERNAL_INSTALL_INCLUDE_DIR}
+                                  ${SEAL_INSTALL_INCLUDE_DIR}
                                   ${NGRAPH_TF_INCLUDE_DIR})
+
 target_link_libraries(he_seal_backend
                       PUBLIC libjson
                              libboost
@@ -69,6 +71,13 @@ target_link_libraries(he_seal_backend
                              libprotobuf
                              libprotobuf_orig
                              ngraph)
+
+# SEAL uses zlib
+find_package(ZLIB 1.2.11 EXACT)
+if(ZLIB_FOUND)
+  message(STATUS "ZLIB_LIBRARIES ${ZLIB_LIBRARIES}")
+  target_link_libraries(he_seal_backend PUBLIC ZLIB::ZLIB)
+endif()
 
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")

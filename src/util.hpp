@@ -157,14 +157,14 @@ inline void double_vec_to_type_vec(void* target,
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       std::vector<float> float_values{input.begin(), input.end()};
-      void* type_values_src =
-          static_cast<void*>(const_cast<float*>(float_values.data()));
+      const void* type_values_src =
+          static_cast<const void*>(float_values.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;
     }
     case element::Type_t::f64: {
-      void* type_values_src =
-          static_cast<void*>(const_cast<double*>(input.data()));
+      const void* type_values_src =
+          static_cast<const void*>(input.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;
     }
@@ -173,8 +173,8 @@ inline void double_vec_to_type_vec(void* target,
       for (size_t i = 0; i < input.size(); ++i) {
         int64_values[i] = std::round(input[i]);
       }
-      void* type_values_src =
-          static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
+      const void* type_values_src =
+          static_cast<const void*>(int64_values.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;
     }
