@@ -53,6 +53,7 @@ inline void load(seal::Ciphertext& cipher,
   cipher.load(context, src, size);
 }
 
+/// TODO: update
 /// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
 /// The wrapper contains two attributes in addition to the SEAL ciphertext.
 /// First, whether or not the ciphertext stores values using complex packing
@@ -67,21 +68,16 @@ inline void load(seal::Ciphertext& cipher,
 /// store a vector of SealCiphertextWrappers.
 class SealCiphertextWrapper {
  public:
-  /// \brief Create an empty unknown-valued ciphertext without complex packing
-  SealCiphertextWrapper() : m_complex_packing(false) {}
+  /// \brief Create an empty unknown-valued ciphertext
+  SealCiphertextWrapper() {}
 
   /// \brief Create an unknown-valued ciphertext
-  /// \param[in] complex_packing Whether or not to use complex packing
-  SealCiphertextWrapper(bool complex_packing)
-      : m_complex_packing(complex_packing) {}
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
-  /// \param[in] complex_packing Whether or not ciphertext uses complex packing
   /// TODO: add move constructor
-  SealCiphertextWrapper(const seal::Ciphertext& cipher,
-                        bool complex_packing = false)
-      : m_ciphertext(cipher), m_complex_packing(complex_packing) {}
+  SealCiphertextWrapper(const seal::Ciphertext& cipher)
+      : m_ciphertext(cipher) {}
 
   /// \brief Returns the underyling SEAL ciphertext
   inline seal::Ciphertext& ciphertext() { return m_ciphertext; }
@@ -98,17 +94,11 @@ class SealCiphertextWrapper {
   /// \brief Returns scale of the ciphertext
   inline double scale() const { return m_ciphertext.scale(); }
 
-  /// \brief Returns whether or not the ciphertext uses complex packing
-  inline bool complex_packing() const { return m_complex_packing; }
-
-  /// \brief Returns whether or not the ciphertext uses complex packing
-  inline bool& complex_packing() { return m_complex_packing; }
-
-  /// \brief Saves the cihertext to a protobuf ciphertext wrapper
+  /// \brief Saves the ciphertext to a protobuf ciphertext wrapper
   /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
   /// ciphertext
   inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
-    proto_cipher.set_complex_packing(complex_packing());
+    // proto_cipher.set_complex_packing(complex_packing());
 
     size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
@@ -129,7 +119,7 @@ class SealCiphertextWrapper {
   static inline void load(SealCiphertextWrapper& dst,
                           const he_proto::SealCiphertextWrapper& src,
                           std::shared_ptr<seal::SEALContext> context) {
-    dst.complex_packing() = src.complex_packing();
+    // dst.complex_packing() = src.complex_packing();
 
     // TODO: load from string directly
     const std::string& cipher_str = src.ciphertext();

@@ -57,6 +57,7 @@ class HEType {
 
  private:
   bool m_is_plain;
+  bool m_complex_packing;
   HEPlaintext m_plain;
   SealCiphertextWrapper m_cipher;
 };

@@ -479,7 +479,7 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
   encode(plaintext, input, ckks_encoder, parms_id, element_type, scale,
          complex_packing);
   encryptor.encrypt(plaintext.plaintext(), output->ciphertext());
-  output->complex_packing() = complex_packing;
+  // output->complex_packing() = complex_packing;
 }
 
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
@@ -509,7 +509,7 @@ void decode(void* output, const HEPlaintext& input,
 
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder) {
-  auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
+  auto plaintext_wrapper = SealPlaintextWrapper();
   decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
   decode(output, plaintext_wrapper, ckks_encoder);
 }

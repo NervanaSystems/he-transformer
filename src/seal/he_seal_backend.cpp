@@ -310,7 +310,7 @@ std::shared_ptr<SealCiphertextWrapper> HESealBackend::create_valued_ciphertext(
     throw ngraph_error(
         "HESealBackend::create_valued_ciphertext only supports batch size 1");
   }
-  auto plaintext = HEPlaintext(value);
+  auto plaintext = HEPlaintext({value});
   auto ciphertext = create_empty_ciphertext();
 
   encrypt(ciphertext, plaintext, type, complex_packing());

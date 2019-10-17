@@ -170,45 +170,29 @@ class HESealBackend : public ngraph::runtime::Backend {
       float value, const element::Type& element_type,
       size_t batch_size = 1) const;
 
-  /// \brief Creates empty ciphertext with backend's complex packing status
-  /// \returns Pointer to created ciphertext
-  inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext()
-      const {
-    return std::make_shared<SealCiphertextWrapper>(complex_packing());
-  }
-
   /// \brief Creates empty ciphertext
-  /// \param[in] complex_packing Whether or not ciphertext uses complex packing
   /// \returns Pointer to created ciphertext
-  static inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
-      bool complex_packing) {
-    return std::make_shared<SealCiphertextWrapper>(complex_packing);
+  static inline std::shared_ptr<SealCiphertextWrapper>
+  create_empty_ciphertext() {
+    return std::make_shared<SealCiphertextWrapper>();
   }
 
-  /// \brief Creates empty ciphertext at given parameter choice with backend's
-  /// complex packing status
+  /// \brief Creates empty ciphertext at given parameter choice
   /// \param[in] parms_id Seal encryption parameter id
   /// \returns Pointer to created ciphertext
   inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
       seal::parms_id_type parms_id) const {
     return std::make_shared<SealCiphertextWrapper>(
-        seal::Ciphertext(m_context, parms_id), complex_packing());
+        seal::Ciphertext(m_context, parms_id));
   }
 
-  /// \brief Creates empty ciphertext at given parameter choice with backend's
-  /// complex packing status
+  /// \brief Creates empty ciphertext at given parameter choice
   /// \param[in] pool Memory pool used for new memory allocation
   /// \returns Pointer to created ciphertext
   inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const {
-    return std::make_shared<SealCiphertextWrapper>(pool, complex_packing());
+    return std::make_shared<SealCiphertextWrapper>(pool);
   }
-
-  /// \brief Creates SEAL context from encryption parameters
-  /// \param[in] sp Pointer to encrpytion parameters
-  /// \returns pointer to created SEAL context
-  std::shared_ptr<seal::SEALContext> make_seal_context(
-      const std::shared_ptr<HESealEncryptionParameters> sp);
 
   /// \brief TODO
   void decode(void* output, const HEPlaintext& input, const element::Type& type,
