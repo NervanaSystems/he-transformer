@@ -153,7 +153,7 @@ TEST(seal_util, save) {
   encryptor.encrypt(plain, cipher);
   Ciphertext cipher_load;
 
-  void* buffer = ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher));
+  std::byte* buffer = reinterpret_cast<std::byte*>(ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher)));
 
   auto t1 = chrono::high_resolution_clock::now();
   ngraph::he::save(cipher, buffer);
@@ -174,10 +174,9 @@ TEST(seal_util, save) {
   EXPECT_EQ(cipher_load.poly_modulus_degree(), cipher.poly_modulus_degree());
   EXPECT_EQ(cipher_load.coeff_mod_count(), cipher.coeff_mod_count());
   EXPECT_EQ(cipher_load.scale(), cipher.scale());
-  EXPECT_EQ(cipher_load.uint64_count(), cipher.uint64_count());
   EXPECT_EQ(cipher_load.is_transparent(), cipher.is_transparent());
 
-  for (size_t i = 0; i < cipher.uint64_count(); ++i) {
+  for (size_t i = 0; i < cipher.int_array().size(); ++i) {
     EXPECT_EQ(cipher_load[i], cipher[i]);
   }
   ngraph::ngraph_free(buffer);

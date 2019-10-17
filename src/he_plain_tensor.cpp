@@ -92,28 +92,27 @@ void HEPlainTensor::read(void* target, size_t n) const {
                  "Cannot read from empty plain tensor");
     const std::vector<double>& values = m_plaintexts[0].values();
     NGRAPH_CHECK(values.size() > 0, "Cannot read from empty plaintext");
-    void* type_values_src;
 
     switch (element_type.get_type_enum()) {
       case element::Type_t::f32: {
         std::vector<float> float_values{values.begin(), values.end()};
-        type_values_src =
-            static_cast<void*>(const_cast<float*>(float_values.data()));
+       const void* type_values_src =
+            static_cast<const void*>(float_values.data());
         std::memcpy(dst_with_offset, type_values_src,
                     type_byte_size * m_batch_size);
         break;
       }
       case element::Type_t::f64: {
-        type_values_src =
-            static_cast<void*>(const_cast<double*>(values.data()));
+        const void* type_values_src =
+            static_cast<const void*>(values.data());
         std::memcpy(dst_with_offset, type_values_src,
                     type_byte_size * m_batch_size);
         break;
       }
       case element::Type_t::i64: {
         std::vector<int64_t> int64_values{values.begin(), values.end()};
-        type_values_src =
-            static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
+        const void* type_values_src =
+            static_cast<const void*>(int64_values.data());
         std::memcpy(dst_with_offset, type_values_src,
                     type_byte_size * m_batch_size);
         break;
@@ -156,28 +155,28 @@ void HEPlainTensor::read(void* target, size_t n) const {
       switch (element_type.get_type_enum()) {
         case element::Type_t::f32: {
           std::vector<float> float_values{values.begin(), values.end()};
-          void* type_values_src =
-              static_cast<void*>(const_cast<float*>(float_values.data()));
+          const void* type_values_src =
+              static_cast<const void*>(float_values.data());
           copy_batch_values_to_src(i, target, type_values_src);
           break;
         }
         case element::Type_t::f64: {
-          void* type_values_src =
-              static_cast<void*>(const_cast<double*>(values.data()));
+          const void* type_values_src =
+              static_cast<const void*>(values.data());
           copy_batch_values_to_src(i, target, type_values_src);
           break;
         }
         case element::Type_t::i32: {
           std::vector<int32_t> int32_values{values.begin(), values.end()};
-          void* type_values_src =
-              static_cast<void*>(const_cast<int32_t*>(int32_values.data()));
+          const void* type_values_src =
+              static_cast<const void*>(int32_values.data());
           copy_batch_values_to_src(i, target, type_values_src);
           break;
         }
         case element::Type_t::i64: {
           std::vector<int64_t> int64_values{values.begin(), values.end()};
-          void* type_values_src =
-              static_cast<void*>(const_cast<int64_t*>(int64_values.data()));
+          const void* type_values_src =
+              static_cast<const void*>(int64_values.data());
           copy_batch_values_to_src(i, target, type_values_src);
           break;
         }
