@@ -134,50 +134,101 @@ class SealCiphertextWrapper {
       proto_cipher.set_value(value());
     }
 
-    // TODO: save directly to protobuf
-    size_t cipher_size = ciphertext_size(m_ciphertext);
-    std::byte* cipher_data =
-        static_cast<std::byte*>(ngraph::ngraph_malloc(cipher_size));
+    // New method
+    if (true) {
+      size_t cipher_size = ciphertext_size(m_ciphertext);
+      std::string cipher_str;
+      cipher_str.resize(cipher_size);
 
-    auto t2 = Clock::now();
+      auto t2 = Clock::now();
 
-    size_t save_size = ngraph::he::save(m_ciphertext, cipher_data);
+      size_t save_size = ngraph::he::save(
+          m_ciphertext, reinterpret_cast<std::byte*>(cipher_str.data()));
 
-    auto t3 = Clock::now();
-    proto_cipher.set_allocated_ciphertext(static_cast<void*>(cipher_data),
-                                          save_size);
+      auto t3 = Clock::now();
+      proto_cipher.set_ciphertext(std::move(cipher_str));
 
-    auto t4 = Clock::now();
+      auto t4 = Clock::now();
+      auto t5 = Clock::now();
 
-    // ngraph::ngraph_free(cipher_data);
+      NGRAPH_INFO << "cipher_size " << cipher_size;
+      NGRAPH_INFO << "save_size " << save_size;
 
-    auto t5 = Clock::now();
+      NGRAPH_HE_LOG(3) << "malloc took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t2 - t1)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "save took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t3 - t2)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "set_ciphertext took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t4 - t3)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "ngraph_free took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t5 - t4)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "Total save took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t5 - t1)
+                              .count()
+                       << "us with save size " << save_size;
+      NGRAPH_INFO << "Saved ciphertext size "
+                  << proto_cipher.ciphertext().size();
 
-    NGRAPH_HE_LOG(3) << "malloc took "
-                     << std::chrono::duration_cast<std::chrono::microseconds>(
-                            t2 - t1)
-                            .count()
-                     << "us";
-    NGRAPH_HE_LOG(3) << "save took "
-                     << std::chrono::duration_cast<std::chrono::microseconds>(
-                            t3 - t2)
-                            .count()
-                     << "us";
-    NGRAPH_HE_LOG(3) << "set_ciphertext took "
-                     << std::chrono::duration_cast<std::chrono::microseconds>(
-                            t4 - t3)
-                            .count()
-                     << "us";
-    NGRAPH_HE_LOG(3) << "ngraph_free took "
-                     << std::chrono::duration_cast<std::chrono::microseconds>(
-                            t5 - t4)
-                            .count()
-                     << "us";
-    NGRAPH_HE_LOG(3) << "Total save took "
-                     << std::chrono::duration_cast<std::chrono::microseconds>(
-                            t5 - t1)
-                            .count()
-                     << "us with save size " << save_size;
+    } else {  // Old method
+      size_t cipher_size = ciphertext_size(m_ciphertext);
+
+      std::byte* cipher_data =
+          static_cast<std::byte*>(ngraph::ngraph_malloc(cipher_size));
+
+      auto t2 = Clock::now();
+
+      size_t save_size = ngraph::he::save(m_ciphertext, cipher_data);
+
+      auto t3 = Clock::now();
+      proto_cipher.set_ciphertext(static_cast<void*>(cipher_data), save_size);
+
+      auto t4 = Clock::now();
+
+      ngraph::ngraph_free(cipher_data);
+
+      auto t5 = Clock::now();
+
+      NGRAPH_HE_LOG(3) << "malloc took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t2 - t1)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "save took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t3 - t2)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "set_ciphertext took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t4 - t3)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "ngraph_free took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t5 - t4)
+                              .count()
+                       << "us";
+      NGRAPH_HE_LOG(3) << "Total save took "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(
+                              t5 - t1)
+                              .count()
+                       << "us with save size " << save_size;
+    }
+    NGRAPH_INFO << "Saved ciphertext (out of scope) size "
+                << proto_cipher.ciphertext().size();
   }
 
   /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
