@@ -17,10 +17,7 @@
 # HE transformer sources
 set(HE_SRC
     # main
-    he_plain_tensor.cpp
-    he_tensor.cpp
-    node_wrapper.cpp
-    he_op_annotations.cpp
+    he_tensor.cpp node_wrapper.cpp he_op_annotations.cpp
     # pass
     pass/he_fusion.cpp
     pass/he_liveness.cpp
@@ -42,7 +39,6 @@ set(HE_SRC
     seal/kernel/subtract_seal.cpp
     # seal backend
     seal/he_seal_backend.cpp
-    seal/he_seal_cipher_tensor.cpp
     seal/he_seal_client.cpp
     seal/he_seal_encryption_parameters.cpp
     seal/he_seal_executable.cpp

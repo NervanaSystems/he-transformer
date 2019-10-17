@@ -174,8 +174,6 @@ class SealCiphertextWrapper {
  private:
   seal::Ciphertext m_ciphertext;
   bool m_complex_packing;
-  bool m_known_value;
-  float m_value{0.0f};
 };
 
 }  // namespace he

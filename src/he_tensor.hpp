@@ -86,31 +86,14 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns whether or not the tensor is packed
   inline bool is_packed() const { return m_packed; }
 
-  /// \brief Returns type information of the tensor
-  virtual const HETensorTypeInfo& get_type_info() const { return type_info; }
+ private:
+  std::vector<HEType> m_data;
 
-  /// \brief Returns whether or not the tensor is of the template type
-  template <typename HETensorType>
-  bool is_type() const {
-    return &get_type_info() == &HETensorType::type_info;
-  }
-
-  /// \brief Represents an unknown tensor type
-  static constexpr HETensorTypeInfo type_info{HETensorTypeInfo::unknown};
-
- protected:
   void check_io_bounds(const void* p, size_t n) const;
   bool m_packed;
   size_t m_batch_size;
   Shape m_packed_shape;
 };
-
-template <typename HETensorType>
-std::shared_ptr<HETensorType> he_tensor_as_type(
-    const std::shared_ptr<HETensor>& he_tensor) {
-  NGRAPH_CHECK(he_tensor->is_type<HETensorType>(), "incorrect tensor type");
-  return std::static_pointer_cast<HETensorType>(he_tensor);
-}
 
 }  // namespace he
 }  // namespace ngraph
