@@ -423,15 +423,13 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
     case element::Type_t::i64:
     case element::Type_t::f32:
     case element::Type_t::f64: {
-      std::vector<double> double_vals(plaintext.values().begin(),
-                                      plaintext.values().end());
       if (complex_packing) {
         std::vector<std::complex<double>> complex_vals;
-        if (double_vals.size() == 1) {
-          std::complex<double> val(double_vals[0], double_vals[0]);
+        if (plaintext.size() == 1) {
+          std::complex<double> val(plaintext[0], plaintext[0]);
           complex_vals = std::vector<std::complex<double>>(slot_count, val);
         } else {
-          real_vec_to_complex_vec(complex_vals, double_vals);
+          real_vec_to_complex_vec(complex_vals, plaintext);
         }
         NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
                      complex_vals.size(), " elements, maximum size is ",
@@ -440,14 +438,14 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
         ckks_encoder.encode(complex_vals, parms_id, scale,
                             destination.plaintext());
       } else {
-        if (double_vals.size() == 1) {
-          ckks_encoder.encode(double_vals[0], parms_id, scale,
+        if (plaintext.size() == 1) {
+          ckks_encoder.encode(plaintext[0], parms_id, scale,
                               destination.plaintext());
         } else {
-          NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
-                       double_vals.size(), " elements, maximum size is ",
+          NGRAPH_CHECK(plaintext.size() <= slot_count, "Cannot encode ",
+                       plaintext.size(), " elements, maximum size is ",
                        slot_count);
-          ckks_encoder.encode(double_vals, parms_id, scale,
+          ckks_encoder.encode(plaintext, parms_id, scale,
                               destination.plaintext());
         }
       }
@@ -486,15 +484,13 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder) {
-  std::vector<double> real_vals;
   if (input.complex_packing()) {
     std::vector<std::complex<double>> complex_vals;
     ckks_encoder.decode(input.plaintext(), complex_vals);
-    complex_vec_to_real_vec(real_vals, complex_vals);
+    complex_vec_to_real_vec(output, complex_vals);
   } else {
-    ckks_encoder.decode(input.plaintext(), real_vals);
+    ckks_encoder.decode(input.plaintext(), output);
   }
-  output.set_values(real_vals);
 }
 
 void decode(void* output, const HEPlaintext& input,
@@ -502,13 +498,12 @@ void decode(void* output, const HEPlaintext& input,
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
   NGRAPH_CHECK(input.size() > 0, "Input has no values");
 
-  const std::vector<double>& values = input.values();
-  NGRAPH_CHECK(values.size() >= count);
-  if (values.size() > count) {
-    std::vector<double> resized_values{values.begin(), values.begin() + count};
+  NGRAPH_CHECK(input.size() >= count);
+  if (input.size() > count) {
+    std::vector<double> resized_values{input.begin(), input.begin() + count};
     double_vec_to_type_vec(output, element_type, resized_values);
   } else {
-    double_vec_to_type_vec(output, element_type, values);
+    double_vec_to_type_vec(output, element_type, input);
   }
 }
 
