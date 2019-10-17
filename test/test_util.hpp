@@ -29,7 +29,6 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_cipher_tensor.hpp"
 
 namespace ngraph {
 namespace test {

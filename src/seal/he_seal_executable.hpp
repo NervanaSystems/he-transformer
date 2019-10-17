@@ -152,8 +152,8 @@ class HESealExecutable : public runtime::Executable {
   /// \param[out] out_cipher Encrypted tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
-  void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
-                             std::shared_ptr<HESealCipherTensor>& out_cipher,
+  void handle_server_relu_op(std::shared_ptr<HETensor>& arg0_cipher,
+                             std::shared_ptr<HETensor>& out_cipher,
                              const NodeWrapper& node_wrapper);
 
   /// \brief Processes the MaxPool operation if the client is enabled
@@ -161,10 +161,9 @@ class HESealExecutable : public runtime::Executable {
   /// \param[out] out_cipher Encrypted tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
-  void handle_server_max_pool_op(
-      std::shared_ptr<HESealCipherTensor>& arg0_cipher,
-      std::shared_ptr<HESealCipherTensor>& out_cipher,
-      const NodeWrapper& node_wrapper);
+  void handle_server_max_pool_op(std::shared_ptr<HETensor>& arg0_cipher,
+                                 std::shared_ptr<HETensor>& out_cipher,
+                                 const NodeWrapper& node_wrapper);
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of

@@ -18,13 +18,14 @@
 
 #include <memory>
 
+#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-/// \brief Enum representing the runtime type of a HETensor
-enum class HETensorTypeInfo { unknown = 0, cipher = 1, plain = 2 };
 
 class HESealBackend;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -36,19 +37,24 @@ class HETensor : public runtime::Tensor {
   /// \param[in] packed Whether or not to use plaintext packing
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
-           const bool packed = false, const std::string& name = "external");
+           const HESealBackend& he_seal_backend,
+           const std::string& name = "external");
 
   virtual ~HETensor() override {}
 
   /// \brief Write bytes directly into the tensor
   /// \param[in] p Pointer to source of data
   /// \param[in] n Number of bytes to write, must be integral number of elements
-  virtual void write(const void* p, size_t n) override = 0;
+  void write(const void* p, size_t n) override {
+    throw ngraph_error("Write unimplemented");
+  };
 
   /// \brief Read bytes directly from the tensor
   /// \param[out] p Pointer to destination for data
   /// \param[in] n Number of bytes to read, must be integral number of elements.
-  virtual void read(void* p, size_t n) const override = 0;
+  void read(void* p, size_t n) const override {
+    throw ngraph_error("Read unimplemented");
+  }
 
   /// \brief Reduces shape along pack axis
   /// \param[in] shape Input shape to pack
@@ -63,6 +69,10 @@ class HETensor : public runtime::Tensor {
   /// \return Shape after expanding along pack axis
   static Shape unpack_shape(const Shape& shape, size_t pack_size,
                             size_t pack_axis = 0);
+
+  const std::vector<HEType>& data() const { return m_data; }
+
+  std::vector<HEType>& data() { return m_data; }
 
   /// \brief Returns the batch size of a given shape
   /// \param[in] shape Shape of the tensor
@@ -88,6 +98,7 @@ class HETensor : public runtime::Tensor {
 
  private:
   std::vector<HEType> m_data;
+  const HESealBackend& m_he_seal_backend;
 
   void check_io_bounds(const void* p, size_t n) const;
   bool m_packed;

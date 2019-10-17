@@ -23,15 +23,13 @@
 namespace ngraph {
 namespace he {
 /// \brief Class representing a plaintext value
-class HEPlaintext : std::vector<double> {
- public:
-  static inline void save(const HEPlaintext& plaintext,
-                          he_proto::Plaintext& proto) const {
-    for (const auto& value : plaintext) {
-      proto.add_value(value);
-    }
+using HEPlaintext = std::vector<double>;
+
+inline void save(const HEPlaintext& plaintext, he_proto::Plaintext& proto) {
+  for (const auto& value : plaintext) {
+    proto.add_value(value);
   }
-};  // namespace he
+}
 
 inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
   for (const auto& value : plain) {

@@ -50,7 +50,6 @@ namespace runtime {
 class BackendConstructor;
 }
 namespace he {
-class HESealCipherTensor;
 class SealCiphertextWrapper;
 /// \brief Class representing a backend using the CKKS homomorphic encryption
 /// scheme.

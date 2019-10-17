@@ -27,7 +27,6 @@
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
-#include "seal/he_seal_cipher_tensor.hpp"
 #include "seal/he_seal_client.hpp"
 #include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/kernel/max_pool_seal.hpp"
@@ -204,14 +203,14 @@ void HESealClient::handle_inference_request(
   if (encrypt_tensor) {
     // TODO: add element type to function message
     size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-    HESealCipherTensor::write(
-        ciphers, m_input_config.begin()->second.second.data(), num_bytes,
-        m_batch_size, element::f64, m_context->first_parms_id(), scale(),
-        *m_ckks_encoder, *m_encryptor, complex_packing());
+    HETensor::write(ciphers, m_input_config.begin()->second.second.data(),
+                    num_bytes, m_batch_size, element::f64,
+                    m_context->first_parms_id(), scale(), *m_ckks_encoder,
+                    *m_encryptor, complex_packing());
 
     std::vector<he_proto::SealCipherTensor> cipher_tensor_protos;
-    HESealCipherTensor::save_to_proto(cipher_tensor_protos, ciphers, shape,
-                                      proto_packed, proto_name);
+    HETensor::save_to_proto(cipher_tensor_protos, ciphers, shape, proto_packed,
+                            proto_name);
 
     for (const auto& cipher_tensor_proto : cipher_tensor_protos) {
       he_proto::TCPMessage encrypted_inputs_msg;
@@ -275,9 +274,8 @@ void HESealClient::handle_result(const he_proto::TCPMessage& proto_msg) {
     }
 
     size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-    HESealCipherTensor::read(m_results.data(), result_ciphers, num_bytes,
-                             m_batch_size, element::f64, *m_ckks_encoder,
-                             *m_decryptor);
+    HETensor::read(m_results.data(), result_ciphers, num_bytes, m_batch_size,
+                   element::f64, *m_ckks_encoder, *m_decryptor);
   } else {
     NGRAPH_HE_LOG(5) << "Client handling plain result";
 
@@ -326,9 +324,6 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
 
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    NGRAPH_CHECK(!proto_tensor->ciphertexts(result_idx).known_value(),
-                 "Client should not receive known-valued relu values");
-
     auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
     SealCiphertextWrapper::load(
         post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);
@@ -367,9 +362,6 @@ void HESealClient::handle_bounded_relu_request(
 
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    NGRAPH_CHECK(!proto_tensor->ciphertexts(result_idx).known_value(),
-                 "Client should not receive known-valued relu values");
-
     auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
     SealCiphertextWrapper::load(
         post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);

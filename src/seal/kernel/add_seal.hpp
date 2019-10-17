@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/negate_seal.hpp"
@@ -29,18 +30,26 @@
 namespace ngraph {
 namespace he {
 
-/// \brief Adds two ciphertexts
-/// \param[in,out] arg0 Ciphertext argument to add. May be rescaled
-/// \param[in,out] arg1 Ciphertext argument to add. May be rescaled
-/// \param[out] out Stores the encrypted sum
-/// \param[in] element_type datatype of the addition
-/// \param[in] he_seal_backend Backend with which to perform addition
-/// \param[in] pool Memory pool used for new memory allocation
-void scalar_add_seal(
-    SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
-    std::shared_ptr<SealCiphertextWrapper>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
+inline void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
+                     std::vector<HEType>& out, size_t count,
+                     const element::Type& element_type,
+                     HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(false, "Add seal unimplenented");
+}
+
+/*
+    /// \brief Adds two ciphertexts
+    /// \param[in,out] arg0 Ciphertext argument to add. May be rescaled
+    /// \param[in,out] arg1 Ciphertext argument to add. May be rescaled
+    /// \param[out] out Stores the encrypted sum
+    /// \param[in] element_type datatype of the addition
+    /// \param[in] he_seal_backend Backend with which to perform addition
+    /// \param[in] pool Memory pool used for new memory allocation
+    void scalar_add_seal(
+        SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
+        std::shared_ptr<SealCiphertextWrapper>& out,
+        const element::Type& element_type, HESealBackend& he_seal_backend,
+        const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Adds a ciphertext with a plaintext
 /// \param[in,out] arg0 Ciphertext argument to add. May be rescaled
@@ -143,6 +152,6 @@ inline void add_seal(std::vector<HEPlaintext>& arg0,
   for (size_t i = 0; i < count; ++i) {
     scalar_add_seal(arg0[i], arg1[i], out[i]);
   }
-}
+} */
 }  // namespace he
 }  // namespace ngraph

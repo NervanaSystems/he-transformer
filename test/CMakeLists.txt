@@ -16,42 +16,44 @@
 
 set(SRC
     main.cpp
-    test_seal.cpp
-    test_encryption_parameters.cpp
-    test_perf_micro.cpp
-    test_protobuf.cpp
-    test_tensor.cpp)
+    # test_seal.cpp
+    # test_encryption_parameters.cpp
+    # test_perf_micro.cpp
+    # test_protobuf.cpp
+    # test_tensor.cpp)
+    )
 
 set(BACKEND_TEST_SRC
-    test_add.in.cpp
-    test_avg_pool.in.cpp
-    test_batch_norm_inference.in.cpp
+    # test_add.in.cpp
+    # test_avg_pool.in.cpp
+    # test_batch_norm_inference.in.cpp
     test_basics.in.cpp
-    test_broadcast.in.cpp
-    test_concat.in.cpp
-    test_constant.in.cpp
-    test_convolution.in.cpp
-    test_divide.in.cpp
-    test_exp.in.cpp
-    test_dot.in.cpp
-    test_he_fusion.in.cpp
-    test_known_values.in.cpp
-    test_layers.in.cpp
-    test_maxpool.in.cpp
-    test_minimum.in.cpp
-    test_multiply.in.cpp
-    test_max.in.cpp
-    test_negate.in.cpp
-    test_pad.in.cpp
+    # test_broadcast.in.cpp
+    # test_concat.in.cpp
+    # test_constant.in.cpp
+    # test_convolution.in.cpp
+    # test_divide.in.cpp
+    # test_exp.in.cpp
+    # test_dot.in.cpp
+    # test_he_fusion.in.cpp
+    # test_known_values.in.cpp
+    # test_layers.in.cpp
+    # test_maxpool.in.cpp
+    # test_minimum.in.cpp
+    # test_multiply.in.cpp
+    # test_max.in.cpp
+    # test_negate.in.cpp
+    # test_pad.in.cpp
     test_read_write.in.cpp
-    test_relu.in.cpp
-    test_reshape.in.cpp
-    test_reverse.in.cpp
-    test_server_client.in.cpp
-    test_softmax.in.cpp
-    test_slice.in.cpp
-    test_subtract.in.cpp
-    test_sum.in.cpp)
+    # test_relu.in.cpp
+    # test_reshape.in.cpp
+    # test_reverse.in.cpp
+    # test_server_client.in.cpp
+    # test_softmax.in.cpp
+    # test_slice.in.cpp
+    # test_subtract.in.cpp
+    # test_sum.in.cpp)
+    )
 
 set(MANIFEST ${PROJECT_SOURCE_DIR}/src/seal/unit_test.manifest)
 set(BACKEND_NAME "HE_SEAL")

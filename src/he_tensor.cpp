@@ -20,22 +20,29 @@
 #include "ngraph/util.hpp"
 #include "seal/he_seal_backend.hpp"
 
-ngraph::he::HETensor::HETensor(const element::Type& element_type,
-                               const Shape& shape, const bool packed,
-                               const std::string& name)
+namespace ngraph {
+namespace he {
+
+HETensor::HETensor(const element::Type& element_type, const Shape& shape,
+                   const HESealBackend& he_seal_backend,
+                   const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),
-      m_packed(packed) {
+      m_he_seal_backend(he_seal_backend) {
   m_descriptor->set_tensor_layout(
       std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(
           *m_descriptor));
 
-  if (packed) {
+  /* if (packed) {
     m_packed_shape = pack_shape(shape, 0);
   } else {
     m_packed_shape = shape;
   }
-  m_batch_size = batch_size(shape, packed);
+  m_batch_size = batch_size(shape, packed); */
+
+  size_t num_elements =
+      m_descriptor->get_tensor_layout()->get_size() / m_batch_size;
+  m_data.resize(num_elements);
 }
 
 ngraph::Shape ngraph::he::HETensor::pack_shape(const ngraph::Shape& shape,
@@ -84,3 +91,6 @@ void ngraph::he::HETensor::check_io_bounds(const void* source, size_t n) const {
     throw std::out_of_range("I/O access past end of tensor");
   }
 }
+
+}  // namespace he
+}  // namespace ngraph

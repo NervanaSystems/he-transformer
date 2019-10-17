@@ -17,11 +17,9 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "he_plain_tensor.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_cipher_tensor.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "test_util.hpp"
 
