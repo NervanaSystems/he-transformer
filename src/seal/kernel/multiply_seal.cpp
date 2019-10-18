@@ -25,173 +25,117 @@ namespace he {
 void scalar_multiply_seal(SealCiphertextWrapper& arg0,
                           SealCiphertextWrapper& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend,
+                          bool complex_packing, HESealBackend& he_seal_backend,
                           const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-  if (arg0.known_value() && arg1.known_value()) {
-    out->known_value() = true;
-    out->value() = arg0.value() * arg1.value();
-    out->complex_packing() = arg0.complex_packing();
-  } else if (arg0.known_value()) {
-    out->known_value() = false;
-    HEPlaintext p(arg0.value());
-    scalar_multiply_seal(arg1, p, out, element_type, he_seal_backend, pool);
-  } else if (arg1.known_value()) {
-    out->known_value() = false;
-    HEPlaintext p(arg1.value());
-    scalar_multiply_seal(arg0, p, out, element_type, he_seal_backend, pool);
+  match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
+  size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
+  size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
+
+  if (chain_ind0 == 0 || chain_ind1 == 0) {
+    NGRAPH_ERR << "Multiplicative depth limit reached";
+    throw ngraph_error("Multiplicative depth reached");
+  }
+
+  if (complex_packing) {
+    // Compute c0 x c1 == ((c0 - c0*)(c1 - c1*) + (-i)(c0 + c0*)(c1 + c1*))/4
+
+    seal::Ciphertext& c0 = arg0.ciphertext();
+    seal::Ciphertext& c1 = arg1.ciphertext();
+    seal::Ciphertext c0_conj, c1_conj;
+
+    he_seal_backend.get_evaluator()->complex_conjugate(
+        c0, *he_seal_backend.get_galois_keys(), c0_conj);
+    he_seal_backend.get_evaluator()->complex_conjugate(
+        c1, *he_seal_backend.get_galois_keys(), c1_conj);
+
+    seal::Ciphertext c0_re, c0_im, c1_re, c1_im;
+
+    he_seal_backend.get_evaluator()->add(c0, c0_conj, c0_re);
+    he_seal_backend.get_evaluator()->sub(c0, c0_conj, c0_im);
+    he_seal_backend.get_evaluator()->add(c1, c1_conj, c1_re);
+    he_seal_backend.get_evaluator()->sub(c1, c1_conj, c1_im);
+
+    // Divide by two, since (a+bi) + (a+bi)* = 2a, etc.
+    c0_re.scale() *= 2;
+    c1_re.scale() *= 2;
+    c0_im.scale() *= 2;
+    c1_im.scale() *= 2;
+
+    seal::Ciphertext prod_re, prod_im;
+
+    he_seal_backend.get_evaluator()->multiply(c0_re, c1_re, prod_re);
+    he_seal_backend.get_evaluator()->multiply(c0_im, c1_im, prod_im);
+
+    he_seal_backend.get_evaluator()->relinearize_inplace(
+        prod_re, *(he_seal_backend.get_relin_keys()), pool);
+    he_seal_backend.get_evaluator()->relinearize_inplace(
+        prod_im, *(he_seal_backend.get_relin_keys()), pool);
+
+    const double encode_scale = he_seal_backend.get_scale();
+
+    auto ckks_encoder = he_seal_backend.get_ckks_encoder();
+    const size_t slot_count = ckks_encoder->slot_count();
+    std::vector<std::complex<double>> complex_vals(slot_count, {0, -1});
+    seal::Plaintext neg_i;
+    ckks_encoder->encode(complex_vals, prod_im.parms_id(), encode_scale, neg_i);
+
+    he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_im, neg_i);
+
+    std::vector<std::complex<double>> new_complex_vals(slot_count, {1, 0});
+    seal::Plaintext fudge_re;
+    ckks_encoder->encode(new_complex_vals, prod_re.parms_id(), encode_scale,
+                         fudge_re);
+
+    he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_re, fudge_re);
+    he_seal_backend.get_evaluator()->add(prod_re, prod_im, out->ciphertext());
+
+    he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
+                                                             pool);
+
   } else {
-    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
-                 "ciphertexts must match complex form");
-
-    match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
-    size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
-    size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
-
-    if (chain_ind0 == 0 || chain_ind1 == 0) {
-      NGRAPH_ERR << "Multiplicative depth limit reached";
-      throw ngraph_error("Multiplicative depth reached");
-    }
-
-    out->known_value() = false;
-
-    if (arg0.complex_packing()) {
-      // Compute c0 x c1 == ((c0 - c0*)(c1 - c1*) + (-i)(c0 + c0*)(c1 + c1*))/4
-
-      seal::Ciphertext& c0 = arg0.ciphertext();
-      seal::Ciphertext& c1 = arg1.ciphertext();
-      seal::Ciphertext c0_conj;
-      seal::Ciphertext c1_conj;
-
-      out->complex_packing() = true;
-      he_seal_backend.get_evaluator()->complex_conjugate(
-          c0, *he_seal_backend.get_galois_keys(), c0_conj);
-      he_seal_backend.get_evaluator()->complex_conjugate(
-          c1, *he_seal_backend.get_galois_keys(), c1_conj);
-
-      seal::Ciphertext c0_re;
-      seal::Ciphertext c0_im;
-      seal::Ciphertext c1_re;
-      seal::Ciphertext c1_im;
-
-      he_seal_backend.get_evaluator()->add(c0, c0_conj, c0_re);
-      he_seal_backend.get_evaluator()->sub(c0, c0_conj, c0_im);
-      he_seal_backend.get_evaluator()->add(c1, c1_conj, c1_re);
-      he_seal_backend.get_evaluator()->sub(c1, c1_conj, c1_im);
-
-      // Divide by two, since (a+bi) + (a+bi)* = 2a, etc.
-      c0_re.scale() *= 2;
-      c1_re.scale() *= 2;
-      c0_im.scale() *= 2;
-      c1_im.scale() *= 2;
-
-      seal::Ciphertext prod_re;
-      seal::Ciphertext prod_im;
-
-      he_seal_backend.get_evaluator()->multiply(c0_re, c1_re, prod_re);
-      he_seal_backend.get_evaluator()->multiply(c0_im, c1_im, prod_im);
-
-      he_seal_backend.get_evaluator()->relinearize_inplace(
-          prod_re, *(he_seal_backend.get_relin_keys()), pool);
-      he_seal_backend.get_evaluator()->relinearize_inplace(
-          prod_im, *(he_seal_backend.get_relin_keys()), pool);
-
-      const double encode_scale = he_seal_backend.get_scale();
-
-      auto ckks_encoder = he_seal_backend.get_ckks_encoder();
-      const size_t slot_count = ckks_encoder->slot_count();
-      std::vector<std::complex<double>> complex_vals(slot_count, {0, -1});
-      seal::Plaintext neg_i;
-      ckks_encoder->encode(complex_vals, prod_im.parms_id(), encode_scale,
-                           neg_i);
-
-      he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_im, neg_i);
-
-      std::vector<std::complex<double>> new_complex_vals(slot_count, {1, 0});
-      seal::Plaintext fudge_re;
-      ckks_encoder->encode(new_complex_vals, prod_re.parms_id(), encode_scale,
-                           fudge_re);
-
-      he_seal_backend.get_evaluator()->multiply_plain_inplace(prod_re,
-                                                              fudge_re);
-      he_seal_backend.get_evaluator()->add(prod_re, prod_im, out->ciphertext());
-
-      he_seal_backend.get_evaluator()->rescale_to_next_inplace(
-          out->ciphertext(), pool);
-
-      out->known_value() = false;
-
+    if (&arg0 == &arg1) {
+      he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
+                                              out->ciphertext(), pool);
     } else {
-      NGRAPH_CHECK(arg0.complex_packing() == false,
-                   "cannot multiply ciphertexts in complex form");
-      NGRAPH_CHECK(arg1.complex_packing() == false,
-                   "cannot multiply ciphertexts in complex form");
-
-      if (&arg0 == &arg1) {
-        he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
-                                                out->ciphertext(), pool);
-      } else {
-        he_seal_backend.get_evaluator()->multiply(
-            arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
-      }
-
-      he_seal_backend.get_evaluator()->relinearize_inplace(
-          out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
-
-      out->known_value() = false;
+      he_seal_backend.get_evaluator()->multiply(
+          arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
     }
+
+    he_seal_backend.get_evaluator()->relinearize_inplace(
+        out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
   }
 }
 
 void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-                          std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend,
+                          HEType& out, HESealBackend& he_seal_backend,
                           const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-  if (arg0.known_value()) {
-    NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
-    out->known_value() = true;
-    out->value() = arg0.value() * arg1.first_value();
-    out->complex_packing() = arg0.complex_packing();
-    return;
-  }
-  // We can't do the scalar +/-1 optimizations, unless all the weights
-  // are +/-1 in this layer, since we expect the scale of the ciphertext to
-  // square. For instance, if we are computing c1*p(1) + c2 *p(2), the latter
-  // sum will have larger scale than the former
+  NGRAPH_CHECK(out.is_ciphertext(),
+               "Multiply Cipher * Plain should have out value ciphertext");
 
-  const auto& values = arg1.values();
   // TODO: check multiplying by small numbers behavior more thoroughly
   // TODO: check if abs(values) < scale?
-  if (std::all_of(values.begin(), values.end(),
+  if (std::all_of(arg1.begin(), arg1.end(),
                   [](double f) { return std::abs(f) < 1e-5f; })) {
-    out->known_value() = true;
-    out->value() = 0;
+    HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
+    NGRAPH_INFO << "Setting plaintext 0";
+    out.set_plaintext(zeros);
+  } else if (arg1.size() == 1) {
+    multiply_plain(arg0.ciphertext(), arg1[0],
+                   out.get_ciphertext()->ciphertext(), he_seal_backend, pool);
 
-  } else if (arg1.is_single_value()) {
-    double value = arg1.first_value();
-
-    multiply_plain(arg0.ciphertext(), value, out->ciphertext(), he_seal_backend,
-                   pool);
-
-    if (out->ciphertext().is_transparent()) {
+    if (out.get_ciphertext()->ciphertext().is_transparent()) {
       NGRAPH_WARN << "Result ciphertext is transparent";
-      out->value() = 0;
-    }
-    out->known_value() = out->ciphertext().is_transparent();
-    if (he_seal_backend.naive_rescaling()) {
+      HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
+      out.set_plaintext(zeros);
+    } else if (he_seal_backend.naive_rescaling()) {
       he_seal_backend.get_evaluator()->rescale_to_next_inplace(
-          out->ciphertext(), pool);
+          out.get_ciphertext()->ciphertext(), pool);
     }
   } else {
     // Never complex-pack for multiplication
     auto p = SealPlaintextWrapper(false);
     encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
-           arg0.ciphertext().parms_id(), element_type,
+           arg0.ciphertext().parms_id(), element::f32,
            arg0.ciphertext().scale(), false);
 
     size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
@@ -204,56 +148,35 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
 
     try {
       he_seal_backend.get_evaluator()->multiply_plain(
-          arg0.ciphertext(), p.plaintext(), out->ciphertext(), pool);
+          arg0.ciphertext(), p.plaintext(), out.get_ciphertext()->ciphertext(),
+          pool);
     } catch (const std::exception& e) {
       NGRAPH_ERR << "Error multiplying plain " << e.what();
-      NGRAPH_ERR << "arg1->values().size() " << arg1.num_values();
-      for (const auto& elem : arg1.values()) {
-        NGRAPH_ERR << elem;
-      }
+      NGRAPH_ERR << "arg1->values().size() " << arg1.size();
+      NGRAPH_ERR << "arg1 " << arg1;
       throw ngraph_error("Error multiplying plain");
     }
-    out->known_value() = false;
   }
-  out->complex_packing() = arg0.complex_packing();
-  NGRAPH_CHECK(out->complex_packing() == he_seal_backend.complex_packing(),
-               "mult out is not he_seal_backend.complex_packing()");
 }
 
 void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
-                          HEPlaintext& out, const element::Type& element_type,
-                          HESealBackend& he_seal_backend,
-                          const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-  NGRAPH_CHECK(arg0.num_values() > 0,
-               "Multiplying plaintext arg0 has 0 values");
-  NGRAPH_CHECK(arg1.num_values() > 0,
-               "Multiplying plaintext arg1 has 0 values");
-
-  std::vector<double> arg0_vals = arg0.values();
-  std::vector<double> arg1_vals = arg1.values();
+                          HEPlaintext& out) {
   std::vector<double> out_vals;
-
-  if (arg0_vals.size() == 1) {
-    std::transform(arg1_vals.begin(), arg1_vals.end(),
-                   std::back_inserter(out_vals),
-                   std::bind(std::multiplies<double>(), std::placeholders::_1,
-                             arg0_vals[0]));
-  } else if (arg1_vals.size() == 1) {
-    std::transform(arg0_vals.begin(), arg0_vals.end(),
-                   std::back_inserter(out_vals),
-                   std::bind(std::multiplies<double>(), std::placeholders::_1,
-                             arg1_vals[0]));
+  if (arg0.size() == 1) {
+    std::transform(
+        arg1.begin(), arg1.end(), std::back_inserter(out_vals),
+        std::bind(std::multiplies<double>(), std::placeholders::_1, arg0[0]));
+  } else if (arg1.size() == 1) {
+    std::transform(
+        arg0.begin(), arg0.end(), std::back_inserter(out_vals),
+        std::bind(std::multiplies<double>(), std::placeholders::_1, arg1[0]));
   } else {
-    NGRAPH_CHECK(arg0.num_values() == arg1.num_values(), "arg0 num values ",
-                 arg0.num_values(), " != arg1 num values ", arg1.num_values(),
-                 " in plain-plain multiply");
-
-    std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
+    NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() ", arg0.size(),
+                 " != arg0.size() ", arg1.size(), " in plain-plain multiply");
+    std::transform(arg0.begin(), arg0.end(), arg1.begin(),
                    std::back_inserter(out_vals), std::multiplies<double>());
   }
-  out.set_values(out_vals);
+  out = HEPlaintext({out_vals});
 }
 
 }  // namespace he

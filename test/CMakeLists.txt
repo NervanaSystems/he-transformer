@@ -40,7 +40,7 @@ set(BACKEND_TEST_SRC
     # test_layers.in.cpp
     # test_maxpool.in.cpp
     # test_minimum.in.cpp
-    # test_multiply.in.cpp
+    test_multiply.in.cpp
     # test_max.in.cpp
     test_negate.in.cpp
     # test_pad.in.cpp
