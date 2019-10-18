@@ -107,6 +107,7 @@ inline void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   NGRAPH_CHECK(count <= arg1.size(), "Count ", count,
                " is too large for arg1, with size ", arg1.size());
 
+#pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
     scalar_add_seal(arg0[i], arg1[i], out[i], element_type, he_seal_backend);
   }

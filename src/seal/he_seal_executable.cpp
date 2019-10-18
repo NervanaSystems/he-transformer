@@ -22,6 +22,7 @@
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "kernel/add_seal.hpp"
+#include "kernel/result_seal.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
 #include "ngraph/op/batch_norm.hpp"
@@ -1192,6 +1193,11 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                out[0]->get_batched_element_count(), type, m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::Result: {
+      result_seal(args[0]->data(), out[0]->data(),
+                  out[0]->get_batched_element_count(), m_he_seal_backend);
       break;
     }
     default:
