@@ -167,9 +167,9 @@ HESealExecutable::~HESealExecutable() {
 
 void HESealExecutable::update_he_op_annotations() {
   NGRAPH_HE_LOG(3) << "Upadting HE op annotations";
-  /* ngraph::pass::Manager pass_manager_he;
+  ngraph::pass::Manager pass_manager_he;
   pass_manager_he.register_pass<pass::PropagateHEAnnotations>();
-  pass_manager_he.run_passes(m_function); */
+  pass_manager_he.run_passes(m_function);
   m_is_compiled = true;
 
   m_wrapped_nodes.clear();
@@ -672,8 +672,6 @@ bool HESealExecutable::call(
   validate(outputs, server_inputs);
   NGRAPH_HE_LOG(3) << "HESealExecutable::call validated inputs";
 
-  /*
-
   if (m_enable_client) {
     if (!server_setup()) {
       return false;
@@ -705,18 +703,10 @@ bool HESealExecutable::call(
     if (m_enable_client && from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
-      he_input =
-          std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
+      he_input = std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
 
-      if (auto current_annotation =
-              std::dynamic_pointer_cast<HEOpAnnotations>(
-                  param->get_op_annotations())) {
-        NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
-                         << " has annotation " << *current_annotation;
-        if (he_input->is_type<HESealCipherTensor>()) {
-          NGRAPH_HE_LOG(5) << "Parameter is encrypted";
-          current_annotation->set_encrypted(true);
-        }
+      if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
+              param->get_op_annotations())) {
         NGRAPH_CHECK(
             current_annotation->packed() == he_input->is_packed(),
             "Parameter annotation ", *current_annotation, " does not match ",
@@ -730,77 +720,39 @@ bool HESealExecutable::call(
           std::static_pointer_cast<HETensor>(server_inputs[input_idx]);
       he_input = he_server_input;
 
-      if (auto current_annotation =
-              std::dynamic_pointer_cast<HEOpAnnotations>(
-                  param->get_op_annotations())) {
+      if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
+              param->get_op_annotations())) {
+        // TODO: pack / unpack according to current annotation
+
         NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
                          << " has annotation " << *current_annotation;
         if (current_annotation->encrypted()) {
           NGRAPH_HE_LOG(3) << "Encrypting parameter " << param->get_name()
                            << " from server";
-          if (he_server_input->is_type<HESealCipherTensor>()) {
-            he_input = he_server_input;
-            NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
-                             << " is already encrypted";
-          } else {
-            NGRAPH_HE_LOG(5) << "Encrypting parameter " << param->get_name();
-            auto plain_input =
-                he_tensor_as_type<HEPlainTensor>(he_server_input);
-            if (current_annotation->packed()) {
-              plain_input->pack();
-            } else {
-              plain_input->unpack();
+
+          for (size_t he_type_idx = 0;
+               he_type_idx < he_input->get_batched_element_count();
+               ++he_type_idx) {
+            auto cipher = HESealBackend::create_empty_ciphertext();
+            if (he_input->data(he_type_idx).is_plaintext()) {
+              m_he_seal_backend.encrypt(
+                  cipher, he_input->data(he_type_idx).get_plaintext(),
+                  he_input->get_element_type(),
+                  he_input->data(he_type_idx).complex_packing());
             }
-
-            auto cipher_input = std::static_pointer_cast<HESealCipherTensor>(
-                m_he_seal_backend.create_cipher_tensor(
-                    plain_input->get_element_type(), plain_input->get_shape(),
-                    current_annotation->packed(), plain_input->get_name()));
-
-#pragma omp parallel for
-            for (size_t plain_idx = 0;
-                 plain_idx < plain_input->get_batched_element_count();
-                 ++plain_idx) {
-              encrypt(cipher_input->get_element(plain_idx),
-                      plain_input->get_element(plain_idx),
-                      m_he_seal_backend.get_context()->first_parms_id(),
-                      plain_input->get_element_type(),
-                      m_he_seal_backend.get_scale(),
-                      *m_he_seal_backend.get_ckks_encoder(),
-                      *m_he_seal_backend.get_encryptor(), complex_packing());
-            }
-            NGRAPH_HE_LOG(5)
-                << "Done encrypting parameter " << param->get_name();
-            plain_input->reset();
-            he_input = cipher_input;
+            he_input->data(he_type_idx).set_ciphertext(cipher);
           }
-        } else {  // not encrypted
-          NGRAPH_CHECK(
-              he_server_input->is_type<HEPlainTensor>(),
-              "Server input annotation is not encrypted, but tensor is "
-              "not plaintext");
-          auto plain_input =
-              he_tensor_as_type<HEPlainTensor>(he_server_input);
 
-          if (current_annotation->packed()) {
-            NGRAPH_HE_LOG(5) << "Packing parameter " << param->get_name();
-            plain_input->pack();
-          } else {
-            NGRAPH_HE_LOG(5) << "Unpacking parameter " << param->get_name();
-            plain_input->unpack();
-          }
-          he_input = plain_input;
+          NGRAPH_CHECK(he_input->is_packed() == current_annotation->packed(),
+                       "Mismatch between tensor input and annotation (",
+                       he_input->is_packed(),
+                       " != ", current_annotation->packed(), ")");
         }
-
-        NGRAPH_CHECK(he_input->is_packed() == current_annotation->packed(),
-                     "Mismatch between tensor input and annotation (",
-                     he_input->is_packed(),
-                     " != ", current_annotation->packed(), ")");
       }
-    }
-    NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
+      NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
 
-    he_inputs.emplace_back(he_input);
+      he_inputs.emplace_back(he_input);
+    }
   }
 
   NGRAPH_HE_LOG(3) << "Updating HE op annotations";
@@ -842,14 +794,8 @@ bool HESealExecutable::call(
     if (HEOpAnnotations::has_he_annotation(*output)) {
       auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
 
-      // TODO: better matching between annotation / tensor
-      if (he_output->is_type<HEPlainTensor>()) {
-        if (he_op_annotation->packed()) {
-          std::static_pointer_cast<HEPlainTensor>(he_output)->pack();
-        } else {
-          std::static_pointer_cast<HEPlainTensor>(he_output)->unpack();
-        }
-      }
+      // TODO: better matching between annotation / tensor; pack / unpack as
+      // needed
     }
     tensor_map.insert({tv, he_output});
   }
@@ -924,21 +870,21 @@ bool HESealExecutable::call(
               << "Node " << op->get_name()
               << " is not op, using default encrypted / packing behavior";
           encrypted_out =
-              !all_of(op_inputs.begin(), op_inputs.end(),
-                      [](std::shared_ptr<ngraph::he::HETensor> op_input) {
-                        return op_input->is_type<HEPlainTensor>();
-                      });
-          packed_out = std::any_of(
-              op_inputs.begin(), op_inputs.end(),
-              [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
-                return he_tensor->is_packed();
-              });
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](std::shared_ptr<ngraph::he::HETensor> op_input) {
+                            return op_input->any_encrypted_data();
+                          });
+          packed_out =
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
+                            return he_tensor->is_packed();
+                          });
         }
 
         // TODO: avoid broadcasting from constant to output with batch size
         // first dimension. This happens because not every constant is
         // packed, for example convolution kernels.
-         if (shape.size() > 0 && shape[0] == m_batch_size &&
+        if (shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
           packed_out = true;
         }
@@ -1003,7 +949,7 @@ bool HESealExecutable::call(
   // Send outputs to client.
   if (m_enable_client) {
     send_client_results();
-  } */
+  }
   return true;
 }
 

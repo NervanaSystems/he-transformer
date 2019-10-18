@@ -71,6 +71,14 @@ class HETensor : public runtime::Tensor {
 
   std::vector<HEType>& data() { return m_data; }
 
+  HEType& data(size_t i) { return m_data[i]; }
+
+  bool any_encrypted_data() const {
+    return std::any_of(m_data.begin(), m_data.end(), [](const HEType& he_type) {
+      return he_type.is_ciphertext();
+    });
+  }
+
   /// \brief Returns the batch size of a given shape
   /// \param[in] shape Shape of the tensor
   /// \param[in] packed Whether or not batch-axis packing is used

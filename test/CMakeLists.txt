@@ -24,7 +24,7 @@ set(SRC
     )
 
 set(BACKEND_TEST_SRC
-    # test_add.in.cpp
+    test_add.in.cpp
     # test_avg_pool.in.cpp
     # test_batch_norm_inference.in.cpp
     test_basics.in.cpp
