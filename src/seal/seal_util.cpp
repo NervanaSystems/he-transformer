@@ -507,8 +507,9 @@ void decode(void* output, const HEPlaintext& input,
 }
 
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
-             seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder) {
-  auto plaintext_wrapper = SealPlaintextWrapper();
+             const bool complex_packing, seal::Decryptor& decryptor,
+             seal::CKKSEncoder& ckks_encoder) {
+  auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
   decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
   decode(output, plaintext_wrapper, ckks_encoder);
 }

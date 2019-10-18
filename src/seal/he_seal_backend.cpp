@@ -301,10 +301,9 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {
-  return false;
-  /* return m_unsupported_op_name_list.find(node.description()) ==
+  return m_unsupported_op_name_list.find(node.description()) ==
              m_unsupported_op_name_list.end() &&
-         is_supported_type(node.get_type()); */
+         is_supported_type(node.get_element_type());
 }
 
 std::shared_ptr<SealCiphertextWrapper> HESealBackend::create_valued_ciphertext(
@@ -333,8 +332,10 @@ void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 }
 
 void HESealBackend::decrypt(HEPlaintext& output,
-                            const SealCiphertextWrapper& input) const {
-  ngraph::he::decrypt(output, input, *m_decryptor, *m_ckks_encoder);
+                            const SealCiphertextWrapper& input,
+                            const bool complex_packing) const {
+  ngraph::he::decrypt(output, input, complex_packing, *m_decryptor,
+                      *m_ckks_encoder);
 }
 
 void HESealBackend::decode(HEPlaintext& output,

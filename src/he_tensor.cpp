@@ -123,7 +123,8 @@ void HETensor::write(const void* p, size_t n) {
       m_data[i].set_plaintext(plain);
       NGRAPH_INFO << "Set plaintext values " << plain;
     } else if (m_data[i].is_ciphertext()) {
-      NGRAPH_INFO << "Encrypting value";
+      NGRAPH_INFO << "Encrypting value " << plain;
+      NGRAPH_INFO << "Complex packing? " << m_data[i].complex_packing();
       auto cipher = HESealBackend::create_empty_ciphertext();
       m_he_seal_backend.encrypt(cipher, plain, element_type,
                                 m_data[i].complex_packing());
@@ -163,7 +164,7 @@ void HETensor::read(void* target, size_t n) const {
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
       auto cipher = m_data[i].get_ciphertext();
-      m_he_seal_backend.decrypt(plain, *cipher);
+      m_he_seal_backend.decrypt(plain, *cipher, m_data[i].complex_packing());
     } else {
       plain = m_data[i].get_plaintext();
     }

@@ -288,7 +288,8 @@ void decode(void* output, const HEPlaintext& input, const element::Type& type,
 /// \param[in] decryptor Used for decryption
 /// \param[in] ckks_encoder Used for decoding
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
-             seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder);
+             const bool complex_packing, seal::Decryptor& decryptor,
+             seal::CKKSEncoder& ckks_encoder);
 
 }  // namespace he
 }  // namespace ngraph

@@ -207,7 +207,8 @@ class HESealBackend : public ngraph::runtime::Backend {
                bool complex_packing = false) const;
 
   /// \brief TODO
-  void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input) const;
+  void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
+               const bool complex_packing) const;
 
   /// \brief Returns pointer to SEAL context
   const inline std::shared_ptr<seal::SEALContext> get_context() const {
