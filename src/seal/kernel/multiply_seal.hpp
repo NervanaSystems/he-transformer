@@ -81,6 +81,10 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
   if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+
     scalar_multiply_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
                          out.get_ciphertext(), arg0.complex_packing(),
                          he_seal_backend);
@@ -90,12 +94,19 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
                          he_seal_backend);
     // TODO: lazy rescaling?
   } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
     scalar_multiply_seal(*arg1.get_ciphertext(), arg0.get_plaintext(), out,
                          he_seal_backend);
     // TODO: lazy rescaling?
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
+    if (!out.is_plaintext()) {
+      out.set_plaintext(HEPlaintext());
+    }
+
     scalar_multiply_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                          out.get_plaintext());
   } else {

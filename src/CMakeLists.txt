@@ -29,6 +29,7 @@ set(HE_SRC
     # seal
     # kernels
     seal/kernel/add_seal.cpp
+    seal/kernel/convolution_seal.cpp
     # seal/kernel/constant_seal.cpp
     # seal/kernel/divide_seal.cpp
     # seal/kernel/exp_seal.cpp

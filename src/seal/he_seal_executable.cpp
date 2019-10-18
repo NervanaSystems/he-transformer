@@ -21,10 +21,6 @@
 
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
-#include "kernel/add_seal.hpp"
-#include "kernel/multiply_seal.hpp"
-#include "kernel/result_seal.hpp"
-#include "kernel/subtract_seal.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/op/avg_pool.hpp"
 #include "ngraph/op/batch_norm.hpp"
@@ -65,7 +61,12 @@
 #include "protos/message.pb.h"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
+#include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/convolution_seal.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
+#include "seal/kernel/result_seal.hpp"
+#include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
@@ -1177,6 +1178,7 @@ void HESealExecutable::generate_calls(
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
+  */
 
   Shape out_shape{};
   if (node.get_output_size() > 0) {
@@ -1188,16 +1190,34 @@ void HESealExecutable::generate_calls(
     }
   }
 
-  //
-
-  */
-
   switch (node_wrapper.get_typeid()) {
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
+    case OP_TYPEID::Convolution: {
+      const op::Convolution* c = static_cast<const op::Convolution*>(&node);
+      auto window_movement_strides = c->get_window_movement_strides();
+      auto window_dilation_strides = c->get_window_dilation_strides();
+      auto padding_below = c->get_padding_below();
+      auto padding_above = c->get_padding_above();
+      auto data_dilation_strides = c->get_data_dilation_strides();
+
+      Shape in_shape0 = args[0]->get_packed_shape();
+      Shape in_shape1 = args[1]->get_packed_shape();
+
+      convolution_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+                       in_shape0, in_shape1, out_shape, window_movement_strides,
+                       window_dilation_strides, padding_below, padding_above,
+                       data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
+                       m_batch_size, m_he_seal_backend, verbose);
+
+      // TODO: lazy rescaling?
+      //  lazy_rescaling(out0_cipher, verbose);
+      break;
+    }
+
     case OP_TYPEID::Multiply: {
       multiply_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                     out[0]->get_batched_element_count(), type,
@@ -1428,62 +1448,7 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Convolution: {
-            const op::Convolution* c = static_cast<const
-      op::Convolution*>(&node); auto window_movement_strides =
-      c->get_window_movement_strides(); auto window_dilation_strides =
-      c->get_window_dilation_strides(); auto padding_below =
-      c->get_padding_below(); auto padding_above = c->get_padding_above();
-            auto data_dilation_strides = c->get_data_dilation_strides();
 
-            Shape in_shape0 = arg_shapes[0];
-            Shape in_shape1 = arg_shapes[1];
-
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                convolution_seal(
-                    cipher_args[0]->get_elements(),
-      cipher_args[1]->get_elements(), out0_cipher->get_elements(),
-      in_shape0, in_shape1, out_shape, window_movement_strides,
-      window_dilation_strides, padding_below, padding_above,
-      data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
-      m_he_seal_backend, verbose); lazy_rescaling(out0_cipher, verbose);
-                break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                convolution_seal(
-                    cipher_args[0]->get_elements(),
-      plain_args[1]->get_elements(), out0_cipher->get_elements(), in_shape0,
-      in_shape1, out_shape, window_movement_strides,
-      window_dilation_strides, padding_below, padding_above,
-      data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
-      m_he_seal_backend, verbose); lazy_rescaling(out0_cipher, verbose);
-                break;
-              }
-              case BinaryOpType::PlainCipherToCipher: {
-                convolution_seal(
-                    plain_args[0]->get_elements(),
-      cipher_args[1]->get_elements(), out0_cipher->get_elements(),
-      in_shape0, in_shape1, out_shape, window_movement_strides,
-      window_dilation_strides, padding_below, padding_above,
-      data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
-      m_he_seal_backend, verbose); lazy_rescaling(out0_cipher, verbose);
-                break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                convolution_seal(
-                    plain_args[0]->get_elements(),
-      plain_args[1]->get_elements(), out0_plain->get_elements(), in_shape0,
-      in_shape1, out_shape, window_movement_strides,
-      window_dilation_strides, padding_below, padding_above,
-      data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type, m_batch_size,
-      m_he_seal_backend, verbose); break;
-              }
-              case BinaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::Divide: {
             Shape in_shape0 = arg_shapes[0];
             Shape in_shape1 = arg_shapes[1];
