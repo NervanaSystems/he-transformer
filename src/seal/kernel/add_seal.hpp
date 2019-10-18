@@ -104,6 +104,8 @@ inline void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                      std::vector<HEType>& out, size_t count,
                      const element::Type& element_type,
                      HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
   NGRAPH_CHECK(count <= arg0.size(), "Count ", count,
                " is too large for arg0, with size ", arg0.size());
   NGRAPH_CHECK(count <= arg1.size(), "Count ", count,

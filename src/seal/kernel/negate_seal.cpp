@@ -21,28 +21,15 @@ namespace he {
 
 void scalar_negate_seal(const SealCiphertextWrapper& arg,
                         std::shared_ptr<SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
                         const HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-
-  if (arg.known_value()) {
-    out->known_value() = true;
-    out->value() = -arg.value();
-    return;
-  }
-  out->complex_packing() = arg.complex_packing();
   he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
 }
 
-void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
-                        const element::Type& element_type) {
-  const std::vector<double>& arg_vals = arg.values();
-  std::vector<double> out_vals(arg.num_values());
-
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(),
+void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out) {
+  std::vector<double> out_vals(arg.size());
+  std::transform(arg.begin(), arg.end(), out_vals.begin(),
                  std::negate<double>());
-  out.set_values(out_vals);
+    out = HEPlaintext({out_vals});
 }
 
 }  // namespace he

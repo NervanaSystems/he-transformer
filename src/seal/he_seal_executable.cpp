@@ -63,6 +63,7 @@
 #include "protos/message.pb.h"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
+#include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
@@ -1193,6 +1194,11 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                out[0]->get_batched_element_count(), type, m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::Negative: {
+      negate_seal(args[0]->data(), out[0]->data(),
+                  out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Result: {
