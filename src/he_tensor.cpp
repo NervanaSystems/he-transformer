@@ -19,23 +19,24 @@
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
 
 HETensor::HETensor(const element::Type& element_type, const Shape& shape,
-                   const bool packed, const bool encrypted,
-                   const HESealBackend& he_seal_backend,
+                   const bool plaintext_packing, const bool complex_packing,
+                   const bool encrypted, const HESealBackend& he_seal_backend,
                    const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
           element_type, shape, name)),
-      m_packed(packed),
+      m_packed(plaintext_packing),
       m_he_seal_backend(he_seal_backend) {
   m_descriptor->set_tensor_layout(
       std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(
           *m_descriptor));
 
-  if (packed) {
+  if (plaintext_packing) {
     m_packed_shape = pack_shape(shape, 0);
   } else {
     m_packed_shape = shape;
@@ -45,9 +46,12 @@ HETensor::HETensor(const element::Type& element_type, const Shape& shape,
       m_descriptor->get_tensor_layout()->get_size() / get_batch_size();
 
   if (encrypted) {
-    m_data.resize(num_elements, HEType(SealCiphertextWrapper()));
+    m_data.resize(num_elements,
+                  HEType(HESealBackend::create_empty_ciphertext(),
+                         plaintext_packing, complex_packing, get_batch_size()));
   } else {
-    m_data.resize(num_elements, HEType(HEPlaintext()));
+    m_data.resize(num_elements, HEType(HEPlaintext(), plaintext_packing,
+                                       complex_packing, get_batch_size()));
   }
 }
 
@@ -101,25 +105,31 @@ void HETensor::write(const void* p, size_t n) {
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_write = n / (element_type.size() * get_batch_size());
+  NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements_to_write; ++i) {
-    const void* src_with_offset = static_cast<const void*>(
-        static_cast<const char*>(p) + i * type_byte_size);
     std::vector<double> values(get_batch_size());
-
     for (size_t j = 0; j < get_batch_size(); ++j) {
       const void* src = static_cast<const void*>(
           static_cast<const char*>(p) +
           type_byte_size * (i + j * num_elements_to_write));
-
       values[j] = type_to_double(src, element_type);
     }
 
+    HEPlaintext plain({values});
     if (m_data[i].is_plaintext()) {
-      m_data[i].set_plaintext(HEPlaintext({values}));
+      NGRAPH_INFO << "Setting plaintext values " << plain;
+      m_data[i].set_plaintext(plain);
+      NGRAPH_INFO << "Set plaintext values " << plain;
+    } else if (m_data[i].is_ciphertext()) {
+      NGRAPH_INFO << "Encrypting value";
+      auto cipher = HESealBackend::create_empty_ciphertext();
+      m_he_seal_backend.encrypt(cipher, plain, element_type,
+                                m_data[i].complex_packing());
+      m_data[i].set_ciphertext(cipher);
     } else {
-      NGRAPH_CHECK(false, "m_data[i] is ciphertext");
+      NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
     }
   }
 }
@@ -127,9 +137,11 @@ void HETensor::write(const void* p, size_t n) {
 void HETensor::read(void* target, size_t n) const {
   check_io_bounds(target, n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
-
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());
+
+  NGRAPH_INFO << "Reading " << num_elements_to_read << " elements (batch size "
+              << get_batch_size();
 
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
@@ -145,57 +157,22 @@ void HETensor::read(void* target, size_t n) const {
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements_to_read; ++i) {
-    if (m_data[i].is_plaintext()) {
-      auto& plaintext = m_data[i].get_plaintext();
-      NGRAPH_CHECK(plaintext.size() >= get_batch_size(), "values size ",
-                   plaintext.size(), " is smaller than batch size ",
-                   get_batch_size());
+    NGRAPH_CHECK(m_data[i].is_plaintext() || m_data[i].is_ciphertext(),
+                 "Cannot read from tensor of unspecified type");
 
-      switch (element_type.get_type_enum()) {
-        case element::Type_t::f32: {
-          std::vector<float> float_values{plaintext.begin(), plaintext.end()};
-          const void* type_values_src =
-              static_cast<const void*>(float_values.data());
-          copy_batch_values_to_src(i, target, type_values_src);
-          break;
-        }
-        case element::Type_t::f64: {
-          const void* type_values_src =
-              static_cast<const void*>(plaintext.data());
-          copy_batch_values_to_src(i, target, type_values_src);
-          break;
-        }
-        case element::Type_t::i32: {
-          std::vector<int32_t> int32_values{plaintext.begin(), plaintext.end()};
-          const void* type_values_src =
-              static_cast<const void*>(int32_values.data());
-          copy_batch_values_to_src(i, target, type_values_src);
-          break;
-        }
-        case element::Type_t::i64: {
-          std::vector<int64_t> int64_values{plaintext.begin(), plaintext.end()};
-          const void* type_values_src =
-              static_cast<const void*>(int64_values.data());
-          copy_batch_values_to_src(i, target, type_values_src);
-          break;
-        }
-        case element::Type_t::i8:
-        case element::Type_t::i16:
-        case element::Type_t::u8:
-        case element::Type_t::u16:
-        case element::Type_t::u32:
-        case element::Type_t::u64:
-        case element::Type_t::dynamic:
-        case element::Type_t::undefined:
-        case element::Type_t::bf16:
-        case element::Type_t::f16:
-        case element::Type_t::boolean:
-          NGRAPH_CHECK(false, "Unsupported element type ", element_type);
-          break;
-      }
+    HEPlaintext plain;
+    if (m_data[i].is_ciphertext()) {
+      auto cipher = m_data[i].get_ciphertext();
+      m_he_seal_backend.decrypt(plain, *cipher);
     } else {
-      NGRAPH_CHECK(false, "m_data[i] is ciphertext");
+      plain = m_data[i].get_plaintext();
     }
+
+    void* dst = ngraph::ngraph_malloc(type_byte_size * get_batch_size());
+    ngraph::he::decode(dst, plain, element_type, get_batch_size());
+
+    copy_batch_values_to_src(i, target, dst);
+    ngraph::ngraph_free(dst);
   }
 }
 

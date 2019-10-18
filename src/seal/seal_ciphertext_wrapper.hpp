@@ -141,7 +141,6 @@ class SealCiphertextWrapper {
 
  private:
   seal::Ciphertext m_ciphertext;
-  bool m_complex_packing;
 };
 
 }  // namespace he

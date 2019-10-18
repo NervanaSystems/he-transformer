@@ -165,6 +165,14 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_scalar) {
         test::he::all_close(read_vector<double>(a), (vector<double>{5})));
   }
   {
+    NGRAPH_INFO << "int 32";
+    auto a = he_backend->create_cipher_tensor(element::i32, shape);
+    copy_data(a, vector<int32_t>{5});
+    EXPECT_TRUE(
+        test::he::all_close(read_vector<int32_t>(a), (vector<int32_t>{5})));
+  }
+  {
+    NGRAPH_INFO << "int 64";
     auto a = he_backend->create_cipher_tensor(element::i64, shape);
     copy_data(a, vector<int64_t>{5});
     EXPECT_TRUE(

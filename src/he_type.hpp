@@ -28,28 +28,61 @@ namespace he {
 /// \brief Class representing an HE datatype, either a plaintext or a ciphertext
 class HEType {
  public:
+  HEType() = delete;
+
   /// \brief Constructs an empty HEType object
-  HEType() = default;
+  HEType(const bool plaintext_packing, const bool complex_packing,
+         const size_t batch_size)
+      : m_plaintext_packing(plaintext_packing),
+        m_complex_packing(complex_packing),
+        m_batch_size(batch_size) {}
 
-  HEType(const HEPlaintext& plain) : m_is_plain(true), m_plain(plain) {}
+  HEType(const HEPlaintext& plain, const bool plaintext_packing,
+         const bool complex_packing, const size_t batch_size)
+      : HEType(plaintext_packing, complex_packing, batch_size) {
+    m_is_plain = true;
+    m_plain = plain;
+  }
 
-  HEType(const SealCiphertextWrapper& cipher)
-      : m_is_plain(false), m_cipher(cipher) {}
+  HEType(const std::shared_ptr<SealCiphertextWrapper>& cipher,
+         const bool plaintext_packing, const bool complex_packing,
+         const size_t batch_size)
+      : HEType(plaintext_packing, complex_packing, batch_size) {
+    m_is_plain = false;
+    m_cipher = cipher;
+  }
 
-  inline bool is_plaintext() const { return m_is_plain; }
-  inline bool is_ciphertext() const { return !is_plaintext(); }
+  bool is_plaintext() const { return m_is_plain; }
+  bool is_ciphertext() const { return !is_plaintext(); }
 
   const HEPlaintext& get_plaintext() const { return m_plain; }
 
+  const bool& complex_packing() const { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
+
+  const bool& plaintext_packing() const { return m_plaintext_packing; }
+  bool& plaintext_packing() { return m_plaintext_packing; }
+
+  const size_t& batch_size() const { return m_batch_size; }
+  size_t& batch_size() { return m_batch_size; }
+
+  // TODO: &&
   void set_plaintext(const HEPlaintext& plain) {
     m_plain = plain;
     m_is_plain = true;
-    m_cipher.ciphertext().release();
+    NGRAPH_INFO << "Releasing ciphertext";
+    if (m_cipher != nullptr) {
+      m_cipher->ciphertext().release();
+    }
   }
 
-  const SealCiphertextWrapper& get_ciphertext() const { return m_cipher; }
+  const std::shared_ptr<SealCiphertextWrapper>& get_ciphertext() const {
+    return m_cipher;
+  }
+  std::shared_ptr<SealCiphertextWrapper> get_ciphertext() { return m_cipher; }
 
-  void set_ciphertext(const SealCiphertextWrapper& cipher) {
+  // TODO: &&
+  void set_ciphertext(const std::shared_ptr<SealCiphertextWrapper>& cipher) {
     m_cipher = cipher;
     m_is_plain = false;
     m_plain.clear();
@@ -57,11 +90,11 @@ class HEType {
 
  private:
   bool m_is_plain;
-  bool m_complex_packing;
   bool m_plaintext_packing;
-  size_t batch_size;
+  bool m_complex_packing;
+  size_t m_batch_size;
   HEPlaintext m_plain;
-  SealCiphertextWrapper m_cipher;
+  std::shared_ptr<SealCiphertextWrapper> m_cipher;
 };
 
 }  // namespace he

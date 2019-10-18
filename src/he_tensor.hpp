@@ -37,8 +37,8 @@ class HETensor : public runtime::Tensor {
   /// \param[in] packed Whether or not to use plaintext packing
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
-           const bool packed, const bool encrypted,
-           const HESealBackend& he_seal_backend,
+           const bool plaintext_packing, const bool complex_packing,
+           const bool encrypted, const HESealBackend& he_seal_backend,
            const std::string& name = "external");
 
   virtual ~HETensor() override {}

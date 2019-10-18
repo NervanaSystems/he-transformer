@@ -420,6 +420,7 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
   const size_t slot_count = ckks_encoder.slot_count();
 
   switch (element_type.get_type_enum()) {
+    case element::Type_t::i32:
     case element::Type_t::i64:
     case element::Type_t::f32:
     case element::Type_t::f64: {
@@ -453,7 +454,6 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
     }
     case element::Type_t::i8:
     case element::Type_t::i16:
-    case element::Type_t::i32:
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:
@@ -479,7 +479,6 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
   encode(plaintext, input, ckks_encoder, parms_id, element_type, scale,
          complex_packing);
   encryptor.encrypt(plaintext.plaintext(), output->ciphertext());
-  // output->complex_packing() = complex_packing;
 }
 
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
