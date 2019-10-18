@@ -93,7 +93,7 @@ inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
                     out.get_ciphertext(), arg0.complex_packing(),
                     he_seal_backend);
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
-    scalar_add_seal(arg1.get_plaintext(), arg0.get_plaintext(),
+    scalar_add_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                     out.get_plaintext());
   } else {
     NGRAPH_CHECK(false, "Unknown argument types");

@@ -51,7 +51,7 @@ set(BACKEND_TEST_SRC
     # test_server_client.in.cpp
     # test_softmax.in.cpp
     # test_slice.in.cpp
-    # test_subtract.in.cpp
+    test_subtract.in.cpp
     # test_sum.in.cpp)
     )
 

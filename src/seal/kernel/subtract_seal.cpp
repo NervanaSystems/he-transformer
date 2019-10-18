@@ -25,79 +25,39 @@ namespace he {
 void scalar_subtract_seal(SealCiphertextWrapper& arg0,
                           SealCiphertextWrapper& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-  if (arg0.known_value() && arg1.known_value()) {
-    out->known_value() = true;
-    out->value() = arg0.value() - arg1.value();
-  } else if (arg0.known_value()) {
-    HEPlaintext p(arg0.value());
-    scalar_subtract_seal(p, arg1, out, element_type, he_seal_backend);
-    out->known_value() = false;
-  } else if (arg1.known_value()) {
-    HEPlaintext p(arg1.value());
-    scalar_subtract_seal(arg0, p, out, element_type, he_seal_backend);
-    out->known_value() = false;
-  } else {
-    he_seal_backend.get_evaluator()->sub(arg0.ciphertext(), arg1.ciphertext(),
-                                         out->ciphertext());
-    out->known_value() = false;
-  }
+                          HESealBackend& he_seal_backend,
+                          const seal::MemoryPoolHandle& pool) {
+  match_modulus_and_scale_inplace(arg0, arg1, he_seal_backend, pool);
+  he_seal_backend.get_evaluator()->sub(arg0.ciphertext(), arg1.ciphertext(),
+                                       out->ciphertext());
 }
 
 void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
+                          const bool complex_packing,
                           HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-  if (arg0.known_value()) {
-    NGRAPH_CHECK(arg1.is_single_value(), "arg1 is not single value");
-    out->known_value() = true;
-    out->value() = arg0.value() - arg1.first_value();
-    out->complex_packing() = arg0.complex_packing();
-  } else {
-    auto p = SealPlaintextWrapper(arg0.complex_packing());
-    encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
-           arg0.ciphertext().parms_id(), element_type,
-           arg0.ciphertext().scale(), arg0.complex_packing());
-    he_seal_backend.get_evaluator()->sub_plain(arg0.ciphertext(), p.plaintext(),
-                                               out->ciphertext());
-    out->known_value() = false;
-  }
+  HEPlaintext neg_arg1(arg1.size());
+  std::transform(arg1.cbegin(), arg1.cend(), neg_arg1.begin(),
+                 std::negate<double>());
+  scalar_add_seal(arg0, neg_arg1, out, complex_packing, he_seal_backend);
 }
 
 void scalar_subtract_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
+                          const bool complex_packing,
                           HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-  if (arg1.known_value()) {
-    NGRAPH_CHECK(arg0.is_single_value(), "arg0 is not single value");
-    out->known_value() = true;
-    out->value() = arg0.first_value() - arg1.value();
-    out->complex_packing() = arg1.complex_packing();
-  } else {
-    auto tmp = std::make_shared<SealCiphertextWrapper>();
-    scalar_negate_seal(arg1, tmp, element_type, he_seal_backend);
-    scalar_add_seal(arg0, *tmp, out, element_type, he_seal_backend);
-    out->known_value() = false;
-  }
+  auto tmp = HESealBackend::create_empty_ciphertext();
+  scalar_negate_seal(arg1, tmp, he_seal_backend);
+  scalar_add_seal(arg0, *tmp, out, complex_packing, he_seal_backend);
 }
 
 void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out) {
-  const std::vector<double>& arg0_vals = arg0.values();
-  const std::vector<double>& arg1_vals = arg1.values();
-  std::vector<double> out_vals(arg0.num_values());
+  std::vector<double> out_vals(arg0.size());
+  std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
+                 std::minus<double>());
 
-  std::transform(arg0_vals.begin(), arg0_vals.end(), arg1_vals.begin(),
-                 out_vals.begin(), std::minus<double>());
-  out.set_values(out_vals);
+  out = HEPlaintext({out_vals});
 }
-
 }  // namespace he
 }  // namespace ngraph

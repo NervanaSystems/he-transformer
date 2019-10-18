@@ -38,7 +38,7 @@ set(HE_SRC
     # seal/kernel/relu_seal.cpp
     # seal/kernel/result_seal.cpp
     # seal/kernel/softmax_seal.cpp
-    # seal/kernel/subtract_seal.cpp
+    seal/kernel/subtract_seal.cpp
     # seal backend
     seal/he_seal_backend.cpp
     # seal/he_seal_client.cpp
