@@ -36,10 +36,10 @@ class HEType {
   HEType(const SealCiphertextWrapper& cipher)
       : m_is_plain(false), m_cipher(cipher) {}
 
-  inline bool is_plaintext() { return m_is_plain; }
-  inline bool is_ciphertext() { return !is_plaintext(); }
+  inline bool is_plaintext() const { return m_is_plain; }
+  inline bool is_ciphertext() const { return !is_plaintext(); }
 
-  const HEPlaintext& get_plaintext() { return m_plain; }
+  const HEPlaintext& get_plaintext() const { return m_plain; }
 
   void set_plaintext(const HEPlaintext& plain) {
     m_plain = plain;
@@ -47,7 +47,7 @@ class HEType {
     m_cipher.ciphertext().release();
   }
 
-  const SealCiphertextWrapper& get_ciphertext() { return m_cipher; }
+  const SealCiphertextWrapper& get_ciphertext() const { return m_cipher; }
 
   void set_ciphertext(const SealCiphertextWrapper& cipher) {
     m_cipher = cipher;
@@ -58,6 +58,8 @@ class HEType {
  private:
   bool m_is_plain;
   bool m_complex_packing;
+  bool m_plaintext_packing;
+  size_t batch_size;
   HEPlaintext m_plain;
   SealCiphertextWrapper m_cipher;
 };

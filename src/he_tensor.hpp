@@ -37,6 +37,7 @@ class HETensor : public runtime::Tensor {
   /// \param[in] packed Whether or not to use plaintext packing
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
+           const bool packed, const bool encrypted,
            const HESealBackend& he_seal_backend,
            const std::string& name = "external");
 
@@ -45,16 +46,12 @@ class HETensor : public runtime::Tensor {
   /// \brief Write bytes directly into the tensor
   /// \param[in] p Pointer to source of data
   /// \param[in] n Number of bytes to write, must be integral number of elements
-  void write(const void* p, size_t n) override {
-    throw ngraph_error("Write unimplemented");
-  };
+  void write(const void* p, size_t n) override;
 
   /// \brief Read bytes directly from the tensor
   /// \param[out] p Pointer to destination for data
   /// \param[in] n Number of bytes to read, must be integral number of elements.
-  void read(void* p, size_t n) const override {
-    throw ngraph_error("Read unimplemented");
-  }
+  void read(void* p, size_t n) const override;
 
   /// \brief Reduces shape along pack axis
   /// \param[in] shape Input shape to pack
@@ -86,7 +83,9 @@ class HETensor : public runtime::Tensor {
   const Shape& get_expanded_shape() const { return get_shape(); }
 
   /// \brief Returns packing factor used in the tensor
-  inline size_t get_batch_size() const { return m_batch_size; }
+  inline size_t get_batch_size() const {
+    return batch_size(get_shape(), m_packed);
+  }
 
   /// \brief Returns number of ciphertext / plaintext objects in the tensor
   inline size_t get_batched_element_count() const {
@@ -97,13 +96,12 @@ class HETensor : public runtime::Tensor {
   inline bool is_packed() const { return m_packed; }
 
  private:
+  bool m_packed;
+  Shape m_packed_shape;
   std::vector<HEType> m_data;
   const HESealBackend& m_he_seal_backend;
 
   void check_io_bounds(const void* p, size_t n) const;
-  bool m_packed;
-  size_t m_batch_size;
-  Shape m_packed_shape;
 };
 
 }  // namespace he

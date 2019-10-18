@@ -168,28 +168,30 @@ std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_tensor(
 std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_plain_tensor(
     const element::Type& type, const Shape& shape, const bool packed,
     const std::string& name) const {
-  auto tensor = std::make_shared<HETensor>(type, shape, *this);
+  auto tensor =
+      std::make_shared<HETensor>(type, shape, packed, false, *this, name);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
 }
 
 std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_cipher_tensor(
     const element::Type& type, const Shape& shape, const bool packed,
     const std::string& name) const {
-  auto tensor = std::make_shared<HETensor>(type, shape, *this);
+  auto tensor =
+      std::make_shared<HETensor>(type, shape, packed, true, *this, name);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
 HESealBackend::create_packed_cipher_tensor(const element::Type& type,
                                            const Shape& shape) const {
-  auto tensor = std::make_shared<HETensor>(type, shape, *this);
+  auto tensor = std::make_shared<HETensor>(type, shape, true, true, *this);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
 }
 
 std::shared_ptr<ngraph::runtime::Tensor>
 HESealBackend::create_packed_plain_tensor(const element::Type& type,
                                           const Shape& shape) const {
-  auto tensor = std::make_shared<HETensor>(type, shape, *this);
+  auto tensor = std::make_shared<HETensor>(type, shape, true, false, *this);
   return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
 }
 
