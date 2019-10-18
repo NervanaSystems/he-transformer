@@ -40,7 +40,6 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
   if (add_zero) {
     SealCiphertextWrapper tmp(arg0);
     out = std::make_shared<SealCiphertextWrapper>(tmp);
-
   } else {
     // TODO: optimize for adding single complex number
     if ((arg1.size() == 1) && !complex_packing) {
@@ -64,7 +63,6 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
 void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                      HEPlaintext& out) {
   std::vector<double> out_vals;
-
   if (arg0.size() == 1) {
     std::transform(
         arg1.begin(), arg1.end(), std::back_inserter(out_vals),

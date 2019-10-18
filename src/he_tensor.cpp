@@ -49,6 +49,11 @@ HETensor::HETensor(const element::Type& element_type, const Shape& shape,
     m_data.resize(num_elements,
                   HEType(HESealBackend::create_empty_ciphertext(),
                          plaintext_packing, complex_packing, get_batch_size()));
+    for (size_t i = 0; i < num_elements; ++i) {
+      m_data[i] = HEType(HESealBackend::create_empty_ciphertext(),
+                         plaintext_packing, complex_packing, get_batch_size());
+    }
+
   } else {
     m_data.resize(num_elements, HEType(HEPlaintext(), plaintext_packing,
                                        complex_packing, get_batch_size()));
@@ -119,9 +124,7 @@ void HETensor::write(const void* p, size_t n) {
 
     HEPlaintext plain({values});
     if (m_data[i].is_plaintext()) {
-      NGRAPH_INFO << "Setting plaintext values " << plain;
       m_data[i].set_plaintext(plain);
-      NGRAPH_INFO << "Set plaintext values " << plain;
     } else if (m_data[i].is_ciphertext()) {
       NGRAPH_INFO << "Encrypting value " << plain;
       NGRAPH_INFO << "Complex packing? " << m_data[i].complex_packing();

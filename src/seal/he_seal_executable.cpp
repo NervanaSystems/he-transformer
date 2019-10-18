@@ -734,14 +734,14 @@ bool HESealExecutable::call(
           for (size_t he_type_idx = 0;
                he_type_idx < he_input->get_batched_element_count();
                ++he_type_idx) {
-            auto cipher = HESealBackend::create_empty_ciphertext();
             if (he_input->data(he_type_idx).is_plaintext()) {
+              auto cipher = HESealBackend::create_empty_ciphertext();
               m_he_seal_backend.encrypt(
                   cipher, he_input->data(he_type_idx).get_plaintext(),
                   he_input->get_element_type(),
                   he_input->data(he_type_idx).complex_packing());
+              he_input->data(he_type_idx).set_ciphertext(cipher);
             }
-            he_input->data(he_type_idx).set_ciphertext(cipher);
           }
 
           NGRAPH_CHECK(he_input->is_packed() == current_annotation->packed(),
