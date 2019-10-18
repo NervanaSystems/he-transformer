@@ -200,19 +200,32 @@ void convolution_seal(
 
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
-
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
+
+        NGRAPH_INFO << "mult_arg0 is ciphgertext? "
+                    << mult_arg0.is_ciphertext();
+        NGRAPH_INFO << "mult_arg1 is ciphgertext? "
+                    << mult_arg1.is_ciphertext();
+        NGRAPH_INFO << "mult_arg0 is plain? " << mult_arg0.is_plaintext();
+        NGRAPH_INFO << "mult_arg1 is is_plaintext? "
+                    << mult_arg1.is_plaintext();
 
         // TODO: better type which matches arguments?
         auto prod = HEType(false, false, 1);
 
+        NGRAPH_INFO << "Mult seal";
         scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
                              he_seal_backend);
+        NGRAPH_INFO << "done mult seal";
         if (first_add) {
+          NGRAPH_INFO << "Setting sum = prod";
           sum = prod;
+          NGRAPH_INFO << "sum.is_ciphertext? " << sum.is_ciphertext();
           first_add = false;
         } else {
+          NGRAPH_INFO << "adding seal";
           scalar_add_seal(prod, sum, sum, element_type, he_seal_backend);
+          NGRAPH_INFO << "done adding seal";
         }
       }
       ++input_it;

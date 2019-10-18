@@ -109,9 +109,7 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
 void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           HEType& out, HESealBackend& he_seal_backend,
                           const seal::MemoryPoolHandle& pool) {
-  NGRAPH_CHECK(out.is_ciphertext(),
-               "Multiply Cipher * Plain should have out value ciphertext");
-
+  NGRAPH_INFO << "Multiply cipher * plain (plain " << arg1 << ")";
   // TODO: check multiplying by small numbers behavior more thoroughly
   // TODO: check if abs(values) < scale?
   if (std::all_of(arg1.begin(), arg1.end(),
@@ -120,8 +118,15 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     NGRAPH_INFO << "Setting plaintext 0";
     out.set_plaintext(zeros);
   } else if (arg1.size() == 1) {
+    if (!out.is_ciphertext()) {
+      NGRAPH_INFO << "Setting output to empty ciphertext";
+      auto empty_cipher = HESealBackend::create_empty_ciphertext();
+      out.set_ciphertext(empty_cipher);
+    }
+    NGRAPH_INFO << "Multiplying plain singl";
     multiply_plain(arg0.ciphertext(), arg1[0],
                    out.get_ciphertext()->ciphertext(), he_seal_backend, pool);
+    NGRAPH_INFO << "done multiplying plain singl";
 
     if (out.get_ciphertext()->ciphertext().is_transparent()) {
       NGRAPH_WARN << "Result ciphertext is transparent";
@@ -132,6 +137,11 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
           out.get_ciphertext()->ciphertext(), pool);
     }
   } else {
+    if (!out.is_ciphertext()) {
+      auto empty_cipher = HESealBackend::create_empty_ciphertext();
+      out.set_ciphertext(empty_cipher);
+    }
+
     // Never complex-pack for multiplication
     auto p = SealPlaintextWrapper(false);
     encode(p, arg1, *he_seal_backend.get_ckks_encoder(),

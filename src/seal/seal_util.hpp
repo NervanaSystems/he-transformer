@@ -210,7 +210,7 @@ void multiply_plain_inplace(
 
 /// \brief Multiplies a ciphertext with a scalar in every slot
 /// \param[in] encrypted Ciphertext to multply
-/// \param[in] value Multiplicand multiplied with the ciphertext
+/// \param[in] value Value to multiply the ciphertext by
 /// \param[out] destination Ciphertext storing the result
 /// \param[in] he_seal_backend Backend whose context is used for encoding and
 /// multiplication
@@ -219,7 +219,10 @@ inline void multiply_plain(
     const seal::Ciphertext& encrypted, double value,
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
+  NGRAPH_INFO << "multiplying plain";
+  NGRAPH_INFO << "enc " << encrypted.poly_modulus_degree();
   destination = encrypted;
+  NGRAPH_INFO << "calling multiply_plain_inplace";
   multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
 

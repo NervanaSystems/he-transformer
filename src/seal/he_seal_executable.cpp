@@ -1003,182 +1003,80 @@ void HESealExecutable::generate_calls(
   bool verbose = verbose_op(node);
   std::string node_op = node.description();
 
-  /*auto parse_he_tensors =
-      [](const std::vector<std::shared_ptr<HETensor>>& tensors,
-         const bool print_output, const std::string& prefix = "") {
-        std::string delimiter{" "};
-
-        std::stringstream ss;
-        ss << prefix;
-
-        std::vector<std::shared_ptr<HESealCipherTensor>> cipher_tensors;
-        std::vector<std::shared_ptr<HEPlainTensor>> plain_tensors;
-
-        for (const auto& tensor : tensors) {
-          NGRAPH_CHECK(tensor->is_type<HEPlainTensor>() !=
-                           tensor->is_type<HESealCipherTensor>(),
-                       "he_input unknown type");
-
-          if (tensor->is_type<HESealCipherTensor>()) {
-            cipher_tensors.emplace_back(
-                he_tensor_as_type<HESealCipherTensor>(tensor));
-            plain_tensors.emplace_back(nullptr);
-            ss << "Cipher" << delimiter;
-          } else {
-            cipher_tensors.emplace_back(nullptr);
-            plain_tensors.emplace_back(
-                he_tensor_as_type<HEPlainTensor>(tensor));
-            ss << "Plain" << delimiter;
-          }
-        }
-        if (print_output) {
-          NGRAPH_HE_LOG(3) << ss.str();
-        }
-        return std::make_tuple(plain_tensors, cipher_tensors);
-      };
-
-  auto parsed_args = parse_he_tensors(args, true, "Inputs: ");
-  auto parsed_out = parse_he_tensors(out, true, "Outputs: ");
-
-  auto plain_args = std::get<0>(parsed_args);
-  auto cipher_args = std::get<1>(parsed_args);
-
-  enum class UnaryOpType {
-    None,
-    CipherToCipher,
-    PlainToPlain,
-    PlainToCipher,
-    CipherToPlain
-  };
-  UnaryOpType unary_op_type = UnaryOpType::None;
-
-  enum class BinaryOpType {
-    None,
-    CipherCipherToCipher,
-    CipherPlainToCipher,
-    PlainCipherToCipher,
-    PlainPlainToPlain
-  };
-  BinaryOpType binary_op_type = BinaryOpType::None;
-
-  auto out0_cipher = std::dynamic_pointer_cast<HESealCipherTensor>(out[0]);
-  auto out0_plain = std::dynamic_pointer_cast<HEPlainTensor>(out[0]);
-
-  if (args.size() > 0) {
-    if (cipher_args[0] != nullptr && out0_cipher != nullptr) {
-      unary_op_type = UnaryOpType::CipherToCipher;
-    } else if (cipher_args[0] != nullptr && out0_plain != nullptr) {
-      unary_op_type = UnaryOpType::CipherToPlain;
-    } else if (plain_args[0] != nullptr && out0_cipher != nullptr) {
-      unary_op_type = UnaryOpType::PlainToCipher;
-    } else if (plain_args[0] != nullptr && out0_plain != nullptr) {
-      unary_op_type = UnaryOpType::PlainToPlain;
-    } else {
-      NGRAPH_CHECK(false, "Unknown unary op");
-    }
-  }
-  if (args.size() == 2) {
-    if (cipher_args[0] != nullptr && cipher_args[1] != nullptr &&
-        out0_cipher != nullptr) {
-      binary_op_type = BinaryOpType::CipherCipherToCipher;
-    } else if (cipher_args[0] != nullptr && plain_args[1] != nullptr &&
-               out0_cipher != nullptr) {
-      binary_op_type = BinaryOpType::CipherPlainToCipher;
-    } else if (plain_args[0] != nullptr && cipher_args[1] != nullptr &&
-               out0_cipher != nullptr) {
-      binary_op_type = BinaryOpType::PlainCipherToCipher;
-    } else if (plain_args[0] != nullptr && plain_args[1] != nullptr &&
-               out0_plain != nullptr) {
-      binary_op_type = BinaryOpType::PlainPlainToPlain;
-    } else {
-      NGRAPH_CHECK(out[0] != nullptr, "out0 == nullptr");
-      NGRAPH_CHECK(false, "Unknown binary op ", "Arg0 plain? ",
-                   args[0]->is_type<HEPlainTensor>(), ", Arg0 cipher? ",
-                   args[0]->is_type<HESealCipherTensor>(), ", Arg1 plain? ",
-                   args[1]->is_type<HEPlainTensor>(), ", Arg1 cipher? ",
-                   args[1]->is_type<HESealCipherTensor>(), ", Out0 plain? ",
-                   out[0]->is_type<HEPlainTensor>(), ", Out0 cipher? ",
-                   out[0]->is_type<HESealCipherTensor>());
-    }
-  }
-
   // TODO: move to static function
-  auto lazy_rescaling =
-      [this](auto& cipher_tensor, bool verbose_rescaling = true) {
-        if (m_he_seal_backend.naive_rescaling()) {
-          return;
-        }
-        if (verbose_rescaling) {
-          NGRAPH_HE_LOG(3) << "Rescaling " << cipher_tensor->num_ciphertexts()
-                           << " ciphertexts";
-        }
+  /*
+  auto lazy_rescaling = [this](auto& cipher_tensor,
+                               bool verbose_rescaling = true) {
+    if (m_he_seal_backend.naive_rescaling()) {
+      return;
+    }
+    if (verbose_rescaling) {
+      NGRAPH_HE_LOG(3) << "Rescaling " << cipher_tensor->num_ciphertexts()
+                       << " ciphertexts";
+    }
 
-        using Clock = std::chrono::high_resolution_clock;
-        auto t1 = Clock::now();
-        size_t new_chain_index = std::numeric_limits<size_t>::max();
+    using Clock = std::chrono::high_resolution_clock;
+    auto t1 = Clock::now();
+    size_t new_chain_index = std::numeric_limits<size_t>::max();
 
-        bool all_known_values = true;
-        for (size_t cipher_idx = 0;
-             cipher_idx < cipher_tensor->num_ciphertexts(); ++cipher_idx) {
-          auto& cipher = cipher_tensor->get_element(cipher_idx);
-          if (!cipher->known_value()) {
-            size_t curr_chain_index =
-                m_he_seal_backend.get_chain_index(cipher->ciphertext());
-            if (curr_chain_index == 0) {
-              new_chain_index = 0;
-            } else {
-              new_chain_index = curr_chain_index - 1;
-            }
-            all_known_values = false;
-            break;
-          }
+    bool all_known_values = true;
+    for (size_t cipher_idx = 0; cipher_idx < cipher_tensor->num_ciphertexts();
+         ++cipher_idx) {
+      auto& cipher = cipher_tensor->get_element(cipher_idx);
+      if (!cipher->known_value()) {
+        size_t curr_chain_index =
+            m_he_seal_backend.get_chain_index(cipher->ciphertext());
+        if (curr_chain_index == 0) {
+          new_chain_index = 0;
+        } else {
+          new_chain_index = curr_chain_index - 1;
         }
+        all_known_values = false;
+        break;
+      }
+    }
 
-        if (all_known_values) {
-          if (verbose_rescaling) {
-            NGRAPH_HE_LOG(3)
-                << "Skipping rescaling because all values are known";
-          }
-          return;
-        }
+    if (all_known_values) {
+      if (verbose_rescaling) {
+        NGRAPH_HE_LOG(3) << "Skipping rescaling because all values are known";
+      }
+      return;
+    }
 
-        NGRAPH_CHECK(
-            new_chain_index != std::numeric_limits<size_t>::max(),
-            "Lazy rescaling called on cipher tensor of all known values");
-        if (new_chain_index == 0) {
-          if (verbose_rescaling) {
-            NGRAPH_HE_LOG(3) << "Skipping rescaling to chain index 0";
-          }
-          return;
-        }
-        if (verbose_rescaling) {
-          NGRAPH_HE_LOG(3) << "New chain index " << new_chain_index;
-        }
+    NGRAPH_CHECK(new_chain_index != std::numeric_limits<size_t>::max(),
+                 "Lazy rescaling called on cipher tensor of all known values");
+    if (new_chain_index == 0) {
+      if (verbose_rescaling) {
+        NGRAPH_HE_LOG(3) << "Skipping rescaling to chain index 0";
+      }
+      return;
+    }
+    if (verbose_rescaling) {
+      NGRAPH_HE_LOG(3) << "New chain index " << new_chain_index;
+    }
 
 #pragma omp parallel for
-        for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
-          auto cipher = cipher_tensor->get_element(i);
-          if (!cipher->known_value()) {
-            m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
-                cipher->ciphertext());
-          }
-        }
-        if (verbose_rescaling) {
-          auto t2 = Clock::now();
-          NGRAPH_HE_LOG(3)
-              << "Rescale_xxx took "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(t2 -
-                                                                       t1)
-                     .count()
-              << "ms";
-        }
-      };
+    for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
+      auto cipher = cipher_tensor->get_element(i);
+      if (!cipher->known_value()) {
+        m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
+            cipher->ciphertext());
+      }
+    }
+    if (verbose_rescaling) {
+      auto t2 = Clock::now();
+      NGRAPH_HE_LOG(3) << "Rescale_xxx took "
+                       << std::chrono::duration_cast<std::chrono::milliseconds>(
+                              t2 - t1)
+                              .count()
+                       << "ms";
+    }
+  }; */
 
   std::vector<Shape> arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
-  */
 
   Shape out_shape{};
   if (node.get_output_size() > 0) {
