@@ -1232,41 +1232,6 @@ void HESealExecutable::generate_calls(
       #pragma GCC diagnostic push
       #pragma GCC diagnostic error "-Wswitch"
       #pragma GCC diagnostic error "-Wswitch-enum"
-        switch (node_wrapper.get_typeid()) {
-          case OP_TYPEID::Add: {
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                add_seal(cipher_args[0]->get_elements(),
-                         cipher_args[1]->get_elements(),
-      out0_cipher->get_elements(), type, m_he_seal_backend,
-                         out0_cipher->get_batched_element_count());
-                break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                add_seal(cipher_args[0]->get_elements(),
-                         plain_args[1]->get_elements(),
-      out0_cipher->get_elements(), type, m_he_seal_backend,
-                         out0_cipher->get_batched_element_count());
-                break;
-              }
-              case BinaryOpType::PlainCipherToCipher: {
-                add_seal(plain_args[0]->get_elements(),
-                         cipher_args[1]->get_elements(),
-      out0_cipher->get_elements(), type, m_he_seal_backend,
-                         out0_cipher->get_batched_element_count());
-                break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                add_seal(plain_args[0]->get_elements(),
-      plain_args[1]->get_elements(), out0_plain->get_elements(),
-                         out0_plain->get_batched_element_count());
-                break;
-              }
-              case BinaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::AvgPool: {
             const op::AvgPool* avg_pool = static_cast<const
       op::AvgPool*>(&node); Shape op_in_shape = arg_shapes[0]; Shape
@@ -1705,67 +1670,6 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Multiply: {
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                multiply_seal(cipher_args[0]->get_elements(),
-                              cipher_args[1]->get_elements(),
-                              out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count());
-                lazy_rescaling(out0_cipher, verbose);
-                break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                multiply_seal(cipher_args[0]->get_elements(),
-                              plain_args[1]->get_elements(),
-                              out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count());
-                lazy_rescaling(out0_cipher, verbose);
-                break;
-              }
-              case BinaryOpType::PlainCipherToCipher: {
-                multiply_seal(plain_args[0]->get_elements(),
-                              cipher_args[1]->get_elements(),
-                              out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count());
-                lazy_rescaling(out0_cipher, verbose);
-                break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                multiply_seal(plain_args[0]->get_elements(),
-                              plain_args[1]->get_elements(),
-                              out0_plain->get_elements(), type,
-      m_he_seal_backend, out0_plain->get_batched_element_count()); break;
-              }
-              case BinaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
-          case OP_TYPEID::Negative: {
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                negate_seal(cipher_args[0]->get_elements(),
-                            out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count()); break;
-              }
-
-              case UnaryOpType::PlainToPlain: {
-                negate_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), type,
-      out0_plain->get_batched_element_count()); break;
-              }
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
-          case OP_TYPEID::Parameter: {
-            NGRAPH_HE_LOG(3) << "Skipping parameter";
-            break;
-          }
           case OP_TYPEID::Pad: {
             const op::Pad* pad = static_cast<const op::Pad*>(&node);
             Shape arg0_shape = arg_shapes[0];
@@ -1993,38 +1897,6 @@ void HESealExecutable::generate_calls(
               case UnaryOpType::CipherToPlain:
               case UnaryOpType::PlainToCipher:
               case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
-          case OP_TYPEID::Subtract: {
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                subtract_seal(cipher_args[0]->get_elements(),
-                              cipher_args[1]->get_elements(),
-                              out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count()); break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                subtract_seal(cipher_args[0]->get_elements(),
-                              plain_args[1]->get_elements(),
-                              out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count()); break;
-              }
-              case BinaryOpType::PlainCipherToCipher: {
-                subtract_seal(plain_args[0]->get_elements(),
-                              cipher_args[1]->get_elements(),
-                              out0_cipher->get_elements(), type,
-      m_he_seal_backend, out0_cipher->get_batched_element_count()); break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                subtract_seal(plain_args[0]->get_elements(),
-                              plain_args[1]->get_elements(),
-                              out0_plain->get_elements(),
-                              out0_plain->get_batched_element_count());
-                break;
-              }
-              case BinaryOpType::None:
                 NGRAPH_CHECK(false, "Unsupported op types");
             }
             break;
