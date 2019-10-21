@@ -28,6 +28,7 @@ set(HE_SRC
     op/bounded_relu.cpp
     # seal kernels
     seal/kernel/add_seal.cpp
+    seal/kernel/bounded_relu_seal.cpp
     seal/kernel/dot_seal.cpp
     seal/kernel/convolution_seal.cpp
     seal/kernel/constant_seal.cpp

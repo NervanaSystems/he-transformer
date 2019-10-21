@@ -39,13 +39,13 @@ void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,
                          const HESealBackend& he_seal_backend) {
   HEPlaintext arg0_plain, arg1_plain;
   if (arg0.is_ciphertext()) {
-    he_seal_backend.decrypt(arg0.get_ciphertext(), arg0_plain,
+    he_seal_backend.decrypt(arg0_plain, *arg0.get_ciphertext(),
                             arg0.complex_packing());
   } else {
     arg0_plain = arg0.get_plaintext();
   }
   if (arg1.is_ciphertext()) {
-    he_seal_backend.decrypt(arg1.get_ciphertext(), arg1_plain,
+    he_seal_backend.decrypt(arg1_plain, *arg1.get_ciphertext(),
                             arg1.complex_packing());
   } else {
     arg1_plain = arg1.get_plaintext();
@@ -55,14 +55,24 @@ void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,
   scalar_minimum_seal(arg0_plain, arg1_plain, out_plain);
 
   if (out.is_ciphertext()) {
-    he_seal_backend.decrypt(out.get_ciphertext(),
-                            out_plain out.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), out_plain, element::f32,
+                            out.complex_packing());
   } else {
     out.set_plaintext(out_plain);
   }
 }
 
-}  // namespace he
+void minimum_seal(const std::vector<HEType>& arg0,
+                  const std::vector<HEType>& arg1, std::vector<HEType>& out,
+                  size_t count, HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() = ", arg0.size(),
+               " does not match arg1.size()", arg1.size());
+  NGRAPH_CHECK(arg0.size() == out.size(), "arg0.size() = ", arg0.size(),
+               " does not match out.size()", out.size());
+  for (size_t i = 0; i < count; ++i) {
+    scalar_minimum_seal(arg0[i], arg1[i], out[i], he_seal_backend);
+  }
+}
 
 }  // namespace ngraph
 }  // namespace ngraph

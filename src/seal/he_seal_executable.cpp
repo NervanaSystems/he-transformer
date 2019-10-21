@@ -64,6 +64,7 @@
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/avg_pool_seal.hpp"
 #include "seal/kernel/batch_norm_inference_seal.hpp"
+#include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/kernel/broadcast_seal.hpp"
 #include "seal/kernel/concat_seal.hpp"
 #include "seal/kernel/constant_seal.hpp"
@@ -73,6 +74,7 @@
 #include "seal/kernel/exp_seal.hpp"
 #include "seal/kernel/max_pool_seal.hpp"
 #include "seal/kernel/max_seal.hpp"
+#include "seal/kernel/minimum_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/pad_seal.hpp"
@@ -1097,9 +1099,9 @@ void HESealExecutable::generate_calls(
       } else {
         NGRAPH_WARN << "Performing BoundedRelu without client is not "
                        "privacy-preserving ";
-        NGRAPH_CHECK(output_size == args[0]->num_ciphertexts(), "output size ",
+        NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
                      output_size, " doesn't match number of elements",
-                     out[0]->num_ciphertexts());
+                     out[0]->data().size());
         bounded_relu_seal(args[0]->data(), out[0]->data(), output_size, alpha,
                           m_he_seal_backend);
       }
@@ -1218,9 +1220,9 @@ void HESealExecutable::generate_calls(
         NGRAPH_WARN << "Performing MaxPool without client is not "
                        "privacy-preserving";
         size_t output_size = args[0]->get_batched_element_count();
-        NGRAPH_CHECK(output_size == args[0]->num_ciphertexts(), "output size ",
+        NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
                      output_size, " doesn't match number of elements",
-                     out[0]->num_ciphertexts());
+                     out[0]->data().size());
         max_pool_seal(args[0]->data(), out[0]->data(), arg_shapes[0],
                       out[0]->get_packed_shape(), max_pool->get_window_shape(),
                       max_pool->get_window_movement_strides(),
@@ -1231,7 +1233,7 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Minimum: {
       minimum_seal(args[0]->data(), args[1]->data(), out[0]->data(),
-                   out[0]->get_batched_element_count());
+                   out[0]->get_batched_element_count(), m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Multiply: {
@@ -1252,6 +1254,10 @@ void HESealExecutable::generate_calls(
                args[0]->get_packed_shape(), out[0]->get_packed_shape(),
                pad->get_padding_below(), pad->get_padding_above(),
                pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::Parameter: {
+      NGRAPH_HE_LOG(3) << "Skipping parameter";
       break;
     }
     case OP_TYPEID::Passthrough: {
