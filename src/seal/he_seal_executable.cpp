@@ -62,6 +62,8 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/avg_pool_seal.hpp"
+#include "seal/kernel/batch_norm_inference_seal.hpp"
 #include "seal/kernel/broadcast_seal.hpp"
 #include "seal/kernel/concat_seal.hpp"
 #include "seal/kernel/constant_seal.hpp"
@@ -69,6 +71,7 @@
 #include "seal/kernel/divide_seal.hpp"
 #include "seal/kernel/dot_seal.hpp"
 #include "seal/kernel/exp_seal.hpp"
+#include "seal/kernel/max_pool_seal.hpp"
 #include "seal/kernel/max_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
@@ -1034,12 +1037,75 @@ void HESealExecutable::generate_calls(
     }
   }
 
+  // We want to check that every OP_TYPEID enumeration is included in the list.
+  // These GCC flags enable compile-time checking so that if an
+  //      enumeration
+  // is not in the list an error is generated.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch"
+#pragma GCC diagnostic error "-Wswitch-enum"
   switch (node_wrapper.get_typeid()) {
+    case OP_TYPEID::AvgPool: {
+      const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
+      Shape op_in_shape = args[0]->get_packed_shape();
+      Shape op_out_shape = out[0]->get_packed_shape();
+
+      if (verbose) {
+        NGRAPH_HE_LOG(3) << "AvgPool " << op_in_shape << " => " << op_out_shape;
+      }
+
+      avg_pool_seal(
+          args[0]->data(), out[0]->data(), op_in_shape, op_out_shape,
+          avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
+          avg_pool->get_padding_below(), avg_pool->get_padding_above(),
+          avg_pool->get_include_padding_in_avg_computation(),
+          out[0]->get_batch_size(), m_he_seal_backend);
+      rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
+      break;
+    }
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
+    case OP_TYPEID::BatchNormInference: {
+      const ngraph::op::BatchNormInference* bn =
+          static_cast<const ngraph::op::BatchNormInference*>(&node);
+      double eps = bn->get_eps_value();
+      NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ", args.size(),
+                   "arguments (expected 5).");
+
+      auto gamma = args[0];
+      auto beta = args[1];
+      auto input = args[2];
+      auto mean = args[3];
+      auto variance = args[4];
+
+      batch_norm_inference_seal(eps, gamma->data(), beta->data(), input->data(),
+                                mean->data(), variance->data(), out[0]->data(),
+                                args[2]->get_packed_shape(), m_batch_size,
+                                m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::BoundedRelu: {
+      const op::BoundedRelu* bounded_relu =
+          static_cast<const op::BoundedRelu*>(&node);
+      float alpha = bounded_relu->get_alpha();
+      size_t output_size = args[0]->get_batched_element_count();
+      if (m_enable_client) {
+        handle_server_relu_op(args[0], out[0], node_wrapper);
+      } else {
+        NGRAPH_WARN << "Performing BoundedRelu without client is not "
+                       "privacy-preserving ";
+        NGRAPH_CHECK(output_size == args[0]->num_ciphertexts(), "output size ",
+                     output_size, " doesn't match number of elements",
+                     out[0]->num_ciphertexts());
+        bounded_relu_seal(args[0]->data(), out[0]->data(), output_size, alpha,
+                          m_he_seal_backend);
+      }
+      break;
+    }
+
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       broadcast_seal(args[0]->data(), out[0]->data(),
@@ -1141,6 +1207,31 @@ void HESealExecutable::generate_calls(
                  out[0]->get_packed_shape(), max->get_reduction_axes(),
                  out[0]->get_batch_size(), m_he_seal_backend);
       }
+      break;
+    }
+
+    case OP_TYPEID::MaxPool: {
+      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+      if (m_enable_client) {
+        handle_server_max_pool_op(args[0], out[0], node_wrapper);
+      } else {
+        NGRAPH_WARN << "Performing MaxPool without client is not "
+                       "privacy-preserving";
+        size_t output_size = args[0]->get_batched_element_count();
+        NGRAPH_CHECK(output_size == args[0]->num_ciphertexts(), "output size ",
+                     output_size, " doesn't match number of elements",
+                     out[0]->num_ciphertexts());
+        max_pool_seal(args[0]->data(), out[0]->data(), arg_shapes[0],
+                      out[0]->get_packed_shape(), max_pool->get_window_shape(),
+                      max_pool->get_window_movement_strides(),
+                      max_pool->get_padding_below(),
+                      max_pool->get_padding_above(), m_he_seal_backend);
+      }
+      break;
+    }
+    case OP_TYPEID::Minimum: {
+      minimum_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+                   out[0]->get_batched_element_count());
       break;
     }
     case OP_TYPEID::Multiply: {
@@ -1260,277 +1351,102 @@ void HESealExecutable::generate_calls(
                m_he_seal_backend);
       break;
     }
-  }  // namespace he
-     /*
-     We want to check that every OP_TYPEID enumeration is included in the list.
-         // These GCC flags enable compile-time checking so that if an
-         enumeration
-         // is not in the list an error is generated.
-         #pragma GCC diagnostic push
-         #pragma GCC diagnostic error "-Wswitch"
-         #pragma GCC diagnostic error "-Wswitch-enum"
-             case OP_TYPEID::AvgPool: {
-               const op::AvgPool* avg_pool = static_cast<const
-         op::AvgPool*>(&node); Shape op_in_shape = arg_shapes[0]; Shape
-         op_out_shape = out_shape;
-   
-               if (verbose) {
-                 NGRAPH_HE_LOG(3) << "AvgPool " << op_in_shape << " => " <<
-         op_out_shape;
-               }
-   
-               switch (unary_op_type) {
-                 case UnaryOpType::CipherToCipher: {
-                   avg_pool_seal(
-                       args[0]->data(),
-         out[0]->data(), op_in_shape, op_out_shape,
-         avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
-                       avg_pool->get_padding_below(),
-         avg_pool->get_padding_above(),
-                       avg_pool->get_include_padding_in_avg_computation(),
-                       m_he_seal_backend);
-                   lazy_rescaling(out[0], verbose);
-                   break;
-                 }
-                 case UnaryOpType::PlainToPlain: {
-                   avg_pool_seal(
-                       plain_args[0]->data(),
-         out0_plain->data(), op_in_shape, op_out_shape,
-         avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
-                       avg_pool->get_padding_below(),
-         avg_pool->get_padding_above(),
-                       avg_pool->get_include_padding_in_avg_computation(),
-                       m_he_seal_backend);
-                   break;
-                 }
-                 case UnaryOpType::CipherToPlain:
-                 case UnaryOpType::PlainToCipher:
-                 case UnaryOpType::None:
-                   NGRAPH_CHECK(false, "Unsupported op types");
-                   break;
-               }
-               break;
-             }
-             case OP_TYPEID::BatchNormInference: {
-               const ngraph::op::BatchNormInference* bn =
-                   static_cast<const ngraph::op::BatchNormInference*>(&node);
-               double eps = bn->get_eps_value();
-               NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ",
-         args.size(), "arguments (expected 5).");
-   
-               auto gamma = plain_args[0];
-               auto beta = plain_args[1];
-               auto input = args[2];
-               auto mean = plain_args[3];
-               auto variance = plain_args[4];
-   
-               NGRAPH_CHECK(out[0] != nullptr, "BatchNorm output not
-         cipher"); NGRAPH_CHECK(gamma != nullptr, "BatchNorm gamma not plain");
-               NGRAPH_CHECK(beta != nullptr, "BatchNorm beta not plain");
-               NGRAPH_CHECK(input != nullptr, "BatchNorm input not cipher");
-               NGRAPH_CHECK(mean != nullptr, "BatchNorm mean not plaintext");
-               NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not
-         plaintext");
-   
-               batch_norm_inference_seal(eps, gamma->data(),
-                                         beta->data(),
-         input->data(), mean->data(), variance->data(),
-                                         out[0]->data(),
-         arg_shapes[2], m_batch_size, m_he_seal_backend); break;
-             }
-             case OP_TYPEID::BoundedRelu: {
-               const op::BoundedRelu* bounded_relu =
-                   static_cast<const op::BoundedRelu*>(&node);
-               float alpha = bounded_relu->get_alpha();
-               size_t output_size = args[0]->get_batched_element_count();
-   
-               switch (unary_op_type) {
-                 case UnaryOpType::CipherToCipher: {
-                   if (m_enable_client) {
-                     handle_server_relu_op(args[0], out[0],
-         node_wrapper); } else { NGRAPH_WARN << "Performing BoundedRelu without
-         client is not " "privacy-preserving"; NGRAPH_CHECK(output_size ==
-         args[0]->num_ciphertexts(), "output size ", output_size, "
-         doesn't match number of elements", out[0]->num_ciphertexts());
-                     bounded_relu_seal(args[0]->data(),
-                                       out[0]->data(),
-         output_size, alpha, m_he_seal_backend);
-                   }
-                   break;
-                 }
-                 case UnaryOpType::PlainToPlain: {
-                   NGRAPH_CHECK(output_size == plain_args[0]->num_plaintexts(),
-                                "output size ", output_size,
-                                " doesn't match number of elements",
-                                out0_plain->num_plaintexts());
-                   bounded_relu_seal(plain_args[0]->data(),
-                                     out0_plain->data(), output_size,
-         alpha); break;
-                 }
-                 case UnaryOpType::CipherToPlain:
-                 case UnaryOpType::PlainToCipher:
-                 case UnaryOpType::None:
-                   NGRAPH_CHECK(false, "Unsupported op types");
-                   break;
-               }
-               break;
-             }
-   
-   
-             case OP_TYPEID::MaxPool: {
-               const op::MaxPool* max_pool = static_cast<const
-         op::MaxPool*>(&node); switch (unary_op_type) { case
-         UnaryOpType::CipherToCipher: { if (m_enable_client) {
-                     handle_server_max_pool_op(args[0], out[0],
-                                               node_wrapper);
-                   } else {
-                     NGRAPH_WARN << "Performing MaxPool without client is not "
-                                    "privacy-preserving";
-                     size_t output_size =
-         args[0]->get_batched_element_count(); NGRAPH_CHECK(output_size
-         == args[0]->num_ciphertexts(), "output size ", output_size, "
-         doesn't match number of elements", out[0]->num_ciphertexts());
-                     max_pool_seal(args[0]->data(),
-                                   out[0]->data(), arg_shapes[0],
-                                   out[0]->get_packed_shape(),
-                                   max_pool->get_window_shape(),
-                                   max_pool->get_window_movement_strides(),
-                                   max_pool->get_padding_below(),
-                                   max_pool->get_padding_above(),
-         m_he_seal_backend);
-                   }
-                   break;
-                 }
-                 case UnaryOpType::PlainToPlain: {
-                   max_pool_seal(
-                       plain_args[0]->data(),
-         out0_plain->data(), arg_shapes[0],
-         out0_plain->get_packed_shape(), max_pool->get_window_shape(),
-                       max_pool->get_window_movement_strides(),
-                       max_pool->get_padding_below(),
-         max_pool->get_padding_above()); break;
-                 }
-                 case UnaryOpType::PlainToCipher:
-                 case UnaryOpType::CipherToPlain:
-                 case UnaryOpType::None:
-                   NGRAPH_CHECK(false, "Unsupported op types");
-               }
-               break;
-             }
-             case OP_TYPEID::Minimum: {
-               switch (binary_op_type) {
-                 case BinaryOpType::PlainPlainToPlain: {
-                   minimum_seal(plain_args[0]->data(),
-                                plain_args[1]->data(),
-                                out0_plain->data(),
-                                out0_plain->get_batched_element_count());
-                   break;
-                 }
-                 case BinaryOpType::CipherCipherToCipher:
-                 case BinaryOpType::CipherPlainToCipher:
-                 case BinaryOpType::PlainCipherToCipher:
-                 case BinaryOpType::None:
-                   NGRAPH_CHECK(false, "Unsupported op types");
-               }
-               break;
-             }
-   
-   
-   
-             // Unsupported ops
-             case OP_TYPEID::Abs:
-             case OP_TYPEID::Acos:
-             case OP_TYPEID::All:
-             case OP_TYPEID::AllReduce:
-             case OP_TYPEID::And:
-             case OP_TYPEID::Any:
-             case OP_TYPEID::ArgMax:
-             case OP_TYPEID::ArgMin:
-             case OP_TYPEID::Asin:
-             case OP_TYPEID::Atan:
-             case OP_TYPEID::AvgPoolBackprop:
-             case OP_TYPEID::BatchMatMul:
-             case OP_TYPEID::BatchNormTraining:
-             case OP_TYPEID::BatchNormTrainingBackprop:
-             case OP_TYPEID::BroadcastDistributed:
-             case OP_TYPEID::Ceiling:
-             case OP_TYPEID::Convert:
-             case OP_TYPEID::ConvolutionBackpropData:
-             case OP_TYPEID::ConvolutionBackpropFilters:
-             case OP_TYPEID::Cos:
-             case OP_TYPEID::Cosh:
-             case OP_TYPEID::Dequantize:
-             case OP_TYPEID::DynBroadcast:
-             case OP_TYPEID::DynPad:
-             case OP_TYPEID::DynReshape:
-             case OP_TYPEID::DynSlice:
-             case OP_TYPEID::DynReplaceSlice:
-             case OP_TYPEID::EmbeddingLookup:
-             case OP_TYPEID::Equal:
-             case OP_TYPEID::Erf:
-             case OP_TYPEID::Floor:
-             case OP_TYPEID::Gather:
-             case OP_TYPEID::GatherND:
-             case OP_TYPEID::GenerateMask:
-             case OP_TYPEID::GetOutputElement:
-             case OP_TYPEID::Greater:
-             case OP_TYPEID::GreaterEq:
-             case OP_TYPEID::Less:
-             case OP_TYPEID::LessEq:
-             case OP_TYPEID::Log:
-             case OP_TYPEID::LRN:
-             case OP_TYPEID::Maximum:
-             case OP_TYPEID::MaxPoolBackprop:
-             case OP_TYPEID::Min:
-             case OP_TYPEID::Not:
-             case OP_TYPEID::NotEqual:
-             case OP_TYPEID::OneHot:
-             case OP_TYPEID::Or:
-             case OP_TYPEID::Power:
-             case OP_TYPEID::Product:
-             case OP_TYPEID::Quantize:
-             case OP_TYPEID::QuantizedAvgPool:
-             case OP_TYPEID::QuantizedConvolutionBias:
-             case OP_TYPEID::QuantizedConvolutionBiasAdd:
-             case OP_TYPEID::QuantizedConvolutionBiasSignedAdd:
-             case OP_TYPEID::QuantizedConvolutionRelu:
-             case OP_TYPEID::QuantizedConvolution:
-             case OP_TYPEID::QuantizedDot:
-             case OP_TYPEID::QuantizedDotBias:
-             case OP_TYPEID::QuantizedMaxPool:
-             case OP_TYPEID::Send:
-             case OP_TYPEID::Recv:
-             case OP_TYPEID::Range:
-             case OP_TYPEID::ReluBackprop:
-             case OP_TYPEID::ReplaceSlice:
-             case OP_TYPEID::ReverseSequence:
-             case OP_TYPEID::ScatterAdd:
-             case OP_TYPEID::ScatterNDAdd:
-             case OP_TYPEID::Select:
-             case OP_TYPEID::ShapeOf:
-             case OP_TYPEID::Sigmoid:
-             case OP_TYPEID::SigmoidBackprop:
-             case OP_TYPEID::Sign:
-             case OP_TYPEID::Sin:
-             case OP_TYPEID::Sinh:
-             case OP_TYPEID::Sqrt:
-             case OP_TYPEID::StopGradient:
-             case OP_TYPEID::Tan:
-             case OP_TYPEID::Tanh:
-             case OP_TYPEID::Tile:
-             case OP_TYPEID::TopK:
-             case OP_TYPEID::Transpose:
-             case OP_TYPEID::Xor:
-             default:
-               throw unsupported_op("Unsupported op '" + node.description() +
-         "'"); #pragma GCC diagnostic pop
-           }
-         */
-}  // namespace ngraph
+
+    // Unsupported ops
+    case OP_TYPEID::Abs:
+    case OP_TYPEID::Acos:
+    case OP_TYPEID::All:
+    case OP_TYPEID::AllReduce:
+    case OP_TYPEID::And:
+    case OP_TYPEID::Any:
+    case OP_TYPEID::ArgMax:
+    case OP_TYPEID::ArgMin:
+    case OP_TYPEID::Asin:
+    case OP_TYPEID::Atan:
+    case OP_TYPEID::AvgPoolBackprop:
+    case OP_TYPEID::BatchMatMul:
+    case OP_TYPEID::BatchNormTraining:
+    case OP_TYPEID::BatchNormTrainingBackprop:
+    case OP_TYPEID::BroadcastDistributed:
+    case OP_TYPEID::Ceiling:
+    case OP_TYPEID::Convert:
+    case OP_TYPEID::ConvolutionBackpropData:
+    case OP_TYPEID::ConvolutionBackpropFilters:
+    case OP_TYPEID::Cos:
+    case OP_TYPEID::Cosh:
+    case OP_TYPEID::Dequantize:
+    case OP_TYPEID::DynBroadcast:
+    case OP_TYPEID::DynPad:
+    case OP_TYPEID::DynReshape:
+    case OP_TYPEID::DynSlice:
+    case OP_TYPEID::DynReplaceSlice:
+    case OP_TYPEID::EmbeddingLookup:
+    case OP_TYPEID::Equal:
+    case OP_TYPEID::Erf:
+    case OP_TYPEID::Floor:
+    case OP_TYPEID::Gather:
+    case OP_TYPEID::GatherND:
+    case OP_TYPEID::GenerateMask:
+    case OP_TYPEID::GetOutputElement:
+    case OP_TYPEID::Greater:
+    case OP_TYPEID::GreaterEq:
+    case OP_TYPEID::Less:
+    case OP_TYPEID::LessEq:
+    case OP_TYPEID::Log:
+    case OP_TYPEID::LRN:
+    case OP_TYPEID::Maximum:
+    case OP_TYPEID::MaxPoolBackprop:
+    case OP_TYPEID::Min:
+    case OP_TYPEID::Not:
+    case OP_TYPEID::NotEqual:
+    case OP_TYPEID::OneHot:
+    case OP_TYPEID::Or:
+    case OP_TYPEID::Power:
+    case OP_TYPEID::Product:
+    case OP_TYPEID::Quantize:
+    case OP_TYPEID::QuantizedAvgPool:
+    case OP_TYPEID::QuantizedConvolutionBias:
+    case OP_TYPEID::QuantizedConvolutionBiasAdd:
+    case OP_TYPEID::QuantizedConvolutionBiasSignedAdd:
+    case OP_TYPEID::QuantizedConvolutionRelu:
+    case OP_TYPEID::QuantizedConvolution:
+    case OP_TYPEID::QuantizedDot:
+    case OP_TYPEID::QuantizedDotBias:
+    case OP_TYPEID::QuantizedMaxPool:
+    case OP_TYPEID::Send:
+    case OP_TYPEID::Recv:
+    case OP_TYPEID::Range:
+    case OP_TYPEID::ReluBackprop:
+    case OP_TYPEID::ReplaceSlice:
+    case OP_TYPEID::ReverseSequence:
+    case OP_TYPEID::ScatterAdd:
+    case OP_TYPEID::ScatterNDAdd:
+    case OP_TYPEID::Select:
+    case OP_TYPEID::ShapeOf:
+    case OP_TYPEID::Sigmoid:
+    case OP_TYPEID::SigmoidBackprop:
+    case OP_TYPEID::Sign:
+    case OP_TYPEID::Sin:
+    case OP_TYPEID::Sinh:
+    case OP_TYPEID::Sqrt:
+    case OP_TYPEID::StopGradient:
+    case OP_TYPEID::Tan:
+    case OP_TYPEID::Tanh:
+    case OP_TYPEID::Tile:
+    case OP_TYPEID::TopK:
+    case OP_TYPEID::Transpose:
+    case OP_TYPEID::Xor:
+    default:
+      throw unsupported_op("Unsupported op '" + node.description() + "'");
+#pragma GCC diagnostic pop
+  }
+
+}  // namespace he
 
 void HESealExecutable::handle_server_max_pool_op(
-    std::shared_ptr<HETensor>& arg_cipher,
-    std::shared_ptr<HETensor>& out_cipher, const NodeWrapper& node_wrapper) {
+    const std::shared_ptr<HETensor>& arg_cipher,
+    const std::shared_ptr<HETensor>& out_cipher,
+    const NodeWrapper& node_wrapper) {
   NGRAPH_HE_LOG(3) << "Server handle_server_max_pool_op";
 
   /*
@@ -1599,8 +1515,8 @@ void HESealExecutable::handle_server_max_pool_op(
 }
 
 void HESealExecutable::handle_server_relu_op(
-    std::shared_ptr<HETensor>& arg_cipher,
-    std::shared_ptr<HETensor>& out_cipher, const NodeWrapper& node_wrapper) {
+    const std::shared_ptr<HETensor>& arg, const std::shared_ptr<HETensor>& out,
+    const NodeWrapper& node_wrapper) {
   NGRAPH_HE_LOG(3) << "Server handle_server_relu_op";
 
   /*

@@ -148,21 +148,21 @@ class HESealExecutable : public runtime::Executable {
   void load_eval_key(const he_proto::TCPMessage& proto_msg);
 
   /// \brief Processes the ReLU operation if the client is enabled
-  /// \param[in] arg0_cipher Encrypted tensor argumnet
-  /// \param[out] out_cipher Encrypted tensor result
+  /// \param[in] arg Tensor argumnet
+  /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
-  void handle_server_relu_op(std::shared_ptr<HETensor>& arg0_cipher,
-                             std::shared_ptr<HETensor>& out_cipher,
+  void handle_server_relu_op(const std::shared_ptr<HETensor>& arg,
+                             const std::shared_ptr<HETensor>& out,
                              const NodeWrapper& node_wrapper);
 
   /// \brief Processes the MaxPool operation if the client is enabled
-  /// \param[in] arg0_cipher Encrypted tensor argumnet
-  /// \param[out] out_cipher Encrypted tensor result
+  /// \param[in] arg Tensor argumnet
+  /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
-  void handle_server_max_pool_op(std::shared_ptr<HETensor>& arg0_cipher,
-                                 std::shared_ptr<HETensor>& out_cipher,
+  void handle_server_max_pool_op(const std::shared_ptr<HETensor>& arg,
+                                 const std::shared_ptr<HETensor>& out,
                                  const NodeWrapper& node_wrapper);
 
   /// \brief Returns whether or not a node's verbosity is on or off

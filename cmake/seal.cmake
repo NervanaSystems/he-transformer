@@ -67,10 +67,11 @@ ExternalProject_Add(
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)
 add_library(libseal STATIC IMPORTED)
+
+target_include_directories(libseal SYSTEM
+                           INTERFACE ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
 set_target_properties(libseal
                       PROPERTIES IMPORTED_LOCATION
                                  ${EXTERNAL_INSTALL_LIB_DIR}/libseal-3.4.a)
-
-set(SEAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
 
 add_dependencies(libseal ext_seal)

@@ -35,8 +35,8 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
   if (arg.is_ciphertext() && out.is_ciphertext()) {
     out = arg;
   } else if (arg.is_ciphertext() && out.is_plaintext()) {
-    NGRAPH_CHECK(false, "result cipher => plain unimplemented");
-    // TODO: decrypt
+    // TODO: decrypt instead?
+    out.set_ciphertext(arg.get_ciphertext());
   } else if (arg.is_plaintext() && out.is_ciphertext()) {
     // TODO: encrypt instead?
     NGRAPH_WARN << "Result is a plaintext";

@@ -17,41 +17,83 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
+#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
+
+void scalar_minimum_seal(SealCiphertextWrapper& arg0,
+                         SealCiphertextWrapper& arg1,
+                         std::shared_ptr<SealCiphertextWrapper>& out,
+                         const bool complex_packing,
+                         HESealBackend& he_seal_backend);
+
+void scalar_minimum_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
+                         HEType& out, HESealBackend& he_seal_backend);
+
 inline void scalar_minimum_seal(const HEPlaintext& arg0,
-                                const HEPlaintext& arg1, HEPlaintext& out) {
-  const std::vector<double>& arg0_vals = arg0.values();
-  const std::vector<double>& arg1_vals = arg1.values();
-  std::vector<double> out_vals(arg0.num_values());
-
-  NGRAPH_CHECK(arg0.num_values() == arg1.num_values(),
-               "arg0.num_values() = ", arg0.num_values(),
-               " does not match arg1.num_values()", arg1.num_values());
-
-  for (size_t i = 0; i < arg0.num_values(); ++i) {
-    out_vals[i] = arg0_vals[i] < arg1_vals[i] ? arg0_vals[i] : arg1_vals[i];
-  }
-
-  out.set_values(out_vals);
+                                SealCiphertextWrapper& arg1, HEType& out,
+                                HESealBackend& he_seal_backend) {
+  scalar_minimum_seal(arg1, arg0, out, he_seal_backend, pool);
 }
 
-inline void minimum_seal(const std::vector<HEPlaintext>& arg0,
-                         const std::vector<HEPlaintext>& arg1,
-                         std::vector<HEPlaintext>& out, size_t count) {
+void scalar_minimum_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                         HEPlaintext& out);
+
+inline void scalar_minimum_seal(HEType& arg0, HEType& arg1, HEType& out,
+                                HESealBackend& he_seal_backend) {
+  if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
+    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+                 "Complex packing types don't match");
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+
+    scalar_minimum_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
+                        out.get_ciphertext(), arg0.complex_packing(),
+                        he_seal_backend);
+  } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_minimum_seal(*arg0.get_ciphertext(), arg1.get_plaintext(), out,
+                        he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_minimum_seal(*arg1.get_ciphertext(), arg0.get_plaintext(), out,
+                        he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
+    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+                 "Complex packing types don't match");
+    if (!out.is_plaintext()) {
+      out.set_plaintext(HEPlaintext());
+    }
+
+    scalar_minimum_seal(arg0.get_plaintext(), arg1.get_plaintext(),
+                        out.get_plaintext());
+  } else {
+    NGRAPH_CHECK(false, "Unknown argument types");
+  }
+  out.complex_packing() = arg0.complex_packing();
+}
+
+inline void minimum_seal(const std::vector<HEType>& arg0,
+                         const std::vector<HEType>& arg1,
+                         std::vector<HEType>& out, size_t count,
+                         HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() = ", arg0.size(),
                " does not match arg1.size()", arg1.size());
   NGRAPH_CHECK(arg0.size() == out.size(), "arg0.size() = ", arg0.size(),
                " does not match out.size()", out.size());
   for (size_t i = 0; i < count; ++i) {
-    scalar_minimum_seal(arg0[i], arg1[i], out[i]);
+    scalar_minimum_seal(arg0[i], arg1[i], out[i], he_seal_backend);
   }
 }
 

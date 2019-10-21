@@ -25,8 +25,8 @@ set(SRC
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp
-    # test_avg_pool.in.cpp
-    # test_batch_norm_inference.in.cpp
+    test_avg_pool.in.cpp
+    test_batch_norm_inference.in.cpp
     test_basics.in.cpp
     test_broadcast.in.cpp
     test_concat.in.cpp
@@ -37,8 +37,8 @@ set(BACKEND_TEST_SRC
     test_dot.in.cpp
     # test_he_fusion.in.cpp
     test_layers.in.cpp
-    # test_maxpool.in.cpp
-    # test_minimum.in.cpp
+    test_maxpool.in.cpp
+    test_minimum.in.cpp
     test_multiply.in.cpp
     test_max.in.cpp
     test_negate.in.cpp

@@ -33,13 +33,14 @@ set(HE_SRC
     seal/kernel/constant_seal.cpp
     seal/kernel/divide_seal.cpp
     seal/kernel/exp_seal.cpp
+    seal/kernel/minimum_seal.cpp
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
     seal/kernel/pad_seal.cpp
-    seal/kernel/rescale_seal.cpp
     seal/kernel/relu_seal.cpp
-    # seal/kernel/result_seal.cpp
-    seal/kernel/softmax_seal.cpp seal/kernel/subtract_seal.cpp
+    seal/kernel/rescale_seal.cpp
+    seal/kernel/softmax_seal.cpp
+    seal/kernel/subtract_seal.cpp
     # seal backend
     seal/he_seal_backend.cpp
     # seal/he_seal_client.cpp
@@ -58,7 +59,6 @@ add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend
                            PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
                                   ${EXTERNAL_INSTALL_INCLUDE_DIR}
-                                  ${SEAL_INSTALL_INCLUDE_DIR}
                                   ${NGRAPH_TF_INCLUDE_DIR})
 
 target_link_libraries(he_seal_backend
