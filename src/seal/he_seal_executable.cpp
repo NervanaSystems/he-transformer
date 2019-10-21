@@ -62,6 +62,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/concat_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
@@ -1012,6 +1013,7 @@ void HESealExecutable::generate_calls(
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
   }
 
+  // TODO: remove?
   Shape out_shape{};
   if (node.get_output_size() > 0) {
     NGRAPH_CHECK(node.get_output_size() == 1,
@@ -1026,6 +1028,20 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                out[0]->get_batched_element_count(), type, m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::Concat: {
+      const op::Concat* concat = static_cast<const op::Concat*>(&node);
+
+      std::vector<Shape> in_shapes;
+      std::vector<std::vector<HEType>> in_args;
+
+      for (auto& arg : args) {
+        in_args.push_back(arg->data());
+        in_shapes.push_back(arg->get_packed_shape());
+      }
+      concat_seal(in_args, out[0]->data(), in_shapes,
+                  out[0]->get_packed_shape(), concat->get_concatenation_axis());
       break;
     }
     case OP_TYPEID::Convolution: {
@@ -1092,10 +1108,11 @@ void HESealExecutable::generate_calls(
       Coordinate lower_bounds = slice->get_lower_bounds();
       Coordinate upper_bounds = slice->get_upper_bounds();
 
-      if (plaintext_packed(node_wrapper)) {
+      // TODO: remove?
+      /* if (plaintext_packed(node_wrapper)) {
         lower_bounds = HETensor::pack_shape(slice->get_lower_bounds());
         upper_bounds = HETensor::pack_shape(slice->get_upper_bounds());
-      }
+      } */
       const Strides& strides = slice->get_strides();
 
       NGRAPH_INFO << "In shape " << in_shape;
@@ -1259,51 +1276,7 @@ void HESealExecutable::generate_calls(
           }
           case OP_TYPEID::BroadcastLike:
             break;
-          case OP_TYPEID::Concat: {
-            const op::Concat* concat = static_cast<const
-      op::Concat*>(&node);
 
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                std::vector<Shape> in_shapes;
-                std::vector<std::vector<std::shared_ptr<SealCiphertextWrapper>>>
-                    in_args;
-
-                for (std::shared_ptr<HETensor> arg : args) {
-                  std::shared_ptr<HESealCipherTensor> arg_cipher =
-                      std::dynamic_pointer_cast<HESealCipherTensor>(arg);
-                  if (arg_cipher == nullptr) {
-                    throw ngraph_error("Concat type not consistent");
-                  }
-                  in_args.push_back(arg_cipher->get_elements());
-                  in_shapes.push_back(arg_cipher->get_packed_shape());
-                }
-                concat_seal(in_args, out0_cipher->get_elements(), in_shapes,
-                            out_shape, concat->get_concatenation_axis());
-                break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                std::vector<Shape> in_shapes;
-                std::vector<std::vector<HEPlaintext>> in_args;
-
-                for (std::shared_ptr<HETensor> arg : args) {
-                  auto arg_plain =
-      std::dynamic_pointer_cast<HEPlainTensor>(arg); if (arg_plain ==
-      nullptr) { throw ngraph_error("Concat type not consistent");
-                  }
-                  in_args.emplace_back(arg_plain->get_elements());
-                  in_shapes.push_back(arg_plain->get_packed_shape());
-                }
-                concat_seal(in_args, out0_plain->get_elements(), in_shapes,
-      out_shape, concat->get_concatenation_axis()); break;
-              }
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::Constant: {
             const op::Constant* constant = static_cast<const
       op::Constant*>(&node);

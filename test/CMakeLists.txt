@@ -29,7 +29,7 @@ set(BACKEND_TEST_SRC
     # test_batch_norm_inference.in.cpp
     test_basics.in.cpp
     # test_broadcast.in.cpp
-    # test_concat.in.cpp
+    test_concat.in.cpp
     # test_constant.in.cpp
     test_convolution.in.cpp
     # test_divide.in.cpp

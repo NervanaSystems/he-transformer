@@ -16,22 +16,18 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-inline void concat_seal(
-    const std::vector<std::vector<std::shared_ptr<SealCiphertextWrapper>>>&
-        args,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const std::vector<Shape>& in_shapes, const Shape& out_shape,
-    size_t concatenation_axis) {
+inline void concat_seal(const std::vector<std::vector<HEType>>& args,
+                        std::vector<HEType>& out,
+                        const std::vector<Shape>& in_shapes,
+                        const Shape& out_shape, size_t concatenation_axis) {
   // We will copy the inputs to the output one at a time. As we go, we will move
   // out along the concatenation axis, starting at 0.
   size_t concatenation_pos = 0;
@@ -75,55 +71,7 @@ inline void concat_seal(
 
     concatenation_pos += in_shapes[i][concatenation_axis];
   }
-};
+}
 
-void concat_seal(const std::vector<std::vector<HEPlaintext>>& args,
-                 std::vector<HEPlaintext>& out,
-                 const std::vector<Shape>& in_shapes, const Shape& out_shape,
-                 size_t concatenation_axis) {
-  // We will copy the inputs to the output one at a time. As we go, we will move
-  // out along the concatenation axis, starting at 0.
-  size_t concatenation_pos = 0;
-
-  for (size_t i = 0; i < args.size(); i++) {
-    // CoordinateTransform gets confused when the last input has a zero-size
-    // dim, so we will just skip for zero-element tensors.
-    if (shape_size(in_shapes[i]) == 0) {
-      continue;
-    }
-
-    // The start coordinate for the copy is (0,...,0) except at the
-    // concatenation axis.
-    Coordinate out_start_coord(out_shape.size(), 0);
-    out_start_coord[concatenation_axis] = concatenation_pos;
-
-    // The end coordinate for the copy is the same as the output shape except at
-    // the concatenation axis.
-    Coordinate out_end_coord = out_shape;
-    out_end_coord[concatenation_axis] =
-        concatenation_pos + in_shapes[i][concatenation_axis];
-
-    CoordinateTransform input_transform(in_shapes[i]);
-    CoordinateTransform output_chunk_transform(out_shape, out_start_coord,
-                                               out_end_coord);
-
-    NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
-                 shape_size(output_chunk_transform.get_target_shape()));
-
-    CoordinateTransform::Iterator output_chunk_it =
-        output_chunk_transform.begin();
-
-    for (const Coordinate& input_coord : input_transform) {
-      size_t input_index = input_transform.index(input_coord);
-      size_t output_chunk_index =
-          output_chunk_transform.index(*output_chunk_it);
-      ++output_chunk_it;
-
-      out[output_chunk_index] = args[i][input_index];
-    }
-
-    concatenation_pos += in_shapes[i][concatenation_axis];
-  }
-};
 }  // namespace he
 }  // namespace ngraph
