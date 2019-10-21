@@ -66,6 +66,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/rescale_seal.hpp"
+#include "seal/kernel/reshape_seal.hpp"
 #include "seal/kernel/result_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -1064,6 +1065,17 @@ void HESealExecutable::generate_calls(
                     m_he_seal_backend);
       break;
     }
+    case OP_TYPEID::Reshape: {
+      const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
+      if (verbose) {
+        NGRAPH_HE_LOG(3) << args[0]->get_packed_shape() << " reshape "
+                         << out[0]->get_packed_shape();
+      }
+      reshape_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
+                   reshape->get_input_order(), out[0]->get_packed_shape());
+      break;
+    }
+
     case OP_TYPEID::Result: {
       result_seal(args[0]->data(), out[0]->data(),
                   out[0]->get_batched_element_count(), m_he_seal_backend);
@@ -1533,46 +1545,7 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Reshape: {
-            const op::Reshape* reshape = static_cast<const
-      op::Reshape*>(&node); Shape op_in_shape; Shape op_out_shape;
 
-            if (cipher_args[0] != nullptr) {
-              op_in_shape = cipher_args[0]->get_packed_shape();
-              op_out_shape = out_shape;
-            } else if (plain_args[0] != nullptr) {
-              op_in_shape = plain_args[0]->is_packed()
-                                ? plain_args[0]->get_packed_shape()
-                                : plain_args[0]->get_shape();
-              op_out_shape =
-                  plain_args[0]->is_packed() ? out_shape :
-      out0_plain->get_shape();
-            }
-
-            if (verbose) {
-              NGRAPH_HE_LOG(3) << op_in_shape << " reshape " <<
-      op_out_shape;
-            }
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                reshape_seal(cipher_args[0]->get_elements(),
-                             out0_cipher->get_elements(), op_in_shape,
-                             reshape->get_input_order(), op_out_shape);
-                break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                reshape_seal(plain_args[0]->get_elements(),
-                             out0_plain->get_elements(), op_in_shape,
-                             reshape->get_input_order(), op_out_shape);
-                break;
-              }
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::Result: {
             size_t output_size = args[0]->get_batched_element_count();
             switch (unary_op_type) {
