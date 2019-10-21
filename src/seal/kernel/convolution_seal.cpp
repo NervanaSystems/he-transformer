@@ -205,13 +205,12 @@ void convolution_seal(
         // TODO: better type which matches arguments?
         auto prod = HEType(HEPlaintext(), false, false, 1);
 
-        scalar_multiply_seal(mult_arg0, mult_arg1, prod, element_type,
-                             he_seal_backend);
+        scalar_multiply_seal(mult_arg0, mult_arg1, prod, he_seal_backend);
         if (first_add) {
           sum = prod;
           first_add = false;
         } else {
-          scalar_add_seal(prod, sum, sum, element_type, he_seal_backend);
+          scalar_add_seal(prod, sum, sum, he_seal_backend);
         }
       }
       ++input_it;

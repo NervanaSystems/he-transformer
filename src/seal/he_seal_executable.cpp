@@ -66,6 +66,7 @@
 #include "seal/kernel/concat_seal.hpp"
 #include "seal/kernel/constant_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
+#include "seal/kernel/divide_seal.hpp"
 #include "seal/kernel/dot_seal.hpp"
 #include "seal/kernel/exp_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
@@ -1084,6 +1085,15 @@ void HESealExecutable::generate_calls(
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
     }
+
+    case OP_TYPEID::Divide: {
+      Shape in_shape0 = args[0]->get_packed_shape();
+      Shape in_shape1 = args[1]->get_packed_shape();
+
+      divide_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+                  out[0]->get_batched_element_count(), type, m_he_seal_backend);
+      break;
+    }
     case OP_TYPEID::Dot: {
       const op::Dot* dot = static_cast<const op::Dot*>(&node);
 
@@ -1333,34 +1343,6 @@ void HESealExecutable::generate_calls(
             break;
           }
 
-          case OP_TYPEID::Divide: {
-            Shape in_shape0 = arg_shapes[0];
-            Shape in_shape1 = arg_shapes[1];
-
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                NGRAPH_CHECK(false, "Divide C/C unimplemented");
-                break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                NGRAPH_CHECK(false, "Divide C/P unimplemented");
-                break;
-              }
-              case BinaryOpType::PlainCipherToCipher: {
-                NGRAPH_CHECK(false, "Divide P/C unimplemented");
-                break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                divide_seal(plain_args[0]->data(),
-                            plain_args[1]->data(),
-      out0_plain->data(), out0_plain->get_batched_element_count());
-                break;
-              }
-              case BinaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
 
           case OP_TYPEID::Max: {
             const op::Max* max = static_cast<const op::Max*>(&node);

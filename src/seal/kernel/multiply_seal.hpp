@@ -73,11 +73,7 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out);
 
 inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
-                                 const element::Type& element_type,
                                  HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-
   if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
@@ -88,21 +84,18 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
     scalar_multiply_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
                          out.get_ciphertext(), arg0.complex_packing(),
                          he_seal_backend);
-    // TODO: lazy rescaling?
   } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
     if (!out.is_ciphertext()) {
       out.set_ciphertext(HESealBackend::create_empty_ciphertext());
     }
     scalar_multiply_seal(*arg0.get_ciphertext(), arg1.get_plaintext(), out,
                          he_seal_backend);
-    // TODO: lazy rescaling?
   } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
     if (!out.is_ciphertext()) {
       out.set_ciphertext(HESealBackend::create_empty_ciphertext());
     }
     scalar_multiply_seal(*arg1.get_ciphertext(), arg0.get_plaintext(), out,
                          he_seal_backend);
-    // TODO: lazy rescaling?
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
@@ -131,8 +124,7 @@ inline void multiply_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_multiply_seal(arg0[i], arg1[i], out[i], element_type,
-                         he_seal_backend);
+    scalar_multiply_seal(arg0[i], arg1[i], out[i], he_seal_backend);
   }
 }
 

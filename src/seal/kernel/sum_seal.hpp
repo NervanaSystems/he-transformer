@@ -50,7 +50,7 @@ inline void sum_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
 
     auto& input = arg[input_transform.index(input_coord)];
     auto& output = out[output_transform.index(output_coord)];
-    scalar_add_seal(input, output, output, element_type, he_seal_backend);
+    scalar_add_seal(input, output, output, he_seal_backend);
   }
 }
 
