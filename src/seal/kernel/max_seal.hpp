@@ -33,6 +33,12 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const AxisSet& reduction_axes, size_t batch_size,
                      const HESealBackend& he_seal_backend) {
   NGRAPH_INFO << "max seal batch size " << batch_size;
+  NGRAPH_INFO << "MaxSeal with in_shape " << in_shape;
+  NGRAPH_INFO << "MaxSeal with out_shape " << out_shape;
+  NGRAPH_INFO << "MaxSeal with reduction_axes " << reduction_axes;
+  NGRAPH_INFO << "MaxSeal with batch_size " << batch_size;
+  NGRAPH_INFO << "MaxSeal with arg.size() " << arg.size();
+  NGRAPH_INFO << "MaxSeal with out.size() " << out.size();
   // TODO: use constructor?
   std::vector<HEPlaintext> out_plain(out.size());
   for (size_t i = 0; i < out.size(); ++i) {

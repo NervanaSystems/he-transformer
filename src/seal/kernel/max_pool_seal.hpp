@@ -38,7 +38,7 @@ inline std::vector<std::vector<size_t>> max_pool_seal_max_list(
 
   size_t out_size = 0;
   for (const Coordinate& out_coord : output_transform) {
-    (void)out_coord;  // Avoid unused-variable warning
+    static_cast<void>(out_coord);  // Avoid unused-variable warning
     out_size++;
   }
   NGRAPH_CHECK(out_size == shape_size(out_shape), "out size ", out_size,
@@ -147,9 +147,15 @@ inline void max_pool_seal(const std::vector<HEType>& arg,
     }
     Shape in_shape{max_list.size()};
 
+    NGRAPH_INFO << "out_idx" << out_idx;
+
+    for (const auto& elem : max_list) {
+      NGRAPH_INFO << "max inds " << elem;
+    }
+
     std::vector<HEType> max_out{out[0]};
 
-    max_seal(max_args, max_out, Shape{max_list.size()}, Shape{1}, AxisSet{}, 1,
+    max_seal(max_args, max_out, Shape{max_list.size()}, Shape{}, AxisSet{0}, 1,
              he_seal_backend);
 
     out[out_idx] = max_out[0];
