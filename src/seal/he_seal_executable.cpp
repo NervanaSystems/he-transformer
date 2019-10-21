@@ -69,6 +69,7 @@
 #include "seal/kernel/reshape_seal.hpp"
 #include "seal/kernel/result_seal.hpp"
 #include "seal/kernel/reverse_seal.hpp"
+#include "seal/kernel/slice_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
@@ -1047,7 +1048,6 @@ void HESealExecutable::generate_calls(
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
     }
-
     case OP_TYPEID::Multiply: {
       multiply_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                     out[0]->get_batched_element_count(), type,
@@ -1060,7 +1060,6 @@ void HESealExecutable::generate_calls(
                   out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
-
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
       if (verbose) {
@@ -1084,6 +1083,29 @@ void HESealExecutable::generate_calls(
       }
       reverse_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                    out[0]->get_packed_shape(), reverse->get_reversed_axes());
+      break;
+    }
+    case OP_TYPEID::Slice: {
+      const op::Slice* slice = static_cast<const op::Slice*>(&node);
+      const Shape& in_shape = args[0]->get_packed_shape();
+      const Shape& out_shape = out[0]->get_packed_shape();
+      Coordinate lower_bounds = slice->get_lower_bounds();
+      Coordinate upper_bounds = slice->get_upper_bounds();
+
+      if (plaintext_packed(node_wrapper)) {
+        lower_bounds = HETensor::pack_shape(slice->get_lower_bounds());
+        upper_bounds = HETensor::pack_shape(slice->get_upper_bounds());
+      }
+      const Strides& strides = slice->get_strides();
+
+      NGRAPH_INFO << "In shape " << in_shape;
+      NGRAPH_INFO << "out_shape " << out_shape;
+      NGRAPH_INFO << "lower_bounds " << lower_bounds;
+      NGRAPH_INFO << "upper_bounds " << upper_bounds;
+
+      slice_seal(args[0]->data(), out[0]->data(), in_shape, lower_bounds,
+                 upper_bounds, strides, out_shape);
+
       break;
     }
     case OP_TYPEID::Subtract: {
@@ -1590,41 +1612,7 @@ void HESealExecutable::generate_calls(
           case OP_TYPEID::ScalarConstantLike: {
             break;
           }
-          case OP_TYPEID::Slice: {
-            const op::Slice* slice = static_cast<const op::Slice*>(&node);
-            Shape& in_shape = arg_shapes[0];
-            Coordinate lower_bounds = slice->get_lower_bounds();
-            Coordinate upper_bounds = slice->get_upper_bounds();
 
-            if (plaintext_packed(node_wrapper)) {
-              lower_bounds =
-      HETensor::pack_shape(slice->get_lower_bounds()); upper_bounds =
-      HETensor::pack_shape(slice->get_upper_bounds());
-            }
-            const Strides& strides = slice->get_strides();
-
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                slice_seal(cipher_args[0]->get_elements(),
-                           out0_cipher->get_elements(), in_shape,
-      lower_bounds, upper_bounds, strides, out_shape); break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                for (const auto& elem : plain_args[0]->get_elements()) {
-                  NGRAPH_CHECK(elem.size() != 0, "Slice input has 0
-      values");
-                }
-                slice_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), in_shape, lower_bounds, upper_bounds,
-      strides, out_shape); break;
-              }
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::Softmax: {
             const op::Softmax* softmax = static_cast<const
       op::Softmax*>(&node); auto axes = softmax->get_axes();
@@ -1767,7 +1755,7 @@ void HESealExecutable::generate_calls(
       "'"); #pragma GCC diagnostic pop
         }
       */
-}
+}  // namespace he
 
 void HESealExecutable::handle_server_max_pool_op(
     std::shared_ptr<HETensor>& arg_cipher,
