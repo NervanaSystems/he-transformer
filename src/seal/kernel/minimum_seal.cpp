@@ -14,7 +14,6 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <memory>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
@@ -29,9 +28,10 @@ namespace he {
 
 void scalar_minimum_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                          HEPlaintext& out) {
-  std::vector<double> out_vals(arg0.size());
-  std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 std::minus<double>());
+  std::vector<double> out_vals(std::min(arg0.size(), arg1.size()));
+  for (size_t i = 0; i < out_vals.size(); ++i) {
+    out_vals[i] = std::min(arg0[i], arg1[i]);
+  }
   out = HEPlaintext(std::vector<double>{out_vals});
 }
 
@@ -74,5 +74,5 @@ void minimum_seal(const std::vector<HEType>& arg0,
   }
 }
 
-}  // namespace ngraph
+}  // namespace he
 }  // namespace ngraph

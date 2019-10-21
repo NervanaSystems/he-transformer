@@ -53,7 +53,7 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain) {
 
   auto handle = he_backend->compile(f);
   handle->call_with_validate({result}, {a, b});
-  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -.5, 0, 1, 1}),
+  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -0.5, 0, 1, 1}),
                                   read_vector<float>(result)));
 }
 
@@ -79,6 +79,6 @@ NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_packed) {
 
   auto handle = he_backend->compile(f);
   handle->call_with_validate({result}, {a, b});
-  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -.5, 0, 1, 1}),
+  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -0.5, 0, 1, 1}),
                                   read_vector<float>(result)));
 }
