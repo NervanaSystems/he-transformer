@@ -32,9 +32,18 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const Shape& in_shape, const Shape& out_shape,
                      const AxisSet& reduction_axes, size_t batch_size,
                      const HESealBackend& he_seal_backend) {
-  std::vector<HEPlaintext> out_plain(
-      out.size(), HEPlaintext(std::vector<double>(
-                      batch_size, -std::numeric_limits<double>::infinity())));
+  NGRAPH_INFO << "max seal " << batch_size;
+  // TODO: use constructor?
+  std::vector<HEPlaintext> out_plain(out.size());
+  for (size_t i = 0; i < out.size(); ++i) {
+    out_plain[i] = HEPlaintext(std::vector<double>(
+        batch_size, -std::numeric_limits<double>::infinity()));
+  }
+  NGRAPH_INFO << "out_plain:";
+  for (const auto& elem : out_plain) {
+    NGRAPH_INFO << elem;
+  }
+
   CoordinateTransform output_transform(out_shape);
   CoordinateTransform input_transform(in_shape);
 
@@ -50,9 +59,13 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
       he_seal_backend.decrypt(max_cmp_plain, *max_cmp.get_ciphertext(),
                               max_cmp.complex_packing());
     }
-    std::transform(max_cmp_plain.begin(), max_cmp_plain.end(),
-                   out_plain[out_idx].begin(), out_plain[out_idx].begin(),
-                   std::divides<double>());
+    NGRAPH_INFO << "out_idx " << out_idx;
+    NGRAPH_INFO << "Max " << max_cmp_plain << ", " << out_plain[out_idx];
+
+    for (size_t i = 0; i < max_cmp_plain.size(); ++i) {
+      out_plain[out_idx][i] = std::max(out_plain[out_idx][i], max_cmp_plain[i]);
+    }
+    NGRAPH_INFO << " => " << out_plain[out_idx];
   }
 
   for (const Coordinate& output_coord : output_transform) {

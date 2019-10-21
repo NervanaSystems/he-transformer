@@ -1139,7 +1139,7 @@ void HESealExecutable::generate_calls(
                      out[0]->data().size());
         max_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                  out[0]->get_packed_shape(), max->get_reduction_axes(),
-                 m_batch_size, m_he_seal_backend);
+                 out[0]->get_batch_size(), m_he_seal_backend);
       }
       break;
     }

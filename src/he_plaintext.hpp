@@ -32,9 +32,11 @@ inline void save(const HEPlaintext& plaintext, he_proto::Plaintext& proto) {
 }
 
 inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
+  os << "HEPlaintext(";
   for (const auto& value : plain) {
     os << value << " ";
   }
+  os << ")";
   return os;
 }
 }  // namespace he
