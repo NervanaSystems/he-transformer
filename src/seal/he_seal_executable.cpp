@@ -67,6 +67,7 @@
 #include "seal/kernel/constant_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/dot_seal.hpp"
+#include "seal/kernel/exp_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/pad_seal.hpp"
@@ -1097,7 +1098,16 @@ void HESealExecutable::generate_calls(
                m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
-
+    }
+    case OP_TYPEID::Exp: {
+      if (m_enable_client) {
+        NGRAPH_CHECK(false, "Exp not implemented for client-aided model ");
+      } else {
+        NGRAPH_WARN
+            << " Performing Exp without client is not privacy-preserving ";
+        exp_seal(args[0]->data(), out[0]->data(),
+                 args[0]->get_batched_element_count(), m_he_seal_backend);
+      }
       break;
     }
     case OP_TYPEID::Multiply: {
@@ -1352,31 +1362,6 @@ void HESealExecutable::generate_calls(
             break;
           }
 
-          case OP_TYPEID::Exp: {
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                if (m_enable_client) {
-                  NGRAPH_CHECK(false, "Exp not implemented for client-aided
-      model"); } else { NGRAPH_WARN << "Performing Exp without client is not
-      " "privacy-preserving"; exp_seal( args[0]->data(),
-      out[0]->data(),
-                      args[0]->get_batched_element_count(),
-      m_he_seal_backend);
-                }
-                break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                exp_seal(plain_args[0]->data(),
-      out0_plain->data(), out0_plain->get_batched_element_count());
-                break;
-              }
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::Max: {
             const op::Max* max = static_cast<const op::Max*>(&node);
             auto reduction_axes = max->get_reduction_axes();
@@ -1590,7 +1575,7 @@ void HESealExecutable::generate_calls(
       "'"); #pragma GCC diagnostic pop
         }
       */
-}  // namespace he
+}  // namespace ngraph
 
 void HESealExecutable::handle_server_max_pool_op(
     std::shared_ptr<HETensor>& arg_cipher,

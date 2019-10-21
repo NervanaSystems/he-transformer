@@ -39,8 +39,6 @@ void scalar_relu_seal(const HEType& arg, HEType& out,
                       const seal::parms_id_type& parms_id, double scale,
                       seal::CKKSEncoder& ckks_encoder,
                       seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
-  auto relu = [](double d) { return d > 0 ? d : 0.; };
-
   if (arg.is_plaintext()) {
     out.set_plaintext(arg.get_plaintext());
     scalar_relu_seal(arg.get_plaintext(), out.get_plaintext());

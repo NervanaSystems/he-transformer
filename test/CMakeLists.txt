@@ -33,8 +33,7 @@ set(BACKEND_TEST_SRC
     test_constant.in.cpp
     test_convolution.in.cpp
     # test_divide.in.cpp
-    # test_exp.in.cpp
-    test_dot.in.cpp
+    test_exp.in.cpp test_dot.in.cpp
     # test_he_fusion.in.cpp
     test_layers.in.cpp
     # test_maxpool.in.cpp
