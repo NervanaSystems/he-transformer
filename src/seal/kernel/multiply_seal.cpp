@@ -109,27 +109,21 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
 void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           HEType& out, HESealBackend& he_seal_backend,
                           const seal::MemoryPoolHandle& pool) {
-  NGRAPH_INFO << "Multiply cipher * plain (plain " << arg1 << ")";
   // TODO: check multiplying by small numbers behavior more thoroughly
   // TODO: check if abs(values) < scale?
   if (std::all_of(arg1.begin(), arg1.end(),
                   [](double f) { return std::abs(f) < 1e-5f; })) {
     HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
-    NGRAPH_INFO << "Setting plaintext 0";
     out.set_plaintext(zeros);
   } else if (arg1.size() == 1) {
     if (!out.is_ciphertext()) {
-      NGRAPH_INFO << "Setting output to empty ciphertext";
       auto empty_cipher = HESealBackend::create_empty_ciphertext();
       out.set_ciphertext(empty_cipher);
     }
-    NGRAPH_INFO << "Multiplying plain singl";
     multiply_plain(arg0.ciphertext(), arg1[0],
                    out.get_ciphertext()->ciphertext(), he_seal_backend, pool);
-    NGRAPH_INFO << "done multiplying plain singl";
 
     if (out.get_ciphertext()->ciphertext().is_transparent()) {
-      NGRAPH_WARN << "Result ciphertext is transparent";
       HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
       out.set_plaintext(zeros);
     } else if (he_seal_backend.naive_rescaling()) {

@@ -219,10 +219,7 @@ inline void multiply_plain(
     const seal::Ciphertext& encrypted, double value,
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
     seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
-  NGRAPH_INFO << "multiplying plain";
-  NGRAPH_INFO << "enc " << encrypted.poly_modulus_degree();
   destination = encrypted;
-  NGRAPH_INFO << "calling multiply_plain_inplace";
   multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
 

@@ -30,13 +30,6 @@ class HEType {
  public:
   HEType() = delete;
 
-  /// \brief Constructs an empty HEType object
-  HEType(const bool plaintext_packing, const bool complex_packing,
-         const size_t batch_size)
-      : m_plaintext_packing(plaintext_packing),
-        m_complex_packing(complex_packing),
-        m_batch_size(batch_size) {}
-
   HEType(const HEPlaintext& plain, const bool plaintext_packing,
          const bool complex_packing, const size_t batch_size)
       : HEType(plaintext_packing, complex_packing, batch_size) {
@@ -90,6 +83,13 @@ class HEType {
   }
 
  private:
+  /// \brief Constructs an empty HEType object
+  HEType(const bool plaintext_packing, const bool complex_packing,
+         const size_t batch_size)
+      : m_plaintext_packing(plaintext_packing),
+        m_complex_packing(complex_packing),
+        m_batch_size(batch_size) {}
+
   bool m_is_plain;
   bool m_plaintext_packing;
   bool m_complex_packing;
