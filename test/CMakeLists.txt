@@ -40,7 +40,7 @@ set(BACKEND_TEST_SRC
     # test_maxpool.in.cpp
     # test_minimum.in.cpp
     test_multiply.in.cpp
-    # test_max.in.cpp
+    test_max.in.cpp
     test_negate.in.cpp
     test_pad.in.cpp
     test_read_write.in.cpp
@@ -48,8 +48,10 @@ set(BACKEND_TEST_SRC
     test_reshape.in.cpp
     test_reverse.in.cpp
     # test_server_client.in.cpp
-    # test_softmax.in.cpp
-    test_slice.in.cpp test_subtract.in.cpp test_sum.in.cpp)
+    test_softmax.in.cpp
+    test_slice.in.cpp
+    test_subtract.in.cpp
+    test_sum.in.cpp)
 
 set(MANIFEST ${PROJECT_SOURCE_DIR}/src/seal/unit_test.manifest)
 set(BACKEND_NAME "HE_SEAL")

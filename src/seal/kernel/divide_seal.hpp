@@ -35,7 +35,7 @@ void scalar_divide_seal(const HEType& arg0, const HEType& arg1, HEType& out,
                         seal::CKKSEncoder& ckks_encoder,
                         seal::Encryptor& encryptor, seal::Decryptor& decryptor);
 
-void scalar_divide_seal(const HEType& arg0, const HEType& arg1, HEType& out,
+void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
                         HESealBackend& he_seal_backend);
 
 void divide_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
