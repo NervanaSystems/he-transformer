@@ -65,6 +65,7 @@
 #include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
+#include "seal/kernel/rescale_seal.hpp"
 #include "seal/kernel/result_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -1003,76 +1004,6 @@ void HESealExecutable::generate_calls(
   bool verbose = verbose_op(node);
   std::string node_op = node.description();
 
-  // TODO: move to static function
-  /*
-  auto lazy_rescaling = [this](auto& cipher_tensor,
-                               bool verbose_rescaling = true) {
-    if (m_he_seal_backend.naive_rescaling()) {
-      return;
-    }
-    if (verbose_rescaling) {
-      NGRAPH_HE_LOG(3) << "Rescaling " << cipher_tensor->num_ciphertexts()
-                       << " ciphertexts";
-    }
-
-    using Clock = std::chrono::high_resolution_clock;
-    auto t1 = Clock::now();
-    size_t new_chain_index = std::numeric_limits<size_t>::max();
-
-    bool all_known_values = true;
-    for (size_t cipher_idx = 0; cipher_idx < cipher_tensor->num_ciphertexts();
-         ++cipher_idx) {
-      auto& cipher = cipher_tensor->get_element(cipher_idx);
-      if (!cipher->known_value()) {
-        size_t curr_chain_index =
-            m_he_seal_backend.get_chain_index(cipher->ciphertext());
-        if (curr_chain_index == 0) {
-          new_chain_index = 0;
-        } else {
-          new_chain_index = curr_chain_index - 1;
-        }
-        all_known_values = false;
-        break;
-      }
-    }
-
-    if (all_known_values) {
-      if (verbose_rescaling) {
-        NGRAPH_HE_LOG(3) << "Skipping rescaling because all values are known";
-      }
-      return;
-    }
-
-    NGRAPH_CHECK(new_chain_index != std::numeric_limits<size_t>::max(),
-                 "Lazy rescaling called on cipher tensor of all known values");
-    if (new_chain_index == 0) {
-      if (verbose_rescaling) {
-        NGRAPH_HE_LOG(3) << "Skipping rescaling to chain index 0";
-      }
-      return;
-    }
-    if (verbose_rescaling) {
-      NGRAPH_HE_LOG(3) << "New chain index " << new_chain_index;
-    }
-
-#pragma omp parallel for
-    for (size_t i = 0; i < cipher_tensor->num_ciphertexts(); ++i) {
-      auto cipher = cipher_tensor->get_element(i);
-      if (!cipher->known_value()) {
-        m_he_seal_backend.get_evaluator()->rescale_to_next_inplace(
-            cipher->ciphertext());
-      }
-    }
-    if (verbose_rescaling) {
-      auto t2 = Clock::now();
-      NGRAPH_HE_LOG(3) << "Rescale_xxx took "
-                       << std::chrono::duration_cast<std::chrono::milliseconds>(
-                              t2 - t1)
-                              .count()
-                       << "ms";
-    }
-  }; */
-
   std::vector<Shape> arg_shapes{};
   for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
     arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
@@ -1111,8 +1042,7 @@ void HESealExecutable::generate_calls(
                        data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
                        m_batch_size, m_he_seal_backend, verbose);
 
-      // TODO: lazy rescaling?
-      //  lazy_rescaling(out0_cipher, verbose);
+      rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
     }
 
@@ -1120,7 +1050,7 @@ void HESealExecutable::generate_calls(
       multiply_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                     out[0]->get_batched_element_count(), type,
                     m_he_seal_backend);
-      // TODO: lazy rescaling if needed?
+      rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
     }
     case OP_TYPEID::Negative: {

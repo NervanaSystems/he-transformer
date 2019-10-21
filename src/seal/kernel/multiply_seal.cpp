@@ -91,7 +91,6 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
 
     he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
                                                              pool);
-
   } else {
     if (&arg0 == &arg1) {
       he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
