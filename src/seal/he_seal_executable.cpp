@@ -68,6 +68,7 @@
 #include "seal/kernel/rescale_seal.hpp"
 #include "seal/kernel/reshape_seal.hpp"
 #include "seal/kernel/result_seal.hpp"
+#include "seal/kernel/reverse_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
@@ -1059,12 +1060,7 @@ void HESealExecutable::generate_calls(
                   out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
-    case OP_TYPEID::Subtract: {
-      subtract_seal(args[0]->data(), args[1]->data(), out[0]->data(),
-                    out[0]->get_batched_element_count(), type,
-                    m_he_seal_backend);
-      break;
-    }
+
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
       if (verbose) {
@@ -1075,10 +1071,25 @@ void HESealExecutable::generate_calls(
                    reshape->get_input_order(), out[0]->get_packed_shape());
       break;
     }
-
     case OP_TYPEID::Result: {
       result_seal(args[0]->data(), out[0]->data(),
                   out[0]->get_batched_element_count(), m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::Reverse: {
+      const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
+      if (verbose) {
+        NGRAPH_HE_LOG(3) << args[0]->get_packed_shape() << " reshape "
+                         << out[0]->get_packed_shape();
+      }
+      reverse_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
+                   out[0]->get_packed_shape(), reverse->get_reversed_axes());
+      break;
+    }
+    case OP_TYPEID::Subtract: {
+      subtract_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+                    out[0]->get_batched_element_count(), type,
+                    m_he_seal_backend);
       break;
     }
     default:
@@ -1575,28 +1586,7 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Reverse: {
-            const op::Reverse* reverse = static_cast<const
-      op::Reverse*>(&node); Shape in_shape = node.get_input_shape(0);
 
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                reverse_seal(cipher_args[0]->get_elements(),
-                             out0_cipher->get_elements(), in_shape,
-      out_shape, reverse->get_reversed_axes()); break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                reverse_seal(plain_args[0]->get_elements(),
-                             out0_plain->get_elements(), in_shape,
-      out_shape, reverse->get_reversed_axes()); break;
-              }
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::ScalarConstantLike: {
             break;
           }

@@ -16,13 +16,11 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
