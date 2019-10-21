@@ -41,6 +41,8 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& out_coord : output_transform) {
+    size_t out_coord_idx = output_transform.index(out_coord);
+
     // Our output coordinate O will have the form:
     //
     //   (N,chan,i_1,...,i_n)
@@ -115,7 +117,8 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
     //   n_elements := n_elements + 1
 
     // T result = 0;
-    HEType sum(HEPlaintext(std::vector<double>{0}), false, false, 1);
+    // TODO: better type which matches arguments?
+    auto sum = HEType(HEPlaintext(), false, false, 1);
     bool first_add = true;
 
     size_t n_elements = 0;
@@ -130,6 +133,9 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
 
         if (first_add) {
           sum = arg[input_batch_transform.index(input_batch_coord)];
+          // TODO: batch size number of zeros?
+          HEPlaintext zero(std::vector<double>{0});
+          out[out_coord_idx].set_plaintext(zero);
           first_add = false;
         } else {
           scalar_add_seal(sum,
@@ -143,14 +149,21 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-    auto inv_n_elements =
-        HEType(HEPlaintext(1.f / n_elements), sum.plaintext_packing(),
-               sum.complex_packing(), sum.batch_size());
 
-    scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
-    out[output_transform.index(out_coord)] = sum;
+    if (first_add) {
+      // TODO: batch size number of zeros?
+      HEPlaintext zero(std::vector<double>{0});
+      out[out_coord_idx].set_plaintext(zero);
+    } else {
+      auto inv_n_elements = HEType(
+          HEPlaintext(std::vector<double>{1.f / n_elements}),
+          sum.plaintext_packing(), sum.complex_packing(), sum.batch_size());
+
+      scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
+      out[out_coord_idx] = sum;
+    }
   }
-};
+}
 
 }  // namespace he
 }  // namespace ngraph
