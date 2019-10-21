@@ -64,6 +64,7 @@
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/broadcast_seal.hpp"
 #include "seal/kernel/concat_seal.hpp"
+#include "seal/kernel/constant_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
@@ -1039,6 +1040,14 @@ void HESealExecutable::generate_calls(
                      broadcast->get_broadcast_axes());
       break;
     }
+    case OP_TYPEID::BroadcastLike:
+      break;
+    case OP_TYPEID::Constant: {
+      const op::Constant* constant = static_cast<const op::Constant*>(&node);
+      constant_seal(out[0]->data(), type, constant->get_data_ptr(),
+                    m_he_seal_backend, out[0]->get_batched_element_count());
+      break;
+    }
     case OP_TYPEID::Concat: {
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
       std::vector<Shape> in_shapes;
@@ -1257,27 +1266,6 @@ void HESealExecutable::generate_calls(
               case UnaryOpType::None:
                 NGRAPH_CHECK(false, "Unsupported op types");
                 break;
-            }
-            break;
-          }
-
-          case OP_TYPEID::BroadcastLike:
-            break;
-
-          case OP_TYPEID::Constant: {
-            const op::Constant* constant = static_cast<const
-      op::Constant*>(&node);
-
-            if (out0_plain != nullptr) {
-              constant_seal(out0_plain->get_elements(), type,
-                            constant->get_data_ptr(), m_he_seal_backend,
-                            out0_plain->get_batched_element_count());
-            } else if (out0_cipher != nullptr) {
-              constant_seal(out0_cipher->get_elements(), type,
-                            constant->get_data_ptr(), m_he_seal_backend,
-                            out0_cipher->get_batched_element_count());
-            } else {
-              throw ngraph_error("Constant type not supported.");
             }
             break;
           }
