@@ -72,6 +72,7 @@
 #include "seal/kernel/reverse_seal.hpp"
 #include "seal/kernel/slice_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
+#include "seal/kernel/sum_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
@@ -1131,8 +1132,13 @@ void HESealExecutable::generate_calls(
                     m_he_seal_backend);
       break;
     }
-    default:
-      throw unsupported_op("Unsupported op '" + node.description() + "'");
+    case OP_TYPEID::Sum: {
+      const op::Sum* sum = static_cast<const op::Sum*>(&node);
+      sum_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
+               out[0]->get_packed_shape(), sum->get_reduction_axes(), type,
+               m_he_seal_backend);
+      break;
+    }
   }
   /*
   We want to check that every OP_TYPEID enumeration is included in the list.
@@ -1618,27 +1624,7 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Sum: {
-            const op::Sum* sum = static_cast<const op::Sum*>(&node);
-            Shape op_in_shape = arg_shapes[0];
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                sum_seal(cipher_args[0]->get_elements(),
-      out0_cipher->get_elements(), op_in_shape, out_shape,
-      sum->get_reduction_axes(), type, m_he_seal_backend); break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                sum_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), op_in_shape, out_shape,
-      sum->get_reduction_axes()); break;
-              }
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
+
           // Unsupported ops
           case OP_TYPEID::Abs:
           case OP_TYPEID::Acos:
@@ -1728,7 +1714,7 @@ void HESealExecutable::generate_calls(
       "'"); #pragma GCC diagnostic pop
         }
       */
-}  // namespace he
+}
 
 void HESealExecutable::handle_server_max_pool_op(
     std::shared_ptr<HETensor>& arg_cipher,
