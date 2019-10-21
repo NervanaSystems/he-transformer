@@ -41,9 +41,7 @@ set(BACKEND_TEST_SRC
     # test_minimum.in.cpp
     test_multiply.in.cpp
     # test_max.in.cpp
-    test_negate.in.cpp
-    # test_pad.in.cpp
-    test_read_write.in.cpp
+    test_negate.in.cpp test_pad.in.cpp test_read_write.in.cpp
     # test_relu.in.cpp
     test_reshape.in.cpp test_reverse.in.cpp
     # test_server_client.in.cpp

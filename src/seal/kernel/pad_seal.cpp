@@ -26,30 +26,136 @@
 namespace ngraph {
 namespace he {
 
-void pad_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-              std::vector<HEPlaintext>& arg1,  // scalar
-              std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-              const Shape& arg0_shape, const Shape& out_shape,
-              const CoordinateDiff& padding_below,
+void pad_seal(std::vector<HEType>& arg0,
+              std::vector<HEType>& arg1,  // scalar
+              std::vector<HEType>& out, const Shape& arg0_shape,
+              const Shape& out_shape, const CoordinateDiff& padding_below,
               const CoordinateDiff& padding_above, op::PadMode pad_mode,
               size_t batch_size, const HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(arg1.size() == 1, "Padding element must be scalar");
-  NGRAPH_CHECK(arg1[0].num_values() == 1, "Padding value must be scalar");
+  if (arg1.size() != 1) {
+    throw ngraph_error("Padding element must be scalar");
+  }
+  auto& pad_val = arg1[0];
 
-  auto arg1_encrypted = he_seal_backend.create_empty_ciphertext();
+  // start at (0,0,...,0)
+  Coordinate input_start(arg0_shape.size(), 0);
+  // end at (d'0,d'1,...,d'n), the outer corner of the post-padding shape
+  Coordinate input_end = out_shape;
 
-  bool is_pad_value_zero =
-      arg1[0].is_single_value() && arg1[0].values()[0] == 0.;
-  NGRAPH_CHECK(is_pad_value_zero, "Non-zero pad values not supported");
-  arg1_encrypted->known_value() = true;
-  arg1_encrypted->value() = 0;
+  Strides input_strides(arg0_shape.size(), 1);
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> arg1_encrypted_vector{
-      arg1_encrypted};
+  AxisVector input_axis_order(arg0_shape.size());
+  for (size_t i = 0; i < arg0_shape.size(); i++) {
+    input_axis_order[i] = i;
+  }
 
-  pad_seal(arg0, arg1_encrypted_vector, out, arg0_shape, out_shape,
-           padding_below, padding_above, pad_mode, batch_size, he_seal_backend);
+  CoordinateTransform input_transform(arg0_shape, input_start, input_end,
+                                      input_strides, input_axis_order,
+                                      padding_below, padding_above);
+  CoordinateTransform output_transform(out_shape);
+
+  CoordinateTransform::Iterator output_it = output_transform.begin();
+
+  NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
+               shape_size(output_transform.get_target_shape()));
+
+  for (const Coordinate& in_coord : input_transform) {
+    const Coordinate& out_coord = *output_it;
+
+    HEType v(HEPlaintext(), false, false, 1);
+
+    switch (pad_mode) {
+      case op::PadMode::CONSTANT:
+        // If the coordinate is out of bounds, substitute pad_val.
+        v = input_transform.has_source_coordinate(in_coord)
+                ? arg0[input_transform.index(in_coord)]
+                : pad_val;
+        break;
+      case op::PadMode::EDGE: {
+        Coordinate c = in_coord;  // have to copy because in_coord is const
+
+        // Truncate each out-of-bound dimension.
+        for (size_t i = 0; i < c.size(); i++) {
+          if (static_cast<ptrdiff_t>(c[i]) < padding_below[i]) {
+            c[i] = padding_below[i];
+          }
+
+          if (static_cast<ptrdiff_t>(c[i]) >=
+              (padding_below[i] + static_cast<ptrdiff_t>(arg0_shape[i]))) {
+            c[i] = static_cast<size_t>(
+                padding_below[i] + static_cast<ptrdiff_t>(arg0_shape[i]) - 1);
+          }
+        }
+        v = arg0[input_transform.index(c)];
+        break;
+      }
+      case op::PadMode::REFLECT: {
+        // The algorithm here is a bit complicated because if the padding is
+        // bigger than the tensor, we may reflect multiple times.
+        //
+        // Example:
+        //
+        // Input shape:     [2]
+        // Padding:         6 below, 6 above
+        // Output shape:    [14]
+        //
+        // Input:                       a b
+        // Expected output: a b a b a b a b a b a b a b
+        //
+        // Computation for coordinate 13 of output:
+        //
+        //         . . . . . . a b . . . . .[.] -> (oob above by 6 spaces, so
+        //         reflection is at top-6)
+        //         .[.]. . . . a b . . . . . .  -> (oob below by 5 spaces, so
+        //         reflection is at bottom+5) . . . . . . a b . . .[.]. .  ->
+        //         (oob above by 4 spaces, so reflection is at top-4) . . .[.].
+        //         . a b . . . . . .  -> (oob below by 3 spaces, so reflection
+        //         is at bottom+3) . . . . . . a b .[.]. . . .  -> (oob above by
+        //         2 spaces, so reflection is at top-2) . . . . .[.]a b . . . .
+        //         . .  -> (oob below by 1 space,  so reflection is at bottom+1)
+        //         . . . . . . a[b]. . . . . .  -> (no longer oob, so copy from
+        //         here)
+        //
+        // Note that this algorithm works because REFLECT padding only makes
+        // sense if each dim is >= 2.
+        Coordinate c = in_coord;  // have to copy because in_coord is const
+
+        for (size_t i = 0; i < c.size(); i++) {
+          ptrdiff_t new_dim = c[i];
+          bool done_reflecting = false;
+
+          while (!done_reflecting) {
+            if (new_dim < padding_below[i]) {
+              ptrdiff_t distance_oob = padding_below[i] - new_dim;
+              new_dim = padding_below[i] + distance_oob;
+            } else if (new_dim >= padding_below[i] +
+                                      static_cast<ptrdiff_t>(arg0_shape[i])) {
+              ptrdiff_t distance_oob =
+                  new_dim - padding_below[i] -
+                  (static_cast<ptrdiff_t>(arg0_shape[i]) - 1);
+              new_dim = padding_below[i] +
+                        static_cast<ptrdiff_t>(arg0_shape[i]) - distance_oob -
+                        1;
+            } else {
+              done_reflecting = true;
+            }
+          }
+
+          c[i] = static_cast<size_t>(new_dim);
+        }
+        v = arg0[input_transform.index(c)];
+        break;
+      }
+      case op::PadMode::SYMMETRIC: {
+        // TODO: Add support for Symmetric mode
+        throw ngraph_error("Symmetric mode padding not supported");
+      }
+    }
+
+    out[output_transform.index(out_coord)] = v;
+
+    ++output_it;
+  }
 }
-
 }  // namespace he
 }  // namespace ngraph

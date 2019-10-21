@@ -68,6 +68,7 @@
 #include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
+#include "seal/kernel/pad_seal.hpp"
 #include "seal/kernel/rescale_seal.hpp"
 #include "seal/kernel/reshape_seal.hpp"
 #include "seal/kernel/result_seal.hpp"
@@ -1092,6 +1093,20 @@ void HESealExecutable::generate_calls(
                   out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
+    case OP_TYPEID::Pad: {
+      const op::Pad* pad = static_cast<const op::Pad*>(&node);
+      pad_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+               args[0]->get_packed_shape(), out[0]->get_packed_shape(),
+               pad->get_padding_below(), pad->get_padding_above(),
+               pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
+      break;
+    }
+    case OP_TYPEID::Passthrough: {
+      const op::Passthrough* passthrough =
+          static_cast<const op::Passthrough*>(&node);
+      throw unsupported_op{"Unsupported operation language: " +
+                           passthrough->language()};
+    }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
       if (verbose) {
@@ -1176,20 +1191,20 @@ void HESealExecutable::generate_calls(
             switch (unary_op_type) {
               case UnaryOpType::CipherToCipher: {
                 avg_pool_seal(
-                    cipher_args[0]->get_elements(),
-      out0_cipher->get_elements(), op_in_shape, op_out_shape,
+                    args[0]->data(),
+      out[0]->data(), op_in_shape, op_out_shape,
       avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
                     avg_pool->get_padding_below(),
       avg_pool->get_padding_above(),
                     avg_pool->get_include_padding_in_avg_computation(),
                     m_he_seal_backend);
-                lazy_rescaling(out0_cipher, verbose);
+                lazy_rescaling(out[0], verbose);
                 break;
               }
               case UnaryOpType::PlainToPlain: {
                 avg_pool_seal(
-                    plain_args[0]->get_elements(),
-      out0_plain->get_elements(), op_in_shape, op_out_shape,
+                    plain_args[0]->data(),
+      out0_plain->data(), op_in_shape, op_out_shape,
       avg_pool->get_window_shape(), avg_pool->get_window_movement_strides(),
                     avg_pool->get_padding_below(),
       avg_pool->get_padding_above(),
@@ -1214,11 +1229,11 @@ void HESealExecutable::generate_calls(
 
             auto gamma = plain_args[0];
             auto beta = plain_args[1];
-            auto input = cipher_args[2];
+            auto input = args[2];
             auto mean = plain_args[3];
             auto variance = plain_args[4];
 
-            NGRAPH_CHECK(out0_cipher != nullptr, "BatchNorm output not
+            NGRAPH_CHECK(out[0] != nullptr, "BatchNorm output not
       cipher"); NGRAPH_CHECK(gamma != nullptr, "BatchNorm gamma not plain");
             NGRAPH_CHECK(beta != nullptr, "BatchNorm beta not plain");
             NGRAPH_CHECK(input != nullptr, "BatchNorm input not cipher");
@@ -1226,10 +1241,10 @@ void HESealExecutable::generate_calls(
             NGRAPH_CHECK(variance != nullptr, "BatchNorm variance not
       plaintext");
 
-            batch_norm_inference_seal(eps, gamma->get_elements(),
-                                      beta->get_elements(),
-      input->get_elements(), mean->get_elements(), variance->get_elements(),
-                                      out0_cipher->get_elements(),
+            batch_norm_inference_seal(eps, gamma->data(),
+                                      beta->data(),
+      input->data(), mean->data(), variance->data(),
+                                      out[0]->data(),
       arg_shapes[2], m_batch_size, m_he_seal_backend); break;
           }
           case OP_TYPEID::BoundedRelu: {
@@ -1241,13 +1256,13 @@ void HESealExecutable::generate_calls(
             switch (unary_op_type) {
               case UnaryOpType::CipherToCipher: {
                 if (m_enable_client) {
-                  handle_server_relu_op(cipher_args[0], out0_cipher,
+                  handle_server_relu_op(args[0], out[0],
       node_wrapper); } else { NGRAPH_WARN << "Performing BoundedRelu without
       client is not " "privacy-preserving"; NGRAPH_CHECK(output_size ==
-      cipher_args[0]->num_ciphertexts(), "output size ", output_size, "
-      doesn't match number of elements", out0_cipher->num_ciphertexts());
-                  bounded_relu_seal(cipher_args[0]->get_elements(),
-                                    out0_cipher->get_elements(),
+      args[0]->num_ciphertexts(), "output size ", output_size, "
+      doesn't match number of elements", out[0]->num_ciphertexts());
+                  bounded_relu_seal(args[0]->data(),
+                                    out[0]->data(),
       output_size, alpha, m_he_seal_backend);
                 }
                 break;
@@ -1257,8 +1272,8 @@ void HESealExecutable::generate_calls(
                              "output size ", output_size,
                              " doesn't match number of elements",
                              out0_plain->num_plaintexts());
-                bounded_relu_seal(plain_args[0]->get_elements(),
-                                  out0_plain->get_elements(), output_size,
+                bounded_relu_seal(plain_args[0]->data(),
+                                  out0_plain->data(), output_size,
       alpha); break;
               }
               case UnaryOpType::CipherToPlain:
@@ -1288,9 +1303,9 @@ void HESealExecutable::generate_calls(
                 break;
               }
               case BinaryOpType::PlainPlainToPlain: {
-                divide_seal(plain_args[0]->get_elements(),
-                            plain_args[1]->get_elements(),
-      out0_plain->get_elements(), out0_plain->get_batched_element_count());
+                divide_seal(plain_args[0]->data(),
+                            plain_args[1]->data(),
+      out0_plain->data(), out0_plain->get_batched_element_count());
                 break;
               }
               case BinaryOpType::None:
@@ -1310,29 +1325,29 @@ void HESealExecutable::generate_calls(
 
             switch (binary_op_type) {
               case BinaryOpType::CipherCipherToCipher: {
-                dot_seal(cipher_args[0]->get_elements(),
-                         cipher_args[1]->get_elements(),
-      out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
+                dot_seal(args[0]->data(),
+                         args[1]->data(),
+      out[0]->data(), in_shape0, in_shape1, out_shape,
                          dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); lazy_rescaling(out0_cipher, verbose); break;
+      m_he_seal_backend); lazy_rescaling(out[0], verbose); break;
               }
               case BinaryOpType::CipherPlainToCipher: {
-                dot_seal(cipher_args[0]->get_elements(),
-                         plain_args[1]->get_elements(),
-      out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
+                dot_seal(args[0]->data(),
+                         plain_args[1]->data(),
+      out[0]->data(), in_shape0, in_shape1, out_shape,
                          dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); lazy_rescaling(out0_cipher, verbose); break;
+      m_he_seal_backend); lazy_rescaling(out[0], verbose); break;
               }
               case BinaryOpType::PlainCipherToCipher: {
-                dot_seal(plain_args[0]->get_elements(),
-                         cipher_args[1]->get_elements(),
-      out0_cipher->get_elements(), in_shape0, in_shape1, out_shape,
+                dot_seal(plain_args[0]->data(),
+                         args[1]->data(),
+      out[0]->data(), in_shape0, in_shape1, out_shape,
                          dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); lazy_rescaling(out0_cipher, verbose); break;
+      m_he_seal_backend); lazy_rescaling(out[0], verbose); break;
               }
               case BinaryOpType::PlainPlainToPlain: {
-                dot_seal(plain_args[0]->get_elements(),
-      plain_args[1]->get_elements(), out0_plain->get_elements(), in_shape0,
+                dot_seal(plain_args[0]->data(),
+      plain_args[1]->data(), out0_plain->data(), in_shape0,
       in_shape1, out0_plain->get_packed_shape(),
                          dot->get_reduction_axes_count(), type,
       m_he_seal_backend); break;
@@ -1348,16 +1363,16 @@ void HESealExecutable::generate_calls(
                 if (m_enable_client) {
                   NGRAPH_CHECK(false, "Exp not implemented for client-aided
       model"); } else { NGRAPH_WARN << "Performing Exp without client is not
-      " "privacy-preserving"; exp_seal( cipher_args[0]->get_elements(),
-      out0_cipher->get_elements(),
-                      cipher_args[0]->get_batched_element_count(),
+      " "privacy-preserving"; exp_seal( args[0]->data(),
+      out[0]->data(),
+                      args[0]->get_batched_element_count(),
       m_he_seal_backend);
                 }
                 break;
               }
               case UnaryOpType::PlainToPlain: {
-                exp_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), out0_plain->get_batched_element_count());
+                exp_seal(plain_args[0]->data(),
+      out0_plain->data(), out0_plain->get_batched_element_count());
                 break;
               }
               case UnaryOpType::PlainToCipher:
@@ -1377,19 +1392,19 @@ void HESealExecutable::generate_calls(
       { if (m_enable_client) { NGRAPH_CHECK(false, "Max not implemented for
       client-aided model"); } else { NGRAPH_WARN << "Performing Max without
       client is not " "privacy-preserving"; size_t output_size =
-      cipher_args[0]->get_batched_element_count(); NGRAPH_CHECK(output_size
-      == cipher_args[0]->num_ciphertexts(), "output size ", output_size, "
-      doesn't match number of elements", out0_cipher->num_ciphertexts());
-                  max_seal(cipher_args[0]->get_elements(),
-                           out0_cipher->get_elements(), arg_shapes[0],
-                           out0_cipher->get_packed_shape(),
+      args[0]->get_batched_element_count(); NGRAPH_CHECK(output_size
+      == args[0]->num_ciphertexts(), "output size ", output_size, "
+      doesn't match number of elements", out[0]->num_ciphertexts());
+                  max_seal(args[0]->data(),
+                           out[0]->data(), arg_shapes[0],
+                           out[0]->get_packed_shape(),
       max->get_reduction_axes(), m_he_seal_backend);
                 }
                 break;
               }
               case UnaryOpType::PlainToPlain: {
-                max_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), arg_shapes[0],
+                max_seal(plain_args[0]->data(),
+      out0_plain->data(), arg_shapes[0],
       out0_plain->get_packed_shape(), max->get_reduction_axes()); break;
               }
               case UnaryOpType::PlainToCipher:
@@ -1403,18 +1418,18 @@ void HESealExecutable::generate_calls(
             const op::MaxPool* max_pool = static_cast<const
       op::MaxPool*>(&node); switch (unary_op_type) { case
       UnaryOpType::CipherToCipher: { if (m_enable_client) {
-                  handle_server_max_pool_op(cipher_args[0], out0_cipher,
+                  handle_server_max_pool_op(args[0], out[0],
                                             node_wrapper);
                 } else {
                   NGRAPH_WARN << "Performing MaxPool without client is not "
                                  "privacy-preserving";
                   size_t output_size =
-      cipher_args[0]->get_batched_element_count(); NGRAPH_CHECK(output_size
-      == cipher_args[0]->num_ciphertexts(), "output size ", output_size, "
-      doesn't match number of elements", out0_cipher->num_ciphertexts());
-                  max_pool_seal(cipher_args[0]->get_elements(),
-                                out0_cipher->get_elements(), arg_shapes[0],
-                                out0_cipher->get_packed_shape(),
+      args[0]->get_batched_element_count(); NGRAPH_CHECK(output_size
+      == args[0]->num_ciphertexts(), "output size ", output_size, "
+      doesn't match number of elements", out[0]->num_ciphertexts());
+                  max_pool_seal(args[0]->data(),
+                                out[0]->data(), arg_shapes[0],
+                                out[0]->get_packed_shape(),
                                 max_pool->get_window_shape(),
                                 max_pool->get_window_movement_strides(),
                                 max_pool->get_padding_below(),
@@ -1425,8 +1440,8 @@ void HESealExecutable::generate_calls(
               }
               case UnaryOpType::PlainToPlain: {
                 max_pool_seal(
-                    plain_args[0]->get_elements(),
-      out0_plain->get_elements(), arg_shapes[0],
+                    plain_args[0]->data(),
+      out0_plain->data(), arg_shapes[0],
       out0_plain->get_packed_shape(), max_pool->get_window_shape(),
                     max_pool->get_window_movement_strides(),
                     max_pool->get_padding_below(),
@@ -1442,9 +1457,9 @@ void HESealExecutable::generate_calls(
           case OP_TYPEID::Minimum: {
             switch (binary_op_type) {
               case BinaryOpType::PlainPlainToPlain: {
-                minimum_seal(plain_args[0]->get_elements(),
-                             plain_args[1]->get_elements(),
-                             out0_plain->get_elements(),
+                minimum_seal(plain_args[0]->data(),
+                             plain_args[1]->data(),
+                             out0_plain->data(),
                              out0_plain->get_batched_element_count());
                 break;
               }
@@ -1456,57 +1471,19 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Pad: {
-            const op::Pad* pad = static_cast<const op::Pad*>(&node);
-            Shape arg0_shape = arg_shapes[0];
 
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                pad_seal(cipher_args[0]->get_elements(),
-                         cipher_args[1]->get_elements(),
-      out0_cipher->get_elements(), arg0_shape, out_shape,
-      pad->get_padding_below(), pad->get_padding_above(),
-      pad->get_pad_mode(), m_batch_size, m_he_seal_backend); break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                pad_seal(cipher_args[0]->get_elements(),
-                         plain_args[1]->get_elements(),
-      out0_cipher->get_elements(), arg0_shape, out_shape,
-      pad->get_padding_below(), pad->get_padding_above(),
-      pad->get_pad_mode(), m_batch_size, m_he_seal_backend); break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                pad_seal(plain_args[0]->get_elements(),
-      plain_args[1]->get_elements(), out0_plain->get_elements(), arg0_shape,
-      out_shape, pad->get_padding_below(), pad->get_padding_above(),
-                         pad->get_pad_mode(), m_batch_size,
-      m_he_seal_backend); break;
-              }
-              case BinaryOpType::PlainCipherToCipher:
-              case BinaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-                break;
-            }
-            break;
-          }
-          case OP_TYPEID::Passthrough: {
-            const op::Passthrough* passthrough =
-                static_cast<const op::Passthrough*>(&node);
-            throw unsupported_op{"Unsupported operation language: " +
-                                 passthrough->language()};
-          }
           case OP_TYPEID::Relu: {
             size_t output_size = args[0]->get_batched_element_count();
             switch (unary_op_type) {
               case UnaryOpType::CipherToCipher: {
                 if (m_enable_client) {
-                  handle_server_relu_op(cipher_args[0], out0_cipher,
+                  handle_server_relu_op(args[0], out[0],
       node_wrapper); } else { NGRAPH_WARN << "Performing Relu without client
       is not " "privacy-preserving"; NGRAPH_CHECK(output_size ==
-      cipher_args[0]->num_ciphertexts(), "output size ", output_size, "
-      doesn't match number of elements", out0_cipher->num_ciphertexts());
-                  relu_seal(cipher_args[0]->get_elements(),
-                            out0_cipher->get_elements(), output_size,
+      args[0]->num_ciphertexts(), "output size ", output_size, "
+      doesn't match number of elements", out[0]->num_ciphertexts());
+                  relu_seal(args[0]->data(),
+                            out[0]->data(), output_size,
                             m_he_seal_backend);
                 }
                 break;
@@ -1516,8 +1493,8 @@ void HESealExecutable::generate_calls(
                              "output size ", output_size,
                              " doesn't match number of elements",
                              out0_plain->num_plaintexts());
-                relu_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), output_size); break;
+                relu_seal(plain_args[0]->data(),
+      out0_plain->data(), output_size); break;
               }
               case UnaryOpType::CipherToPlain:
               case UnaryOpType::PlainToCipher:
@@ -1531,25 +1508,25 @@ void HESealExecutable::generate_calls(
             size_t output_size = args[0]->get_batched_element_count();
             switch (unary_op_type) {
               case UnaryOpType::CipherToCipher: {
-                result_seal(cipher_args[0]->get_elements(),
-                            out0_cipher->get_elements(), output_size);
+                result_seal(args[0]->data(),
+                            out[0]->data(), output_size);
                 break;
               }
               case UnaryOpType::PlainToCipher: {
-                result_seal(plain_args[0]->get_elements(),
-                            out0_cipher->get_elements(), output_size,
+                result_seal(plain_args[0]->data(),
+                            out[0]->data(), output_size,
                             m_he_seal_backend);
                 break;
               }
               case UnaryOpType::CipherToPlain: {
-                result_seal(cipher_args[0]->get_elements(),
-                            out0_plain->get_elements(), output_size,
+                result_seal(args[0]->data(),
+                            out0_plain->data(), output_size,
                             m_he_seal_backend);
                 break;
               }
               case UnaryOpType::PlainToPlain: {
-                result_seal(plain_args[0]->get_elements(),
-      out0_plain->get_elements(), output_size); break;
+                result_seal(plain_args[0]->data(),
+      out0_plain->data(), output_size); break;
               }
               case UnaryOpType::None:
                 NGRAPH_CHECK(false, "Unsupported op types");
@@ -1574,15 +1551,15 @@ void HESealExecutable::generate_calls(
                 } else {
                   NGRAPH_WARN << "Performing Softmax without client is not "
                                  "privacy-preserving";
-                  softmax_seal(cipher_args[0]->get_elements(),
-                               out0_cipher->get_elements(), arg_shapes[0],
+                  softmax_seal(args[0]->data(),
+                               out[0]->data(), arg_shapes[0],
                                softmax->get_axes(), m_he_seal_backend);
                 }
                 break;
               }
               case UnaryOpType::PlainToPlain: {
-                softmax_seal(plain_args[0]->get_elements(),
-                             out0_plain->get_elements(), arg_shapes[0],
+                softmax_seal(plain_args[0]->data(),
+                             out0_plain->data(), arg_shapes[0],
                              softmax->get_axes());
                 break;
               }
@@ -1776,7 +1753,7 @@ void HESealExecutable::handle_server_relu_op(
   }
 
   size_t smallest_ind = match_to_smallest_chain_index(
-      arg_cipher->get_elements(), m_he_seal_backend);
+      arg_cipher->data(), m_he_seal_backend);
 
   if (verbose) {
     NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
