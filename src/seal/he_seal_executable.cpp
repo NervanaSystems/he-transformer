@@ -1102,7 +1102,7 @@ void HESealExecutable::generate_calls(
         NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
                      output_size, " doesn't match number of elements",
                      out[0]->data().size());
-        bounded_relu_seal(args[0]->data(), out[0]->data(), output_size, alpha,
+        bounded_relu_seal(args[0]->data(), out[0]->data(), alpha, output_size,
                           m_he_seal_backend);
       }
       break;

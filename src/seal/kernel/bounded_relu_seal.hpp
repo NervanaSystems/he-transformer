@@ -28,18 +28,21 @@
 
 namespace ngraph {
 namespace he {
-void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,float alpha);
+void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
+                              float alpha);
 
-void scalar_bounded_relu_seal(const HEType& arg, HEType& out,float alpha,
-                      const seal::parms_id_type& parms_id, double scale,
-                      seal::CKKSEncoder& ckks_encoder,
-                      seal::Encryptor& encryptor, seal::Decryptor& decryptor);
+void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
+                              const seal::parms_id_type& parms_id, double scale,
+                              seal::CKKSEncoder& ckks_encoder,
+                              seal::Encryptor& encryptor,
+                              seal::Decryptor& decryptor);
 
-void scalar_bounded_relu_seal(const HEType& arg, HEType& out,float alpha,
-                      const HESealBackend& he_seal_backend);
+void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
+                              const HESealBackend& he_seal_backend);
 
-void bounded_relu_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,float alpha,
-               size_t count, const HESealBackend& he_seal_backend);
+void bounded_relu_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
+                       float alpha, size_t count,
+                       const HESealBackend& he_seal_backend);
 
 }  // namespace he
 }  // namespace ngraph

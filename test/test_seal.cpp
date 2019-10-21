@@ -153,7 +153,8 @@ TEST(seal_util, save) {
   encryptor.encrypt(plain, cipher);
   Ciphertext cipher_load;
 
-  std::byte* buffer = reinterpret_cast<std::byte*>(ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher)));
+  std::byte* buffer = reinterpret_cast<std::byte*>(
+      ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher)));
 
   auto t1 = chrono::high_resolution_clock::now();
   auto save_size = ngraph::he::save(cipher, buffer);
