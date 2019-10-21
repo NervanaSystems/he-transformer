@@ -70,6 +70,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/pad_seal.hpp"
+#include "seal/kernel/relu_seal.hpp"
 #include "seal/kernel/rescale_seal.hpp"
 #include "seal/kernel/reshape_seal.hpp"
 #include "seal/kernel/result_seal.hpp"
@@ -1125,6 +1126,22 @@ void HESealExecutable::generate_calls(
       throw unsupported_op{"Unsupported operation language: " +
                            passthrough->language()};
     }
+    case OP_TYPEID::Relu: {
+      size_t output_size = args[0]->get_batched_element_count();
+      if (m_enable_client) {
+        NGRAPH_CHECK(false, "Client relu not enable");
+        // handle_server_relu_op(args[0], out[0], node_wrapper);
+      } else {
+        NGRAPH_WARN
+            << "Performing Relu without client is not privacy preserving ";
+        NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
+                     output_size, "doesn't match number of elements",
+                     out[0]->data().size());
+        relu_seal(args[0]->data(), out[0]->data(), output_size,
+                  m_he_seal_backend);
+      }
+      break;
+    }
     case OP_TYPEID::Reshape: {
       const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
       if (verbose) {
@@ -1148,6 +1165,9 @@ void HESealExecutable::generate_calls(
       }
       reverse_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                    out[0]->get_packed_shape(), reverse->get_reversed_axes());
+      break;
+    }
+    case OP_TYPEID::ScalarConstantLike: {
       break;
     }
     case OP_TYPEID::Slice: {
@@ -1187,7 +1207,7 @@ void HESealExecutable::generate_calls(
                m_he_seal_backend);
       break;
     }
-  }
+  }  // namespace he
   /*
   We want to check that every OP_TYPEID enumeration is included in the list.
       // These GCC flags enable compile-time checking so that if an
@@ -1447,71 +1467,6 @@ void HESealExecutable::generate_calls(
             break;
           }
 
-          case OP_TYPEID::Relu: {
-            size_t output_size = args[0]->get_batched_element_count();
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                if (m_enable_client) {
-                  handle_server_relu_op(args[0], out[0],
-      node_wrapper); } else { NGRAPH_WARN << "Performing Relu without client
-      is not " "privacy-preserving"; NGRAPH_CHECK(output_size ==
-      args[0]->num_ciphertexts(), "output size ", output_size, "
-      doesn't match number of elements", out[0]->num_ciphertexts());
-                  relu_seal(args[0]->data(),
-                            out[0]->data(), output_size,
-                            m_he_seal_backend);
-                }
-                break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                NGRAPH_CHECK(output_size == plain_args[0]->num_plaintexts(),
-                             "output size ", output_size,
-                             " doesn't match number of elements",
-                             out0_plain->num_plaintexts());
-                relu_seal(plain_args[0]->data(),
-      out0_plain->data(), output_size); break;
-              }
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
-
-          case OP_TYPEID::Result: {
-            size_t output_size = args[0]->get_batched_element_count();
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                result_seal(args[0]->data(),
-                            out[0]->data(), output_size);
-                break;
-              }
-              case UnaryOpType::PlainToCipher: {
-                result_seal(plain_args[0]->data(),
-                            out[0]->data(), output_size,
-                            m_he_seal_backend);
-                break;
-              }
-              case UnaryOpType::CipherToPlain: {
-                result_seal(args[0]->data(),
-                            out0_plain->data(), output_size,
-                            m_he_seal_backend);
-                break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                result_seal(plain_args[0]->data(),
-      out0_plain->data(), output_size); break;
-              }
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
-
-          case OP_TYPEID::ScalarConstantLike: {
-            break;
-          }
 
           case OP_TYPEID::Softmax: {
             const op::Softmax* softmax = static_cast<const
@@ -1635,7 +1590,7 @@ void HESealExecutable::generate_calls(
       "'"); #pragma GCC diagnostic pop
         }
       */
-}
+}  // namespace he
 
 void HESealExecutable::handle_server_max_pool_op(
     std::shared_ptr<HETensor>& arg_cipher,

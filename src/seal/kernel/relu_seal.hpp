@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -29,24 +30,15 @@ namespace ngraph {
 namespace he {
 void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out);
 
-void relu_seal(const std::vector<HEPlaintext>& arg,
-               std::vector<HEPlaintext>& out, size_t count);
-
-void scalar_relu_seal_known_value(const SealCiphertextWrapper& arg,
-                                  std::shared_ptr<SealCiphertextWrapper>& out);
-
-void scalar_relu_seal(const SealCiphertextWrapper& arg,
-                      std::shared_ptr<SealCiphertextWrapper>& out,
+void scalar_relu_seal(const HEType& arg, HEType& out,
                       const seal::parms_id_type& parms_id, double scale,
                       seal::CKKSEncoder& ckks_encoder,
                       seal::Encryptor& encryptor, seal::Decryptor& decryptor);
 
-void scalar_relu_seal(const SealCiphertextWrapper& arg,
-                      std::shared_ptr<SealCiphertextWrapper>& out,
+void scalar_relu_seal(const HEType& arg, HEType& out,
                       const HESealBackend& he_seal_backend);
 
-void relu_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-               std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+void relu_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                size_t count, const HESealBackend& he_seal_backend);
 
 }  // namespace he

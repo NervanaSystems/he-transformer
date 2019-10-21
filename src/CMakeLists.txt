@@ -37,7 +37,7 @@ set(HE_SRC
     seal/kernel/negate_seal.cpp
     seal/kernel/pad_seal.cpp
     seal/kernel/rescale_seal.cpp
-    # seal/kernel/relu_seal.cpp
+    seal/kernel/relu_seal.cpp
     # seal/kernel/result_seal.cpp
     # seal/kernel/softmax_seal.cpp
     seal/kernel/subtract_seal.cpp
