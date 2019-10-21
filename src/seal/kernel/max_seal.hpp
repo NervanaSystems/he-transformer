@@ -32,7 +32,7 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const Shape& in_shape, const Shape& out_shape,
                      const AxisSet& reduction_axes, size_t batch_size,
                      const HESealBackend& he_seal_backend) {
-  NGRAPH_INFO << "max seal " << batch_size;
+  NGRAPH_INFO << "max seal batch size " << batch_size;
   // TODO: use constructor?
   std::vector<HEPlaintext> out_plain(out.size());
   for (size_t i = 0; i < out.size(); ++i) {
@@ -58,6 +58,7 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
     } else {
       he_seal_backend.decrypt(max_cmp_plain, *max_cmp.get_ciphertext(),
                               max_cmp.complex_packing());
+      max_cmp_plain.resize(batch_size);
     }
     NGRAPH_INFO << "out_idx " << out_idx;
     NGRAPH_INFO << "Max " << max_cmp_plain << ", " << out_plain[out_idx];
