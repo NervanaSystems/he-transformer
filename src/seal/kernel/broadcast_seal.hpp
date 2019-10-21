@@ -19,15 +19,13 @@
 #include <memory>
 #include <vector>
 
-#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-template <typename T>
-void broadcast_seal(const std::vector<T>& arg, std::vector<T>& out,
+void broadcast_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                     const Shape& in_shape, const Shape& out_shape,
                     const AxisSet& broadcast_axes) {
   CoordinateTransform input_transform(in_shape);

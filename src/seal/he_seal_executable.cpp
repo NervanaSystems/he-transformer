@@ -62,6 +62,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/kernel/add_seal.hpp"
+#include "seal/kernel/broadcast_seal.hpp"
 #include "seal/kernel/concat_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
@@ -1031,12 +1032,17 @@ void HESealExecutable::generate_calls(
                out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
+    case OP_TYPEID::Broadcast: {
+      const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
+      broadcast_seal(args[0]->data(), out[0]->data(),
+                     args[0]->get_packed_shape(), out[0]->get_packed_shape(),
+                     broadcast->get_broadcast_axes());
+      break;
+    }
     case OP_TYPEID::Concat: {
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
-
       std::vector<Shape> in_shapes;
       std::vector<std::vector<HEType>> in_args;
-
       for (auto& arg : args) {
         in_args.push_back(arg->data());
         in_shapes.push_back(arg->get_packed_shape());
@@ -1254,32 +1260,7 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Broadcast: {
-            const op::Broadcast* broadcast = static_cast<const
-      op::Broadcast*>(&node); AxisSet broadcast_axes =
-      broadcast->get_broadcast_axes(); Shape in_shape = arg_shapes[0]; Shape
-      broadcast_out_shape = out_shape;
 
-            switch (unary_op_type) {
-              case UnaryOpType::CipherToCipher: {
-                broadcast_seal(cipher_args[0]->get_elements(),
-                               out0_cipher->get_elements(), in_shape,
-                               broadcast_out_shape, broadcast_axes);
-                break;
-              }
-              case UnaryOpType::PlainToPlain: {
-                broadcast_seal(plain_args[0]->get_elements(),
-                               out0_plain->get_elements(), in_shape,
-                               broadcast_out_shape, broadcast_axes);
-                break;
-              }
-              case UnaryOpType::PlainToCipher:
-              case UnaryOpType::CipherToPlain:
-              case UnaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::BroadcastLike:
             break;
 
