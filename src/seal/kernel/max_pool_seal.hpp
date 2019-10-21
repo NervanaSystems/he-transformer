@@ -147,17 +147,10 @@ inline void max_pool_seal(const std::vector<HEType>& arg,
     }
     Shape in_shape{max_list.size()};
 
-    NGRAPH_INFO << "out_idx" << out_idx;
+    std::vector<HEType> max_out{out[out_idx]};
 
-    for (const auto& elem : max_list) {
-      NGRAPH_INFO << "max inds " << elem;
-    }
-
-    std::vector<HEType> max_out{out[0]};
-
-    max_seal(max_args, max_out, Shape{max_list.size()}, Shape{}, AxisSet{0}, 1,
-             he_seal_backend);
-
+    max_seal(max_args, max_out, Shape{max_list.size()}, Shape{}, AxisSet{0},
+             out[out_idx].batch_size(), he_seal_backend);
     out[out_idx] = max_out[0];
   }
 }

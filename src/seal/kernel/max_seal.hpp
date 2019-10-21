@@ -32,23 +32,10 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const Shape& in_shape, const Shape& out_shape,
                      const AxisSet& reduction_axes, size_t batch_size,
                      const HESealBackend& he_seal_backend) {
-  NGRAPH_INFO << "max seal batch size " << batch_size;
-  NGRAPH_INFO << "MaxSeal with in_shape " << in_shape;
-  NGRAPH_INFO << "MaxSeal with out_shape " << out_shape;
-  NGRAPH_INFO << "MaxSeal with reduction_axes " << reduction_axes;
-  NGRAPH_INFO << "MaxSeal with batch_size " << batch_size;
-  NGRAPH_INFO << "MaxSeal with arg.size() " << arg.size();
-  NGRAPH_INFO << "MaxSeal with out.size() " << out.size();
   // TODO: use constructor?
-  std::vector<HEPlaintext> out_plain(out.size());
-  for (size_t i = 0; i < out.size(); ++i) {
-    out_plain[i] = HEPlaintext(std::vector<double>(
-        batch_size, -std::numeric_limits<double>::infinity()));
-  }
-  NGRAPH_INFO << "out_plain:";
-  for (const auto& elem : out_plain) {
-    NGRAPH_INFO << elem;
-  }
+  std::vector<HEPlaintext> out_plain(
+      out.size(), HEPlaintext(std::vector<double>(
+                      batch_size, -std::numeric_limits<double>::infinity())));
 
   CoordinateTransform output_transform(out_shape);
   CoordinateTransform input_transform(in_shape);
@@ -66,19 +53,14 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                               max_cmp.complex_packing());
       max_cmp_plain.resize(batch_size);
     }
-    NGRAPH_INFO << "out_idx " << out_idx;
-    NGRAPH_INFO << "Max " << max_cmp_plain << ", " << out_plain[out_idx];
-
     for (size_t i = 0; i < max_cmp_plain.size(); ++i) {
       out_plain[out_idx][i] = std::max(out_plain[out_idx][i], max_cmp_plain[i]);
     }
-    NGRAPH_INFO << " => " << out_plain[out_idx];
   }
 
   for (const Coordinate& output_coord : output_transform) {
     size_t out_idx = output_transform.index(output_coord);
     if (out[out_idx].is_plaintext()) {
-      NGRAPH_INFO << "Setting output " << out_plain[out_idx];
       out[out_idx].set_plaintext(out_plain[out_idx]);
     } else {
       he_seal_backend.encrypt(out[out_idx].get_ciphertext(), out_plain[out_idx],
