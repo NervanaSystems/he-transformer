@@ -66,6 +66,7 @@
 #include "seal/kernel/concat_seal.hpp"
 #include "seal/kernel/constant_seal.hpp"
 #include "seal/kernel/convolution_seal.hpp"
+#include "seal/kernel/dot_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/pad_seal.hpp"
@@ -1081,6 +1082,23 @@ void HESealExecutable::generate_calls(
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
     }
+    case OP_TYPEID::Dot: {
+      const op::Dot* dot = static_cast<const op::Dot*>(&node);
+
+      Shape in_shape0 = args[0]->get_packed_shape();
+      Shape in_shape1 = args[1]->get_packed_shape();
+
+      if (verbose) {
+        NGRAPH_HE_LOG(3) << in_shape0 << " dot " << in_shape1;
+      }
+      dot_seal(args[0]->data(), args[1]->data(), out[0]->data(), in_shape0,
+               in_shape1, out_shape, dot->get_reduction_axes_count(), type,
+               m_he_seal_backend);
+      rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
+      break;
+
+      break;
+    }
     case OP_TYPEID::Multiply: {
       multiply_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                     out[0]->get_batched_element_count(), type,
@@ -1313,50 +1331,7 @@ void HESealExecutable::generate_calls(
             }
             break;
           }
-          case OP_TYPEID::Dot: {
-            const op::Dot* dot = static_cast<const op::Dot*>(&node);
 
-            Shape in_shape0 = arg_shapes[0];
-            Shape in_shape1 = arg_shapes[1];
-
-            if (verbose) {
-              NGRAPH_HE_LOG(3) << in_shape0 << " dot " << in_shape1;
-            }
-
-            switch (binary_op_type) {
-              case BinaryOpType::CipherCipherToCipher: {
-                dot_seal(args[0]->data(),
-                         args[1]->data(),
-      out[0]->data(), in_shape0, in_shape1, out_shape,
-                         dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); lazy_rescaling(out[0], verbose); break;
-              }
-              case BinaryOpType::CipherPlainToCipher: {
-                dot_seal(args[0]->data(),
-                         plain_args[1]->data(),
-      out[0]->data(), in_shape0, in_shape1, out_shape,
-                         dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); lazy_rescaling(out[0], verbose); break;
-              }
-              case BinaryOpType::PlainCipherToCipher: {
-                dot_seal(plain_args[0]->data(),
-                         args[1]->data(),
-      out[0]->data(), in_shape0, in_shape1, out_shape,
-                         dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); lazy_rescaling(out[0], verbose); break;
-              }
-              case BinaryOpType::PlainPlainToPlain: {
-                dot_seal(plain_args[0]->data(),
-      plain_args[1]->data(), out0_plain->data(), in_shape0,
-      in_shape1, out0_plain->get_packed_shape(),
-                         dot->get_reduction_axes_count(), type,
-      m_he_seal_backend); break;
-              }
-              case BinaryOpType::None:
-                NGRAPH_CHECK(false, "Unsupported op types");
-            }
-            break;
-          }
           case OP_TYPEID::Exp: {
             switch (unary_op_type) {
               case UnaryOpType::CipherToCipher: {
