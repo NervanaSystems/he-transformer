@@ -1168,8 +1168,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Relu: {
       size_t output_size = args[0]->get_batched_element_count();
       if (m_enable_client) {
-        NGRAPH_CHECK(false, "Client relu not enable");
-        // handle_server_relu_op(args[0], out[0], node_wrapper);
+        handle_server_relu_op(args[0], out[0], node_wrapper);
       } else {
         NGRAPH_WARN
             << "Performing Relu without client is not privacy preserving ";
@@ -1424,34 +1423,24 @@ void HESealExecutable::handle_server_relu_op(
     const NodeWrapper& node_wrapper) {
   NGRAPH_HE_LOG(3) << "Server handle_server_relu_op";
 
-  /*
-
   auto type_id = node_wrapper.get_typeid();
-  NGRAPH_CHECK(
-      type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
-      "only support relu / bounded relu");
+  NGRAPH_CHECK(type_id == OP_TYPEID::Relu || type_id == OP_TYPEID::BoundedRelu,
+               "only support relu / bounded relu");
 
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
-  size_t element_count = shape_size(node.get_output_shape(0)) /
-  m_batch_size;
+  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
 
-  if (arg_cipher == nullptr || out_cipher == nullptr) {
-    throw ngraph_error("Relu types not supported.");
-  }
-
-  size_t smallest_ind = match_to_smallest_chain_index(
-      arg_cipher->data(), m_he_seal_backend);
+  size_t smallest_ind =
+      match_to_smallest_chain_index(arg->data(), m_he_seal_backend);
 
   if (verbose) {
     NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
   }
 
-  m_relu_ciphertexts.resize(element_count);
-  for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-    m_relu_ciphertexts[relu_idx] =
-  std::make_shared<SealCiphertextWrapper>();
-  }
+  // TODO: better initialization?
+  m_relu_ciphertexts.resize(element_count,
+                            HEType(HEPlaintext(), false, false, 1));
 
   // TODO: tune
   const size_t max_relu_message_cnt = 1000;
@@ -1461,27 +1450,29 @@ void HESealExecutable::handle_server_relu_op(
 
   // Process known values
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-    auto& cipher = *arg_cipher->get_element(relu_idx);
-    if (cipher.known_value()) {
+    auto& he_type = arg->data(relu_idx);
+    if (he_type.is_plaintext()) {
+      m_relu_ciphertexts[relu_idx].set_plaintext(HEPlaintext());
       if (type_id == OP_TYPEID::Relu) {
-        scalar_relu_seal_known_value(cipher, m_relu_ciphertexts[relu_idx]);
+        scalar_relu_seal(he_type.get_plaintext(),
+                         m_relu_ciphertexts[relu_idx].get_plaintext());
       } else {
         const op::BoundedRelu* bounded_relu =
             static_cast<const op::BoundedRelu*>(&node);
         float alpha = bounded_relu->get_alpha();
-        scalar_bounded_relu_seal_known_value(
-            cipher, m_relu_ciphertexts[relu_idx], alpha);
+        scalar_bounded_relu_seal(he_type.get_plaintext(),
+                                 m_relu_ciphertexts[relu_idx].get_plaintext(),
+                                 alpha);
       }
     } else {
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
   auto process_unknown_relu_ciphers_batch =
-      [&](const std::vector<std::shared_ptr<SealCiphertextWrapper>>&
-              cipher_batch) {
+      [&](const std::vector<HEType>& cipher_batch) {
         if (verbose) {
-          NGRAPH_HE_LOG(3)
-              << "Sending relu request size " << cipher_batch.size();
+          NGRAPH_HE_LOG(3) << "Sending relu request size "
+                           << cipher_batch.size();
         }
 
         he_proto::TCPMessage proto_msg;
@@ -1500,16 +1491,18 @@ void HESealExecutable::handle_server_relu_op(
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
-        std::vector<he_proto::SealCipherTensor> proto_tensors;
-        // TODO: pass packed shape?
-        HESealCipherTensor::save_to_proto(proto_tensors, cipher_batch,
-                                          Shape{1, cipher_batch.size()},
-                                          plaintext_packed(node_wrapper));
+        // TODO: set packing / encrypted to correct values?
+        HETensor relu_tensor(arg->get_element_type(),
+                             Shape{cipher_batch.size()}, false, false, true,
+                             m_he_seal_backend);
+        relu_tensor.data() = cipher_batch;
+
+        std::vector<he_proto::HETensor> proto_tensors;
+        relu_tensor.write_to_protos(proto_tensors);
 
         NGRAPH_CHECK(proto_tensors.size() == 1,
                      "Only support ReLU with 1 proto tensor");
-
-        *proto_msg.add_cipher_tensors() = proto_tensors[0];
+        *proto_msg.add_he_tensors() = proto_tensors[0];
 
         TCPMessage relu_message(std::move(proto_msg));
 
@@ -1518,12 +1511,13 @@ void HESealExecutable::handle_server_relu_op(
       };
 
   // Process unknown values
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> relu_ciphers_batch;
+  std::vector<HEType> relu_ciphers_batch;
   relu_ciphers_batch.reserve(max_relu_message_cnt);
 
   for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
-    auto& cipher = arg_cipher->get_element(unknown_relu_idx);
-    relu_ciphers_batch.emplace_back(cipher);
+    NGRAPH_CHECK(arg->data(unknown_relu_idx).is_ciphertext(),
+                 "HEType should be ciphertext");
+    relu_ciphers_batch.emplace_back(arg->data(unknown_relu_idx));
     if (relu_ciphers_batch.size() == max_relu_message_cnt) {
       process_unknown_relu_ciphers_batch(relu_ciphers_batch);
       relu_ciphers_batch.clear();
@@ -1536,12 +1530,11 @@ void HESealExecutable::handle_server_relu_op(
 
   // Wait until all batches have been processed
   std::unique_lock<std::mutex> mlock(m_relu_mutex);
-  m_relu_cond.wait(mlock, [=]() {
-    return m_relu_done_count == m_unknown_relu_idx.size();
-  });
+  m_relu_cond.wait(
+      mlock, [=]() { return m_relu_done_count == m_unknown_relu_idx.size(); });
   m_relu_done_count = 0;
 
-  out_cipher->set_elements(m_relu_ciphertexts); */
+  out->data() = m_relu_ciphertexts;
 }
 }  // namespace he
 }  // namespace ngraph

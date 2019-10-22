@@ -216,36 +216,43 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
   }
 }
 
-size_t match_to_smallest_chain_index(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    const HESealBackend& he_seal_backend) {
-  size_t num_elements = ciphers.size();
+size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
+                                     const HESealBackend& he_seal_backend) {
+  size_t num_elements = he_types.size();
 
-  // (cipher_ind, chain_ind)
+  // (idx, smallest chain_index)
   std::pair<size_t, size_t> smallest_chain_ind{
       0, std::numeric_limits<size_t>::max()};
-  for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
-    auto& cipher = *ciphers[cipher_idx];
-    size_t chain_ind = he_seal_backend.get_chain_index(cipher);
-    if (chain_ind < smallest_chain_ind.second) {
-      smallest_chain_ind = std::make_pair(cipher_idx, chain_ind);
+  for (size_t idx = 0; idx < num_elements; ++idx) {
+    if (he_types[idx].is_ciphertext()) {
+      auto& cipher = *he_types[idx].get_ciphertext();
+      size_t chain_ind = he_seal_backend.get_chain_index(cipher);
+      if (chain_ind < smallest_chain_ind.second) {
+        smallest_chain_ind = std::make_pair(idx, chain_ind);
+      }
     }
   }
-  NGRAPH_CHECK(smallest_chain_ind.second != std::numeric_limits<size_t>::max(),
-               "Can't match to modulus of all known values");
-  NGRAPH_DEBUG << "Matching to smallest chain index "
-               << smallest_chain_ind.second;
+  if (smallest_chain_ind.second == std::numeric_limits<size_t>::max()) {
+    NGRAPH_HE_LOG(3) << "Match to smallest chain index of all plaintexts";
+    return std::numeric_limits<size_t>::max();
+  }
+  NGRAPH_HE_LOG(3) << "Matching to smallest chain index "
+                   << smallest_chain_ind.second;
 
-  auto smallest_cipher = *ciphers[smallest_chain_ind.first];
+  // TODO: loop over only ciphertext indices?
+  auto smallest_cipher = *he_types[smallest_chain_ind.first].get_ciphertext();
 #pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
-    auto& cipher = *ciphers[cipher_idx];
-    if (cipher_idx != smallest_chain_ind.second) {
-      match_modulus_and_scale_inplace(smallest_cipher, cipher, he_seal_backend);
-      size_t chain_ind = he_seal_backend.get_chain_index(cipher);
-      NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",
-                   chain_ind, " does not match smallest ",
-                   smallest_chain_ind.second);
+  for (size_t idx = 0; idx < num_elements; ++idx) {
+    if (he_types[idx].is_ciphertext()) {
+      auto& cipher = *he_types[idx].get_ciphertext();
+      if (idx != smallest_chain_ind.second) {
+        match_modulus_and_scale_inplace(smallest_cipher, cipher,
+                                        he_seal_backend);
+        size_t chain_ind = he_seal_backend.get_chain_index(cipher);
+        NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",
+                     chain_ind, " does not match smallest ",
+                     smallest_chain_ind.second);
+      }
     }
   }
   return smallest_chain_ind.second;

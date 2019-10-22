@@ -72,9 +72,8 @@ inline seal::sec_level_type seal_security_level(size_t bits) {
 /// chain index
 /// \returns The minimum chain index of the ciphertexts in ciphers
 /// TODO: move to he_seal_backend
-size_t match_to_smallest_chain_index(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    const HESealBackend& he_seal_backend);
+size_t match_to_smallest_chain_index(std::vector<HEType>& ciphers,
+                                     const HESealBackend& he_seal_backend);
 
 /// \brief Returns whether or not two cipher/plaintexts have a similar scale
 /// \param[in] arg0 Ciphertext or plaintext
