@@ -139,7 +139,7 @@ inline void max_pool_seal(
                                           window_movement_strides,
                                           padding_below, padding_above);
 
-  for (size_t out_idx = 0; out_idx < out.size(); ++out_idx) {
+  for (size_t out_idx = 0; out_idx < max_lists.size(); ++out_idx) {
     auto& max_list = max_lists[out_idx];
     std::vector<HEType> max_args;
     for (auto& idx : max_list) {
