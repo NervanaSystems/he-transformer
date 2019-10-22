@@ -34,16 +34,6 @@ message Function {
   string function = 1;
 }
 
-message SealCiphertextWrapper {
-  bool complex_packing = 1;
-  float value = 3;
-  bytes ciphertext = 4;
-}
-
-message Plaintext {
-  repeated float value = 1;
-}
-
 message HETensor {
   string name = 1;
   repeated uint64 shape = 2;
@@ -60,6 +50,8 @@ message HEType {
   repeated float plain = 5;
   bytes ciphertext = 6;
 }
+
+/// TODO: remove below
 
 /// \brief Represents a ciphertext tensor
 /// Due to the 2GB limit in protobuf, large cipher tensors may not be able to
@@ -91,4 +83,15 @@ message PlainTensor {
   uint64 offset = 3;
   bool packed = 4;
   repeated Plaintext plaintexts = 5;
+}
+
+
+message SealCiphertextWrapper {
+  bool complex_packing = 1;
+  float value = 3;
+  bytes ciphertext = 4;
+}
+
+message Plaintext {
+  repeated float value = 1;
 }

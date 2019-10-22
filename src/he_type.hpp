@@ -51,6 +51,22 @@ class HEType {
     m_cipher = cipher;
   }
 
+  void save(he_proto::HEType& proto_he_type) const {
+    proto_he_type.set_is_plain(is_plaintext());
+    proto_he_type.set_plaintext_packing(plaintext_packing());
+    proto_he_type.set_complex_packing(complex_packing());
+    proto_he_type.set_batch_size(batch_size());
+
+    if (is_plaintext()) {
+      // TODO: more efficient
+      for (auto& elem : get_plaintext()) {
+        proto_he_type.add_plain(elem);
+      }
+    } else {
+      get_ciphertext()->save(proto_he_type);
+    }
+  }
+
   bool is_plaintext() const { return m_is_plain; }
   bool is_ciphertext() const { return !is_plaintext(); }
 

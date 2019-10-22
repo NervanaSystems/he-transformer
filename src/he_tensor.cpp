@@ -204,8 +204,20 @@ void HETensor::read(void* target, size_t n) const {
 }
 
 void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
-  NGRAPH_INFO << "Write to protos unimplemented";
-  NGRAPH_CHECK(false, "Write to protos unimplemented");
+  NGRAPH_INFO << "Write to protos ";
+
+  // TODO: support large shapes
+  protos.resize(1);
+  protos[0].set_name(get_name());
+  protos[0].set_packed(m_packed);
+  protos[0].set_offset(0);
+
+  std::vector<uint64_t> int_shape{get_shape()};
+  *protos[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+
+  for (const auto& he_type : m_data) {
+    he_type.save(*protos[0].add_data());
+  }
 }
 
 }  // namespace he

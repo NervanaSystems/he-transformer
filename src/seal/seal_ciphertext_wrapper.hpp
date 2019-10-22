@@ -94,6 +94,19 @@ class SealCiphertextWrapper {
   /// \brief Returns scale of the ciphertext
   inline double scale() const { return m_ciphertext.scale(); }
 
+  inline void save(he_proto::HEType& he_type) const {
+    size_t cipher_size = ciphertext_size(m_ciphertext);
+    std::string cipher_str;
+    cipher_str.resize(cipher_size);
+
+    size_t save_size = ngraph::he::save(
+        m_ciphertext, reinterpret_cast<std::byte*>(cipher_str.data()));
+
+    NGRAPH_CHECK(save_size == cipher_size, "Save size != cipher size");
+
+    he_type.set_ciphertext(std::move(cipher_str));
+  }
+
   /// \brief Saves the ciphertext to a protobuf ciphertext wrapper
   /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
   /// ciphertext

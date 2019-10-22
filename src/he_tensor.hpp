@@ -129,8 +129,6 @@ class HETensor : public runtime::Tensor {
     NGRAPH_CHECK(proto_tensors.size() == 1,
                  "Load from protos only supports 1 proto");
 
-    NGRAPH_CHECK(false, "Load from protos unimplemented");
-
     const auto& proto_tensor = proto_tensors[0];
     const auto& proto_name = proto_tensor.name();
     const auto& proto_packed = proto_tensor.packed();
@@ -149,7 +147,6 @@ class HETensor : public runtime::Tensor {
       HEType loaded(proto_tensor.data(result_idx), seal_context);
       he_tensor->data(result_idx) = loaded;
     }
-
     return he_tensor;
   }
 
@@ -172,8 +169,6 @@ class HETensor : public runtime::Tensor {
   const seal::Encryptor& m_encryptor;
   seal::Decryptor& m_decryptor;
   const ngraph::he::HESealEncryptionParameters& m_encryption_params;
-
-  // const HESealBackend& m_he_seal_backend;
 
   void check_io_bounds(const void* p, size_t n) const;
 };
