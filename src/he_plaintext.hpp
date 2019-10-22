@@ -25,12 +25,6 @@ namespace he {
 /// \brief Class representing a plaintext value
 using HEPlaintext = std::vector<double>;
 
-inline void save(const HEPlaintext& plaintext, he_proto::Plaintext& proto) {
-  for (const auto& value : plaintext) {
-    proto.add_value(value);
-  }
-}
-
 inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
   os << "HEPlaintext(";
   for (const auto& value : plain) {

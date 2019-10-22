@@ -119,51 +119,6 @@ class SealCiphertextWrapper {
                      cipher_str.size());
   }
 
-  /// \brief Saves the ciphertext to a protobuf ciphertext wrapper
-  /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
-  /// ciphertext
-  inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
-    // proto_cipher.set_complex_packing(complex_packing());
-
-    size_t cipher_size = ciphertext_size(m_ciphertext);
-    std::string cipher_str;
-    cipher_str.resize(cipher_size);
-
-    size_t save_size = ngraph::he::save(
-        m_ciphertext, reinterpret_cast<std::byte*>(cipher_str.data()));
-
-    NGRAPH_CHECK(save_size == cipher_size, "Save size != cipher size");
-
-    proto_cipher.set_ciphertext(std::move(cipher_str));
-  }
-
-  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
-  /// \param[out] dst Destination to load ciphertext wrapper to
-  /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context SEAL context of ciphertext to load
-  static inline void load(SealCiphertextWrapper& dst,
-                          const he_proto::SealCiphertextWrapper& src,
-                          std::shared_ptr<seal::SEALContext> context) {
-    // dst.complex_packing() = src.complex_packing();
-
-    // TODO: load from string directly
-    const std::string& cipher_str = src.ciphertext();
-    ngraph::he::load(dst.ciphertext(), context,
-                     reinterpret_cast<const std::byte*>(cipher_str.data()),
-                     cipher_str.size());
-  }
-
-  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
-  /// \param[out] dst Destination to load ciphertext wrapper to
-  /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context SEAL context of ciphertext to load
-  static inline void load(std::shared_ptr<SealCiphertextWrapper>& dst,
-                          const he_proto::SealCiphertextWrapper& src,
-                          std::shared_ptr<seal::SEALContext> context) {
-    dst = std::make_shared<SealCiphertextWrapper>();
-    load(*dst, src, context);
-  }
-
  private:
   seal::Ciphertext m_ciphertext;
 };
