@@ -891,39 +891,27 @@ bool HESealExecutable::call(
 
 void HESealExecutable::send_client_results() {
   NGRAPH_HE_LOG(3) << "Sending results to client";
-  /* NGRAPH_CHECK(m_client_outputs.size() == 1,
+  NGRAPH_CHECK(m_client_outputs.size() == 1,
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 
   he_proto::TCPMessage result_msg;
   result_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  if (m_client_outputs[0]->is_type<HESealCipherTensor>()) {
-    NGRAPH_HE_LOG(5) << "Sending ciphertext results to client";
-    auto output_cipher_tensor =
-        he_tensor_as_type<HESealCipherTensor>(m_client_outputs[0]);
-    std::vector<he_proto::SealCipherTensor> cipher_tensor_proto;
-    output_cipher_tensor->save_to_proto(cipher_tensor_proto);
-    NGRAPH_CHECK(cipher_tensor_proto.size() == 1,
-                 "Support only results which fit in single cipher tensor");
-    *result_msg.add_cipher_tensors() = cipher_tensor_proto[0];
-  } else {
-    NGRAPH_HE_LOG(5) << "Sending plaintext results to client";
-    auto output_plain_tensor =
-        he_tensor_as_type<HEPlainTensor>(m_client_outputs[0]);
-    std::vector<he_proto::PlainTensor> plain_tensor_proto;
-    output_plain_tensor->save_to_proto(plain_tensor_proto);
+  std::vector<he_proto::HETensor> he_proto_tensors;
+  m_client_outputs[0]->write_to_protos(he_proto_tensors);
 
-    NGRAPH_CHECK(plain_tensor_proto.size() == 1,
-                 "Support only results which fit in single plain tensor");
-    *result_msg.add_plain_tensors() = plain_tensor_proto[0];
-  }
+  NGRAPH_CHECK(he_proto_tensors.size() == 1,
+               "Support only results which fit in single tensor");
+
+  *result_msg.add_he_tensors() = he_proto_tensors[0];
+
   m_session->write_message(std::move(result_msg));
   std::unique_lock<std::mutex> mlock(m_result_mutex);
 
   // Wait until message is written
   std::condition_variable& writing_cond = m_session->is_writing_cond();
-  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); }); */
+  writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
 }
 
 void HESealExecutable::generate_calls(
