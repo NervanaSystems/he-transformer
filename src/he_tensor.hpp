@@ -22,6 +22,8 @@
 #include "he_type.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "protos/message.pb.h"
+#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
@@ -31,6 +33,14 @@ class HESealBackend;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
 class HETensor : public runtime::Tensor {
  public:
+  HETensor(const element::Type& element_type, const Shape& shape,
+           const bool plaintext_packing, const bool complex_packing,
+           const bool encrypted, seal::CKKSEncoder& ckks_encoder,
+           const seal::SEALContext& seal_context,
+           const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
+           const ngraph::he::HESealEncryptionParameters& encryption_params,
+           const std::string& name = "external");
+
   /// \brief Constructs a generic HETensor
   /// \param[in] element_type Datatype of underlying data
   /// \param[in] shape Shape of tensor
@@ -103,11 +113,20 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns whether or not the tensor is packed
   inline bool is_packed() const { return m_packed; }
 
+  void write_to_protos(std::vector<he_proto::HETensor>& protos) const;
+
  private:
   bool m_packed;
   Shape m_packed_shape;
   std::vector<HEType> m_data;
-  const HESealBackend& m_he_seal_backend;
+
+  seal::CKKSEncoder& m_ckks_encoder;
+  const seal::SEALContext& m_context;
+  const seal::Encryptor& m_encryptor;
+  seal::Decryptor& m_decryptor;
+  const ngraph::he::HESealEncryptionParameters& m_encryption_params;
+
+  // const HESealBackend& m_he_seal_backend;
 
   void check_io_bounds(const void* p, size_t n) const;
 };

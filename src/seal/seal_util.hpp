@@ -264,7 +264,7 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
 void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
              const HEPlaintext& input, seal::parms_id_type parms_id,
              const ngraph::element::Type& element_type, double scale,
-             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+             seal::CKKSEncoder& ckks_encoder, const seal::Encryptor& encryptor,
              bool complex_packing);
 
 /// \brief Decode SEAL plaintext into plaintext values

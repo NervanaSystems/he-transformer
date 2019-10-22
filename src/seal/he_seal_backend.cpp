@@ -323,8 +323,6 @@ std::shared_ptr<SealCiphertextWrapper> HESealBackend::create_valued_ciphertext(
 void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             const HEPlaintext& input, const element::Type& type,
                             bool complex_packing) const {
-  auto plaintext = SealPlaintextWrapper(complex_packing);
-
   NGRAPH_CHECK(input.size() > 0, "Input has no values in encrypt");
   ngraph::he::encrypt(output, input, m_context->first_parms_id(), type,
                       get_scale(), *m_ckks_encoder, *m_encryptor,

@@ -15,8 +15,7 @@ message TCPMessage {
   EncryptionParameters encryption_parameters = 3;
   EvaluationKey eval_key = 4;
   PublicKey public_key = 5;
-  repeated SealCipherTensor cipher_tensors = 6;
-  repeated PlainTensor plain_tensors = 7;
+  repeated HETensor he_tensors = 6;
 }
 
 message EncryptionParameters {
@@ -43,6 +42,23 @@ message SealCiphertextWrapper {
 
 message Plaintext {
   repeated float value = 1;
+}
+
+message HETensor {
+  string name = 1;
+  repeated uint64 shape = 2;
+  bool packed = 3;
+  uint64 offset = 4;
+  repeated HEType data = 5;
+}
+
+message HEType {
+  bool is_plain = 1;
+  bool plaintext_packing = 2;
+  bool complex_packing = 3;
+  uint64 batch_size = 4;
+  repeated float plain = 5;
+  bytes ciphertext = 6;
 }
 
 /// \brief Represents a ciphertext tensor

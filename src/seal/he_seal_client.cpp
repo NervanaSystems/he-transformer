@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "he_plain_tensor.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
@@ -138,15 +137,14 @@ void HESealClient::handle_inference_request(
     const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling inference request";
 
-  // Note: the message cipher tensors are used to store the inference shapes.
-  // The actual tensors returned by the client may be cipher or plain
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
+  // Note: the message tensors are used to store the inference shapes.
+  NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
                "Proto msg doesn't have any cipher tensors");
 
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Only support 1 encrypted parameter from client");
 
-  auto proto_tensor = proto_msg.cipher_tensors(0);
+  auto proto_tensor = proto_msg.he_tensors(0);
   auto proto_name = proto_tensor.name();
   auto proto_packed = proto_tensor.packed();
   auto proto_shape = proto_tensor.shape();
@@ -176,14 +174,14 @@ void HESealClient::handle_inference_request(
                    << proto_name << ", " << shape << ", to be "
                    << (encrypt_tensor ? "encrypted" : "plaintext");
 
-  size_t parameter_size = ngraph::shape_size(HETensor::pack_shape(shape));
-
-  NGRAPH_HE_LOG(5) << "Parameter size " << parameter_size;
   NGRAPH_HE_LOG(5) << "Client batch size " << m_batch_size;
   NGRAPH_HE_LOG(5) << "m_input_config.size() " << m_input_config.size();
   if (complex_packing()) {
     NGRAPH_HE_LOG(5) << "Client complex packing";
   }
+
+  size_t parameter_size = ngraph::shape_size(HETensor::pack_shape(shape));
+  NGRAPH_HE_LOG(5) << "Client parameter_size " << parameter_size;
 
   if (m_input_config.begin()->second.second.size() >
       parameter_size * m_batch_size) {
@@ -192,58 +190,29 @@ void HESealClient::handle_inference_request(
                      << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> ciphers(parameter_size);
-  for (size_t data_idx = 0; data_idx < ciphers.size(); ++data_idx) {
-    ciphers[data_idx] = std::make_shared<SealCiphertextWrapper>();
-  }
+  auto he_tensor = std::make_shared<HETensor>(
+      element::f64, shape, proto_packed, complex_packing(), encrypt_tensor,
+     m_ckks_encoder, m_context, m_encryptor, m_decryptor, m_encryption_params,
+      proto_name);
 
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");
 
-  if (encrypt_tensor) {
-    // TODO: add element type to function message
-    size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-    HETensor::write(ciphers, m_input_config.begin()->second.second.data(),
-                    num_bytes, m_batch_size, element::f64,
-                    m_context->first_parms_id(), scale(), *m_ckks_encoder,
-                    *m_encryptor, complex_packing());
+  size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
+  he_tensor->write(m_input_config.begin()->second.second.data(), num_bytes);
 
-    std::vector<he_proto::SealCipherTensor> cipher_tensor_protos;
-    HETensor::save_to_proto(cipher_tensor_protos, ciphers, shape, proto_packed,
-                            proto_name);
+  std::vector<he_proto::HETensor> tensor_protos;
 
-    for (const auto& cipher_tensor_proto : cipher_tensor_protos) {
-      he_proto::TCPMessage encrypted_inputs_msg;
-      encrypted_inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-      *encrypted_inputs_msg.add_cipher_tensors() = cipher_tensor_proto;
+  he_tensor->write_to_protos(tensor_protos);
+  for (const auto& tensor_proto : tensor_protos) {
+    he_proto::TCPMessage inputs_msg;
+    inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+    *inputs_msg.add_he_tensors() = tensor_proto;
 
-      auto param_shape = encrypted_inputs_msg.cipher_tensors(0).shape();
-      NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape "
-                       << proto_shape_to_ngraph_shape(param_shape);
-
-      write_message(std::move(encrypted_inputs_msg));
-    }
-  } else {
-    size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-    HEPlainTensor plain_tensor(element::f64, shape, proto_packed, proto_name);
-
-    plain_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
-
-    std::vector<he_proto::PlainTensor> plain_tensor_protos;
-    plain_tensor.save_to_proto(plain_tensor_protos, proto_name);
-
-    for (const auto& plain_tensor_proto : plain_tensor_protos) {
-      he_proto::TCPMessage inputs_msg;
-      inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-
-      *inputs_msg.add_plain_tensors() = plain_tensor_proto;
-
-      auto param_shape = inputs_msg.plain_tensors(0).shape();
-      NGRAPH_HE_LOG(3) << "Client sending plaintext input with shape "
-                       << proto_shape_to_ngraph_shape(param_shape);
-
-      write_message(std::move(inputs_msg));
-    }
+    auto param_shape = inputs_msg.he_tensors(0).shape();
+    NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape "
+                     << proto_shape_to_ngraph_shape(param_shape);
+    write_message(std::move(inputs_msg));
   }
 }
 
@@ -251,10 +220,9 @@ void HESealClient::handle_result(const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling result";
 
   NGRAPH_CHECK(
-      proto_msg.cipher_tensors_size() > 0 || proto_msg.plain_tensors_size() > 0,
+      proto_msg.he_tensors_size() > 0,
       "Client received result with no tensors");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1 ||
-                   proto_msg.plain_tensors_size() == 1,
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Client supports only results with one tensor");
 
   bool cipher_result = (proto_msg.cipher_tensors_size() == 1);
