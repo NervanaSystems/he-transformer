@@ -192,8 +192,8 @@ void HESealClient::handle_inference_request(
 
   auto he_tensor = std::make_shared<HETensor>(
       element::f64, shape, proto_packed, complex_packing(), encrypt_tensor,
-      m_ckks_encoder, m_context, m_encryptor, m_decryptor, m_encryption_params,
-      proto_name);
+      *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      m_encryption_params, proto_name);
 
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");
@@ -249,23 +249,19 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  he_proto::SealCipherTensor* proto_tensor = proto_msg.mutable_he_tensors(0);
-  size_t result_count = proto_tensor->data_size();
+  auto proto_tensor = proto_msg.he_tensors(0);
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      m_encryption_params);
 
-#pragma omp parallel for
+  size_t result_count = proto_tensor.data_size();
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
-    SealCiphertextWrapper::load(
-        post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);
-
-    scalar_relu_seal(*post_relu_cipher, post_relu_cipher,
+    scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
                      m_context->first_parms_id(), scale(), *m_ckks_encoder,
                      *m_encryptor, *m_decryptor);
-    post_relu_cipher->save(*proto_tensor->mutable_ciphertexts(result_idx));
   }
+  write_message(std::move(proto_msg));
 
-  TCPMessage relu_result_msg(std::move(proto_msg));
-  write_message(std::move(relu_result_msg));
   return;
 }
 
@@ -274,11 +270,10 @@ void HESealClient::handle_bounded_relu_request(
   NGRAPH_HE_LOG(3) << "Client handling bounded relu request";
 
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
-               "Client received result with no cipher tensors");
-  NGRAPH_CHECK(
-      proto_msg.cipher_tensors_size() == 1,
-      "Client supports only bounded relu requests with one cipher tensor");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
+               "Client received result with no tensors");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
+               "Client supports only relu requests with one tensor");
 
   const std::string& function = proto_msg.function().function();
   json js = json::parse(function);
@@ -286,66 +281,64 @@ void HESealClient::handle_bounded_relu_request(
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  he_proto::SealCipherTensor* proto_tensor =
-      proto_msg.mutable_cipher_tensors(0);
-  size_t result_count = proto_tensor->ciphertexts_size();
+  auto proto_tensor = proto_msg.he_tensors(0);
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      m_encryption_params);
 
-#pragma omp parallel for
+  size_t result_count = proto_tensor.data_size();
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    auto post_relu_cipher = std::make_shared<SealCiphertextWrapper>();
-    SealCiphertextWrapper::load(
-        post_relu_cipher, proto_tensor->ciphertexts(result_idx), m_context);
-
-    scalar_bounded_relu_seal(*post_relu_cipher, post_relu_cipher, bound,
+    scalar_bounded_relu_seal(he_tensor->data(result_idx),
+                             he_tensor->data(result_idx), bound,
                              m_context->first_parms_id(), scale(),
                              *m_ckks_encoder, *m_encryptor, *m_decryptor);
-    post_relu_cipher->save(*proto_tensor->mutable_ciphertexts(result_idx));
   }
+  write_message(std::move(proto_msg));
 
-  TCPMessage bounded_relu_result_msg(std::move(proto_msg));
-  write_message(std::move(bounded_relu_result_msg));
   return;
 }
 
 void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling maxpool request";
 
-  NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
-               "Client received result with no cipher tensors");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-               "Client supports only max pool requests with one cipher tensor");
+  NGRAPH_CHECK(false, "MAxpool client not implemneted");
+  /*
+    NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have
+  function"); NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0, "Client received
+  result with no cipher tensors"); NGRAPH_CHECK(proto_msg.cipher_tensors_size()
+  == 1, "Client supports only max pool requests with one cipher tensor");
 
-  he_proto::SealCipherTensor* proto_tensor =
-      proto_msg.mutable_cipher_tensors(0);
-  size_t cipher_count = proto_tensor->ciphertexts_size();
+    he_proto::SealCipherTensor* proto_tensor =
+        proto_msg.mutable_cipher_tensors(0);
+    size_t cipher_count = proto_tensor->ciphertexts_size();
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> max_pool_ciphers(
-      cipher_count);
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> post_max_pool_ciphers(1);
-  post_max_pool_ciphers[0] = std::make_shared<SealCiphertextWrapper>();
+    std::vector<std::shared_ptr<SealCiphertextWrapper>> max_pool_ciphers(
+        cipher_count);
+    std::vector<std::shared_ptr<SealCiphertextWrapper>>
+  post_max_pool_ciphers(1); post_max_pool_ciphers[0] =
+  std::make_shared<SealCiphertextWrapper>();
 
-#pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-    SealCiphertextWrapper::load(max_pool_ciphers[cipher_idx],
-                                proto_tensor->ciphertexts(cipher_idx),
-                                m_context);
-  }
+  #pragma omp parallel for
+    for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
+      SealCiphertextWrapper::load(max_pool_ciphers[cipher_idx],
+                                  proto_tensor->ciphertexts(cipher_idx),
+                                  m_context);
+    }
 
-  // We currently just support max_pool with single output
-  max_pool_seal(max_pool_ciphers, post_max_pool_ciphers,
-                Shape{1, 1, cipher_count}, Shape{1, 1, 1}, Shape{cipher_count},
-                ngraph::Strides{1}, Shape{0}, Shape{0},
-                m_context->first_parms_id(), scale(), *m_ckks_encoder,
-                *m_encryptor, *m_decryptor, complex_packing());
+    // We currently just support max_pool with single output
+    max_pool_seal(max_pool_ciphers, post_max_pool_ciphers,
+                  Shape{1, 1, cipher_count}, Shape{1, 1, 1},
+  Shape{cipher_count}, ngraph::Strides{1}, Shape{0}, Shape{0},
+                  m_context->first_parms_id(), scale(), *m_ckks_encoder,
+                  *m_encryptor, *m_decryptor, complex_packing());
 
-  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
-  proto_tensor->clear_ciphertexts();
+    proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+    proto_tensor->clear_ciphertexts();
 
-  post_max_pool_ciphers[0]->save(*proto_tensor->add_ciphertexts());
-  TCPMessage max_pool_result_msg(std::move(proto_msg));
-  write_message(std::move(max_pool_result_msg));
-  return;
+    post_max_pool_ciphers[0]->save(*proto_tensor->add_ciphertexts());
+    TCPMessage max_pool_result_msg(std::move(proto_msg));
+    write_message(std::move(max_pool_result_msg));
+    return; */
 }
 
 void HESealClient::handle_message(const TCPMessage& message) {
@@ -361,8 +354,7 @@ void HESealClient::handle_message(const TCPMessage& message) {
     case he_proto::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
-      } else if (proto_msg->cipher_tensors_size() > 0 ||
-                 proto_msg->plain_tensors_size() > 0) {
+      } else if (proto_msg->he_tensors_size() > 0) {
         handle_result(*proto_msg);
       } else {
         NGRAPH_CHECK(false, "Unknown RESPONSE type");
