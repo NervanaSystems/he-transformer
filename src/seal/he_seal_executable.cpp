@@ -1344,16 +1344,12 @@ void HESealExecutable::generate_calls(
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
-
-}  // namespace he
+}
 
 void HESealExecutable::handle_server_max_pool_op(
-    const std::shared_ptr<HETensor>& arg_cipher,
-    const std::shared_ptr<HETensor>& out_cipher,
+    const std::shared_ptr<HETensor>& arg, const std::shared_ptr<HETensor>& out,
     const NodeWrapper& node_wrapper) {
   NGRAPH_HE_LOG(3) << "Server handle_server_max_pool_op";
-
-  /*
 
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
@@ -1364,10 +1360,10 @@ void HESealExecutable::handle_server_max_pool_op(
   Shape unpacked_arg_shape = node.get_input_shape(0);
   Shape out_shape = HETensor::pack_shape(node.get_output_shape(0));
 
-  std::vector<std::vector<size_t>> maximize_list = max_pool_seal(
+  std::vector<std::vector<size_t>> maximize_list = max_pool_seal_max_list(
       unpacked_arg_shape, out_shape, max_pool->get_window_shape(),
-      max_pool->get_window_movement_strides(),
-  max_pool->get_padding_below(), max_pool->get_padding_above());
+      max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
+      max_pool->get_padding_above());
 
   m_max_pool_ciphertexts.clear();
 
@@ -1380,21 +1376,22 @@ void HESealExecutable::handle_server_max_pool_op(
     f.set_function(js.dump());
     *proto_msg.mutable_function() = f;
 
-    std::vector<std::shared_ptr<SealCiphertextWrapper>> cipher_batch;
+    std::vector<HEType> cipher_batch;
     for (const size_t max_ind : maximize_list[list_ind]) {
-      cipher_batch.emplace_back(arg_cipher->get_element(max_ind));
+      cipher_batch.emplace_back(arg->data(max_ind));
     }
 
-    std::vector<he_proto::SealCipherTensor> proto_tensors;
-    // TODO: pass packed shape?
-    HESealCipherTensor::save_to_proto(proto_tensors, cipher_batch,
-                                      Shape{1, cipher_batch.size()},
-                                      plaintext_packed(node_wrapper));
+    HETensor max_pool_tensor(arg->get_element_type(),
+                             Shape{cipher_batch.size()}, false, false, true,
+                             m_he_seal_backend);
+    max_pool_tensor.data() = cipher_batch;
+    std::vector<he_proto::HETensor> proto_tensors;
+    max_pool_tensor.write_to_protos(proto_tensors);
 
     NGRAPH_CHECK(proto_tensors.size() == 1,
-                 "Only support ReLU with 1 proto tensor");
+                 "Only support MaxPool with 1 proto tensor");
 
-    *proto_msg.add_cipher_tensors() = proto_tensors[0];
+    *proto_msg.add_he_tensors() = proto_tensors[0];
 
     // Send list of ciphertexts to maximize over to client
     if (verbose) {
@@ -1415,7 +1412,7 @@ void HESealExecutable::handle_server_max_pool_op(
     // Reset for next max_pool call
     m_max_pool_done = false;
   }
-  out_cipher->set_elements(m_max_pool_ciphertexts); */
+  out->data() = m_max_pool_ciphertexts;
 }
 
 void HESealExecutable::handle_server_relu_op(
