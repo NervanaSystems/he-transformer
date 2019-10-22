@@ -28,10 +28,13 @@
 
 namespace ngraph {
 namespace he {
+
 inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const Shape& in_shape, const Shape& out_shape,
                      const AxisSet& reduction_axes, size_t batch_size,
-                     const HESealBackend& he_seal_backend) {
+                     const seal::parms_id_type& parms_id, double scale,
+                     seal::CKKSEncoder& ckks_encoder,
+                     seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
   // TODO: use constructor?
   std::vector<HEPlaintext> out_plain(
       out.size(), HEPlaintext(std::vector<double>(
@@ -49,8 +52,8 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
     if (max_cmp.is_plaintext()) {
       max_cmp_plain = max_cmp.get_plaintext();
     } else {
-      he_seal_backend.decrypt(max_cmp_plain, *max_cmp.get_ciphertext(),
-                              max_cmp.complex_packing());
+      decrypt(max_cmp_plain, *max_cmp.get_ciphertext(),
+              max_cmp.complex_packing(), decryptor, ckks_encoder);
       max_cmp_plain.resize(batch_size);
     }
     for (size_t i = 0; i < max_cmp_plain.size(); ++i) {
@@ -63,10 +66,21 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
     if (out[out_idx].is_plaintext()) {
       out[out_idx].set_plaintext(out_plain[out_idx]);
     } else {
-      he_seal_backend.encrypt(out[out_idx].get_ciphertext(), out_plain[out_idx],
-                              element::f32, out[out_idx].complex_packing());
+      encrypt(out[out_idx].get_ciphertext(), out_plain[out_idx], parms_id,
+              ngraph::element::f32, scale, ckks_encoder, encryptor,
+              out[out_idx].complex_packing());
     }
   }
+}
+
+inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
+                     const Shape& in_shape, const Shape& out_shape,
+                     const AxisSet& reduction_axes, size_t batch_size,
+                     const HESealBackend& he_seal_backend) {
+  max_seal(arg, out, in_shape, out_shape, reduction_axes, batch_size,
+           he_seal_backend.get_context()->first_parms_id(),
+           he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+           *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
 }  // namespace he

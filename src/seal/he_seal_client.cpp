@@ -301,44 +301,48 @@ void HESealClient::handle_bounded_relu_request(
 void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling maxpool request";
 
-  NGRAPH_CHECK(false, "MAxpool client not implemneted");
-  /*
-    NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have
-  function"); NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0, "Client received
-  result with no cipher tensors"); NGRAPH_CHECK(proto_msg.cipher_tensors_size()
-  == 1, "Client supports only max pool requests with one cipher tensor");
+  NGRAPH_CHECK(proto_msg.has_function(),
+               "Proto message doesn't have function ");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
+               " Client received result with no tensors ");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
+               "Client supports only max pool requests with one tensor");
 
-    he_proto::SealCipherTensor* proto_tensor =
-        proto_msg.mutable_cipher_tensors(0);
-    size_t cipher_count = proto_tensor->ciphertexts_size();
+  he_proto::HETensor* proto_tensor = proto_msg.mutable_he_tensors(0);
+  size_t cipher_count = proto_tensor->data_size();
 
-    std::vector<std::shared_ptr<SealCiphertextWrapper>> max_pool_ciphers(
-        cipher_count);
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>
-  post_max_pool_ciphers(1); post_max_pool_ciphers[0] =
-  std::make_shared<SealCiphertextWrapper>();
+  std::vector<HEType> max_pool_ciphers(cipher_count,
+                                       HEType(HEPlaintext(), false, false, 1));
+  std::vector<HEType> post_max_pool_ciphers(
+      1, HEType(HEPlaintext(), false, false, 1));
 
-  #pragma omp parallel for
-    for (size_t cipher_idx = 0; cipher_idx < cipher_count; ++cipher_idx) {
-      SealCiphertextWrapper::load(max_pool_ciphers[cipher_idx],
-                                  proto_tensor->ciphertexts(cipher_idx),
-                                  m_context);
-    }
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
+      m_encryption_params);
 
-    // We currently just support max_pool with single output
-    max_pool_seal(max_pool_ciphers, post_max_pool_ciphers,
-                  Shape{1, 1, cipher_count}, Shape{1, 1, 1},
-  Shape{cipher_count}, ngraph::Strides{1}, Shape{0}, Shape{0},
-                  m_context->first_parms_id(), scale(), *m_ckks_encoder,
-                  *m_encryptor, *m_decryptor, complex_packing());
+  auto post_max_he_tensor =
+      HETensor(he_tensor->get_element_type(), Shape{cipher_count},
+               he_tensor->is_packed(), complex_packing(), true, *m_ckks_encoder,
+               m_context, *m_encryptor, *m_decryptor, m_encryption_params);
 
-    proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
-    proto_tensor->clear_ciphertexts();
+  // We currently just support max_pool with single output
+  max_pool_seal(he_tensor->data(), post_max_he_tensor.data(),
+                Shape{1, 1, cipher_count}, Shape{1, 1, 1}, Shape{cipher_count},
+                Strides{1}, Shape{0}, Shape{0}, m_context->first_parms_id(),
+                scale(), *m_ckks_encoder, *m_encryptor, *m_decryptor);
 
-    post_max_pool_ciphers[0]->save(*proto_tensor->add_ciphertexts());
-    TCPMessage max_pool_result_msg(std::move(proto_msg));
-    write_message(std::move(max_pool_result_msg));
-    return; */
+  proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  proto_msg.clear_he_tensors();
+
+  std::vector<he_proto::HETensor> proto_output_tensors;
+  post_max_he_tensor.write_to_protos(proto_output_tensors);
+  NGRAPH_CHECK(proto_output_tensors.size() == 1,
+               "Only support single-output tensors");
+
+  *proto_msg.add_he_tensors() = proto_output_tensors[0];
+  TCPMessage max_pool_result_msg(std::move(proto_msg));
+  write_message(std::move(max_pool_result_msg));
+  return;
 }
 
 void HESealClient::handle_message(const TCPMessage& message) {

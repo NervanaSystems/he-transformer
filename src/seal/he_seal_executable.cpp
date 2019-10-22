@@ -1360,6 +1360,8 @@ void HESealExecutable::handle_server_max_pool_op(
   Shape unpacked_arg_shape = node.get_input_shape(0);
   Shape out_shape = HETensor::pack_shape(node.get_output_shape(0));
 
+  // TODO: call max_pool_seal directly?
+
   std::vector<std::vector<size_t>> maximize_list = max_pool_seal_max_list(
       unpacked_arg_shape, out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
@@ -1387,10 +1389,8 @@ void HESealExecutable::handle_server_max_pool_op(
     max_pool_tensor.data() = cipher_batch;
     std::vector<he_proto::HETensor> proto_tensors;
     max_pool_tensor.write_to_protos(proto_tensors);
-
     NGRAPH_CHECK(proto_tensors.size() == 1,
                  "Only support MaxPool with 1 proto tensor");
-
     *proto_msg.add_he_tensors() = proto_tensors[0];
 
     // Send list of ciphertexts to maximize over to client
