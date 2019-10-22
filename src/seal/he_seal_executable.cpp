@@ -421,25 +421,25 @@ void HESealExecutable::handle_max_pool_result(
     const he_proto::TCPMessage& proto_msg) {
   std::lock_guard<std::mutex> guard(m_max_pool_mutex);
 
-  NGRAPH_CHECK(false, "Maxpool results not implemented");
-  /*
-    NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-                 "Can only handle one tensor at a time, got ",
-                 proto_msg.cipher_tensors_size());
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
+               "Can only handle one tensor at a time, got ",
+               proto_msg.he_tensors_size());
 
-    auto proto_tensor = proto_msg.cipher_tensors(0);
-    size_t result_count = proto_tensor.ciphertexts_size();
+  auto proto_tensor = proto_msg.he_tensors(0);
+  size_t result_count = proto_tensor.data_size();
 
-    NGRAPH_CHECK(result_count == 1, "Maxpool only supports result_count 1, got
-    ", result_count);
+  NGRAPH_CHECK(result_count == 1, "Maxpool only supports result_count 1, got ",
+               result_count);
 
-    std::shared_ptr<SealCiphertextWrapper> new_cipher;
-    SealCiphertextWrapper::load(new_cipher, proto_tensor.ciphertexts(0),
-                                m_context);
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
+      m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
+      *m_he_seal_backend.get_decryptor(),
+      m_he_seal_backend.get_encryption_parameters());
 
-    m_max_pool_ciphertexts.emplace_back(new_cipher);
-    m_max_pool_done = true;
-    m_max_pool_cond.notify_all(); */
+  m_max_pool_ciphertexts.emplace_back(he_tensor->data(0));
+  m_max_pool_done = true;
+  m_max_pool_cond.notify_all();
 }
 
 void HESealExecutable::handle_message(const TCPMessage& message) {

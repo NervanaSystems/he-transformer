@@ -320,12 +320,12 @@ void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  auto post_max_he_tensor =
-      HETensor(he_tensor->get_element_type(), Shape{cipher_count},
-               he_tensor->is_packed(), complex_packing(), true, *m_ckks_encoder,
-               m_context, *m_encryptor, *m_decryptor, m_encryption_params);
-
   // We currently just support max_pool with single output
+  auto post_max_he_tensor =
+      HETensor(he_tensor->get_element_type(), Shape{1}, he_tensor->is_packed(),
+               complex_packing(), true, *m_ckks_encoder, m_context,
+               *m_encryptor, *m_decryptor, m_encryption_params);
+
   max_pool_seal(he_tensor->data(), post_max_he_tensor.data(),
                 Shape{1, 1, cipher_count}, Shape{1, 1, 1}, Shape{cipher_count},
                 Strides{1}, Shape{0}, Shape{0}, m_context->first_parms_id(),
