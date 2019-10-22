@@ -43,7 +43,7 @@ message HETensor {
 }
 
 message HEType {
-  bool is_plain = 1;
+  bool is_plaintext = 1;
   bool plaintext_packing = 2;
   bool complex_packing = 3;
   uint64 batch_size = 4;

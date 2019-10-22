@@ -17,7 +17,10 @@
 # HE transformer sources
 set(HE_SRC
     # main
-    he_tensor.cpp node_wrapper.cpp he_op_annotations.cpp
+    he_op_annotations.cpp
+    he_tensor.cpp
+    he_type.cpp
+    node_wrapper.cpp
     # pass
     pass/he_fusion.cpp
     pass/he_liveness.cpp

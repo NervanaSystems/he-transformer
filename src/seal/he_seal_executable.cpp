@@ -398,7 +398,7 @@ void HESealExecutable::handle_relu_result(
   auto proto_tensor = proto_msg.he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
       proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
-      *m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
+      m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
       *m_he_seal_backend.get_decryptor(),
       m_he_seal_backend.get_encryption_parameters());
 
@@ -535,14 +535,11 @@ void HESealExecutable::handle_client_ciphers(
 
   NGRAPH_HE_LOG(5) << "proto_tensor.packed() " << proto_tensor.packed();
   set_batch_size(HETensor::batch_size(shape, proto_tensor.packed()));
-
-  size_t count = proto_tensor.data_size();
-
   NGRAPH_HE_LOG(5) << "Offset " << proto_tensor.offset();
 
   auto he_tensor = HETensor::load_from_proto_tensor(
       proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
-      *m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
+      m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
       *m_he_seal_backend.get_decryptor(),
       m_he_seal_backend.get_encryption_parameters());
 

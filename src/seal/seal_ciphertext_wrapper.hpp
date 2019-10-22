@@ -107,6 +107,18 @@ class SealCiphertextWrapper {
     he_type.set_ciphertext(std::move(cipher_str));
   }
 
+  static inline void load(SealCiphertextWrapper& dst,
+                          const he_proto::HEType& proto_he_type,
+                          std::shared_ptr<seal::SEALContext> context) {
+    NGRAPH_CHECK(!proto_he_type.is_plaintext(),
+                 "Cannot load ciphertext from plaintext HEType");
+
+    const std::string& cipher_str = proto_he_type.ciphertext();
+    ngraph::he::load(dst.ciphertext(), context,
+                     reinterpret_cast<const std::byte*>(cipher_str.data()),
+                     cipher_str.size());
+  }
+
   /// \brief Saves the ciphertext to a protobuf ciphertext wrapper
   /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
   /// ciphertext

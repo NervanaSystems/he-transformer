@@ -192,7 +192,7 @@ void HESealClient::handle_inference_request(
   }
 
   auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
   NGRAPH_CHECK(m_input_config.size() == 1,
@@ -226,7 +226,7 @@ void HESealClient::handle_result(const he_proto::TCPMessage& proto_msg) {
 
   auto proto_tensor = proto_msg.he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
   size_t result_count = proto_tensor.data_size();
@@ -251,7 +251,7 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
 
   auto proto_tensor = proto_msg.he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
   size_t result_count = proto_tensor.data_size();
@@ -283,7 +283,7 @@ void HESealClient::handle_bounded_relu_request(
 
   auto proto_tensor = proto_msg.he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
   size_t result_count = proto_tensor.data_size();

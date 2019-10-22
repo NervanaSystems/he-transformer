@@ -17,9 +17,9 @@
 #pragma once
 
 #include <memory>
+#include "he_type.hpp"
 
 #include "he_plaintext.hpp"
-#include "he_type.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "protos/message.pb.h"
@@ -30,19 +30,20 @@ namespace ngraph {
 namespace he {
 
 class HESealBackend;
+class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
 class HETensor : public runtime::Tensor {
  public:
   HETensor(const std::vector<he_proto::HETensor>& proto_tensors,
            seal::CKKSEncoder& ckks_encoder,
-           const seal::SEALContext& seal_context,
+           std::shared_ptr<seal::SEALContext> seal_context,
            const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
            const ngraph::he::HESealEncryptionParameters& encryption_params);
 
   HETensor(const element::Type& element_type, const Shape& shape,
            const bool plaintext_packing, const bool complex_packing,
            const bool encrypted, seal::CKKSEncoder& ckks_encoder,
-           const seal::SEALContext& seal_context,
+           std::shared_ptr<seal::SEALContext> seal_context,
            const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
            const ngraph::he::HESealEncryptionParameters& encryption_params,
            const std::string& name = "external");
@@ -89,11 +90,7 @@ class HETensor : public runtime::Tensor {
 
   HEType& data(size_t i) { return m_data[i]; }
 
-  bool any_encrypted_data() const {
-    return std::any_of(m_data.begin(), m_data.end(), [](const HEType& he_type) {
-      return he_type.is_ciphertext();
-    });
-  }
+  bool any_encrypted_data() const;
 
   /// \brief Returns the batch size of a given shape
   /// \param[in] shape Shape of the tensor
@@ -123,37 +120,15 @@ class HETensor : public runtime::Tensor {
 
   static std::shared_ptr<HETensor> load_from_proto_tensors(
       const std::vector<he_proto::HETensor>& proto_tensors,
-      seal::CKKSEncoder& ckks_encoder, const seal::SEALContext& seal_context,
+      seal::CKKSEncoder& ckks_encoder,
+      std::shared_ptr<seal::SEALContext> seal_context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-      const ngraph::he::HESealEncryptionParameters& encryption_params) {
-    NGRAPH_CHECK(proto_tensors.size() == 1,
-                 "Load from protos only supports 1 proto");
-
-    const auto& proto_tensor = proto_tensors[0];
-    const auto& proto_name = proto_tensor.name();
-    const auto& proto_packed = proto_tensor.packed();
-    const auto& proto_shape = proto_tensor.shape();
-    size_t result_count = proto_tensor.data_size();
-    ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
-    auto element_type = element::f64;
-
-    auto he_tensor = std::make_shared<HETensor>(
-        element_type, shape, proto_packed, encryption_params.complex_packing(),
-        false, ckks_encoder, seal_context, encryptor, decryptor,
-        encryption_params, proto_name);
-
-#pragma omp parallel for
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      HEType loaded(proto_tensor.data(result_idx), seal_context);
-      he_tensor->data(result_idx) = loaded;
-    }
-    return he_tensor;
-  }
+      const ngraph::he::HESealEncryptionParameters& encryption_params);
 
   static std::shared_ptr<HETensor> load_from_proto_tensor(
       const he_proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
-      const seal::SEALContext& seal_context, const seal::Encryptor& encryptor,
-      seal::Decryptor& decryptor,
+      std::shared_ptr<seal::SEALContext> seal_context,
+      const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params) {
     return load_from_proto_tensors({proto_tensor}, ckks_encoder, seal_context,
                                    encryptor, decryptor, encryption_params);
@@ -165,7 +140,7 @@ class HETensor : public runtime::Tensor {
   std::vector<HEType> m_data;
 
   seal::CKKSEncoder& m_ckks_encoder;
-  const seal::SEALContext& m_context;
+  std::shared_ptr<seal::SEALContext> m_context;
   const seal::Encryptor& m_encryptor;
   seal::Decryptor& m_decryptor;
   const ngraph::he::HESealEncryptionParameters& m_encryption_params;

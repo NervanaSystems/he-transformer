@@ -28,8 +28,8 @@ HETensor::HETensor(
     const element::Type& element_type, const Shape& shape,
     const bool plaintext_packing, const bool complex_packing,
     const bool encrypted, seal::CKKSEncoder& ckks_encoder,
-    const seal::SEALContext& context, const seal::Encryptor& encryptor,
-    seal::Decryptor& decryptor,
+    std::shared_ptr<seal::SEALContext> context,
+    const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
     const ngraph::he::HESealEncryptionParameters& encryption_params,
     const std::string& name)
     : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
@@ -74,7 +74,7 @@ HETensor::HETensor(const element::Type& element_type, const Shape& shape,
                    const std::string& name)
     : HETensor(element_type, shape, plaintext_packing, complex_packing,
                encrypted, *he_seal_backend.get_ckks_encoder(),
-               *he_seal_backend.get_context(), *he_seal_backend.get_encryptor(),
+               he_seal_backend.get_context(), *he_seal_backend.get_encryptor(),
                *he_seal_backend.get_decryptor(),
                he_seal_backend.get_encryption_parameters()) {}
 
@@ -107,6 +107,12 @@ uint64_t HETensor::batch_size(const Shape& shape, const bool packed) {
     return shape[0];
   }
   return 1;
+}
+
+bool HETensor::any_encrypted_data() const {
+  return std::any_of(m_data.begin(), m_data.end(), [](const HEType& he_type) {
+    return he_type.is_ciphertext();
+  });
 }
 
 void HETensor::check_io_bounds(const void* p, size_t n) const {
@@ -149,7 +155,7 @@ void HETensor::write(const void* p, size_t n) {
       NGRAPH_INFO << "Complex packing? " << m_data[i].complex_packing();
       auto cipher = HESealBackend::create_empty_ciphertext();
 
-      ngraph::he::encrypt(cipher, plain, m_context.first_parms_id(),
+      ngraph::he::encrypt(cipher, plain, m_context->first_parms_id(),
                           element_type, m_encryption_params.scale(),
                           m_ckks_encoder, m_encryptor,
                           m_data[i].complex_packing());
@@ -218,6 +224,36 @@ void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
   for (const auto& he_type : m_data) {
     he_type.save(*protos[0].add_data());
   }
+}
+
+std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
+    const std::vector<he_proto::HETensor>& proto_tensors,
+    seal::CKKSEncoder& ckks_encoder,
+    std::shared_ptr<seal::SEALContext> seal_context,
+    const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
+    const ngraph::he::HESealEncryptionParameters& encryption_params) {
+  NGRAPH_CHECK(proto_tensors.size() == 1,
+               "Load from protos only supports 1 proto");
+
+  const auto& proto_tensor = proto_tensors[0];
+  const auto& proto_name = proto_tensor.name();
+  const auto& proto_packed = proto_tensor.packed();
+  const auto& proto_shape = proto_tensor.shape();
+  size_t result_count = proto_tensor.data_size();
+  ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+  auto element_type = element::f64;
+
+  auto he_tensor = std::make_shared<HETensor>(
+      element_type, shape, proto_packed, encryption_params.complex_packing(),
+      false, ckks_encoder, seal_context, encryptor, decryptor,
+      encryption_params, proto_name);
+
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    auto loaded = HEType::load(proto_tensor.data(result_idx), seal_context);
+    he_tensor->data(result_idx) = loaded;
+  }
+  return he_tensor;
 }
 
 }  // namespace he

@@ -23,6 +23,7 @@
 
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
+#include "he_type.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/function.hpp"
@@ -48,8 +49,9 @@
 namespace ngraph {
 namespace runtime {
 class BackendConstructor;
-}
+}  // namespace runtime
 namespace he {
+class HEType;
 class SealCiphertextWrapper;
 /// \brief Class representing a backend using the CKKS homomorphic encryption
 /// scheme.

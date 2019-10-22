@@ -19,22 +19,19 @@
 #include <memory>
 
 #include "he_plaintext.hpp"
-#include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "protos/message.pb.h"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
+class HESealBackend;
+
 /// \brief Class representing an HE datatype, either a plaintext or a ciphertext
 class HEType {
  public:
   HEType() = delete;
-
-  HEType(const he_proto::HEType& he_proto_type,
-         const seal::SEALContext& m_context) {
-    throw ngraph_error("HEType from proto unimplemented");
-  }
 
   HEType(const HEPlaintext& plain, const bool plaintext_packing,
          const bool complex_packing, const size_t batch_size)
@@ -52,7 +49,7 @@ class HEType {
   }
 
   void save(he_proto::HEType& proto_he_type) const {
-    proto_he_type.set_is_plain(is_plaintext());
+    proto_he_type.set_is_plaintext(is_plaintext());
     proto_he_type.set_plaintext_packing(plaintext_packing());
     proto_he_type.set_complex_packing(complex_packing());
     proto_he_type.set_batch_size(batch_size());
@@ -66,6 +63,9 @@ class HEType {
       get_ciphertext()->save(proto_he_type);
     }
   }
+
+  static HEType load(const he_proto::HEType& proto_he_type,
+                     std::shared_ptr<seal::SEALContext> context);
 
   bool is_plaintext() const { return m_is_plain; }
   bool is_ciphertext() const { return !is_plaintext(); }

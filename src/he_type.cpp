@@ -1,0 +1,49 @@
+//*****************************************************************************
+// Copyright 2018-2019 Intel Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//*****************************************************************************
+
+#include <memory>
+
+#include "he_type.hpp"
+
+#include "he_plaintext.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "protos/message.pb.h"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
+
+namespace ngraph {
+namespace he {
+
+HEType HEType::load(const he_proto::HEType& proto_he_type,
+                    std::shared_ptr<seal::SEALContext> context) {
+  if (proto_he_type.is_plaintext()) {
+    // TODO: HEPlaintext::load function
+    std::vector<double> vals{proto_he_type.plain().begin(),
+                             proto_he_type.plain().end()};
+
+    return HEType(HEPlaintext(vals), proto_he_type.plaintext_packing(),
+                  proto_he_type.complex_packing(), proto_he_type.batch_size());
+  } else {
+    auto cipher = HESealBackend::create_empty_ciphertext();
+    SealCiphertextWrapper::load(*cipher, proto_he_type, context);
+
+    return HEType(cipher, proto_he_type.plaintext_packing(),
+                  proto_he_type.complex_packing(), proto_he_type.batch_size());
+  }
+}
+
+}  // namespace he
+}  // namespace ngraph
