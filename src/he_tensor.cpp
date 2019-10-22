@@ -224,6 +224,7 @@ void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
   for (const auto& he_type : m_data) {
     he_type.save(*protos[0].add_data());
   }
+  NGRAPH_INFO << "Done writing to protos";
 }
 
 std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(

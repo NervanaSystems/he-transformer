@@ -631,11 +631,15 @@ bool HESealExecutable::call(
   for (size_t input_idx = 0; input_idx < server_inputs.size(); ++input_idx) {
     auto param_shape = server_inputs[input_idx]->get_shape();
     auto& param = parameters[input_idx];
-    std::shared_ptr<HETensor> he_input = nullptr;
+    std::shared_ptr<HETensor> he_input;
+
+    NGRAPH_INFO << "Input " << input_idx;
 
     if (m_enable_client && from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
+      NGRAPH_CHECK(m_client_inputs.size() > input_idx,
+                   "Not enough client inputs");
       he_input = std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
 
       if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
@@ -682,10 +686,9 @@ bool HESealExecutable::call(
                        " != ", current_annotation->packed(), ")");
         }
       }
-      NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
-
-      he_inputs.emplace_back(he_input);
     }
+    NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
+    he_inputs.emplace_back(he_input);
   }
 
   NGRAPH_HE_LOG(3) << "Updating HE op annotations";
