@@ -210,7 +210,7 @@ void HETensor::read(void* target, size_t n) const {
 }
 
 void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
-  NGRAPH_INFO << "Write to protos ";
+  NGRAPH_INFO << "Write to protos: packed? " << m_packed;
 
   // TODO: support large shapes
   protos.resize(1);
@@ -239,6 +239,7 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
   const auto& proto_tensor = proto_tensors[0];
   const auto& proto_name = proto_tensor.name();
   const auto& proto_packed = proto_tensor.packed();
+  NGRAPH_INFO << "Load from proto tensors packed? " << proto_packed;
   const auto& proto_shape = proto_tensor.shape();
   size_t result_count = proto_tensor.data_size();
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};

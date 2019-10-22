@@ -1383,9 +1383,13 @@ void HESealExecutable::handle_server_max_pool_op(
       cipher_batch.emplace_back(arg->data(max_ind));
     }
 
-    HETensor max_pool_tensor(arg->get_element_type(),
-                             Shape{cipher_batch.size()}, false, false, true,
-                             m_he_seal_backend);
+    NGRAPH_CHECK(cipher_batch.size() > 0, "Maxpool cipher batch is empty");
+
+    HETensor max_pool_tensor(
+        arg->get_element_type(),
+        Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
+        cipher_batch[0].plaintext_packing(), cipher_batch[0].complex_packing(),
+        true, m_he_seal_backend);
     max_pool_tensor.data() = cipher_batch;
     std::vector<he_proto::HETensor> proto_tensors;
     max_pool_tensor.write_to_protos(proto_tensors);

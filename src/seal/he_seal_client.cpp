@@ -311,20 +311,25 @@ void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
   he_proto::HETensor* proto_tensor = proto_msg.mutable_he_tensors(0);
   size_t cipher_count = proto_tensor->data_size();
 
-  std::vector<HEType> max_pool_ciphers(cipher_count,
-                                       HEType(HEPlaintext(), false, false, 1));
+  std::vector<HEType> max_pool_ciphers(
+      cipher_count, HEType(HEPlaintext(), false, false, m_batch_size));
   std::vector<HEType> post_max_pool_ciphers(
-      1, HEType(HEPlaintext(), false, false, 1));
+      {HEType(HEPlaintext(), false, false, m_batch_size)});
+
+  NGRAPH_INFO << "m_batch_size " << m_batch_size;
 
   auto he_tensor = HETensor::load_from_proto_tensor(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
+  NGRAPH_INFO << "he_tensor->is_packed " << he_tensor->is_packed();
+  NGRAPH_INFO << "he_tensor->get_batch_size " << he_tensor->get_batch_size();
+
   // We currently just support max_pool with single output
   auto post_max_he_tensor =
-      HETensor(he_tensor->get_element_type(), Shape{1}, he_tensor->is_packed(),
-               complex_packing(), true, *m_ckks_encoder, m_context,
-               *m_encryptor, *m_decryptor, m_encryption_params);
+      HETensor(he_tensor->get_element_type(), Shape{m_batch_size, 1},
+               he_tensor->is_packed(), complex_packing(), true, *m_ckks_encoder,
+               m_context, *m_encryptor, *m_decryptor, m_encryption_params);
 
   max_pool_seal(he_tensor->data(), post_max_he_tensor.data(),
                 Shape{1, 1, cipher_count}, Shape{1, 1, 1}, Shape{cipher_count},
