@@ -33,6 +33,12 @@ class HESealBackend;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
 class HETensor : public runtime::Tensor {
  public:
+  HETensor(const std::vector<he_proto::HETensor>& proto_tensors,
+           seal::CKKSEncoder& ckks_encoder,
+           const seal::SEALContext& seal_context,
+           const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
+           const ngraph::he::HESealEncryptionParameters& encryption_params);
+
   HETensor(const element::Type& element_type, const Shape& shape,
            const bool plaintext_packing, const bool complex_packing,
            const bool encrypted, seal::CKKSEncoder& ckks_encoder,
@@ -113,7 +119,48 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns whether or not the tensor is packed
   inline bool is_packed() const { return m_packed; }
 
-  void write_to_protos(std::vector<he_proto::HETensor>& protos) const;
+  void write_to_protos(std::vector<he_proto::HETensor>& proto_tensors) const;
+
+  static std::shared_ptr<HETensor> load_from_proto_tensors(
+      const std::vector<he_proto::HETensor>& proto_tensors,
+      seal::CKKSEncoder& ckks_encoder, const seal::SEALContext& seal_context,
+      const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
+      const ngraph::he::HESealEncryptionParameters& encryption_params) {
+    NGRAPH_CHECK(proto_tensors.size() == 1,
+                 "Load from protos only supports 1 proto");
+
+    NGRAPH_CHECK(false, "Load from protos unimplemented");
+
+    const auto& proto_tensor = proto_tensors[0];
+    const auto& proto_name = proto_tensor.name();
+    const auto& proto_packed = proto_tensor.packed();
+    const auto& proto_shape = proto_tensor.shape();
+    size_t result_count = proto_tensor.data_size();
+    ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+    auto element_type = element::f64;
+
+    auto he_tensor = std::make_shared<HETensor>(
+        element_type, shape, proto_packed, encryption_params.complex_packing(),
+        false, ckks_encoder, seal_context, encryptor, decryptor,
+        encryption_params, proto_name);
+
+#pragma omp parallel for
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      HEType loaded(proto_tensor.data(result_idx), seal_context);
+      he_tensor->data(result_idx) = loaded;
+    }
+
+    return he_tensor;
+  }
+
+  static std::shared_ptr<HETensor> load_from_proto_tensor(
+      const he_proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
+      const seal::SEALContext& seal_context, const seal::Encryptor& encryptor,
+      seal::Decryptor& decryptor,
+      const ngraph::he::HESealEncryptionParameters& encryption_params) {
+    return load_from_proto_tensors({proto_tensor}, ckks_encoder, seal_context,
+                                   encryptor, decryptor, encryption_params);
+  }
 
  private:
   bool m_packed;

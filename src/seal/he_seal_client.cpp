@@ -192,7 +192,7 @@ void HESealClient::handle_inference_request(
 
   auto he_tensor = std::make_shared<HETensor>(
       element::f64, shape, proto_packed, complex_packing(), encrypt_tensor,
-     m_ckks_encoder, m_context, m_encryptor, m_decryptor, m_encryption_params,
+      m_ckks_encoder, m_context, m_encryptor, m_decryptor, m_encryption_params,
       proto_name);
 
   NGRAPH_CHECK(m_input_config.size() == 1,
@@ -219,58 +219,21 @@ void HESealClient::handle_inference_request(
 void HESealClient::handle_result(const he_proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling result";
 
-  NGRAPH_CHECK(
-      proto_msg.he_tensors_size() > 0,
-      "Client received result with no tensors");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
+               "Client received result with no tensors");
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Client supports only results with one tensor");
 
-  bool cipher_result = (proto_msg.cipher_tensors_size() == 1);
+  auto proto_tensor = proto_msg.he_tensors(0);
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      m_encryption_params);
 
-  if (cipher_result) {
-    NGRAPH_HE_LOG(5) << "Client handling cipher result";
-    auto proto_tensor = proto_msg.cipher_tensors(0);
-    size_t result_count = proto_tensor.ciphertexts_size();
-    m_results.resize(result_count * m_batch_size);
-    std::vector<std::shared_ptr<SealCiphertextWrapper>> result_ciphers(
-        result_count);
-#pragma omp parallel for
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      SealCiphertextWrapper::load(result_ciphers[result_idx],
-                                  proto_tensor.ciphertexts(result_idx),
-                                  m_context);
-    }
-
-    size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-    HETensor::read(m_results.data(), result_ciphers, num_bytes, m_batch_size,
-                   element::f64, *m_ckks_encoder, *m_decryptor);
-  } else {
-    NGRAPH_HE_LOG(5) << "Client handling plain result";
-
-    auto proto_tensor = proto_msg.plain_tensors(0);
-    size_t result_count = proto_tensor.plaintexts_size();
-    m_results.resize(result_count * m_batch_size);
-
-    std::vector<HEPlaintext> result_plaintexts(result_count);
-
-    // TODO: load from protos as separate function
-#pragma omp parallel for
-    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      // Load tensor plaintexts
-      auto proto_plain = proto_tensor.plaintexts(result_idx);
-      result_plaintexts[result_idx] = HEPlaintext(std::vector<double>{
-          proto_plain.value().begin(), proto_plain.value().end()});
-
-      NGRAPH_HE_LOG(5) << "Loaded plaintext " << result_plaintexts[result_idx];
-    }
-    ngraph::Shape shape = proto_shape_to_ngraph_shape(proto_tensor.shape());
-
-    HEPlainTensor plain_tensor(element::f64, shape, proto_tensor.packed());
-    plain_tensor.set_elements(result_plaintexts);
-
-    size_t num_bytes = result_count * sizeof(double) * m_batch_size;
-    plain_tensor.read(m_results.data(), num_bytes);
-  }
+  size_t result_count = proto_tensor.data_size();
+  m_results.resize(result_count * he_tensor->get_batch_size());
+  size_t num_bytes = result_count * he_tensor->get_element_type().size() *
+                     he_tensor->get_batch_size();
+  he_tensor->read(m_results.data(), num_bytes);
 
   close_connection();
 }
@@ -279,16 +242,15 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling relu request";
 
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() > 0,
-               "Client received result with no cipher tensors");
-  NGRAPH_CHECK(proto_msg.cipher_tensors_size() == 1,
-               "Client supports only relu requests with one cipher tensor");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
+               "Client received result with no tensors");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
+               "Client supports only relu requests with one tensor");
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  he_proto::SealCipherTensor* proto_tensor =
-      proto_msg.mutable_cipher_tensors(0);
-  size_t result_count = proto_tensor->ciphertexts_size();
+  he_proto::SealCipherTensor* proto_tensor = proto_msg.mutable_he_tensors(0);
+  size_t result_count = proto_tensor->data_size();
 
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {

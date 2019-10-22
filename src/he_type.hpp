@@ -21,6 +21,7 @@
 #include "he_plaintext.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "protos/message.pb.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
@@ -29,6 +30,11 @@ namespace he {
 class HEType {
  public:
   HEType() = delete;
+
+  HEType(const he_proto::HEType& he_proto_type,
+         const seal::SEALContext& m_context) {
+    throw ngraph_error("HEType from proto unimplemented");
+  }
 
   HEType(const HEPlaintext& plain, const bool plaintext_packing,
          const bool complex_packing, const size_t batch_size)
