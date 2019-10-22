@@ -144,6 +144,7 @@ void HESealClient::handle_inference_request(
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Only support 1 encrypted parameter from client");
 
+  // TODO: clean up below
   auto proto_tensor = proto_msg.he_tensors(0);
   auto proto_name = proto_tensor.name();
   auto proto_packed = proto_tensor.packed();
@@ -190,10 +191,9 @@ void HESealClient::handle_inference_request(
                      << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  auto he_tensor = std::make_shared<HETensor>(
-      element::f64, shape, proto_packed, complex_packing(), encrypt_tensor,
-      *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
-      m_encryption_params, proto_name);
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      proto_tensor, *m_ckks_encoder, *m_context, *m_encryptor, *m_decryptor,
+      m_encryption_params);
 
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");

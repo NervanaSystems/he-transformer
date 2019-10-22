@@ -493,24 +493,13 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
 
 void HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
-  NGRAPH_HE_LOG(3) << "Handling client ciphers";
+  NGRAPH_HE_LOG(3) << "Handling client tensors";
 
-  NGRAPH_CHECK(false, "HESealExecutable::handle_client_ciphers not impl");
-
-  /*
-
-
-  NGRAPH_CHECK((proto_msg.cipher_tensors_size() > 0) ||
-                   (proto_msg.plain_tensors_size() > 0),
-               "Client received empty cipher tensor message");
-  NGRAPH_CHECK((proto_msg.cipher_tensors_size() == 1) ||
-                   (proto_msg.plain_tensors_size() == 1),
+  NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
+               "Client received empty tensor message");
+  NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Client only supports 1 client tensor");
-  NGRAPH_CHECK((proto_msg.cipher_tensors_size() == 0) ||
-                   (proto_msg.plain_tensors_size() == 0),
-               "Client only supports 1 client tensor type");
   // TODO: check for uniqueness of batch size if > 1 input tensor
-  bool cipher_input = (proto_msg.cipher_tensors_size() == 1);
 
   const ParameterVector& input_parameters = get_parameters();
 
@@ -520,8 +509,8 @@ void HESealExecutable::handle_client_ciphers(
   /// \returns Whether or not a matching parameter shape has been found
   auto find_matching_parameter_index = [&](const std::string& tensor_name,
                                            size_t& matching_idx) {
-    NGRAPH_HE_LOG(5) << "Calling find_matching_parameter_index("
-                     << tensor_name << ")";
+    NGRAPH_HE_LOG(5) << "Calling find_matching_parameter_index(" << tensor_name
+                     << ")";
     for (size_t param_idx = 0; param_idx < input_parameters.size();
          ++param_idx) {
       const auto& parameter = input_parameters[param_idx];
@@ -541,126 +530,47 @@ void HESealExecutable::handle_client_ciphers(
     return false;
   };
 
-  if (cipher_input) {
-    NGRAPH_HE_LOG(3) << "Server handling ciphertext client inputs";
-    he_proto::SealCipherTensor cipher_tensor = proto_msg.cipher_tensors(0);
-    ngraph::Shape shape{cipher_tensor.shape().begin(),
-                        cipher_tensor.shape().end()};
+  auto& proto_tensor = proto_msg.he_tensors(0);
+  ngraph::Shape shape{proto_tensor.shape().begin(), proto_tensor.shape().end()};
 
-    NGRAPH_HE_LOG(5) << "cipher_tensor.packed() " << cipher_tensor.packed();
+  NGRAPH_HE_LOG(5) << "proto_tensor.packed() " << proto_tensor.packed();
+  set_batch_size(HETensor::batch_size(shape, proto_tensor.packed()));
 
-    set_batch_size(HETensor::batch_size(shape, cipher_tensor.packed()));
+  size_t count = proto_tensor.data_size();
 
-    size_t count = cipher_tensor.ciphertexts_size();
+  NGRAPH_HE_LOG(5) << "Offset " << proto_tensor.offset();
 
-    NGRAPH_HE_LOG(5) << "Offset " << cipher_tensor.offset();
+  auto he_tensor = HETensor::load_from_proto_tensor(
+      proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
+      *m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
+      *m_he_seal_backend.get_decryptor(),
+      m_he_seal_backend.get_encryption_parameters());
 
-    std::vector<std::shared_ptr<SealCiphertextWrapper>> he_cipher_inputs(
-        count);
-#pragma omp parallel for
-    for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
-      SealCiphertextWrapper::load(he_cipher_inputs[cipher_idx],
-                                  cipher_tensor.ciphertexts(cipher_idx),
-                                  m_context);
-    }
+  // Write ciphers to client inputs
+  size_t param_idx;
+  NGRAPH_CHECK(find_matching_parameter_index(he_tensor->get_name(), param_idx),
+               "Could not find matching parameter name ",
+               he_tensor->get_name());
+  const auto& input_param = input_parameters[param_idx];
+  bool plaintext_packing = plaintext_packed(*input_param);
 
-    NGRAPH_HE_LOG(5) << "Done loading client ciphertext inputs";
-
-    // Write ciphers to client inputs
-    size_t param_idx;
-    NGRAPH_CHECK(
-        find_matching_parameter_index(cipher_tensor.name(), param_idx),
-        "Could not find matching parameter name ", cipher_tensor.name());
-    const auto& input_param = input_parameters[param_idx];
-    bool plaintext_packing = plaintext_packed(*input_param);
-
-    if (m_client_inputs[param_idx] == nullptr) {
-      m_client_inputs[param_idx] = std::dynamic_pointer_cast<HETensor>(
-          m_he_seal_backend.create_cipher_tensor(
-              input_param->get_element_type(), input_param->get_shape(),
-              plaintext_packing, "client_parameter"));
-    }
-    auto& client_input_tensor =
-        dynamic_cast<HESealCipherTensor&>(*m_client_inputs[param_idx]);
-
-    size_t param_size =
-        ngraph::shape_size(client_input_tensor.get_packed_shape());
-
-    for (size_t cipher_idx = 0; cipher_idx < count; ++cipher_idx) {
-      client_input_tensor.get_element(cipher_tensor.offset() + cipher_idx) =
-          he_cipher_inputs[cipher_idx];
-
-      NGRAPH_CHECK(m_client_load_idx[param_idx] < param_size,
-                   "current load index ", m_client_load_idx[param_idx],
-                   " too large for parameter size ", param_size);
-      m_client_load_idx[param_idx]++;
-    }
-    NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
-                     << "] = " << m_client_load_idx[param_idx];
-  } else {  // plaintext tensor input
-    NGRAPH_HE_LOG(3) << "Server handling plaintext client inputs";
-    he_proto::PlainTensor plain_tensor = proto_msg.plain_tensors(0);
-    ngraph::Shape shape{plain_tensor.shape().begin(),
-                        plain_tensor.shape().end()};
-
-    set_batch_size(HETensor::batch_size(shape, plain_tensor.packed()));
-
-    size_t count = plain_tensor.plaintexts_size();
-
-    // Load tensor plaintexts
-    // TODO: separate function
-    std::vector<HEPlaintext> he_plain_inputs(count);
-    for (size_t plain_idx = 0; plain_idx < count; ++plain_idx) {
-      auto proto_plain = plain_tensor.plaintexts(plain_idx);
-      he_plain_inputs[plain_idx] = HEPlaintext(std::vector<double>{
-          proto_plain.value().begin(), proto_plain.value().end()});
-    }
-
-    // Write plaintexts to client inputs
-    size_t param_idx;
-    NGRAPH_CHECK(
-        find_matching_parameter_index(plain_tensor.name(), param_idx),
-        "Could not find matching parameter name ", plain_tensor.name());
-    if (m_client_inputs[param_idx] == nullptr) {
-      const auto& input_param = input_parameters[param_idx];
-      bool plaintext_packing = plaintext_packed(*input_param);
-      m_client_inputs[param_idx] = std::dynamic_pointer_cast<HETensor>(
-          m_he_seal_backend.create_plain_tensor(
-              input_param->get_element_type(), input_param->get_shape(),
-              plaintext_packing));
-    }
-    auto& client_input_tensor =
-        dynamic_cast<HEPlainTensor&>(*m_client_inputs[param_idx]);
-
-    size_t param_size =
-        ngraph::shape_size(client_input_tensor.get_packed_shape());
-
-    for (size_t plain_idx = 0; plain_idx < count; ++plain_idx) {
-      client_input_tensor.get_element(plain_tensor.offset() + plain_idx) =
-          he_plain_inputs[plain_idx];
-
-      NGRAPH_CHECK(m_client_load_idx[param_idx] < param_size,
-                   "current load index ", m_client_load_idx[param_idx],
-                   " too large for parameter size ", param_size);
-      m_client_load_idx[param_idx]++;
-    }
-    NGRAPH_HE_LOG(5) << "m_client_load_idx[" << param_idx
-                     << "] = " << m_client_load_idx[param_idx];
+  if (m_client_inputs[param_idx] == nullptr) {
+    m_client_inputs[param_idx] = he_tensor;
+  } else {
+    NGRAPH_CHECK(false,
+                 "Error loading client input; client input already exists");
   }
 
+  NGRAPH_HE_LOG(5) << "Done loading client inputs";
+
   auto done_loading = [&]() {
-    for (size_t parm_idx = 0; parm_idx < input_parameters.size();
-         ++parm_idx) {
+    for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
       if (from_client(*param)) {
         NGRAPH_HE_LOG(5) << "From client param shape " << param->get_shape();
         NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
-        size_t param_size = shape_size(param->get_shape()) / m_batch_size;
 
-        NGRAPH_HE_LOG(5) << "Checking if parameter " << parm_idx << ", size "
-                         << param_size << " is loaded";
-
-        if (m_client_load_idx[parm_idx] != param_size) {
+        if (m_client_inputs[parm_idx] == nullptr) {
           return false;
         }
       }
@@ -678,8 +588,6 @@ void HESealExecutable::handle_client_ciphers(
   } else {
     NGRAPH_HE_LOG(3) << "Not yet done loading client ciphertexts";
   }
-
-  */
 }
 
 std::vector<ngraph::runtime::PerformanceCounter>
@@ -1042,8 +950,8 @@ void HESealExecutable::generate_calls(
     }
   }
 
-  // We want to check that every OP_TYPEID enumeration is included in the list.
-  // These GCC flags enable compile-time checking so that if an
+  // We want to check that every OP_TYPEID enumeration is included in the
+  // list. These GCC flags enable compile-time checking so that if an
   //      enumeration
   // is not in the list an error is generated.
 #pragma GCC diagnostic push
@@ -1471,8 +1379,8 @@ void HESealExecutable::handle_server_max_pool_op(
 
   std::vector<std::vector<size_t>> maximize_list = max_pool_seal(
       unpacked_arg_shape, out_shape, max_pool->get_window_shape(),
-      max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
-      max_pool->get_padding_above());
+      max_pool->get_window_movement_strides(),
+  max_pool->get_padding_below(), max_pool->get_padding_above());
 
   m_max_pool_ciphertexts.clear();
 
@@ -1537,7 +1445,8 @@ void HESealExecutable::handle_server_relu_op(
 
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
-  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
+  size_t element_count = shape_size(node.get_output_shape(0)) /
+  m_batch_size;
 
   if (arg_cipher == nullptr || out_cipher == nullptr) {
     throw ngraph_error("Relu types not supported.");
@@ -1552,7 +1461,8 @@ void HESealExecutable::handle_server_relu_op(
 
   m_relu_ciphertexts.resize(element_count);
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
-    m_relu_ciphertexts[relu_idx] = std::make_shared<SealCiphertextWrapper>();
+    m_relu_ciphertexts[relu_idx] =
+  std::make_shared<SealCiphertextWrapper>();
   }
 
   // TODO: tune
@@ -1645,6 +1555,5 @@ void HESealExecutable::handle_server_relu_op(
 
   out_cipher->set_elements(m_relu_ciphertexts); */
 }
-
 }  // namespace he
 }  // namespace ngraph
