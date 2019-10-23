@@ -149,7 +149,7 @@ void HESealClient::handle_inference_request(
   auto proto_name = proto_tensor.name();
   auto proto_packed = proto_tensor.packed();
   auto proto_shape = proto_tensor.shape();
-  ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+  Shape shape{proto_shape.begin(), proto_shape.end()};
 
   NGRAPH_HE_LOG(5) << "Inference request tensor has name " << proto_name;
 
@@ -194,6 +194,13 @@ void HESealClient::handle_inference_request(
   auto he_tensor = HETensor::load_from_proto_tensor(
       proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
+  for (auto& he_type : he_tensor->data()) {
+    if (encrypt_tensor) {
+      he_type.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    } else {
+      he_type.set_plaintext(HEPlaintext());
+    }
+  }
 
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");
@@ -211,7 +218,7 @@ void HESealClient::handle_inference_request(
 
     auto param_shape = inputs_msg.he_tensors(0).shape();
     NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape "
-                     << proto_shape_to_ngraph_shape(param_shape);
+                     << Shape{param_shape.begin(), param_shape.end()};
     write_message(std::move(inputs_msg));
   }
 }

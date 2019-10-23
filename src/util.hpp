@@ -218,13 +218,6 @@ map_to_double_map(
   return outputs;
 }
 
-inline ngraph::Shape proto_shape_to_ngraph_shape(
-    const google::protobuf::RepeatedField<google::protobuf::uint64>&
-        proto_shape) {
-  std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
-  return ngraph::Shape{dims};
-}
-
 inline bool param_originates_from_name(const ngraph::op::Parameter& param,
                                        const std::string& name) {
   if (param.get_name() == name) {

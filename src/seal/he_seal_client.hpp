@@ -32,6 +32,7 @@
 namespace ngraph {
 namespace he {
 
+/// (tensor_name : (configuration, data)
 template <class T>
 using HETensorConfigMap =
     std::unordered_map<std::string, std::pair<std::string, std::vector<T>>>;
