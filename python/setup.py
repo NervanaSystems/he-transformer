@@ -9,6 +9,7 @@ __version__ = '0.6.0-rc0'
 
 PYNGRAPH_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 BOOST_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+SEAL_ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def find_he_transformer_dist_dir():
@@ -50,6 +51,23 @@ def find_pybind_headers_dir():
     else:
         print('pybind11 library found in {}'.format(pybind_headers_dir))
         return pybind_headers_dir
+
+
+def find_seal_headers_dir():
+    """Return location of SEAL headers."""
+    if os.environ.get('SEAL_HEADERS_PATH'):
+        seal_headers_dir = os.environ.get('SEAL_HEADERS_PATH')
+    else:
+        seal_headers_dir = [os.path.join(SEAL_ROOT_DIR)]
+
+    found = os.path.exists(os.path.join(seal_headers_dir, 'seal'))
+
+    if not found:
+        print('Cannot find SEAL library in {} make sure that '
+              'SEAL_HEADERS_PATH is set correctly'.format(seal_headers_dir))
+
+    print('SEAL library found in {}'.format(seal_headers_dir))
+    return seal_headers_dir
 
 
 def find_boost_headers_dir():
@@ -104,17 +122,19 @@ NGRAPH_HE_DIST_DIR = find_he_transformer_dist_dir()
 NGRAPH_HE_INCLUDE_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'include')
 NGRAPH_HE_LIB_DIR = os.path.join(NGRAPH_HE_DIST_DIR, 'lib')
 BOOST_INCLUDE_DIR = find_boost_headers_dir()
+SEAL_INCLUDE_DIR = find_seal_headers_dir()
 PROJECT_ROOT_DIR = find_project_root_dir()
 
 print('NGRAPH_HE_DIST_DIR', NGRAPH_HE_DIST_DIR)
 print('NGRAPH_HE_LIB_DIR ', NGRAPH_HE_LIB_DIR)
 print('NGRAPH_HE_INCLUDE_DIR', NGRAPH_HE_INCLUDE_DIR)
 print('BOOST_INCLUDE_DIR', BOOST_INCLUDE_DIR)
+print('SEAL_INCLUDE_DIR', SEAL_INCLUDE_DIR)
 print('PROJECT_ROOT_DIR', PROJECT_ROOT_DIR)
 
 include_dirs = [
     PYNGRAPH_ROOT_DIR, NGRAPH_HE_INCLUDE_DIR, PYBIND11_INCLUDE_DIR,
-    BOOST_INCLUDE_DIR
+    BOOST_INCLUDE_DIR, SEAL_INCLUDE_DIR
 ]
 print('include_dirs', include_dirs)
 
@@ -178,7 +198,7 @@ def add_platform_specific_link_args(link_args):
         link_args += ['-z', 'noexecstack']
         link_args += ['-z', 'relro']
         link_args += ['-z', 'now']
-        link_args += ['-z', 'flto']
+        #link_args += ['-z', 'flto']
 
 
 class BuildExt(build_ext):
@@ -208,7 +228,7 @@ class BuildExt(build_ext):
 
             self._add_extra_compile_arg('-fvisibility=hidden',
                                         ext.extra_compile_args)
-            self._add_extra_compile_arg('-flto', ext.extra_compile_args)
+            # self._add_extra_compile_arg('-flto', ext.extra_compile_args)
             self._add_extra_compile_arg('-fPIC', ext.extra_compile_args)
             self._add_extra_compile_arg('-fopenmp', ext.extra_compile_args)
             self._add_extra_compile_arg(
