@@ -35,7 +35,6 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const seal::parms_id_type& parms_id, double scale,
                      seal::CKKSEncoder& ckks_encoder,
                      seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
-  // TODO: use constructor?
   std::vector<HEPlaintext> out_plain(
       out.size(), HEPlaintext(std::vector<double>(
                       batch_size, -std::numeric_limits<double>::infinity())));

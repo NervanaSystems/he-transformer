@@ -33,6 +33,7 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
   out.complex_packing() = arg.complex_packing();
 
   if (arg.is_ciphertext() && out.is_ciphertext()) {
+    NGRAPH_INFO << "Result: Cipher to cipher";
     out = arg;
   } else if (arg.is_ciphertext() && out.is_plaintext()) {
     // TODO: decrypt instead?
@@ -43,6 +44,8 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
     out.set_plaintext(arg.get_plaintext());
 
   } else if (arg.is_plaintext() && out.is_plaintext()) {
+    NGRAPH_INFO << "Result: plain to plain";
+    NGRAPH_INFO << "arg " << arg.get_plaintext();
     out = arg;
   } else {
     NGRAPH_CHECK(false, "Unknown result type");

@@ -112,11 +112,8 @@ void HETensor::pack(size_t pack_axis) {
   NGRAPH_INFO << "m_data.size " << m_data.size();
 
   m_packed = true;
-  NGRAPH_INFO << "New batch size " << get_batch_size();
-  //  TODO: set batch size / complex packing?
   std::vector<HEType> new_data(m_data.size() / get_batch_size(),
                                HEType(HEPlaintext(), false));
-  NGRAPH_INFO << "New data size " << new_data.size();
 
   for (size_t idx = 0; idx < m_data.size(); ++idx) {
     auto& plain = m_data[idx].get_plaintext();
@@ -215,6 +212,7 @@ void HETensor::write(const void* p, size_t n) {
       NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
     }
   }
+  NGRAPH_INFO << "Done writing " << num_elements_to_write << " elements";
 }
 
 void HETensor::read(void* target, size_t n) const {
@@ -224,7 +222,7 @@ void HETensor::read(void* target, size_t n) const {
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());
 
   NGRAPH_INFO << "Reading " << num_elements_to_read << " elements (batch size "
-              << get_batch_size();
+              << get_batch_size() << ")";
 
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
@@ -240,9 +238,6 @@ void HETensor::read(void* target, size_t n) const {
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements_to_read; ++i) {
-    NGRAPH_CHECK(m_data[i].is_plaintext() || m_data[i].is_ciphertext(),
-                 "Cannot read from tensor of unspecified type");
-
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
       ngraph::he::decrypt(plain, *m_data[i].get_ciphertext(),
@@ -253,11 +248,13 @@ void HETensor::read(void* target, size_t n) const {
     }
 
     void* dst = ngraph::ngraph_malloc(type_byte_size * get_batch_size());
-    ngraph::he::decode(dst, plain, element_type, get_batch_size());
+    ngraph::he::write_plaintext(dst, plain, element_type, get_batch_size());
 
     copy_batch_values_to_src(i, target, dst);
     ngraph::ngraph_free(dst);
   }
+  NGRAPH_INFO << "Done reading " << num_elements_to_read
+              << " elements (batch size " << get_batch_size() << ")";
 }
 
 void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
@@ -306,6 +303,8 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
     auto loaded = HEType::load(proto_tensor.data(result_idx), seal_context);
     he_tensor->data(result_idx) = loaded;
   }
+
+  NGRAPH_INFO << "Done loading from proto tensors";
   return he_tensor;
 }
 

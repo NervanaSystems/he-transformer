@@ -78,9 +78,8 @@ class HEType {
   const HEPlaintext& get_plaintext() const { return m_plain; }
   HEPlaintext& get_plaintext() { return m_plain; }
 
-  // TODO: &&
-  void set_plaintext(const HEPlaintext& plain) {
-    m_plain = plain;
+  void set_plaintext(const HEPlaintext plain) {
+    m_plain = std::move(plain);
     m_is_plain = true;
     if (m_cipher != nullptr) {
       m_cipher->ciphertext().release();
@@ -92,7 +91,6 @@ class HEType {
   }
   std::shared_ptr<SealCiphertextWrapper>& get_ciphertext() { return m_cipher; }
 
-  // TODO: &&
   void set_ciphertext(const std::shared_ptr<SealCiphertextWrapper>& cipher) {
     m_cipher = cipher;
     m_is_plain = false;

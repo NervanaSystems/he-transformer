@@ -278,8 +278,8 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
 /// \param[out] input Plaintext to write
 /// \param[in] type Datatype to write
 /// \param[in] count Number of values to write
-void decode(void* output, const HEPlaintext& input, const element::Type& type,
-            size_t count);
+void write_plaintext(void* output, const HEPlaintext& input,
+                     const element::Type& type, size_t count);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to

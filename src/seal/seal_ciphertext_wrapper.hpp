@@ -75,9 +75,8 @@ class SealCiphertextWrapper {
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
-  /// TODO: add move constructor
-  SealCiphertextWrapper(const seal::Ciphertext& cipher)
-      : m_ciphertext(cipher) {}
+  SealCiphertextWrapper(seal::Ciphertext cipher)
+      : m_ciphertext(std::move(cipher)) {}
 
   /// \brief Returns the underyling SEAL ciphertext
   inline seal::Ciphertext& ciphertext() { return m_ciphertext; }

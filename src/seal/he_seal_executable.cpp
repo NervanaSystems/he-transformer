@@ -549,7 +549,6 @@ void HESealExecutable::handle_client_ciphers(
                "Could not find matching parameter name ",
                he_tensor->get_name());
   const auto& input_param = input_parameters[param_idx];
-  bool plaintext_packing = plaintext_packed(*input_param);
 
   if (m_client_inputs[param_idx] == nullptr) {
     m_client_inputs[param_idx] = he_tensor;
@@ -661,15 +660,15 @@ bool HESealExecutable::call(
               param->get_op_annotations())) {
         NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
                          << " has annotation " << *current_annotation;
+        if (current_annotation->packed()) {
+          he_input->pack();
+        } else {
+          he_input->unpack();
+        }
+
         if (current_annotation->encrypted()) {
           NGRAPH_HE_LOG(3) << "Encrypting parameter " << param->get_name()
                            << " from server";
-
-          if (current_annotation->packed()) {
-            he_input->pack();
-          } else {
-            he_input->unpack();
-          }
 
 #pragma omp parallel for
           for (size_t he_type_idx = 0;
@@ -1087,6 +1086,7 @@ void HESealExecutable::generate_calls(
                in_shape1, out_shape, dot->get_reduction_axes_count(), type,
                m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
+
       break;
     }
     case OP_TYPEID::Exp: {
@@ -1225,18 +1225,7 @@ void HESealExecutable::generate_calls(
       const Shape& out_shape = out[0]->get_packed_shape();
       Coordinate lower_bounds = slice->get_lower_bounds();
       Coordinate upper_bounds = slice->get_upper_bounds();
-
-      // TODO: remove?
-      /* if (plaintext_packed(node_wrapper)) {
-        lower_bounds = HETensor::pack_shape(slice->get_lower_bounds());
-        upper_bounds = HETensor::pack_shape(slice->get_upper_bounds());
-      } */
       const Strides& strides = slice->get_strides();
-
-      NGRAPH_INFO << "In shape " << in_shape;
-      NGRAPH_INFO << "out_shape " << out_shape;
-      NGRAPH_INFO << "lower_bounds " << lower_bounds;
-      NGRAPH_INFO << "upper_bounds " << upper_bounds;
 
       slice_seal(args[0]->data(), out[0]->data(), in_shape, lower_bounds,
                  upper_bounds, strides, out_shape);
