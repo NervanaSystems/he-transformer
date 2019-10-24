@@ -189,8 +189,6 @@ void HESealClient::handle_inference_request(
                      << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  NGRAPH_INFO << "Loading from proto tensor";
-
   HETensor::unpack_shape(shape, m_batch_size);
   auto element_type = element::f64;
 
@@ -202,14 +200,8 @@ void HESealClient::handle_inference_request(
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");
 
-  NGRAPH_INFO << "he_tensor shape " << he_tensor.get_shape();
-  NGRAPH_INFO << "he_tensor get_batch_size " << he_tensor.get_batch_size();
-  NGRAPH_INFO << "he_tensor get_packed_shape " << he_tensor.get_packed_shape();
-
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-  NGRAPH_INFO << "Writing into he tensor";
   he_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
-  NGRAPH_INFO << "Done writing into he tensor";
 
   std::vector<he_proto::HETensor> tensor_protos;
 
@@ -339,14 +331,9 @@ void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
   std::vector<HEType> post_max_pool_ciphers(
       {HEType(HEPlaintext(m_batch_size), false)});
 
-  NGRAPH_INFO << "m_batch_size " << m_batch_size;
-
   auto he_tensor = HETensor::load_from_proto_tensor(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
-
-  NGRAPH_INFO << "he_tensor->is_packed " << he_tensor->is_packed();
-  NGRAPH_INFO << "he_tensor->get_batch_size " << he_tensor->get_batch_size();
 
   // We currently just support max_pool with single output
   auto post_max_he_tensor =

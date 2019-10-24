@@ -201,9 +201,6 @@ class HESealBackend : public ngraph::runtime::Backend {
               size_t count = 1) const;
 
   /// \brief TODO
-  void decode(HEPlaintext& output, const SealPlaintextWrapper& input) const;
-
-  /// \brief TODO
   void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                const HEPlaintext& input, const element::Type& element_type,
                bool complex_packing = false) const;

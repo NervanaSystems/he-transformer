@@ -100,14 +100,12 @@ void HETensor::unpack_shape(ngraph::Shape& shape, size_t pack_size,
 }
 
 void HETensor::pack(size_t pack_axis) {
-  NGRAPH_INFO << "Packing tensor";
   NGRAPH_CHECK(pack_axis == 0, "Packing only supported along axis 0");
   if (is_packed()) {
     return;
   }
   NGRAPH_CHECK(!any_encrypted_data(),
                "Packing only supported for plaintext tensors");
-  NGRAPH_INFO << "m_data.size " << m_data.size();
 
   m_packed = true;
   std::vector<HEType> new_data(m_data.size() / get_batch_size(),
@@ -128,14 +126,11 @@ void HETensor::pack(size_t pack_axis) {
 }
 
 void HETensor::unpack() {
-  NGRAPH_INFO << "Unpacking tensor";
   if (!is_packed()) {
     return;
   }
   NGRAPH_CHECK(!any_encrypted_data(),
                "Unpacking only supported for plaintext tensors");
-
-  NGRAPH_INFO << "get shape " << get_shape();
 
   size_t old_batch_size = get_batch_size();
   m_packed = false;
@@ -209,7 +204,6 @@ void HETensor::write(const void* p, size_t n) {
       NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
     }
   }
-  NGRAPH_INFO << "Done writing " << num_elements_to_write << " elements";
 }
 
 void HETensor::read(void* target, size_t n) const {
@@ -276,11 +270,9 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
   const auto& proto_tensor = proto_tensors[0];
   const auto& proto_name = proto_tensor.name();
   const auto& proto_packed = proto_tensor.packed();
-  NGRAPH_INFO << "Load from proto tensors packed? " << proto_packed;
   const auto& proto_shape = proto_tensor.shape();
   size_t result_count = proto_tensor.data_size();
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
-  NGRAPH_INFO << "Load from proto tensors shape " << shape;
   auto element_type = element::f64;
 
   auto he_tensor = std::make_shared<HETensor>(
@@ -294,7 +286,6 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
     he_tensor->data(result_idx) = loaded;
   }
 
-  NGRAPH_INFO << "Done loading from proto tensors";
   return he_tensor;
 }
 

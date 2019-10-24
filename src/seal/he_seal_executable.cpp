@@ -632,8 +632,6 @@ bool HESealExecutable::call(
     auto& param = parameters[input_idx];
     std::shared_ptr<HETensor> he_input;
 
-    NGRAPH_INFO << "Input " << input_idx;
-
     if (m_enable_client && from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
@@ -648,8 +646,6 @@ bool HESealExecutable::call(
             "Parameter annotation ", *current_annotation, " does not match ",
             (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
 
-        NGRAPH_INFO << "he_input->any_encrypted_data "
-                    << he_input->any_encrypted_data();
         current_annotation->set_encrypted(he_input->any_encrypted_data());
         param->set_op_annotations(current_annotation);
 
@@ -707,7 +703,6 @@ bool HESealExecutable::call(
     }
     NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
     if (he_input->is_packed()) {
-      NGRAPH_INFO << "Setting batch size to " << he_input->get_batch_size();
       set_batch_size(he_input->get_batch_size());
     }
     he_inputs.emplace_back(he_input);
@@ -857,7 +852,6 @@ bool HESealExecutable::call(
         if (packed_out) {
           HETensor::unpack_shape(shape, m_batch_size);
         }
-        NGRAPH_INFO << "m_batch_size " << m_batch_size;
         NGRAPH_HE_LOG(5) << "Creating output tensor with shape " << shape;
 
         if (encrypted_out) {
@@ -1450,8 +1444,6 @@ void HESealExecutable::handle_server_relu_op(
   bool verbose = verbose_op(node);
   size_t element_count = arg->data().size();
 
-  NGRAPH_INFO << "relu element count " << element_count;
-
   size_t smallest_ind =
       match_to_smallest_chain_index(arg->data(), m_he_seal_backend);
 
@@ -1472,7 +1464,6 @@ void HESealExecutable::handle_server_relu_op(
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     auto& he_type = arg->data(relu_idx);
     if (he_type.is_plaintext()) {
-      NGRAPH_INFO << "Relu at idx " << relu_idx << " is plaintext";
       m_relu_data[relu_idx].set_plaintext(HEPlaintext());
       if (type_id == OP_TYPEID::Relu) {
         scalar_relu_seal(he_type.get_plaintext(),
@@ -1512,11 +1503,6 @@ void HESealExecutable::handle_server_relu_op(
         *proto_msg.mutable_function() = f;
 
         // TODO: set complex_packing to correct values?
-        NGRAPH_INFO << "Batch size " << cipher_batch[0].batch_size();
-        NGRAPH_INFO << "relu tensor shape "
-                    << Shape{cipher_batch[0].batch_size(), cipher_batch.size()};
-        NGRAPH_INFO << "arg->is_packed() " << arg->is_packed();
-
         HETensor relu_tensor(
             arg->get_element_type(),
             Shape{cipher_batch[0].batch_size(), cipher_batch.size()},

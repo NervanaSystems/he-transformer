@@ -149,8 +149,6 @@ inline void max_pool_seal(
 
     std::vector<HEType> max_out{out[out_idx]};
 
-    NGRAPH_INFO << "Max batch size " << out[out_idx].batch_size();
-
     max_seal(max_args, max_out, Shape{max_list.size()}, Shape{}, AxisSet{0},
              out[out_idx].batch_size(), parms_id, scale, ckks_encoder,
              encryptor, decryptor);

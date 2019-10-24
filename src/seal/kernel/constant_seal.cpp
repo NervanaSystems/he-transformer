@@ -30,7 +30,6 @@ void constant_seal(std::vector<HEType>& out, const element::Type& element_type,
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   size_t type_byte_size = element_type.size();
-  NGRAPH_INFO << "Consatnt size " << count;
   if (out.size() != count) {
     throw ngraph_error("out.size() != count for constant op");
   }

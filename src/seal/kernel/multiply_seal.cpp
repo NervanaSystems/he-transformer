@@ -164,7 +164,7 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
 
 void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out) {
-  std::vector<double> out_vals;
+  HEPlaintext out_vals;
   if (arg0.size() == 1) {
     std::transform(
         arg1.begin(), arg1.end(), std::back_inserter(out_vals),
@@ -179,7 +179,7 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
     std::transform(arg0.begin(), arg0.end(), arg1.begin(),
                    std::back_inserter(out_vals), std::multiplies<double>());
   }
-  out = HEPlaintext({out_vals});
+  out = std::move(out_vals);
 }
 
 }  // namespace he

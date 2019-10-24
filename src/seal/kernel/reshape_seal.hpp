@@ -28,11 +28,6 @@ inline void reshape_seal(const std::vector<HEType>& arg,
                          std::vector<HEType>& out, const Shape& in_shape,
                          const AxisVector& in_axis_order,
                          const Shape& out_shape) {
-  NGRAPH_INFO << "arg.size " << arg.size();
-  NGRAPH_INFO << "out.size " << out.size();
-  NGRAPH_INFO << "in_shape " << in_shape;
-  NGRAPH_INFO << "out_shape " << out_shape;
-
   // Unfortunately we don't yet have a constructor for CoordinateTransform that
   // lets us pass only source_space_shape and source_axis_order so we have to
   // construct the defaults here.

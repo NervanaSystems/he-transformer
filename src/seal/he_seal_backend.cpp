@@ -336,11 +336,5 @@ void HESealBackend::decrypt(HEPlaintext& output,
                       *m_ckks_encoder);
 }
 
-void HESealBackend::decode(HEPlaintext& output,
-                           const SealPlaintextWrapper& input) const {
-  NGRAPH_CHECK(false, "decode unimplemented");
-  // ngraph::he::decode(output, input, *m_ckks_encoder);
-}
-
 }  // namespace he
 }  // namespace ngraph
