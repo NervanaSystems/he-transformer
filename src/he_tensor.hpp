@@ -34,12 +34,21 @@ class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
 class HETensor : public runtime::Tensor {
  public:
-  HETensor(const std::vector<he_proto::HETensor>& proto_tensors,
-           seal::CKKSEncoder& ckks_encoder,
-           std::shared_ptr<seal::SEALContext> seal_context,
-           const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-           const ngraph::he::HESealEncryptionParameters& encryption_params);
-
+  /// \brief Constructs a generic HETensor
+  /// \param[in] element_type Datatype of data stored in the tensor
+  /// \param[in] shape Shape of tensor
+  /// \param[in] plaintext_packing Whether or not tensor is stored using
+  /// plaintext packing
+  /// \param[in] complex_packing Whether or not tensor is stored using
+  /// complex packing
+  /// \param[in] encrypted Whether or not tensor is initialized with ciphertexts
+  /// \param[in] ckks_encoder CKKS encoder to associate with loaded tensor
+  /// \param[in] seal_context SEAL context to associate with loaded tensor
+  /// \param[in] encryptor SEAL encryptor to associate with loaded tensor
+  /// \param[in] decryptor SEAL decryptor to associate with loaded tensor
+  /// \param[in] encryption_params Encryption parameters to associate with
+  /// loaded tensor
+  /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
            const bool plaintext_packing, const bool complex_packing,
            const bool encrypted, seal::CKKSEncoder& ckks_encoder,
@@ -49,9 +58,14 @@ class HETensor : public runtime::Tensor {
            const std::string& name = "external");
 
   /// \brief Constructs a generic HETensor
-  /// \param[in] element_type Datatype of underlying data
+  /// \param[in] element_type Datatype of data stored in the tensor
   /// \param[in] shape Shape of tensor
-  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] plaintext_packing Whether or not tensor is stored using
+  /// plaintext packing
+  /// \param[in] complex_packing Whether or not tensor is stored using
+  /// complex packing
+  /// \param[in] encrypted Whether or not tensor is initialized with ciphertexts
+  /// \param[in] he_seal_backend Backend used for encryption and decryption
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
            const bool plaintext_packing, const bool complex_packing,

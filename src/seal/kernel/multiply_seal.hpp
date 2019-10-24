@@ -47,8 +47,6 @@ void scalar_multiply_seal(
 /// \param[in,out] arg0 Ciphertext argument to multiply. May be rescaled
 /// \param[in] arg1 Plaintext argument to multiply
 /// \param[out] out Stores the encrypted sum
-/// \param[in] complex_packing Whether or not the ciphertext should be
-/// multiplied using complex packing
 /// \param[in] he_seal_backend Backend used to perform multiplication
 /// \param[in] pool Memory pool used for new memory allocation
 void scalar_multiply_seal(
@@ -79,7 +77,7 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
 /// \brief Multiplies two ciphertext/plaintext elements
 /// \param[in] arg0 Cipher or plaintext data to multiply
 /// \param[in] arg1 Cipher or plaintext data to multiply
-/// \param[in] arg0 Stores the ciphertext or plaintext product
+/// \param[in] out Stores the ciphertext or plaintext product
 /// \param[in] he_seal_backend Backend used to perform multiplication
 inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
                                  HESealBackend& he_seal_backend) {
@@ -123,8 +121,9 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
 /// \brief Multiplies two vectors of ciphertext/plaintext elements element-wise
 /// \param[in] arg0 Cipher or plaintext data to multiply
 /// \param[in] arg1 Cipher or plaintext data to multiply
-/// \param[in] arg0 Stores the ciphertext or plaintext product
+/// \param[in] out Stores the ciphertext or plaintext product
 /// \param[in] count Number of elements to multiply
+/// \param[in] element_type datatype of the data to multiply
 /// \param[in] he_seal_backend Backend used to perform multiplication
 inline void multiply_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                           std::vector<HEType>& out, size_t count,

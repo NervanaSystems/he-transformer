@@ -46,7 +46,6 @@ void scalar_subtract_seal(
 /// \param[out] out Stores the encrypted sum
 /// \param[in] complex_packing Whether or not the ciphertext should be
 /// multiplied using complex packing
-/// \param[in] element_type datatype of the subtractition
 /// \param[in] he_seal_backend Backend with which to perform subtractition
 void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
@@ -75,7 +74,7 @@ void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
 /// \brief Subtracts two ciphertext/plaintext elements
 /// \param[in] arg0 Cipher or plaintext data to subtract from
 /// \param[in] arg1 Cipher or plaintext data to subtract
-/// \param[in] arg0 Stores the ciphertext or plaintext difference
+/// \param[in] out Stores the ciphertext or plaintext difference
 /// \param[in] he_seal_backend Backend used to perform subtraction
 inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
                                  HESealBackend& he_seal_backend) {
@@ -105,8 +104,9 @@ inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
 /// \brief Subtracts two vectors of ciphertext/plaintext elements element-wise
 /// \param[in] arg0 Cipher or plaintext data to subtract from
 /// \param[in] arg1 Cipher or plaintext data to subtract
-/// \param[in] arg0 Stores the ciphertext or plaintext difference
+/// \param[in] out Stores the ciphertext or plaintext difference
 /// \param[in] count Number of elements to subtract
+/// \param[in] element_type datatype of the data to subtract
 /// \param[in] he_seal_backend Backend used to perform multiplication
 inline void subtract_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                           std::vector<HEType>& out, size_t count,

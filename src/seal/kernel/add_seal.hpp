@@ -77,7 +77,7 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
 /// \brief Adds two ciphertext/plaintext elements
 /// \param[in] arg0 Cipher or plaintext data to add
 /// \param[in] arg1 Cipher or plaintext data to add
-/// \param[in] arg0 Stores the ciphertext or plaintext sum
+/// \param[in] out Stores the ciphertext or plaintext sum
 /// \param[in] he_seal_backend Backend used to perform addition
 inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
                             HESealBackend& he_seal_backend) {
@@ -119,8 +119,9 @@ inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
 /// \brief Adds two vectors of ciphertext/plaintext elements element-wise
 /// \param[in] arg0 Cipher or plaintext data to add
 /// \param[in] arg1 Cipher or plaintext data to add
-/// \param[in] arg0 Stores the ciphertext or plaintext sum
+/// \param[in] out Stores the ciphertext or plaintext sum
 /// \param[in] count Number of elements to add
+/// \param[in] element_type datatype of the data to add
 /// \param[in] he_seal_backend Backend used to perform addition
 inline void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                      std::vector<HEType>& out, size_t count,
