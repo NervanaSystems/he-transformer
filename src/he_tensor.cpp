@@ -62,8 +62,8 @@ HETensor::HETensor(
     }
 
   } else {
-    // TODO: set batch size?
-    m_data.resize(num_elements, HEType(HEPlaintext(), complex_packing));
+    m_data.resize(num_elements,
+                  HEType(HEPlaintext(get_batch_size()), complex_packing));
   }
 }
 
@@ -126,6 +126,7 @@ void HETensor::pack(size_t pack_axis) {
       new_data[new_idx].get_plaintext().emplace_back(plain[0]);
       NGRAPH_INFO << "new_idx " << new_idx << " new size "
                   << new_data[new_idx].get_plaintext().size();
+      new_data[new_idx].complex_packing() = m_data[idx].complex_packing();
     }
   }
 

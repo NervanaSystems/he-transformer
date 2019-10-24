@@ -35,7 +35,6 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const seal::parms_id_type& parms_id, double scale,
                      seal::CKKSEncoder& ckks_encoder,
                      seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
-  NGRAPH_INFO << "Max seal";
   // TODO: use constructor?
   std::vector<HEPlaintext> out_plain(
       out.size(), HEPlaintext(std::vector<double>(
@@ -72,7 +71,6 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
               out[out_idx].complex_packing());
     }
   }
-  NGRAPH_INFO << "Done with max seal";
 }
 
 inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
