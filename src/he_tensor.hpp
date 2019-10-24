@@ -111,7 +111,7 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns the shape of the expanded tensor.
   const Shape& get_expanded_shape() const { return get_shape(); }
 
-  /// \brief Returns packing factor used in the tensor
+  /// \brief Returns plaintext packing factor used in the tensor
   inline size_t get_batch_size() const {
     return batch_size(get_shape(), m_packed);
   }
@@ -124,8 +124,21 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns whether or not the tensor is packed
   inline bool is_packed() const { return m_packed; }
 
+  /// \brief Writes the tensor to a vector of proto tensors.
+  /// Due to the 2GB limit on protobufs, large ciphertext tensors may not be
+  /// able to store the entire tensor in one SealCipherTensor message.
+  /// \param[out] proto_tensors
   void write_to_protos(std::vector<he_proto::HETensor>& proto_tensors) const;
 
+  /// \brief Loads a tensor from protobuf tensors
+  /// \param[in] proto_tensors vector of protobuf tensors to load from
+  /// \param[in] ckks_encoder CKKS encoder to associate with loaded tensor
+  /// \param[in] seal_context SEAL context to associate with loaded tensor
+  /// \param[in] encryptor SEAL encryptor to associate with loaded tensor
+  /// \param[in] decryptor SEAL decryptor to associate with loaded tensor
+  /// \param[in] encryption_params Encryption parameters to associate with
+  /// loaded tensor
+  /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensors(
       const std::vector<he_proto::HETensor>& proto_tensors,
       seal::CKKSEncoder& ckks_encoder,
@@ -133,6 +146,15 @@ class HETensor : public runtime::Tensor {
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params);
 
+  /// \brief Loads a tensor from protobuf tensor
+  /// \param[in] proto_tensor protobuf tensor to load from
+  /// \param[in] ckks_encoder CKKS encoder to associate with loaded tensor
+  /// \param[in] seal_context SEAL context to associate with loaded tensor
+  /// \param[in] encryptor SEAL encryptor to associate with loaded tensor
+  /// \param[in] decryptor SEAL decryptor to associate with loaded tensor
+  /// \param[in] encryption_params Encryption parameters to associate with
+  /// loaded tensor
+  /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensor(
       const he_proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
       std::shared_ptr<seal::SEALContext> seal_context,
