@@ -1440,8 +1440,7 @@ void HESealExecutable::handle_server_relu_op(
   }
 
   // TODO: better initialization?
-  m_relu_ciphertexts.resize(element_count,
-                            HEType(HEPlaintext(), false, false, 1));
+  m_relu_ciphertexts.resize(element_count, HEType(HEPlaintext(), false));
 
   // TODO: tune
   const size_t max_relu_message_cnt = 1000;

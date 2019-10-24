@@ -85,8 +85,8 @@ void batch_norm_inference_seal(
     HEPlaintext scale_vec(std::vector<double>(batch_size, scale));
     HEPlaintext bias_vec(std::vector<double>(batch_size, bias));
 
-    HEType he_scale(scale_vec, false, false, batch_size);
-    HEType he_bias(bias_vec, false, false, batch_size);
+    HEType he_scale(scale_vec, false);
+    HEType he_bias(bias_vec, false);
 
     scalar_multiply_seal(input[input_index], he_scale,
                          normed_input[input_index], he_seal_backend);

@@ -20,8 +20,7 @@ set(SRC
     # test_encryption_parameters.cpp
     # test_perf_micro.cpp
     # test_protobuf.cpp
-    # test_tensor.cpp)
-    )
+    test_tensor.cpp)
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp

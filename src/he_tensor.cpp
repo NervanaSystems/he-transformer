@@ -54,17 +54,16 @@ HETensor::HETensor(
       m_descriptor->get_tensor_layout()->get_size() / get_batch_size();
 
   if (encrypted) {
-    m_data.resize(num_elements,
-                  HEType(HESealBackend::create_empty_ciphertext(),
-                         plaintext_packing, complex_packing, get_batch_size()));
+    m_data.resize(num_elements, HEType(HESealBackend::create_empty_ciphertext(),
+                                       complex_packing, get_batch_size()));
     for (size_t i = 0; i < num_elements; ++i) {
       m_data[i] = HEType(HESealBackend::create_empty_ciphertext(),
-                         plaintext_packing, complex_packing, get_batch_size());
+                         complex_packing, get_batch_size());
     }
 
   } else {
-    m_data.resize(num_elements, HEType(HEPlaintext(), plaintext_packing,
-                                       complex_packing, get_batch_size()));
+    // TODO: set batch size?
+    m_data.resize(num_elements, HEType(HEPlaintext(), complex_packing));
   }
 }
 
@@ -100,6 +99,63 @@ ngraph::Shape HETensor::unpack_shape(const ngraph::Shape& shape,
     unpacked_shape[0] = pack_size;
   }
   return unpacked_shape;
+}
+
+void HETensor::pack(size_t pack_axis) {
+  NGRAPH_INFO << "Packing tensor";
+  NGRAPH_CHECK(pack_axis == 0, "Packing only supported along axis 0");
+  if (is_packed()) {
+    return;
+  }
+  NGRAPH_CHECK(!any_encrypted_data(),
+               "Packing only supported for plaintext tensors");
+  NGRAPH_INFO << "m_data.size " << m_data.size();
+
+  m_packed = true;
+  NGRAPH_INFO << "New batch size " << get_batch_size();
+  //  TODO: set batch size / complex packing?
+  std::vector<HEType> new_data(m_data.size() / get_batch_size(),
+                               HEType(HEPlaintext(), false));
+  NGRAPH_INFO << "New data size " << new_data.size();
+
+  for (size_t idx = 0; idx < m_data.size(); ++idx) {
+    auto& plain = m_data[idx].get_plaintext();
+    NGRAPH_INFO << "idx " << idx << "plain.size() " << plain.size();
+    if (plain.size() != 0) {
+      size_t new_idx = idx % new_data.size();
+      new_data[new_idx].get_plaintext().emplace_back(plain[0]);
+      NGRAPH_INFO << "new_idx " << new_idx << " new size "
+                  << new_data[new_idx].get_plaintext().size();
+    }
+  }
+
+  m_data = std::move(new_data);
+  m_packed = true;
+  m_packed_shape = ngraph::he::HETensor::pack_shape(get_shape());
+}
+
+void HETensor::unpack() {
+  NGRAPH_INFO << "Unpacking tensor";
+  if (!is_packed()) {
+    return;
+  }
+  NGRAPH_CHECK(!any_encrypted_data(),
+               "Unpacking only supported for plaintext tensors");
+
+  NGRAPH_INFO << "get shape " << get_shape();
+
+  size_t old_batch_size = get_batch_size();
+  m_packed = false;
+  std::vector<HEType> new_data;
+  for (size_t batch_idx = 0; batch_idx < old_batch_size; ++batch_idx) {
+    for (size_t i = 0; i < m_data.size(); ++i) {
+      auto& plain = m_data[i].get_plaintext();
+      new_data.emplace_back(
+          HEPlaintext({static_cast<double>(plain[batch_idx])}), false);
+    }
+  }
+  m_data = std::move(new_data);
+  m_packed_shape = get_shape();
 }
 
 uint64_t HETensor::batch_size(const Shape& shape, const bool packed) {

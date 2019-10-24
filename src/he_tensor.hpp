@@ -84,6 +84,15 @@ class HETensor : public runtime::Tensor {
   static Shape unpack_shape(const Shape& shape, size_t pack_size,
                             size_t pack_axis = 0);
 
+  /// \brief Packs the tensor along pack axis
+  /// \param[in] pack_axis Axis along which to pack.
+  /// \throws ngraph_error if tensor contains any encrypted data
+  void pack(size_t pack_axis = 0);
+
+  /// \brief Unpacks the tensor
+  /// \throws ngraph_error if tensor contains any encrypted data
+  void unpack();
+
   const std::vector<HEType>& data() const { return m_data; }
 
   std::vector<HEType>& data() { return m_data; }

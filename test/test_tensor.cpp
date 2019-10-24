@@ -18,6 +18,7 @@
 
 #include "gtest/gtest.h"
 #include "he_tensor.hpp"
+#include "he_type.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
@@ -28,52 +29,57 @@ using namespace ngraph;
 using namespace ngraph::he;
 
 TEST(he_tensor, pack) {
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
   Shape shape{2, 2};
+  HETensor plain(element::f32, shape, false, false, false, *he_backend);
 
-  HEPlainTensor plain(element::f32, shape, false);
-
-  vector<HEPlaintext> elements;
+  vector<HEType> elements;
   for (size_t i = 0; i < shape_size(shape); ++i) {
-    elements.push_back(HEPlaintext(i));
+    elements.push_back(HEType(HEPlaintext({static_cast<double>(i)}), false));
   }
-  plain.set_elements(elements);
+  plain.data() = elements;
   plain.pack();
 
   EXPECT_TRUE(plain.is_packed());
   EXPECT_EQ(plain.get_packed_shape(), (Shape{1, 2}));
   EXPECT_EQ(plain.get_batch_size(), 2);
-  EXPECT_EQ(plain.num_plaintexts(), 2);
+  EXPECT_EQ(plain.data().size(), 2);
   for (size_t i = 0; i < 2; ++i) {
-    EXPECT_EQ(plain.get_element(i).num_values(), 2);
+    EXPECT_TRUE(plain.data(i).is_plaintext());
+    EXPECT_EQ(plain.data(i).get_plaintext().size(), 2);
   }
-  EXPECT_EQ(plain.get_element(0).values()[0], 0);
-  EXPECT_EQ(plain.get_element(0).values()[1], 2);
-  EXPECT_EQ(plain.get_element(1).values()[0], 1);
-  EXPECT_EQ(plain.get_element(1).values()[1], 3);
+  EXPECT_EQ(plain.data(0).get_plaintext()[0], 0);
+  EXPECT_EQ(plain.data(0).get_plaintext()[1], 2);
+  EXPECT_EQ(plain.data(1).get_plaintext()[0], 1);
+  EXPECT_EQ(plain.data(1).get_plaintext()[1], 3);
 }
 
 TEST(he_tensor, unpack) {
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
   Shape shape{2, 2};
+  HETensor plain(element::f32, shape, true, false, false, *he_backend);
+  vector<HEType> elements;
 
-  HEPlainTensor plain(element::f32, shape, true);
-
-  vector<HEPlaintext> elements;
-  elements.push_back(HEPlaintext(vector<double>{0, 1}));
-  elements.push_back(HEPlaintext(vector<double>{2, 3}));
-  plain.set_elements(elements);
-
+  elements.push_back(HEType(HEPlaintext(vector<double>{0, 1}), false));
+  elements.push_back(HEType(HEPlaintext(vector<double>{2, 3}), false));
+  plain.data() = elements;
   plain.unpack();
 
   EXPECT_FALSE(plain.is_packed());
   EXPECT_EQ(plain.get_packed_shape(), (Shape{2, 2}));
-  EXPECT_EQ(plain.num_plaintexts(), 4);
+  EXPECT_EQ(plain.data().size(), 4);
   EXPECT_EQ(plain.get_batch_size(), 1);
 
   for (size_t i = 0; i < 4; ++i) {
-    EXPECT_EQ(plain.get_element(i).num_values(), 1);
+    EXPECT_TRUE(plain.data(i).is_plaintext());
+    EXPECT_EQ(plain.data(i).get_plaintext().size(), 1);
   }
-  EXPECT_EQ(plain.get_element(0).values()[0], 0);
-  EXPECT_EQ(plain.get_element(1).values()[0], 2);
-  EXPECT_EQ(plain.get_element(2).values()[0], 1);
-  EXPECT_EQ(plain.get_element(3).values()[0], 3);
+  EXPECT_EQ(plain.data(0).get_plaintext()[0], 0);
+  EXPECT_EQ(plain.data(1).get_plaintext()[0], 2);
+  EXPECT_EQ(plain.data(2).get_plaintext()[0], 1);
+  EXPECT_EQ(plain.data(3).get_plaintext()[0], 3);
 }

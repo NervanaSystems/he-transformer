@@ -33,24 +33,21 @@ class HEType {
  public:
   HEType() = delete;
 
-  HEType(const HEPlaintext& plain, const bool plaintext_packing,
-         const bool complex_packing, const size_t batch_size)
-      : HEType(plaintext_packing, complex_packing, batch_size) {
+  HEType(const HEPlaintext& plain, const bool complex_packing)
+      : HEType(complex_packing, plain.size()) {
     m_is_plain = true;
     m_plain = plain;
   }
 
   HEType(const std::shared_ptr<SealCiphertextWrapper>& cipher,
-         const bool plaintext_packing, const bool complex_packing,
-         const size_t batch_size)
-      : HEType(plaintext_packing, complex_packing, batch_size) {
+         const bool complex_packing, const size_t batch_size)
+      : HEType(complex_packing, batch_size) {
     m_is_plain = false;
     m_cipher = cipher;
   }
 
   void save(he_proto::HEType& proto_he_type) const {
     proto_he_type.set_is_plaintext(is_plaintext());
-    proto_he_type.set_plaintext_packing(plaintext_packing());
     proto_he_type.set_complex_packing(complex_packing());
     proto_he_type.set_batch_size(batch_size());
 
@@ -73,8 +70,7 @@ class HEType {
   const bool& complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
-  const bool& plaintext_packing() const { return m_plaintext_packing; }
-  bool& plaintext_packing() { return m_plaintext_packing; }
+  bool plaintext_packing() const { return m_batch_size > 1; }
 
   const size_t& batch_size() const { return m_batch_size; }
   size_t& batch_size() { return m_batch_size; }
@@ -106,14 +102,10 @@ class HEType {
 
  private:
   /// \brief Constructs an empty HEType object
-  HEType(const bool plaintext_packing, const bool complex_packing,
-         const size_t batch_size)
-      : m_plaintext_packing(plaintext_packing),
-        m_complex_packing(complex_packing),
-        m_batch_size(batch_size) {}
+  HEType(const bool complex_packing, const size_t batch_size)
+      : m_complex_packing(complex_packing), m_batch_size(batch_size) {}
 
   bool m_is_plain;
-  bool m_plaintext_packing;
   bool m_complex_packing;
   size_t m_batch_size;
   HEPlaintext m_plain;

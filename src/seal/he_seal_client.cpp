@@ -319,9 +319,9 @@ void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
   size_t cipher_count = proto_tensor->data_size();
 
   std::vector<HEType> max_pool_ciphers(
-      cipher_count, HEType(HEPlaintext(), false, false, m_batch_size));
+      cipher_count, HEType(HEPlaintext(m_batch_size), false));
   std::vector<HEType> post_max_pool_ciphers(
-      {HEType(HEPlaintext(), false, false, m_batch_size)});
+      {HEType(HEPlaintext(m_batch_size), false)});
 
   NGRAPH_INFO << "m_batch_size " << m_batch_size;
 

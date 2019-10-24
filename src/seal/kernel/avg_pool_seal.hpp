@@ -118,7 +118,7 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
 
     // T result = 0;
     // TODO: better type which matches arguments?
-    auto sum = HEType(HEPlaintext(), false, false, 1);
+    auto sum = HEType(HEPlaintext(), false);
     bool first_add = true;
 
     size_t n_elements = 0;
@@ -155,9 +155,10 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
       HEPlaintext zero(std::vector<double>{0});
       out[out_coord_idx].set_plaintext(zero);
     } else {
-      auto inv_n_elements = HEType(
-          HEPlaintext(std::vector<double>{1.f / n_elements}),
-          sum.plaintext_packing(), sum.complex_packing(), sum.batch_size());
+      // TODO: batch size number of zeros?
+      auto inv_n_elements =
+          HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
+                 sum.complex_packing());
 
       scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
       out[out_coord_idx] = sum;

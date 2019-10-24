@@ -62,7 +62,7 @@ void pad_seal(std::vector<HEType>& arg0,
   for (const Coordinate& in_coord : input_transform) {
     const Coordinate& out_coord = *output_it;
 
-    HEType v(HEPlaintext(), false, false, 1);
+    HEType v(HEPlaintext(), false);
 
     switch (pad_mode) {
       case op::PadMode::CONSTANT:

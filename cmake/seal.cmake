@@ -62,8 +62,7 @@ ExternalProject_Add(
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
                     # Skip updates
-                    # UPDATE_COMMAND ""
-  )
+  UPDATE_COMMAND "")
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)
 add_library(libseal STATIC IMPORTED)

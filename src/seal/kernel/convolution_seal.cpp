@@ -181,7 +181,7 @@ void convolution_seal(
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
     // TODO: better type which matches arguments?
-    auto sum = HEType(HEPlaintext(), false, false, 1);
+    auto sum = HEType(HEPlaintext(), false);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -203,7 +203,7 @@ void convolution_seal(
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
 
         // TODO: better type which matches arguments?
-        auto prod = HEType(HEPlaintext(), false, false, 1);
+        auto prod = HEType(HEPlaintext(), false);
 
         scalar_multiply_seal(mult_arg0, mult_arg1, prod, he_seal_backend);
         if (first_add) {

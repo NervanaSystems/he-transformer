@@ -29,7 +29,7 @@ void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out) {
   std::vector<double> out_vals(arg.size());
   std::transform(arg.begin(), arg.end(), out_vals.begin(),
                  std::negate<double>());
-    out = HEPlaintext({out_vals});
+  out = HEPlaintext({out_vals});
 }
 
 }  // namespace he
