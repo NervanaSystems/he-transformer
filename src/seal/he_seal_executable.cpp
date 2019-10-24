@@ -405,7 +405,7 @@ void HESealExecutable::handle_relu_result(
   size_t result_count = proto_tensor.data_size();
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    m_relu_ciphertexts[m_unknown_relu_idx[result_idx + m_relu_done_count]] =
+    m_relu_data[m_unknown_relu_idx[result_idx + m_relu_done_count]] =
         he_tensor->data(result_idx);
   }
   m_relu_done_count += result_count;
@@ -437,7 +437,7 @@ void HESealExecutable::handle_max_pool_result(
       *m_he_seal_backend.get_decryptor(),
       m_he_seal_backend.get_encryption_parameters());
 
-  m_max_pool_ciphertexts.emplace_back(he_tensor->data(0));
+  m_max_pool_data.emplace_back(he_tensor->data(0));
   m_max_pool_done = true;
   m_max_pool_cond.notify_all();
 }
@@ -647,6 +647,15 @@ bool HESealExecutable::call(
             current_annotation->packed() == he_input->is_packed(),
             "Parameter annotation ", *current_annotation, " does not match ",
             (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
+
+        NGRAPH_INFO << "he_input->any_encrypted_data "
+                    << he_input->any_encrypted_data();
+        current_annotation->set_encrypted(he_input->any_encrypted_data());
+        param->set_op_annotations(current_annotation);
+
+      } else {
+        NGRAPH_WARN << "Parameter " << param->get_name()
+                    << " has no HE op annotation";
       }
     } else {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
@@ -799,11 +808,11 @@ bool HESealExecutable::call(
       auto it = tensor_map.find(tensor);
       if (it == tensor_map.end()) {
         // The output tensor is not in the tensor map so create a new tensor
-        const Shape& shape = op->get_output_shape(i);
+        Shape shape = op->get_output_shape(i);
         const element::Type& element_type = op->get_output_element_type(i);
         std::string name = op->output(i).get_tensor().get_name();
 
-        NGRAPH_HE_LOG(5) << "Creating output tensor";
+        NGRAPH_HE_LOG(3) << "Get output packing / encrypted";
 
         // TODO: remove case once Constant becomes an op
         // (https://github.com/NervanaSystems/ngraph/pull/3752)
@@ -830,14 +839,21 @@ bool HESealExecutable::call(
                             return he_tensor->is_packed();
                           });
         }
-
-        // TODO: avoid broadcasting from constant to output with batch size
+        // Avoid broadcasting from constant to output with batch size
         // first dimension. This happens because not every constant is
         // packed, for example convolution kernels.
+        // TODO: remove?
         if (shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
           packed_out = true;
         }
+
+        NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
+        NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
+        if (packed_out) {
+          HETensor::unpack_shape(shape, m_batch_size);
+        }
+        NGRAPH_HE_LOG(5) << "Creating output tensor with shape " << shape;
 
         if (encrypted_out) {
           auto out_tensor = std::static_pointer_cast<HETensor>(
@@ -936,26 +952,10 @@ void HESealExecutable::generate_calls(
   bool verbose = verbose_op(node);
   std::string node_op = node.description();
 
-  std::vector<Shape> arg_shapes{};
-  for (size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx) {
-    arg_shapes.emplace_back(args[arg_idx]->get_packed_shape());
-  }
-
-  // TODO: remove?
-  Shape out_shape{};
-  if (node.get_output_size() > 0) {
-    NGRAPH_CHECK(node.get_output_size() == 1,
-                 "Only support single-output functions");
-    out_shape = node.get_output_shape(0);
-    if (node_wrapper.get_node()->is_op() && plaintext_packed(node_wrapper)) {
-      out_shape = HETensor::pack_shape(out_shape);
-    }
-  }
-
-  // We want to check that every OP_TYPEID enumeration is included in the
-  // list. These GCC flags enable compile-time checking so that if an
-  //      enumeration
-  // is not in the list an error is generated.
+// We want to check that every OP_TYPEID enumeration is included in the
+// list. These GCC flags enable compile-time checking so that if an
+//      enumeration
+// is not in the list an error is generated.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic error "-Wswitch"
 #pragma GCC diagnostic error "-Wswitch-enum"
@@ -1060,10 +1060,11 @@ void HESealExecutable::generate_calls(
       Shape in_shape1 = args[1]->get_packed_shape();
 
       convolution_seal(args[0]->data(), args[1]->data(), out[0]->data(),
-                       in_shape0, in_shape1, out_shape, window_movement_strides,
-                       window_dilation_strides, padding_below, padding_above,
-                       data_dilation_strides, 0, 1, 1, 0, 0, 1, false, type,
-                       m_batch_size, m_he_seal_backend, verbose);
+                       in_shape0, in_shape1, out[0]->get_packed_shape(),
+                       window_movement_strides, window_dilation_strides,
+                       padding_below, padding_above, data_dilation_strides, 0,
+                       1, 1, 0, 0, 1, false, type, m_batch_size,
+                       m_he_seal_backend, verbose);
 
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
       break;
@@ -1087,8 +1088,8 @@ void HESealExecutable::generate_calls(
         NGRAPH_HE_LOG(3) << in_shape0 << " dot " << in_shape1;
       }
       dot_seal(args[0]->data(), args[1]->data(), out[0]->data(), in_shape0,
-               in_shape1, out_shape, dot->get_reduction_axes_count(), type,
-               m_he_seal_backend);
+               in_shape1, out[0]->get_packed_shape(),
+               dot->get_reduction_axes_count(), type, m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
 
       break;
@@ -1137,8 +1138,9 @@ void HESealExecutable::generate_calls(
         NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
                      output_size, " doesn't match number of elements",
                      out[0]->data().size());
-        max_pool_seal(args[0]->data(), out[0]->data(), arg_shapes[0],
-                      out[0]->get_packed_shape(), max_pool->get_window_shape(),
+        max_pool_seal(args[0]->data(), out[0]->data(),
+                      args[0]->get_packed_shape(), out[0]->get_packed_shape(),
+                      max_pool->get_window_shape(),
                       max_pool->get_window_movement_strides(),
                       max_pool->get_padding_below(),
                       max_pool->get_padding_above(), m_he_seal_backend);
@@ -1181,12 +1183,12 @@ void HESealExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Relu: {
-      size_t output_size = args[0]->get_batched_element_count();
       if (m_enable_client) {
         handle_server_relu_op(args[0], out[0], node_wrapper);
       } else {
         NGRAPH_WARN
             << "Performing Relu without client is not privacy preserving ";
+        size_t output_size = args[0]->get_batched_element_count();
         NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
                      output_size, "doesn't match number of elements",
                      out[0]->data().size());
@@ -1200,6 +1202,8 @@ void HESealExecutable::generate_calls(
       if (verbose) {
         NGRAPH_HE_LOG(3) << args[0]->get_packed_shape() << " reshape "
                          << out[0]->get_packed_shape();
+        NGRAPH_HE_LOG(3) << "args[0] batch size " << args[0]->get_batch_size();
+        NGRAPH_HE_LOG(3) << "out[0] batch size " << out[0]->get_batch_size();
       }
       reshape_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                    reshape->get_input_order(), out[0]->get_packed_shape());
@@ -1348,7 +1352,7 @@ void HESealExecutable::generate_calls(
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
-}
+}  // namespace he
 
 void HESealExecutable::handle_server_max_pool_op(
     const std::shared_ptr<HETensor>& arg, const std::shared_ptr<HETensor>& out,
@@ -1371,7 +1375,7 @@ void HESealExecutable::handle_server_max_pool_op(
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
       max_pool->get_padding_above());
 
-  m_max_pool_ciphertexts.clear();
+  m_max_pool_data.clear();
 
   for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
     he_proto::TCPMessage proto_msg;
@@ -1420,7 +1424,7 @@ void HESealExecutable::handle_server_max_pool_op(
     // Reset for next max_pool call
     m_max_pool_done = false;
   }
-  out->data() = m_max_pool_ciphertexts;
+  out->data() = m_max_pool_data;
 }
 
 void HESealExecutable::handle_server_relu_op(
@@ -1434,7 +1438,9 @@ void HESealExecutable::handle_server_relu_op(
 
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
-  size_t element_count = shape_size(node.get_output_shape(0)) / m_batch_size;
+  size_t element_count = arg->data().size();
+
+  NGRAPH_INFO << "relu element count " << element_count;
 
   size_t smallest_ind =
       match_to_smallest_chain_index(arg->data(), m_he_seal_backend);
@@ -1444,7 +1450,7 @@ void HESealExecutable::handle_server_relu_op(
   }
 
   // TODO: better initialization?
-  m_relu_ciphertexts.resize(element_count, HEType(HEPlaintext(), false));
+  m_relu_data.resize(element_count, HEType(HEPlaintext(), false));
 
   // TODO: tune
   const size_t max_relu_message_cnt = 1000;
@@ -1456,17 +1462,17 @@ void HESealExecutable::handle_server_relu_op(
   for (size_t relu_idx = 0; relu_idx < element_count; ++relu_idx) {
     auto& he_type = arg->data(relu_idx);
     if (he_type.is_plaintext()) {
-      m_relu_ciphertexts[relu_idx].set_plaintext(HEPlaintext());
+      NGRAPH_INFO << "Relu at idx " << relu_idx << " is plaintext";
+      m_relu_data[relu_idx].set_plaintext(HEPlaintext());
       if (type_id == OP_TYPEID::Relu) {
         scalar_relu_seal(he_type.get_plaintext(),
-                         m_relu_ciphertexts[relu_idx].get_plaintext());
+                         m_relu_data[relu_idx].get_plaintext());
       } else {
         const op::BoundedRelu* bounded_relu =
             static_cast<const op::BoundedRelu*>(&node);
         float alpha = bounded_relu->get_alpha();
         scalar_bounded_relu_seal(he_type.get_plaintext(),
-                                 m_relu_ciphertexts[relu_idx].get_plaintext(),
-                                 alpha);
+                                 m_relu_data[relu_idx].get_plaintext(), alpha);
       }
     } else {
       m_unknown_relu_idx.emplace_back(relu_idx);
@@ -1495,10 +1501,16 @@ void HESealExecutable::handle_server_relu_op(
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
-        // TODO: set packing / encrypted to correct values?
-        HETensor relu_tensor(arg->get_element_type(),
-                             Shape{cipher_batch.size()}, false, false, true,
-                             m_he_seal_backend);
+        // TODO: set complex_packing to correct values?
+        NGRAPH_INFO << "Batch size " << cipher_batch[0].batch_size();
+        NGRAPH_INFO << "relu tensor shape "
+                    << Shape{cipher_batch[0].batch_size(), cipher_batch.size()};
+        NGRAPH_INFO << "arg->is_packed() " << arg->is_packed();
+
+        HETensor relu_tensor(
+            arg->get_element_type(),
+            Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
+            arg->is_packed(), false, true, m_he_seal_backend);
         relu_tensor.data() = cipher_batch;
 
         std::vector<he_proto::HETensor> proto_tensors;
@@ -1521,6 +1533,8 @@ void HESealExecutable::handle_server_relu_op(
   for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
     NGRAPH_CHECK(arg->data(unknown_relu_idx).is_ciphertext(),
                  "HEType should be ciphertext");
+    NGRAPH_INFO << "arg " << unknown_relu_idx << " batch size "
+                << arg->data(unknown_relu_idx).batch_size();
     relu_ciphers_batch.emplace_back(arg->data(unknown_relu_idx));
     if (relu_ciphers_batch.size() == max_relu_message_cnt) {
       process_unknown_relu_ciphers_batch(relu_ciphers_batch);
@@ -1538,7 +1552,7 @@ void HESealExecutable::handle_server_relu_op(
       mlock, [=]() { return m_relu_done_count == m_unknown_relu_idx.size(); });
   m_relu_done_count = 0;
 
-  out->data() = m_relu_ciphertexts;
+  out->data() = m_relu_data;
 }
 }  // namespace he
 }  // namespace ngraph

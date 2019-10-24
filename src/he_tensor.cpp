@@ -89,16 +89,14 @@ ngraph::Shape HETensor::pack_shape(const ngraph::Shape& shape,
   return packed_shape;
 }
 
-ngraph::Shape HETensor::unpack_shape(const ngraph::Shape& shape,
-                                     size_t pack_size, size_t batch_axis) {
+void HETensor::unpack_shape(ngraph::Shape& shape, size_t pack_size,
+                            size_t batch_axis) {
   if (batch_axis != 0) {
     throw ngraph::ngraph_error("Unpacking only supported along axis 0");
   }
-  ngraph::Shape unpacked_shape(shape);
   if (shape.size() > 0 && shape[0] != 0) {
-    unpacked_shape[0] = pack_size;
+    shape[0] = pack_size;
   }
-  return unpacked_shape;
 }
 
 void HETensor::pack(size_t pack_axis) {
@@ -291,6 +289,7 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
   const auto& proto_shape = proto_tensor.shape();
   size_t result_count = proto_tensor.data_size();
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+  NGRAPH_INFO << "Load from proto tensors shape " << shape;
   auto element_type = element::f64;
 
   auto he_tensor = std::make_shared<HETensor>(

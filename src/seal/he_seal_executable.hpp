@@ -251,9 +251,8 @@ class HESealExecutable : public runtime::Executable {
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<HETensor>> m_client_outputs;
 
-  std::vector<HEType> m_relu_ciphertexts;
-  std::vector<HEType> m_max_pool_ciphertexts;
-  std::vector<HEType> m_minimum_ciphertexts;
+  std::vector<HEType> m_relu_data;
+  std::vector<HEType> m_max_pool_data;
 
   std::set<std::string> m_verbose_ops;
 

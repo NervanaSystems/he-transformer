@@ -189,26 +189,31 @@ void HESealClient::handle_inference_request(
                      << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
-      m_encryption_params);
-  for (auto& he_type : he_tensor->data()) {
-    if (encrypt_tensor) {
-      he_type.set_ciphertext(HESealBackend::create_empty_ciphertext());
-    } else {
-      he_type.set_plaintext(HEPlaintext());
-    }
-  }
+  NGRAPH_INFO << "Loading from proto tensor";
+
+  HETensor::unpack_shape(shape, m_batch_size);
+  auto element_type = element::f64;
+
+  auto he_tensor = HETensor(
+      element_type, shape, proto_tensor.packed(),
+      m_encryption_params.complex_packing(), encrypt_tensor, *m_ckks_encoder,
+      m_context, *m_encryptor, *m_decryptor, m_encryption_params, proto_name);
 
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");
 
+  NGRAPH_INFO << "he_tensor shape " << he_tensor.get_shape();
+  NGRAPH_INFO << "he_tensor get_batch_size " << he_tensor.get_batch_size();
+  NGRAPH_INFO << "he_tensor get_packed_shape " << he_tensor.get_packed_shape();
+
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-  he_tensor->write(m_input_config.begin()->second.second.data(), num_bytes);
+  NGRAPH_INFO << "Writing into he tensor";
+  he_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
+  NGRAPH_INFO << "Done writing into he tensor";
 
   std::vector<he_proto::HETensor> tensor_protos;
 
-  he_tensor->write_to_protos(tensor_protos);
+  he_tensor.write_to_protos(tensor_protos);
   for (const auto& tensor_proto : tensor_protos) {
     he_proto::TCPMessage inputs_msg;
     inputs_msg.set_type(he_proto::TCPMessage_Type_REQUEST);

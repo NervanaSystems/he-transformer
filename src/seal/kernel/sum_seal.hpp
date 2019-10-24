@@ -39,8 +39,8 @@ inline void sum_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   for (const Coordinate& output_coord : output_transform) {
     // TODO: batch size
     const auto out_coord_idx = output_transform.index(output_coord);
-    out[out_coord_idx] =
-        HEType(HEPlaintext(std::vector<double>{0}), complex_packing);
+    out[out_coord_idx] = HEType(HEPlaintext(std::vector<double>(batch_size, 0)),
+                                complex_packing);
   }
 
   CoordinateTransform input_transform(in_shape);
