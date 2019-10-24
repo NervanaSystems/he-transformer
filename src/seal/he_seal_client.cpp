@@ -256,17 +256,24 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  auto proto_tensor = proto_msg.he_tensors(0);
+  he_proto::HETensor* proto_tensor = proto_msg.mutable_he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
+      *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  size_t result_count = proto_tensor.data_size();
+  size_t result_count = proto_tensor->data_size();
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
                      m_context->first_parms_id(), scale(), *m_ckks_encoder,
                      *m_encryptor, *m_decryptor);
   }
+
+  std::vector<he_proto::HETensor> proto_output_tensors;
+  he_tensor->write_to_protos(proto_output_tensors);
+  NGRAPH_CHECK(proto_output_tensors.size() == 1,
+               "Only support single-output tensors");
+  *proto_tensor = proto_output_tensors[0];
+
   write_message(std::move(proto_msg));
 
   return;
@@ -288,18 +295,24 @@ void HESealClient::handle_bounded_relu_request(
 
   proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
 
-  auto proto_tensor = proto_msg.he_tensors(0);
+  he_proto::HETensor* proto_tensor = proto_msg.mutable_he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
+      *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  size_t result_count = proto_tensor.data_size();
+  size_t result_count = proto_tensor->data_size();
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     scalar_bounded_relu_seal(he_tensor->data(result_idx),
                              he_tensor->data(result_idx), bound,
                              m_context->first_parms_id(), scale(),
                              *m_ckks_encoder, *m_encryptor, *m_decryptor);
   }
+  std::vector<he_proto::HETensor> proto_output_tensors;
+  he_tensor->write_to_protos(proto_output_tensors);
+  NGRAPH_CHECK(proto_output_tensors.size() == 1,
+               "Only support single-output tensors");
+  *proto_tensor = proto_output_tensors[0];
+
   write_message(std::move(proto_msg));
 
   return;

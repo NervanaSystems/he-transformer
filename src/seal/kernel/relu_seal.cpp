@@ -28,11 +28,10 @@ namespace ngraph {
 namespace he {
 
 void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  std::vector<double> out_vals(arg.size());
+  out.resize(arg.size());
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
-  std::transform(arg.begin(), arg.end(), out_vals.begin(), relu);
-  out = HEPlaintext(std::vector<double>{out_vals});
+  std::transform(arg.begin(), arg.end(), out.begin(), relu);
 }
 
 void scalar_relu_seal(const HEType& arg, HEType& out,
@@ -49,6 +48,7 @@ void scalar_relu_seal(const HEType& arg, HEType& out,
     scalar_relu_seal(plain, plain);
     encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());
+    out.set_ciphertext(out.get_ciphertext());
   }
 }
 

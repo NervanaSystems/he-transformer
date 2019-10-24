@@ -31,10 +31,10 @@ HEType HEType::load(const he_proto::HEType& proto_he_type,
                     std::shared_ptr<seal::SEALContext> context) {
   if (proto_he_type.is_plaintext()) {
     // TODO: HEPlaintext::load function
-    std::vector<double> vals{proto_he_type.plain().begin(),
-                             proto_he_type.plain().end()};
+    HEPlaintext vals{proto_he_type.plain().begin(),
+                     proto_he_type.plain().end()};
 
-    return HEType(HEPlaintext(vals), proto_he_type.complex_packing());
+    return HEType(vals, proto_he_type.complex_packing());
   } else {
     auto cipher = HESealBackend::create_empty_ciphertext();
     SealCiphertextWrapper::load(*cipher, proto_he_type, context);

@@ -206,10 +206,7 @@ void HETensor::write(const void* p, size_t n) {
     HEPlaintext plain({values});
     if (m_data[i].is_plaintext()) {
       m_data[i].set_plaintext(plain);
-      NGRAPH_INFO << "Setting elemnt " << plain;
     } else if (m_data[i].is_ciphertext()) {
-      NGRAPH_INFO << "Encrypting value " << plain;
-      NGRAPH_INFO << "Complex packing? " << m_data[i].complex_packing();
       auto cipher = HESealBackend::create_empty_ciphertext();
 
       ngraph::he::encrypt(cipher, plain, m_context->first_parms_id(),
