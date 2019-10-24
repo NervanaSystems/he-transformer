@@ -183,7 +183,6 @@ void HETensor::write(const void* p, size_t n) {
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_write = n / (element_type.size() * get_batch_size());
-  NGRAPH_INFO << "Writing " << num_elements_to_write << " elements";
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements_to_write; ++i) {
@@ -219,9 +218,6 @@ void HETensor::read(void* target, size_t n) const {
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());
 
-  NGRAPH_INFO << "Reading " << num_elements_to_read << " elements (batch size "
-              << get_batch_size() << ")";
-
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
     char* src = static_cast<char*>(const_cast<void*>(type_values_src));
@@ -251,13 +247,9 @@ void HETensor::read(void* target, size_t n) const {
     copy_batch_values_to_src(i, target, dst);
     ngraph::ngraph_free(dst);
   }
-  NGRAPH_INFO << "Done reading " << num_elements_to_read
-              << " elements (batch size " << get_batch_size() << ")";
 }
 
 void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
-  NGRAPH_INFO << "Write to protos: packed? " << m_packed;
-
   // TODO: support large shapes
   protos.resize(1);
   protos[0].set_name(get_name());
@@ -270,7 +262,6 @@ void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
   for (const auto& he_type : m_data) {
     he_type.save(*protos[0].add_data());
   }
-  NGRAPH_INFO << "Done writing to protos";
 }
 
 std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(

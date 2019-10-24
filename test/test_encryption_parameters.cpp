@@ -83,7 +83,6 @@ TEST(encryption_parameters, save) {
       "HE_SEAL", seal_encryption_parameters, 128, 1.23, false);
 
   stringstream ss;
-
   he_parms.save(ss);
 
   auto loaded_parms = HESealEncryptionParameters::load(ss);
