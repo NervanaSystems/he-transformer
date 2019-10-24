@@ -284,6 +284,8 @@ void write_plaintext(void* output, const HEPlaintext& input,
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to
 /// \param[in] input Ciphertext to decrypt
+/// \param[in] complex_packing Whether or not to decrypt values using complex
+/// packing
 /// \param[in] decryptor Used for decryption
 /// \param[in] ckks_encoder Used for decoding
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,

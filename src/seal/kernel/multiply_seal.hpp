@@ -29,12 +29,13 @@
 
 namespace ngraph {
 namespace he {
-/// \brief multiplies two ciphertexts
+/// \brief Multiplies two ciphertexts
 /// \param[in,out] arg0 Ciphertext argument to multiply. May be rescaled
 /// \param[in,out] arg1 Ciphertext argument to multiply. May be rescaled
 /// \param[out] out Stores the encrypted sum
-/// \param[in] element_type datatype of the multiplyition
-/// \param[in] he_seal_backend Backend with which to perform multiplyition
+/// \param[in] complex_packing Whether or not the ciphertext should be
+/// multiplied using complex packing
+/// \param[in] he_seal_backend Backend used to perform multiplication
 /// \param[in] pool Memory pool used for new memory allocation
 void scalar_multiply_seal(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
@@ -42,22 +43,25 @@ void scalar_multiply_seal(
     HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-/// \brief multiplies a ciphertext with a plaintext
+/// \brief Multiplies a ciphertext with a plaintext
 /// \param[in,out] arg0 Ciphertext argument to multiply. May be rescaled
 /// \param[in] arg1 Plaintext argument to multiply
 /// \param[out] out Stores the encrypted sum
-/// \param[in] element_type datatype of the multiplyition
-/// \param[in] he_seal_backend Backend with which to perform multiplyition
+/// \param[in] complex_packing Whether or not the ciphertext should be
+/// multiplied using complex packing
+/// \param[in] he_seal_backend Backend used to perform multiplication
+/// \param[in] pool Memory pool used for new memory allocation
 void scalar_multiply_seal(
     SealCiphertextWrapper& arg0, const HEPlaintext& arg1, HEType& out,
     HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-/// \brief multiplies a plaintext with a ciphertext
+/// \brief Multiplies a plaintext with a ciphertext
 /// \param[in] arg0 Plaintext argument to multiply
 /// \param[in,out] arg1 Ciphertext argument to multiply. May be rescaled
 /// \param[out] out Stores the encrypted sum
-/// \param[in] he_seal_backend Backend with which to perform multiplyition
+/// \param[in] he_seal_backend Backend used to perform multiplyition
+/// \param[in] pool Memory pool used for new memory allocation
 inline void scalar_multiply_seal(
     const HEPlaintext& arg0, SealCiphertextWrapper& arg1, HEType& out,
     HESealBackend& he_seal_backend,
@@ -65,13 +69,18 @@ inline void scalar_multiply_seal(
   scalar_multiply_seal(arg1, arg0, out, he_seal_backend, pool);
 }
 
-/// \brief multiplies two plaintexts
+/// \brief Multiplies two plaintexts
 /// \param[in] arg0 Plaintext argument to multiply
 /// \param[in] arg1 Plaintext argument to multiply
 /// \param[out] out Stores the plaintext sum
 void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out);
 
+/// \brief Multiplies two ciphertext/plaintext elements
+/// \param[in] arg0 Cipher or plaintext data to multiply
+/// \param[in] arg1 Cipher or plaintext data to multiply
+/// \param[in] arg0 Stores the ciphertext or plaintext product
+/// \param[in] he_seal_backend Backend used to perform multiplication
 inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
                                  HESealBackend& he_seal_backend) {
   if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
@@ -111,6 +120,12 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
   out.complex_packing() = arg0.complex_packing();
 }
 
+/// \brief Multiplies two vectors of ciphertext/plaintext elements element-wise
+/// \param[in] arg0 Cipher or plaintext data to multiply
+/// \param[in] arg1 Cipher or plaintext data to multiply
+/// \param[in] arg0 Stores the ciphertext or plaintext product
+/// \param[in] count Number of elements to multiply.
+/// \param[in] he_seal_backend Backend used to perform multiplication
 inline void multiply_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                           std::vector<HEType>& out, size_t count,
                           const element::Type& element_type,

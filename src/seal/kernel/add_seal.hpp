@@ -33,8 +33,7 @@ namespace he {
 /// \param[in,out] arg0 Ciphertext argument to add. May be rescaled
 /// \param[in,out] arg1 Ciphertext argument to add. May be rescaled
 /// \param[out] out Stores the encrypted sum
-/// \param[in] element_type datatype of the addition
-/// \param[in] he_seal_backend Backend with which to perform addition
+/// \param[in] he_seal_backend Backend used to perform addition
 /// \param[in] pool Memory pool used for new memory allocation
 void scalar_add_seal(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
@@ -44,9 +43,10 @@ void scalar_add_seal(
 /// \brief Adds a ciphertext with a plaintext
 /// \param[in,out] arg0 Ciphertext argument to add. May be rescaled
 /// \param[in] arg1 Plaintext argument to add
+/// \param[in] complex_packing Whether or not the ciphertext should be added
+/// using complex packing
 /// \param[out] out Stores the encrypted sum
-/// \param[in] element_type datatype of the addition
-/// \param[in] he_seal_backend Backend with which to perform addition
+/// \param[in] he_seal_backend Backend used to perform addition
 void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                      std::shared_ptr<SealCiphertextWrapper>& out,
                      const bool complex_packing,
@@ -56,7 +56,9 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
 /// \param[in] arg0 Plaintext argument to add
 /// \param[in,out] arg1 Ciphertext argument to add. May be rescaled
 /// \param[out] out Stores the encrypted sum
-/// \param[in] he_seal_backend Backend with which to perform addition
+/// \param[in] complex_packing Whether or not the ciphertext should be added
+/// using complex packing
+/// \param[in] he_seal_backend Backend used to perform addition
 inline void scalar_add_seal(const HEPlaintext& arg0,
                             SealCiphertextWrapper& arg1,
                             std::shared_ptr<SealCiphertextWrapper>& out,
@@ -72,6 +74,11 @@ inline void scalar_add_seal(const HEPlaintext& arg0,
 void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                      HEPlaintext& out);
 
+/// \brief Adds two ciphertext/plaintext elements
+/// \param[in] arg0 Cipher or plaintext data to add
+/// \param[in] arg1 Cipher or plaintext data to add
+/// \param[in] arg0 Stores the ciphertext or plaintext sum
+/// \param[in] he_seal_backend Backend used to perform addition
 inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
                             HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
@@ -109,6 +116,12 @@ inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
   }
 }
 
+/// \brief Adds two vectors of ciphertext/plaintext elements element-wise
+/// \param[in] arg0 Cipher or plaintext data to add
+/// \param[in] arg1 Cipher or plaintext data to add
+/// \param[in] arg0 Stores the ciphertext or plaintext sum
+/// \param[in] count Number of elements to add.
+/// \param[in] he_seal_backend Backend used to perform addition
 inline void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                      std::vector<HEType>& out, size_t count,
                      const element::Type& element_type,

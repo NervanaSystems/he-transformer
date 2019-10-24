@@ -53,38 +53,24 @@ inline void load(seal::Ciphertext& cipher,
   cipher.load(context, src, size);
 }
 
-/// TODO: update
 /// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
-/// The wrapper contains two attributes in addition to the SEAL ciphertext.
-/// First, whether or not the ciphertext stores values using complex packing
-/// Second, whether or not the ciphertext represents a publicly-known value.
-/// Typically, a ciphertext represents encrypted data, which is not known unless
-/// decryption has been performed. However, two special cases result in a
-/// "known-valued" ciphertext. First, multiplying a ciphertext with a plaintext
-/// zero results in a "known-valued" ciphertext ith known value 0. Second, the
-/// "Pad" operation may pad a known plaintext value to HESealCipherTensor. The
-/// padded value itself is public, so the resulting ciphertext will be this
-/// known value. This is a design choice which allows HESealCipherTensors to
-/// store a vector of SealCiphertextWrappers.
 class SealCiphertextWrapper {
  public:
-  /// \brief Create an empty unknown-valued ciphertext
+  /// \brief Create an empty ciphertext
   SealCiphertextWrapper() {}
-
-  /// \brief Create an unknown-valued ciphertext
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
   SealCiphertextWrapper(seal::Ciphertext cipher)
       : m_ciphertext(std::move(cipher)) {}
 
-  /// \brief Returns the underyling SEAL ciphertext
+  /// \brief Returns the ciphertext
   inline seal::Ciphertext& ciphertext() { return m_ciphertext; }
 
-  /// \brief Returns the underyling SEAL ciphertext
+  /// \brief Returns the ciphertext
   inline const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
-  /// \brief Returns the size of the underlying ciphertext
+  /// \brief Returns the size of the ciphertext
   inline size_t size() const { return m_ciphertext.size(); }
 
   /// \brief Returns scale of the ciphertext
@@ -93,6 +79,8 @@ class SealCiphertextWrapper {
   /// \brief Returns scale of the ciphertext
   inline double scale() const { return m_ciphertext.scale(); }
 
+  /// \brief Writes the ciphertext to a protobuf object
+  /// \param[out] he_type Protobuf object to write ciphertext to
   inline void save(he_proto::HEType& he_type) const {
     size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
@@ -106,6 +94,10 @@ class SealCiphertextWrapper {
     he_type.set_ciphertext(std::move(cipher_str));
   }
 
+  /// \brief Loads a ciphertext from a protobuf object
+  /// \param[out] dst Destination to load ciphertext to
+  /// \param[in] proto_he_type Protobuf object to load object from
+  /// \param[in] context SEAL context to validate loaded ciphertext against
   static inline void load(SealCiphertextWrapper& dst,
                           const he_proto::HEType& proto_he_type,
                           std::shared_ptr<seal::SEALContext> context) {
