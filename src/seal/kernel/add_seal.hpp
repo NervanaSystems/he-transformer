@@ -120,7 +120,7 @@ inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
 /// \param[in] arg0 Cipher or plaintext data to add
 /// \param[in] arg1 Cipher or plaintext data to add
 /// \param[in] arg0 Stores the ciphertext or plaintext sum
-/// \param[in] count Number of elements to add.
+/// \param[in] count Number of elements to add
 /// \param[in] he_seal_backend Backend used to perform addition
 inline void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                      std::vector<HEType>& out, size_t count,

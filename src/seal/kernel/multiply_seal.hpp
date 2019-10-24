@@ -124,7 +124,7 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
 /// \param[in] arg0 Cipher or plaintext data to multiply
 /// \param[in] arg1 Cipher or plaintext data to multiply
 /// \param[in] arg0 Stores the ciphertext or plaintext product
-/// \param[in] count Number of elements to multiply.
+/// \param[in] count Number of elements to multiply
 /// \param[in] he_seal_backend Backend used to perform multiplication
 inline void multiply_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                           std::vector<HEType>& out, size_t count,

@@ -29,11 +29,10 @@
 
 namespace ngraph {
 namespace he {
-/// \brief subtracts two ciphertexts
+/// \brief Subtracts two ciphertexts
 /// \param[in,out] arg0 Ciphertext argument to subtract from. May be rescaled
 /// \param[in,out] arg1 Ciphertext argument to subtract. May be rescaled
 /// \param[out] out Stores the encrypted sum
-/// \param[in] element_type datatype of the subtractition
 /// \param[in] he_seal_backend Backend with which to perform subtractition
 /// \param[in] pool Memory pool used for new memory allocation
 void scalar_subtract_seal(
@@ -41,10 +40,12 @@ void scalar_subtract_seal(
     std::shared_ptr<SealCiphertextWrapper>& out, HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-/// \brief subtracts a ciphertext by a plaintext
+/// \brief Subtracts a ciphertext by a plaintext
 /// \param[in,out] arg0 Ciphertext argument to subtract from. May be rescaled
 /// \param[in] arg1 Plaintext argument to subtract
 /// \param[out] out Stores the encrypted sum
+/// \param[in] complex_packing Whether or not the ciphertext should be
+/// multiplied using complex packing
 /// \param[in] element_type datatype of the subtractition
 /// \param[in] he_seal_backend Backend with which to perform subtractition
 void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
@@ -52,22 +53,30 @@ void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           const bool complex_packing,
                           HESealBackend& he_seal_backend);
 
-/// \brief subtracts a plaintext by a ciphertext
+/// \brief Subtracts a plaintext by a ciphertext
 /// \param[in] arg0 Plaintext argument to subtract from
 /// \param[in,out] arg1 Ciphertext argument to subtract. May be rescaled
 /// \param[out] out Stores the encrypted sum
+/// \param[in] complex_packing Whether or not the ciphertext should be
+/// multiplied using complex packing
 /// \param[in] he_seal_backend Backend with which to perform subtractition
 void scalar_subtract_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
                           const bool complex_packing,
                           HESealBackend& he_seal_backend);
-/// \brief subtracts two plaintexts
+
+/// \brief Subtracts two plaintexts
 /// \param[in] arg0 Plaintext argument to subtract from
 /// \param[in] arg1 Plaintext argument to subtract
-/// \param[out] out Stores the plaintext sum
+/// \param[out] out Stores the plaintext difference
 void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out);
 
+/// \brief Subtracts two ciphertext/plaintext elements
+/// \param[in] arg0 Cipher or plaintext data to subtract from
+/// \param[in] arg1 Cipher or plaintext data to subtract
+/// \param[in] arg0 Stores the ciphertext or plaintext difference
+/// \param[in] he_seal_backend Backend used to perform subtraction
 inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
                                  HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
@@ -93,6 +102,12 @@ inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
   }
 }
 
+/// \brief Subtracts two vectors of ciphertext/plaintext elements element-wise
+/// \param[in] arg0 Cipher or plaintext data to subtract from
+/// \param[in] arg1 Cipher or plaintext data to subtract
+/// \param[in] arg0 Stores the ciphertext or plaintext difference
+/// \param[in] count Number of elements to subtract
+/// \param[in] he_seal_backend Backend used to perform multiplication
 inline void subtract_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                           std::vector<HEType>& out, size_t count,
                           const element::Type& element_type,
