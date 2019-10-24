@@ -120,12 +120,9 @@ void HETensor::pack(size_t pack_axis) {
 
   for (size_t idx = 0; idx < m_data.size(); ++idx) {
     auto& plain = m_data[idx].get_plaintext();
-    NGRAPH_INFO << "idx " << idx << "plain.size() " << plain.size();
     if (plain.size() != 0) {
       size_t new_idx = idx % new_data.size();
       new_data[new_idx].get_plaintext().emplace_back(plain[0]);
-      NGRAPH_INFO << "new_idx " << new_idx << " new size "
-                  << new_data[new_idx].get_plaintext().size();
       new_data[new_idx].complex_packing() = m_data[idx].complex_packing();
     }
   }

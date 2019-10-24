@@ -659,14 +659,19 @@ bool HESealExecutable::call(
 
       if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
               param->get_op_annotations())) {
-        // TODO: pack / unpack according to current annotation
-
         NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
                          << " has annotation " << *current_annotation;
         if (current_annotation->encrypted()) {
           NGRAPH_HE_LOG(3) << "Encrypting parameter " << param->get_name()
                            << " from server";
 
+          if (current_annotation->packed()) {
+            he_input->pack();
+          } else {
+            he_input->unpack();
+          }
+
+#pragma omp parallel for
           for (size_t he_type_idx = 0;
                he_type_idx < he_input->get_batched_element_count();
                ++he_type_idx) {
@@ -684,6 +689,9 @@ bool HESealExecutable::call(
                        "Mismatch between tensor input and annotation (",
                        he_input->is_packed(),
                        " != ", current_annotation->packed(), ")");
+
+          NGRAPH_HE_LOG(3) << "Done encrypting parameter " << param->get_name()
+                           << " from server";
         }
       }
     }
@@ -730,8 +738,11 @@ bool HESealExecutable::call(
     if (HEOpAnnotations::has_he_annotation(*output)) {
       auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
 
-      // TODO: better matching between annotation / tensor; pack / unpack as
-      // needed
+      if (he_op_annotation->packed()) {
+        he_output->pack();
+      } else {
+        he_output->unpack();
+      }
     }
     tensor_map.insert({tv, he_output});
   }

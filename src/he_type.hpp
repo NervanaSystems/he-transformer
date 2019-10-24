@@ -83,7 +83,6 @@ class HEType {
     m_plain = plain;
     m_is_plain = true;
     if (m_cipher != nullptr) {
-      NGRAPH_INFO << "Releasing ciphertext";
       m_cipher->ciphertext().release();
     }
   }

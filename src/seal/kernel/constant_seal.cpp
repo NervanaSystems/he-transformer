@@ -40,13 +40,9 @@ void constant_seal(std::vector<HEType>& out, const element::Type& element_type,
     const void* src = static_cast<const char*>(data_ptr) + i * type_byte_size;
     auto plaintext =
         HEPlaintext(std::vector<double>{type_to_double(src, element_type)});
-    NGRAPH_INFO << "Plaintext " << plaintext;
-
     if (out[i].is_plaintext()) {
-      NGRAPH_INFO << "Setting plaintext const";
       out[i].set_plaintext(plaintext);
     } else {
-      NGRAPH_INFO << "Encrypting plaintext";
       he_seal_backend.encrypt(out[i].get_ciphertext(), plaintext, element_type,
                               he_seal_backend.complex_packing());
     }
