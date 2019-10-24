@@ -706,6 +706,10 @@ bool HESealExecutable::call(
       }
     }
     NGRAPH_CHECK(he_input != nullptr, "HE input is nullptr");
+    if (he_input->is_packed()) {
+      NGRAPH_INFO << "Setting batch size to " << he_input->get_batch_size();
+      set_batch_size(he_input->get_batch_size());
+    }
     he_inputs.emplace_back(he_input);
   }
 
@@ -853,6 +857,7 @@ bool HESealExecutable::call(
         if (packed_out) {
           HETensor::unpack_shape(shape, m_batch_size);
         }
+        NGRAPH_INFO << "m_batch_size " << m_batch_size;
         NGRAPH_HE_LOG(5) << "Creating output tensor with shape " << shape;
 
         if (encrypted_out) {
@@ -1538,8 +1543,6 @@ void HESealExecutable::handle_server_relu_op(
   for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
     NGRAPH_CHECK(arg->data(unknown_relu_idx).is_ciphertext(),
                  "HEType should be ciphertext");
-    NGRAPH_INFO << "arg " << unknown_relu_idx << " batch size "
-                << arg->data(unknown_relu_idx).batch_size();
     relu_ciphers_batch.emplace_back(arg->data(unknown_relu_idx));
     if (relu_ciphers_batch.size() == max_relu_message_cnt) {
       process_unknown_relu_ciphers_batch(relu_ciphers_batch);
