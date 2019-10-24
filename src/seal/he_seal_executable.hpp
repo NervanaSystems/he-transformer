@@ -116,7 +116,8 @@ class HESealExecutable : public runtime::Executable {
   void handle_message(const TCPMessage& message);
 
   /// \brief Processes a client message with ciphertexts to call the appropriate
-  /// function \param[in] proto_msg Message to process
+  /// function
+  /// \param[in] proto_msg Message to process
   void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a ReLU function

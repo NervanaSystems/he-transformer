@@ -489,7 +489,7 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
 #pragma clang diagnostic pop
-}  // namespace he
+}
 
 void HESealExecutable::handle_client_ciphers(
     const he_proto::TCPMessage& proto_msg) {
@@ -543,7 +543,6 @@ void HESealExecutable::handle_client_ciphers(
       *m_he_seal_backend.get_decryptor(),
       m_he_seal_backend.get_encryption_parameters());
 
-  // Write ciphers to client inputs
   size_t param_idx;
   NGRAPH_CHECK(find_matching_parameter_index(he_tensor->get_name(), param_idx),
                "Could not find matching parameter name ",
@@ -959,6 +958,11 @@ void HESealExecutable::generate_calls(
 #pragma GCC diagnostic error "-Wswitch"
 #pragma GCC diagnostic error "-Wswitch-enum"
   switch (node_wrapper.get_typeid()) {
+    case OP_TYPEID::Add: {
+      add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+               out[0]->get_batched_element_count(), type, m_he_seal_backend);
+      break;
+    }
     case OP_TYPEID::AvgPool: {
       const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape op_in_shape = args[0]->get_packed_shape();
@@ -975,11 +979,6 @@ void HESealExecutable::generate_calls(
           avg_pool->get_include_padding_in_avg_computation(),
           out[0]->get_batch_size(), m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
-      break;
-    }
-    case OP_TYPEID::Add: {
-      add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
-               out[0]->get_batched_element_count(), type, m_he_seal_backend);
       break;
     }
     case OP_TYPEID::BatchNormInference: {
@@ -1019,7 +1018,6 @@ void HESealExecutable::generate_calls(
       }
       break;
     }
-
     case OP_TYPEID::Broadcast: {
       const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
       broadcast_seal(args[0]->data(), out[0]->data(),
@@ -1029,12 +1027,6 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::BroadcastLike:
       break;
-    case OP_TYPEID::Constant: {
-      const op::Constant* constant = static_cast<const op::Constant*>(&node);
-      constant_seal(out[0]->data(), type, constant->get_data_ptr(),
-                    m_he_seal_backend, out[0]->get_batched_element_count());
-      break;
-    }
     case OP_TYPEID::Concat: {
       const op::Concat* concat = static_cast<const op::Concat*>(&node);
       std::vector<Shape> in_shapes;
@@ -1045,6 +1037,12 @@ void HESealExecutable::generate_calls(
       }
       concat_seal(in_args, out[0]->data(), in_shapes,
                   out[0]->get_packed_shape(), concat->get_concatenation_axis());
+      break;
+    }
+    case OP_TYPEID::Constant: {
+      const op::Constant* constant = static_cast<const op::Constant*>(&node);
+      constant_seal(out[0]->data(), type, constant->get_data_ptr(),
+                    m_he_seal_backend, out[0]->get_batched_element_count());
       break;
     }
     case OP_TYPEID::Convolution: {

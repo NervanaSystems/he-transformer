@@ -79,6 +79,5 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   }
   out = std::move(out_vals);
 }
-
 }  // namespace he
 }  // namespace ngraph
