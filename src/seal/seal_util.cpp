@@ -255,6 +255,9 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
       }
     }
   }
+
+  NGRAPH_INFO << "batch size " << he_types[0].batch_size();
+
   return smallest_chain_ind.second;
 }
 

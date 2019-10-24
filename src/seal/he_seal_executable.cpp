@@ -1059,6 +1059,11 @@ void HESealExecutable::generate_calls(
       Shape in_shape0 = args[0]->get_packed_shape();
       Shape in_shape1 = args[1]->get_packed_shape();
 
+      if (verbose) {
+        NGRAPH_HE_LOG(3) << in_shape0 << " Conv " << in_shape1 << " => "
+                         << out[0]->get_packed_shape();
+      }
+
       convolution_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                        in_shape0, in_shape1, out[0]->get_packed_shape(),
                        window_movement_strides, window_dilation_strides,
@@ -1067,6 +1072,7 @@ void HESealExecutable::generate_calls(
                        m_he_seal_backend, verbose);
 
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
+
       break;
     }
 
@@ -1202,11 +1208,10 @@ void HESealExecutable::generate_calls(
       if (verbose) {
         NGRAPH_HE_LOG(3) << args[0]->get_packed_shape() << " reshape "
                          << out[0]->get_packed_shape();
-        NGRAPH_HE_LOG(3) << "args[0] batch size " << args[0]->get_batch_size();
-        NGRAPH_HE_LOG(3) << "out[0] batch size " << out[0]->get_batch_size();
       }
       reshape_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                    reshape->get_input_order(), out[0]->get_packed_shape());
+
       break;
     }
     case OP_TYPEID::Result: {
