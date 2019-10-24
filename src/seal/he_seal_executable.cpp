@@ -660,10 +660,12 @@ bool HESealExecutable::call(
               param->get_op_annotations())) {
         NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
                          << " has annotation " << *current_annotation;
-        if (current_annotation->packed()) {
-          he_input->pack();
-        } else {
-          he_input->unpack();
+        if (!he_input->any_encrypted_data()) {
+          if (current_annotation->packed()) {
+            he_input->pack();
+          } else {
+            he_input->unpack();
+          }
         }
 
         if (current_annotation->encrypted()) {
@@ -737,10 +739,12 @@ bool HESealExecutable::call(
     if (HEOpAnnotations::has_he_annotation(*output)) {
       auto he_op_annotation = HEOpAnnotations::he_op_annotation(*output);
 
-      if (he_op_annotation->packed()) {
-        he_output->pack();
-      } else {
-        he_output->unpack();
+      if (!he_output->any_encrypted_data()) {
+        if (he_op_annotation->packed()) {
+          he_output->pack();
+        } else {
+          he_output->unpack();
+        }
       }
     }
     tensor_map.insert({tv, he_output});

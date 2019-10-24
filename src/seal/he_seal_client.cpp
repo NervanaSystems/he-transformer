@@ -144,10 +144,8 @@ void HESealClient::handle_inference_request(
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Only support 1 encrypted parameter from client");
 
-  // TODO: clean up below
   auto proto_tensor = proto_msg.he_tensors(0);
-  auto proto_name = proto_tensor.name();
-  auto proto_packed = proto_tensor.packed();
+  auto& proto_name = proto_tensor.name();
   auto proto_shape = proto_tensor.shape();
   Shape shape{proto_shape.begin(), proto_shape.end()};
 
