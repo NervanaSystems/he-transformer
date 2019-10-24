@@ -1060,7 +1060,6 @@ void HESealExecutable::generate_calls(
         NGRAPH_HE_LOG(3) << in_shape0 << " Conv " << in_shape1 << " => "
                          << out[0]->get_packed_shape();
       }
-
       convolution_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                        in_shape0, in_shape1, out[0]->get_packed_shape(),
                        window_movement_strides, window_dilation_strides,
@@ -1072,7 +1071,6 @@ void HESealExecutable::generate_calls(
 
       break;
     }
-
     case OP_TYPEID::Divide: {
       Shape in_shape0 = args[0]->get_packed_shape();
       Shape in_shape1 = args[1]->get_packed_shape();
@@ -1129,7 +1127,6 @@ void HESealExecutable::generate_calls(
       }
       break;
     }
-
     case OP_TYPEID::MaxPool: {
       const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
       if (m_enable_client) {
@@ -1265,7 +1262,6 @@ void HESealExecutable::generate_calls(
                m_he_seal_backend);
       break;
     }
-
     // Unsupported ops
     case OP_TYPEID::Abs:
     case OP_TYPEID::Acos:
@@ -1354,7 +1350,7 @@ void HESealExecutable::generate_calls(
       throw unsupported_op("Unsupported op '" + node.description() + "'");
 #pragma GCC diagnostic pop
   }
-}  // namespace he
+}
 
 void HESealExecutable::handle_server_max_pool_op(
     const std::shared_ptr<HETensor>& arg, const std::shared_ptr<HETensor>& out,
@@ -1371,7 +1367,6 @@ void HESealExecutable::handle_server_max_pool_op(
   Shape out_shape = HETensor::pack_shape(node.get_output_shape(0));
 
   // TODO: call max_pool_seal directly?
-
   std::vector<std::vector<size_t>> maximize_list = max_pool_seal_max_list(
       unpacked_arg_shape, out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
