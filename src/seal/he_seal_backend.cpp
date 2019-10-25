@@ -100,11 +100,10 @@ void HESealBackend::generate_context() {
 bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
                                std::string& error) {
   NGRAPH_HE_LOG(3) << "Setting config";
-  for (const auto& config_opt : config) {
-    std::string option = ngraph::to_lower(config_opt.first);
-    std::string setting = config_opt.second;
+  for (const auto& [option, setting] : config) {
+    std::string lower_option = ngraph::to_lower(option);
     std::vector<std::string> lower_settings =
-        ngraph::split(ngraph::to_lower(config_opt.second), ',');
+        ngraph::split(ngraph::to_lower(setting), ',');
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
     std::string tensor_name = option.substr(0, option.find(":", 0));
 

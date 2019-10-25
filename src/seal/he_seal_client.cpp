@@ -144,6 +144,9 @@ void HESealClient::handle_inference_request(
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Only support 1 encrypted parameter from client");
 
+  NGRAPH_CHECK(m_input_config.size() == 1,
+               "Client supports only input parameter");
+
   auto proto_tensor = proto_msg.he_tensors(0);
   auto& proto_name = proto_tensor.name();
   auto proto_shape = proto_tensor.shape();
@@ -153,20 +156,16 @@ void HESealClient::handle_inference_request(
 
   bool encrypt_tensor = true;
   auto input_proto = m_input_config.find(proto_name);
-  if (input_proto == m_input_config.end()) {
-    // TODO: turn into hard check once provenance nodes work
-    NGRAPH_WARN << "Tensor name " << proto_name << " not found";
-  } else {
-    std::pair<std::string, std::vector<double>> tensor_inputs =
-        input_proto->second;
+  NGRAPH_CHECK(input_proto != m_input_config.end(), "Tensor name ", proto_name,
+               " not found");
 
-    if (tensor_inputs.first == "encrypt") {
-      encrypt_tensor = true;
-    } else if (tensor_inputs.first == "plain") {
-      encrypt_tensor = false;
-    } else {
-      NGRAPH_WARN << "Unknown configuration " << tensor_inputs.first;
-    }
+  auto& [input_config, input_data] = input_proto->second;
+  if (input_config == "encrypt") {
+    encrypt_tensor = true;
+  } else if (input_config == "plain") {
+    encrypt_tensor = false;
+  } else {
+    NGRAPH_WARN << "Unknown configuration " << input_config;
   }
 
   NGRAPH_HE_LOG(5) << "Client received inference request with name "
@@ -182,8 +181,7 @@ void HESealClient::handle_inference_request(
   size_t parameter_size = ngraph::shape_size(HETensor::pack_shape(shape));
   NGRAPH_HE_LOG(5) << "Client parameter_size " << parameter_size;
 
-  if (m_input_config.begin()->second.second.size() >
-      parameter_size * m_batch_size) {
+  if (input_data.size() > parameter_size * m_batch_size) {
     NGRAPH_HE_LOG(5) << "m_input_config.size() " << m_input_config.size()
                      << " > paramter_size ( " << parameter_size
                      << ") * m_batch_size (" << m_batch_size << ")";
@@ -197,11 +195,8 @@ void HESealClient::handle_inference_request(
       m_encryption_params.complex_packing(), encrypt_tensor, *m_ckks_encoder,
       m_context, *m_encryptor, *m_decryptor, m_encryption_params, proto_name);
 
-  NGRAPH_CHECK(m_input_config.size() == 1,
-               "Client supports only input parameter");
-
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
-  he_tensor.write(m_input_config.begin()->second.second.data(), num_bytes);
+  he_tensor.write(input_data.data(), num_bytes);
 
   std::vector<he_proto::HETensor> tensor_protos;
 

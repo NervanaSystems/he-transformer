@@ -359,11 +359,12 @@ void HESealExecutable::send_inference_shape() {
                              ? *input_param->get_provenance_tags().begin()
                              : input_param->get_name();
 
-      NGRAPH_HE_LOG(1) << "Server setting inference tensor name "
-                       << input_param->get_name() << ", with "
+      NGRAPH_HE_LOG(1) << "Server setting inference tensor name " << name
+                       << " (corresponding to Parameter "
+                       << input_param->get_name() << "), with "
                        << input_param->get_shape();
 
-      proto_he_tensor->set_name(input_param->get_name());
+      proto_he_tensor->set_name(name);
 
       if (plaintext_packed(*input_param)) {
         NGRAPH_HE_LOG(1) << "Setting parameter " << input_param->get_name()
