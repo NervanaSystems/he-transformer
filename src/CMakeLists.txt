@@ -26,6 +26,8 @@ set(HE_SRC
     pass/he_liveness.cpp
     pass/propagate_he_annotations.cpp
     pass/supported_ops.cpp
+    # aby
+    aby/aby_executor.cpp
     # op
     op/bounded_relu.cpp
     # seal kernels

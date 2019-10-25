@@ -21,13 +21,15 @@
 #include "abycore/circuit/booleancircuits.h"
 #include "abycore/circuit/share.h"
 #include "abycore/sharing/sharing.h"
+#include "he_tensor.hpp"
 #include "he_type.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
-#include "seal/he_seal_backend.hpp"
+#include "seal/he_seal_executable.hpp"
 
 namespace ngraph {
+
 namespace he {
 class HESealExecutable;
 }
@@ -42,53 +44,25 @@ class ABYExecutor {
               uint32_t bit_length = 64, uint32_t num_threads = 2,
               std::string mg_algo_str = std::string("MT_OT"),
               uint32_t reserve_num_gates = 65536,
-              const std::string& circuit_directiory = "")
-      : m_num_threads{num_threads}, m_he_seal_executable{he_seal_executable} {
-    std::map<std::string, e_role> role_map{{"server", SERVER},
-                                           {"client", CLIENT}};
+              const std::string& circuit_directiory = "");
 
-    auto role_it = role_map.find(ngraph::to_lower(role));
-    NGRAPH_CHECK(role_it != role_map.end(), "Unknown role ", role);
-    m_role = role_it->second;
+  ~ABYExecutor();
 
-    std::map<std::string, e_sharing> protocol_map{{"yao", S_YAO},
-                                                  {"gmw", S_BOOL}};
+  std::shared_ptr<he::HETensor> generate_gc_mask(
+      const ngraph::Shape& shape, bool plaintext_packing, bool complex_packing,
+      const std::string& name, bool random = true, uint64_t default_value = 0);
 
-    auto protocol_it = protocol_map.find(ngraph::to_lower(mpc_protocol));
-    NGRAPH_CHECK(role_it != role_map.end(), "Unknown role ", role);
-    NGRAPH_CHECK(protocol_it != protocol_map.end(), "Unknown mpc_protocol ",
-                 mpc_protocol);
-    m_aby_gc_protocol = protocol_it->second;
+  std::shared_ptr<he::HETensor> generate_gc_input_mask(
+      const ngraph::Shape& shape, bool plaintext_packing, bool complex_packing,
+      uint64_t default_value = 0);
 
-    NGRAPH_CHECK(mg_algo_str == "MT_OT", "Unknown mg_algo_str ", mg_algo_str);
-    m_mt_gen_alg = MT_OT;
+  std::shared_ptr<he::HETensor> generate_gc_output_mask(
+      const ngraph::Shape& shape, bool plaintext_packing, bool complex_packing,
+      uint64_t default_value = 0);
 
-    NGRAPH_CHECK(security_level == 128, "Unsupported security level ",
-                 security_level);
-    m_security_level = security_level;
+  inline ABYParty* get_aby_party() { return m_ABYParty; }
 
-    m_ABYParty = new ABYParty(m_role, hostname, port,
-                              get_sec_lvl(m_security_level), bit_length,
-                              m_num_threads, m_mt_gen_alg, reserve_num_gates);
-    // TODO: connect and base OTs?
-    //  m_ABYParty_server->ConnectAndBaseOTs();
-    NGRAPH_HE_LOG(1) << "Started ABYParty with role " << role;
-
-    m_random_distribution =
-        std::uniform_int_distribution<int64_t>{0, m_rand_max};
-  }
-
-  ~ABYExecutor() {
-    // TODO: delete ABYParty
-  }
-
-  // generate_gc_input_mask(Shape{m_batch_size, element_count});
-  // generate_gc_output_mask(Shape{m_batch_size, element_count},
-  //                        m_lowest_coeff_modulus / 2);
-
-  ABYParty* get_aby_party() { return m_ABYParty; }
-
-  BooleanCircuit* get_circuit() {
+  inline BooleanCircuit* get_circuit() {
     NGRAPH_HE_LOG(1) << " Starting ABY Sharing on the server";
 
     std::vector<Sharing*>& sharings = m_ABYParty->GetSharings();
@@ -98,9 +72,7 @@ class ABYExecutor {
   }
 
   void process_unknown_relu_ciphers_batch(
-      const std::vector<he::HEType>& cipher_batch) {
-    NGRAPH_HE_LOG(3) << "process_unknown_relu_ciphers_batch ";
-  }
+      const std::vector<he::HEType>& cipher_batch);
 
  private:
   size_t m_num_threads;
@@ -119,8 +91,9 @@ class ABYExecutor {
   std::default_random_engine m_random_generator;
   int64_t m_rand_max;
   std::uniform_int_distribution<int64_t> m_random_distribution;
-  // std::shared_ptr<HETensor> m_gc_input_mask;
-  // std::shared_ptr<HETensor> m_gc_output_mask;
+
+  std::shared_ptr<he::HETensor> m_gc_input_mask;
+  std::shared_ptr<he::HETensor> m_gc_output_mask;
 };
 
 }  // namespace aby

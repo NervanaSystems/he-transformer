@@ -41,7 +41,11 @@
 using boost::asio::ip::tcp;
 
 namespace ngraph {
+namespace aby {
+class ABYExecutor;
+}
 namespace he {
+
 /// \brief Class representing a function to execute
 class HESealExecutable : public runtime::Executable {
  public:
@@ -110,6 +114,10 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns whether or not encryption parameters use complex packing
   inline bool complex_packing() const {
     return m_he_seal_backend.get_encryption_parameters().complex_packing();
+  }
+
+  inline const HESealBackend& he_seal_backend() const {
+    return m_he_seal_backend;
   }
 
   /// \brief Checks whether or not the client supports the function
