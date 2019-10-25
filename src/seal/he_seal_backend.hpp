@@ -295,6 +295,14 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// Convolution and Dot operations. Typically, this should never be used
   bool& naive_rescaling() { return m_naive_rescaling; }
 
+  /// \brief Returns whether or not garbled circuits are supported for function
+  /// evaluation
+  bool garbled_circuit_enabled() const { return m_enable_garbled_circuit; }
+
+  /// \brief Returns whether or not garbled circuits are supported for function
+  /// evaluation
+  bool& garbled_circuit_enabled() { return m_enable_garbled_circuit; }
+
   /// \brief Returns the chain index, also known as level, of the ciphertext
   /// \param[in] cipher Ciphertext whose chain index to return
   /// \returns The chain index of the ciphertext.
@@ -321,19 +329,26 @@ class HESealBackend : public ngraph::runtime::Backend {
     return m_encrypted_tensor_names;
   }
 
-  /// \brief Returns set of parameter tensors to remain plaintext.
+  /// \brief Returns set of parameter tensors to remain plaintext
   inline std::unordered_set<std::string> get_plaintext_tensor_names() const {
     return m_plaintext_tensor_names;
   }
 
-  /// \brief Returns set of parameter tensors to be packed.
+  /// \brief Returns set of parameter tensors to be packed
   inline std::unordered_set<std::string> get_packed_tensor_names() const {
     return m_packed_tensor_names;
   }
 
+  /// \brief Returns whether or not the client is enabled
+  bool enable_client() const { return m_enable_client; }
+
+  /// \brief Returns whether or not the client is enabled with garbled circuits
+  bool enable_garbled_circuit() const { return m_enable_garbled_circuit; }
+
  private:
   bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};
+  bool m_enable_garbled_circuit{false};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;

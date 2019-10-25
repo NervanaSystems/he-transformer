@@ -130,6 +130,12 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       auto new_parms = HESealEncryptionParameters::parse_config_or_use_default(
           setting.c_str());
       update_encryption_parameters(new_parms);
+    } else if (option == "enable_gc") {
+      bool gc_enabled = flag_to_bool(setting.c_str(), false);
+      if (gc_enabled) {
+        NGRAPH_HE_LOG(3) << "Enabling garbled circuits from config";
+        m_enable_garbled_circuit = true;
+      }
     }
   }
 
@@ -296,7 +302,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
   }
 
   return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this, m_enable_client);
+      function, enable_performance_collection, *this);
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {

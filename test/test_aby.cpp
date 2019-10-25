@@ -24,7 +24,7 @@
 #include "abycore/sharing/sharing.h"
 #include "gtest/gtest.h"
 
-#include "aby/relu_aby.hpp"
+#include "aby/kernel/relu_aby.hpp"
 
 using namespace std;
 

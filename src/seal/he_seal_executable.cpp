@@ -19,6 +19,7 @@
 #include <tuple>
 #include <unordered_set>
 
+#include "aby/kernel/relu_aby.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
@@ -97,11 +98,9 @@ namespace ngraph {
 namespace he {
 HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
                                    bool enable_performance_collection,
-                                   HESealBackend& he_seal_backend,
-                                   bool enable_client)
+                                   HESealBackend& he_seal_backend)
     : m_he_seal_backend(he_seal_backend),
       m_verbose_all_ops(false),
-      m_enable_client(enable_client),
       m_server_setup(false),
       m_batch_size(1),
       m_port(34000),
@@ -603,7 +602,7 @@ bool HESealExecutable::call(
   validate(outputs, server_inputs);
   NGRAPH_HE_LOG(3) << "HESealExecutable::call validated inputs";
 
-  if (m_enable_client) {
+  if (enable_client()) {
     if (!server_setup()) {
       return false;
     }
@@ -613,7 +612,7 @@ bool HESealExecutable::call(
     NGRAPH_HE_LOG(1) << "Complex packing";
   }
 
-  if (m_enable_client) {
+  if (enable_client()) {
     NGRAPH_HE_LOG(1) << "Waiting for m_client_inputs";
 
     std::unique_lock<std::mutex> mlock(m_client_inputs_mutex);
@@ -631,7 +630,7 @@ bool HESealExecutable::call(
     auto& param = parameters[input_idx];
     std::shared_ptr<HETensor> he_input;
 
-    if (m_enable_client && from_client(*param)) {
+    if (enable_client() && from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
       NGRAPH_CHECK(m_client_inputs.size() > input_idx,
@@ -793,7 +792,7 @@ bool HESealExecutable::call(
       op_inputs.push_back(tensor_map.at(tensor));
     }
 
-    if (m_enable_client && type_id == OP_TYPEID::Result) {
+    if (enable_client() && type_id == OP_TYPEID::Result) {
       // Client outputs don't have decryption performed, so skip result op
       NGRAPH_HE_LOG(3) << "Setting client outputs";
       m_client_outputs = op_inputs;
@@ -911,7 +910,7 @@ bool HESealExecutable::call(
   }
 
   // Send outputs to client.
-  if (m_enable_client) {
+  if (enable_client()) {
     send_client_results();
   }
   return true;
@@ -1005,7 +1004,7 @@ void HESealExecutable::generate_calls(
           static_cast<const op::BoundedRelu*>(&node);
       float alpha = bounded_relu->get_alpha();
       size_t output_size = args[0]->get_batched_element_count();
-      if (m_enable_client) {
+      if (enable_client()) {
         handle_server_relu_op(args[0], out[0], node_wrapper);
       } else {
         NGRAPH_WARN << "Performing BoundedRelu without client is not "
@@ -1096,7 +1095,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Exp: {
-      if (m_enable_client) {
+      if (enable_client()) {
         NGRAPH_CHECK(false, "Exp not implemented for client-aided model ");
       } else {
         NGRAPH_WARN
@@ -1112,7 +1111,7 @@ void HESealExecutable::generate_calls(
       NGRAPH_CHECK(!args[0]->is_packed() ||
                        (reduction_axes.find(0) == reduction_axes.end()),
                    "Max reduction axes cannot contain 0 for packed tensors");
-      if (m_enable_client) {
+      if (enable_client()) {
         NGRAPH_CHECK(false, "Max not implemented for client-aided model");
       } else {
         NGRAPH_WARN << "Performing Max without client is not "
@@ -1129,7 +1128,7 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::MaxPool: {
       const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
-      if (m_enable_client) {
+      if (enable_client()) {
         handle_server_max_pool_op(args[0], out[0], node_wrapper);
       } else {
         NGRAPH_WARN << "Performing MaxPool without client is not "
@@ -1183,7 +1182,7 @@ void HESealExecutable::generate_calls(
                            passthrough->language()};
     }
     case OP_TYPEID::Relu: {
-      if (m_enable_client) {
+      if (enable_client()) {
         handle_server_relu_op(args[0], out[0], node_wrapper);
       } else {
         NGRAPH_WARN
