@@ -27,7 +27,7 @@ set(HE_SRC
     pass/propagate_he_annotations.cpp
     pass/supported_ops.cpp
     # aby
-    aby/aby_executor.cpp
+    aby/aby_executor.cpp aby/aby_server_executor.cpp aby/aby_client_executor.cpp
     # op
     op/bounded_relu.cpp
     # seal kernels

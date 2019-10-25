@@ -239,9 +239,8 @@ bool HESealExecutable::server_setup() {
     start_server();
 
     if (enable_garbled_circuits()) {
-      m_aby_executor = std::make_unique<ngraph::aby::ABYExecutor>(
-          std::string("server"), std::string("yao"), *this,
-          std::string("localhost"));
+      m_aby_executor = std::make_unique<aby::ABYServerExecutor>(
+          *this, std::string("yao"), std::string("localhost"));
     }
 
     std::stringstream param_stream;
@@ -1490,7 +1489,9 @@ void HESealExecutable::handle_server_relu_op(
 
         he_proto::TCPMessage proto_msg;
         proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-        *proto_msg.mutable_function() = node_to_proto_function(node_wrapper);
+        *proto_msg.mutable_function() = node_to_proto_function(
+            node_wrapper,
+            {{"enable_gc", he::bool_to_string(enable_garbled_circuits())}});
 
         // TODO: set complex_packing to correct values?
         HETensor relu_tensor(
@@ -1510,6 +1511,15 @@ void HESealExecutable::handle_server_relu_op(
 
         NGRAPH_HE_LOG(5) << "Server writing relu request message";
         m_session->write_message(std::move(relu_message));
+
+        if (enable_garbled_circuits()) {
+          NGRAPH_INFO
+              << "mask_input_unknown_relu_ciphers_batch with garbled circuits";
+          // Mask input values;
+          // TODO: bounded relu?
+          m_aby_executor->start_aby_circuit_unknown_relu_ciphers_batch(
+              cipher_batch);
+        }
       };
 
   // Process unknown values

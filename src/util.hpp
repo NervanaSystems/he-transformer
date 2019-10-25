@@ -17,6 +17,7 @@
 #pragma once
 
 #include <complex>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -32,6 +33,38 @@
 
 namespace ngraph {
 namespace he {
+
+inline std::string bool_to_string(const bool b) {
+  std::ostringstream ss;
+  ss << std::boolalpha << b;
+  return ss.str();
+}
+
+/// \brief Interprets a string as a boolean value
+/// \param[in] value String to interpret
+/// \param[in] default_value Value to return if flag is not able to be parsed
+/// \returns True if flag represents a True value, False otherwise
+inline bool string_to_bool(const char* value, bool default_value = false) {
+  if (value == nullptr) {
+    return default_value;
+  }
+  static std::unordered_set<std::string> on_map{"1", "on", "y", "yes", "true"};
+  static std::unordered_set<std::string> off_map{"0", "off", "n", "no",
+                                                 "false"};
+  std::string value_str = ngraph::to_lower(std::string(value));
+
+  if (on_map.find(value_str) != on_map.end()) {
+    return true;
+  } else if (off_map.find(value_str) != off_map.end()) {
+    return false;
+  } else {
+    throw ngraph_error("Unknown flag value " + std::string(value));
+  }
+}
+
+inline bool string_to_bool(std::string value, bool default_value = false) {
+  return string_to_bool(value.c_str(), default_value);
+}
 
 /// \brief Unpacks complex values to real values
 /// (a+bi, c+di) => (a,b,c,d)
@@ -66,28 +99,6 @@ inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
       output.emplace_back(std::complex<T>(complex_parts[0], complex_parts[1]));
       complex_parts = {T(0), T(0)};
     }
-  }
-}
-
-/// \brief Interprets a string as a boolean value
-/// \param[in] flag Flag value
-/// \param[in] default_value Value to return if flag is not able to be parsed
-/// \returns True if flag represents a True value, False otherwise
-inline bool flag_to_bool(const char* flag, bool default_value = false) {
-  if (flag == nullptr) {
-    return default_value;
-  }
-  static std::unordered_set<std::string> on_map{"1", "on", "y", "yes", "true"};
-  static std::unordered_set<std::string> off_map{"0", "off", "n", "no",
-                                                 "false"};
-  std::string flag_str = ngraph::to_lower(std::string(flag));
-
-  if (on_map.find(flag_str) != on_map.end()) {
-    return true;
-  } else if (off_map.find(flag_str) != off_map.end()) {
-    return false;
-  } else {
-    throw ngraph_error("Unknown flag value " + std::string(flag));
   }
 }
 
@@ -230,7 +241,8 @@ inline bool param_originates_from_name(const ngraph::op::Parameter& param,
 }
 
 inline he_proto::Function node_to_proto_function(
-    const NodeWrapper& node_wrapper) {
+    const NodeWrapper& node_wrapper,
+    std::unordered_map<std::string, std::string> extra_configs = {}) {
   const Node& node = *node_wrapper.get_node();
   auto type_id = node_wrapper.get_typeid();
 
@@ -240,6 +252,10 @@ inline he_proto::Function node_to_proto_function(
         static_cast<const op::BoundedRelu*>(&node);
     float alpha = bounded_relu->get_alpha();
     js["bound"] = alpha;
+  }
+
+  for (const auto& [key, value] : extra_configs) {
+    js[key] = value;
   }
 
   he_proto::Function f;

@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "aby/aby_client_executor.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
@@ -133,11 +134,18 @@ class HESealClient {
     return m_encryption_params.complex_packing();
   }
 
+  void init_aby_executor() {
+    /*if (m_aby_executor == nullptr) {
+      m_aby_executor = std::make_unique<aby::ABYExecutor>();
+    } */
+  }
+
   /// \brief Returns the scale of the encryption parameters
   inline double scale() const { return m_encryption_params.scale(); }
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;
+  std::unique_ptr<aby::ABYClientExecutor> m_aby_executor;
   ngraph::he::HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;

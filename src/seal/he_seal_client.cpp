@@ -239,6 +239,14 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
   NGRAPH_HE_LOG(3) << "Client handling relu request";
 
   NGRAPH_CHECK(proto_msg.has_function(), "Proto message doesn't have function");
+
+  const std::string& function = proto_msg.function().function();
+  NGRAPH_INFO << "function " << function;
+  json js = json::parse(function);
+
+  bool enable_gc = string_to_bool(std::string(js.at("enable_gc")));
+  NGRAPH_INFO << "Client relu with gc? " << enable_gc;
+
   NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
                "Client received result with no tensors");
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
@@ -251,11 +259,20 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  size_t result_count = proto_tensor->data_size();
-  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
-                     m_context->first_parms_id(), scale(), *m_ckks_encoder,
-                     *m_encryptor, *m_decryptor);
+  if (enable_gc) {
+    NGRAPH_HE_LOG(3) << "Client relu with GC";
+    init_aby_executor();
+
+    m_aby_executor->prepare_aby_circuit(function, he_tensor);
+    m_aby_executor->run_aby_circuit(function, he_tensor);
+
+  } else {
+    size_t result_count = proto_tensor->data_size();
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
+                       m_context->first_parms_id(), scale(), *m_ckks_encoder,
+                       *m_encryptor, *m_decryptor);
+    }
   }
 
   std::vector<he_proto::HETensor> proto_output_tensors;

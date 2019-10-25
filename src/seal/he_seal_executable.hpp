@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#include "aby/aby_executor.hpp"
+#include "aby/aby_server_executor.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
@@ -42,7 +42,7 @@ using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace aby {
-class ABYExecutor;
+class ABYServerExecutor;
 }
 namespace he {
 
@@ -251,7 +251,7 @@ class HESealExecutable : public runtime::Executable {
   size_t m_port;  // Which port the server is hosted at
 
   // ABY-related members
-  std::unique_ptr<aby::ABYExecutor> m_aby_executor;
+  std::unique_ptr<aby::ABYServerExecutor> m_aby_executor;
 
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
@@ -310,7 +310,7 @@ class HESealExecutable : public runtime::Executable {
                       const std::vector<std::shared_ptr<HETensor>>& outputs,
                       const std::vector<std::shared_ptr<HETensor>>& inputs);
 
-  bool m_stop_const_fold{flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
+  bool m_stop_const_fold{string_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
 }  // namespace he
 }  // namespace ngraph

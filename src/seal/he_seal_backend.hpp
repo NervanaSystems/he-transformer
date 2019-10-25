@@ -380,7 +380,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   bool mask_gc_outputs() const { return m_mask_gc_outputs; }
 
  private:
-  bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
+  bool m_naive_rescaling{string_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};
   bool m_enable_garbled_circuit{false};
   bool m_mask_gc_inputs{false};
