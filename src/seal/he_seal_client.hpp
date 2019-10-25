@@ -31,6 +31,9 @@
 #include "util.hpp"
 
 namespace ngraph {
+namespace aby {
+class ABYClientExecutor;
+}
 namespace he {
 
 /// (tensor_name : (configuration, data)
@@ -134,16 +137,14 @@ class HESealClient {
     return m_encryption_params.complex_packing();
   }
 
-  void init_aby_executor() {
-    /*if (m_aby_executor == nullptr) {
-      m_aby_executor = std::make_unique<aby::ABYExecutor>();
-    } */
-  }
+  void init_aby_executor();
 
   /// \brief Returns the scale of the encryption parameters
   inline double scale() const { return m_encryption_params.scale(); }
 
  private:
+  std::string m_hostname;  // Hostname of server to connect to
+
   std::unique_ptr<TCPClient> m_tcp_client;
   std::unique_ptr<aby::ABYClientExecutor> m_aby_executor;
   ngraph::he::HESealEncryptionParameters m_encryption_params;

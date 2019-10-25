@@ -44,7 +44,10 @@ namespace he {
 HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
                            const HETensorConfigMap<double>& inputs)
-    : m_batch_size{batch_size}, m_is_done{false}, m_input_config{inputs} {
+    : m_hostname(hostname),
+      m_batch_size{batch_size},
+      m_is_done{false},
+      m_input_config{inputs} {
   NGRAPH_HE_LOG(5) << "Creating HESealClient from config";
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only one input parameter");
@@ -94,6 +97,13 @@ void HESealClient::set_seal_context() {
   m_decryptor = std::make_shared<seal::Decryptor>(m_context, *m_secret_key);
   m_evaluator = std::make_shared<seal::Evaluator>(m_context);
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
+}
+
+void HESealClient::init_aby_executor() {
+  if (m_aby_executor == nullptr) {
+    m_aby_executor = std::make_unique<aby::ABYClientExecutor>(
+        std::string("yao"), *this, m_hostname);
+  }
 }
 
 void HESealClient::send_public_and_relin_keys() {

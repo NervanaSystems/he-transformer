@@ -1479,14 +1479,6 @@ void HESealExecutable::handle_server_relu_op(
                            << cipher_batch.size();
         }
 
-        if (enable_garbled_circuits()) {
-          NGRAPH_INFO
-              << "mask_input_unknown_relu_ciphers_batch with garbled circuits";
-          // Mask input values;
-          // TODO: bounded relu?
-          m_aby_executor->mask_input_unknown_relu_ciphers_batch(cipher_batch);
-        }
-
         he_proto::TCPMessage proto_msg;
         proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
         *proto_msg.mutable_function() = node_to_proto_function(
@@ -1494,14 +1486,20 @@ void HESealExecutable::handle_server_relu_op(
             {{"enable_gc", he::bool_to_string(enable_garbled_circuits())}});
 
         // TODO: set complex_packing to correct values?
-        HETensor relu_tensor(
+        auto relu_tensor = std::make_shared<HETensor>(
             arg->get_element_type(),
             Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
             arg->is_packed(), false, true, m_he_seal_backend);
-        relu_tensor.data() = cipher_batch;
+        relu_tensor->data() = cipher_batch;
+
+        if (enable_garbled_circuits()) {
+          // Masks input values
+          m_aby_executor->prepare_aby_circuit(proto_msg.function().function(),
+                                              relu_tensor);
+        }
 
         std::vector<he_proto::HETensor> proto_tensors;
-        relu_tensor.write_to_protos(proto_tensors);
+        relu_tensor->write_to_protos(proto_tensors);
 
         NGRAPH_CHECK(proto_tensors.size() == 1,
                      "Only support ReLU with 1 proto tensor");
@@ -1513,12 +1511,8 @@ void HESealExecutable::handle_server_relu_op(
         m_session->write_message(std::move(relu_message));
 
         if (enable_garbled_circuits()) {
-          NGRAPH_INFO
-              << "mask_input_unknown_relu_ciphers_batch with garbled circuits";
-          // Mask input values;
-          // TODO: bounded relu?
-          m_aby_executor->start_aby_circuit_unknown_relu_ciphers_batch(
-              cipher_batch);
+          m_aby_executor->run_aby_circuit(proto_msg.function().function(),
+                                          relu_tensor);
         }
       };
 

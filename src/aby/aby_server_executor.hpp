@@ -18,10 +18,6 @@
 
 #include "aby/aby_executor.hpp"
 #include "aby/kernel/relu_aby.hpp"
-#include "abycore/aby/abyparty.h"
-#include "abycore/circuit/booleancircuits.h"
-#include "abycore/circuit/share.h"
-#include "abycore/sharing/sharing.h"
 #include "he_tensor.hpp"
 #include "he_type.hpp"
 #include "logging/ngraph_he_log.hpp"

@@ -15,8 +15,11 @@
 //*****************************************************************************
 
 #include "aby/aby_server_executor.hpp"
+#include "nlohmann/json.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_util.hpp"
+
+using json = nlohmann::json;
 
 namespace ngraph {
 namespace aby {
@@ -158,24 +161,42 @@ void ABYServerExecutor::start_aby_circuit_unknown_relu_ciphers_batch(
   m_gc_output_mask->read(gc_output_mask_vals.data(),
                          num_aby_vals * sizeof(uint64_t));
 
-  NGRAPH_HE_LOG(3) << "Creating relu circuit";
+  NGRAPH_HE_LOG(3) << "Server creating relu circuit";
   BooleanCircuit& circuit = *get_circuit();
   ngraph::aby::relu_aby(circuit, num_aby_vals, gc_input_mask_vals, zeros,
                         gc_output_mask_vals, m_aby_bitlen,
                         m_lowest_coeff_modulus);
 
-  NGRAPH_HE_LOG(3) << "executing relu circuit";
+  NGRAPH_HE_LOG(3) << "server executing relu circuit";
   m_ABYParty->ExecCircuit();
 }
 
 void ABYServerExecutor::prepare_aby_circuit(
     const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "serevr prepare_aby_circuit";
+  NGRAPH_HE_LOG(3) << "server prepare_aby_circuit with funciton " << function;
+  json js = json::parse(function);
+  auto name = js.at("function");
+
+  if (name == "Relu") {
+    mask_input_unknown_relu_ciphers_batch(tensor->data());
+  } else {
+    NGRAPH_ERR << "Unknown function name " << name;
+    throw ngraph_error("Unknown function name");
+  }
 }
 
 void ABYServerExecutor::run_aby_circuit(const std::string& function,
                                         std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "serevr prepare_aby_circuit";
+  NGRAPH_HE_LOG(3) << "server run_aby_circuit with funciton " << function;
+
+  json js = json::parse(function);
+  auto name = js.at("function");
+  if (name == "Relu") {
+    start_aby_circuit_unknown_relu_ciphers_batch(tensor->data());
+  } else {
+    NGRAPH_ERR << "Unknown function name " << name;
+    throw ngraph_error("Unknown function name");
+  }
 }
 
 }  // namespace aby

@@ -50,6 +50,20 @@ void check_argument_range(const std::vector<T>& values, const T min_val,
   }
 }
 
+// Reduces d to range (-q/2, q/2) by adding / subtracting q
+inline double mod_reduce_zero_centered(const double d, const double q) {
+  double ret = d;
+  while (d < -q / 2) {
+    ret += q;
+  }
+  while (d > q / 2) {
+    ret -= q;
+  }
+  NGRAPH_CHECK(ret <= q / 2 && ret >= -q / 2, "d ", d, " outside valid range [",
+               -q / 2, ", ", q / 2, "]");
+  return ret;
+}
+
 // if (x > mod), let x = x - mod
 // else, keep x = x
 inline share* reduce_mod(BooleanCircuit& circ, share* x, share* mod) {
