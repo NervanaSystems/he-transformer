@@ -25,6 +25,9 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
+#include "nlohmann/json.hpp"
+#include "node_wrapper.hpp"
+#include "op/bounded_relu.hpp"
 #include "protos/message.pb.h"
 
 namespace ngraph {
@@ -209,11 +212,9 @@ map_to_double_map(
   std::unordered_map<std::string, std::pair<std::string, std::vector<double>>>
       outputs;
 
-  for (const auto& elem : inputs) {
-    std::vector<double> double_inputs{elem.second.second.begin(),
-                                      elem.second.second.end()};
-    outputs.insert(
-        {elem.first, std::make_pair(elem.second.first, double_inputs)});
+  for (const auto& [key, value] : inputs) {
+    std::vector<double> double_inputs{value.second.begin(), value.second.end()};
+    outputs.insert({key, std::make_pair(value.first, double_inputs)});
   }
   return outputs;
 }
@@ -226,6 +227,24 @@ inline bool param_originates_from_name(const ngraph::op::Parameter& param,
   return std::any_of(param.get_provenance_tags().begin(),
                      param.get_provenance_tags().end(),
                      [&](const std::string& tag) { return tag == name; });
+}
+
+inline he_proto::Function node_to_proto_function(
+    const NodeWrapper& node_wrapper) {
+  const Node& node = *node_wrapper.get_node();
+  auto type_id = node_wrapper.get_typeid();
+
+  nlohmann::json js = {{"function", node.description()}};
+  if (type_id == OP_TYPEID::BoundedRelu) {
+    const op::BoundedRelu* bounded_relu =
+        static_cast<const op::BoundedRelu*>(&node);
+    float alpha = bounded_relu->get_alpha();
+    js["bound"] = alpha;
+  }
+
+  he_proto::Function f;
+  f.set_function(js.dump());
+  return f;
 }
 
 }  // namespace he

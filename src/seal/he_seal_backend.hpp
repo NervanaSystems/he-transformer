@@ -109,6 +109,9 @@ class HESealBackend : public ngraph::runtime::Backend {
   ///     should use plaintext packing.
   ///     5) {"encryption_parameters" : "filename
   ///     or json string"}, which sets the encryption parameters to use.
+  ///     6) {"enable_gc": "True"/"False"}, which indicates whether or not the
+  ///     client should use garbled circuits for secure function evaluation.
+  ///     Should only be enabled if the client is enabled.
   ///
   ///     Note, entries with the same tensor key should be comma-separated, for
   ///     instance: {tensor_name : "client_input,encrypt,packed"}
@@ -345,10 +348,20 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns whether or not the client is enabled with garbled circuits
   bool enable_garbled_circuit() const { return m_enable_garbled_circuit; }
 
+  /// \brief Returns whether or not the garbled circuit inputs should be masked
+  /// for privacy
+  bool mask_gc_inputs() const { return m_mask_gc_inputs; }
+
+  /// \brief Returns whether or not the garbled circuit inputs should be masked
+  /// for privacy
+  bool mask_gc_outputs() const { return m_mask_gc_outputs; }
+
  private:
   bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};
   bool m_enable_garbled_circuit{false};
+  bool m_mask_gc_inputs{false};
+  bool m_mask_gc_outputs{false};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;

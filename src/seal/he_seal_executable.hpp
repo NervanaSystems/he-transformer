@@ -26,6 +26,7 @@
 #include <thread>
 #include <vector>
 
+#include "aby/aby_executor.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "ngraph/runtime/backend.hpp"
@@ -154,20 +155,18 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] proto_msg from which to load the evluation key
   void load_eval_key(const he_proto::TCPMessage& proto_msg);
 
-  /// \brief Processes the ReLU operation if the client is enabled
-  /// \param[in] arg Tensor argumnet
+  /// \brief Processes the ReLU operation using a client
+  /// \param[in] arg Tensor argument
   /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
-  // TODO: rename
   void handle_server_relu_op(const std::shared_ptr<HETensor>& arg,
                              const std::shared_ptr<HETensor>& out,
                              const NodeWrapper& node_wrapper);
 
-  /// \brief Processes the MaxPool operation if the client is enabled
-  /// \param[in] arg Tensor argumnet
+  /// \brief Processes the MaxPool operation using a client
+  /// \param[in] arg Tensor argument
   /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
-  // TODO: rename
   void handle_server_max_pool_op(const std::shared_ptr<HETensor>& arg,
                                  const std::shared_ptr<HETensor>& out,
                                  const NodeWrapper& node_wrapper);
@@ -240,6 +239,9 @@ class HESealExecutable : public runtime::Executable {
   bool m_server_setup;
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
+
+  // ABY-related members
+  std::unique_ptr<aby::ABYExecutor> m_aby_executor;
 
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
