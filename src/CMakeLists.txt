@@ -70,6 +70,7 @@ target_link_libraries(he_seal_backend
                              libboost
                              libseal
                              libngraph_tf
+                             libaby
                              libprotobuf
                              libprotobuf_orig
                              ngraph)

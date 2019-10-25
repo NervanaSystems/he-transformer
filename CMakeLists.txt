@@ -20,7 +20,9 @@ cmake_minimum_required(VERSION 3.10)
 # Global project name
 project(he_transformer LANGUAGES CXX)
 
-# Cmake flags SEAL requires C++17
+# set directory where the custom finders live
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -131,6 +133,7 @@ include(cmake/openmp.cmake)
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
 include(cmake/protobuf.cmake)
+include(cmake/aby.cmake)
 
 # HE transformer source and test directories
 add_subdirectory(src)
