@@ -361,8 +361,6 @@ void HESealClient::handle_max_pool_request(he_proto::TCPMessage&& proto_msg) {
 }
 
 void HESealClient::handle_message(const TCPMessage& message) {
-  // TODO: try overwriting message?
-
   NGRAPH_HE_LOG(3) << "Client handling message";
 
   std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();

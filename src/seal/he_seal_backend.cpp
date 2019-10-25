@@ -306,20 +306,6 @@ bool HESealBackend::is_supported(const ngraph::Node& node) const {
          is_supported_type(node.get_element_type());
 }
 
-std::shared_ptr<SealCiphertextWrapper> HESealBackend::create_valued_ciphertext(
-    float value, const element::Type& type, size_t batch_size) const {
-  NGRAPH_CHECK(type == element::f32, "element type ", type, "unsupported");
-  if (batch_size != 1) {
-    throw ngraph_error(
-        "HESealBackend::create_valued_ciphertext only supports batch size 1");
-  }
-  auto plaintext = HEPlaintext({value});
-  auto ciphertext = create_empty_ciphertext();
-
-  encrypt(ciphertext, plaintext, type, complex_packing());
-  return ciphertext;
-}
-
 void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             const HEPlaintext& input, const element::Type& type,
                             bool complex_packing) const {

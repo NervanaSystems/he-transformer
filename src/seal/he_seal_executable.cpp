@@ -547,7 +547,6 @@ void HESealExecutable::handle_client_ciphers(
   NGRAPH_CHECK(find_matching_parameter_index(he_tensor->get_name(), param_idx),
                "Could not find matching parameter name ",
                he_tensor->get_name());
-  const auto& input_param = input_parameters[param_idx];
 
   if (m_client_inputs[param_idx] == nullptr) {
     m_client_inputs[param_idx] = he_tensor;

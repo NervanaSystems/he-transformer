@@ -163,15 +163,6 @@ class HESealBackend : public ngraph::runtime::Backend {
       const element::Type& element_type, const Shape& shape,
       const bool packed = false, const std::string& name = "external") const;
 
-  /// \brief Creates ciphertext with given value
-  /// \param[in] value Value to encode and encrypt
-  /// \param[in] element_type Datatype of the values to store
-  /// \param[in] batch_size TODO: remove
-  /// \returns Pointer to created ciphertext
-  std::shared_ptr<SealCiphertextWrapper> create_valued_ciphertext(
-      float value, const element::Type& element_type,
-      size_t batch_size = 1) const;
-
   /// \brief Creates empty ciphertext
   /// \returns Pointer to created ciphertext
   static inline std::shared_ptr<SealCiphertextWrapper>
