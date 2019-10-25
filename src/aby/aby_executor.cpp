@@ -27,7 +27,7 @@ ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
                          uint32_t num_threads, std::string mg_algo_str,
                          uint32_t reserve_num_gates,
                          const std::string& circuit_directory)
-    : m_num_threads{num_threads} {
+    : m_num_threads{num_threads}, m_aby_bitlen{bit_length} {
   std::map<std::string, e_role> role_map{{"server", SERVER},
                                          {"client", CLIENT}};
 

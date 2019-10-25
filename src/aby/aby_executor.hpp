@@ -32,23 +32,20 @@ namespace aby {
 
 class ABYExecutor {
  public:
-  ABYExecutor(std::string role, std::string mpc_protocol,
-              std::string hostname = std::string("localhost"),
-              std::size_t port = 7766, uint64_t security_level = 128,
-              uint32_t bit_length = 64, uint32_t num_threads = 2,
-              std::string mg_algo_str = std::string("MT_OT"),
-              uint32_t reserve_num_gates = 65536,
-              const std::string& circuit_directory = "");
+  ABYExecutor(std::string role, std::string mpc_protocol, std::string hostname,
+              std::size_t port, uint64_t security_level, uint32_t bit_length,
+              uint32_t num_threads, std::string mg_algo_str,
+              uint32_t reserve_num_gates, const std::string& circuit_directory);
 
   virtual ~ABYExecutor();
 
   inline ABYParty* get_aby_party() { return m_ABYParty; }
 
-  inline BooleanCircuit* get_circuit() {
-    std::vector<Sharing*>& sharings = m_ABYParty->GetSharings();
+  inline BooleanCircuit get_circuit() {
+    m_sharings = m_ABYParty->GetSharings();
     auto circ = dynamic_cast<BooleanCircuit*>(
-        sharings[m_aby_gc_protocol]->GetCircuitBuildRoutine());
-    return circ;
+        m_sharings[m_aby_gc_protocol]->GetCircuitBuildRoutine());
+    return *circ;
   }
 
   void mask_input_unknown_relu_ciphers_batch(
@@ -71,6 +68,8 @@ class ABYExecutor {
   size_t m_num_threads;
   bool m_mask_gc_inputs;
   bool m_mask_gc_outputs;
+
+  std::vector<Sharing*> m_sharings;
 
   e_role m_role;
   e_sharing m_aby_gc_protocol;

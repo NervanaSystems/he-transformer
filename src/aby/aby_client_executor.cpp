@@ -44,7 +44,7 @@ ABYClientExecutor::ABYClientExecutor(
 
 void ABYClientExecutor::prepare_aby_circuit(
     const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "client prepare_aby_circuit with funciton " << function;
+  NGRAPH_HE_LOG(3) << "client prepare_aby_circuit with function " << function;
   json js = json::parse(function);
   auto name = js.at("function");
 
@@ -58,7 +58,7 @@ void ABYClientExecutor::prepare_aby_circuit(
 
 void ABYClientExecutor::run_aby_circuit(const std::string& function,
                                         std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "client run_aby_circuit with funciton " << function;
+  NGRAPH_HE_LOG(3) << "client run_aby_circuit with function " << function;
   json js = json::parse(function);
   auto name = js.at("function");
 
@@ -111,7 +111,8 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   NGRAPH_HE_LOG(3) << "Client creating relu circuit";
   std::vector<uint64_t> zeros(tensor_size, 0);
-  BooleanCircuit& circ = *get_circuit();
+
+  auto circ = get_circuit();
   auto* relu_out =
       ngraph::aby::relu_aby(circ, tensor_size, zeros, client_gc_vals, zeros,
                             m_aby_bitlen, m_lowest_coeff_modulus);
