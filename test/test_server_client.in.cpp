@@ -603,16 +603,16 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_845) {
   server_client_relu_packed_test(845, 1, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_10000) {
-  server_client_relu_packed_test(10000, 1, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1000) {
+  server_client_relu_packed_test(1000, 1, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_845) {
   server_client_relu_packed_test(845, 1, true, true, 6.0);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_10000) {
-  server_client_relu_packed_test(10000, 1, true, true, 6.0);
+NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_1000) {
+  server_client_relu_packed_test(1000, 1, true, true, 6.0);
 }
 
 auto server_client_maxpool_test = [](const Shape& shape,
