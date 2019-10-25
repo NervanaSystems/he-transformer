@@ -51,6 +51,9 @@ ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
                security_level);
   m_security_level = security_level;
 
+  NGRAPH_INFO << "Creating ABYParty with role " << role << " at " << hostname
+              << ":" << port;
+
   m_ABYParty =
       new ABYParty(m_role, hostname, port, get_sec_lvl(m_security_level),
                    bit_length, m_num_threads, m_mt_gen_alg, reserve_num_gates);

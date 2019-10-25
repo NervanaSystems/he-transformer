@@ -100,6 +100,7 @@ void HESealClient::set_seal_context() {
 }
 
 void HESealClient::init_aby_executor() {
+  NGRAPH_INFO << "Initializing ABY executor";
   if (m_aby_executor == nullptr) {
     m_aby_executor = std::make_unique<aby::ABYClientExecutor>(
         std::string("yao"), *this, m_hostname);
@@ -271,6 +272,7 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
 
   if (enable_gc) {
     NGRAPH_HE_LOG(3) << "Client relu with GC";
+
     init_aby_executor();
 
     m_aby_executor->prepare_aby_circuit(function, he_tensor);

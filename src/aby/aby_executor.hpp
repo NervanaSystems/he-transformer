@@ -41,11 +41,11 @@ class ABYExecutor {
 
   inline ABYParty* get_aby_party() { return m_ABYParty; }
 
-  inline BooleanCircuit get_circuit() {
+  inline BooleanCircuit* get_circuit() {
     m_sharings = m_ABYParty->GetSharings();
     auto circ = dynamic_cast<BooleanCircuit*>(
         m_sharings[m_aby_gc_protocol]->GetCircuitBuildRoutine());
-    return *circ;
+    return circ;
   }
 
   void mask_input_unknown_relu_ciphers_batch(

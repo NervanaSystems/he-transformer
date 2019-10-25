@@ -240,7 +240,7 @@ bool HESealExecutable::server_setup() {
 
     if (enable_garbled_circuits()) {
       m_aby_executor = std::make_unique<aby::ABYServerExecutor>(
-          *this, std::string("yao"), std::string("localhost"));
+          *this, std::string("yao"), std::string("0.0.0.0"));
     }
 
     std::stringstream param_stream;
