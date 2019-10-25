@@ -28,31 +28,44 @@ namespace ngraph {
 namespace he {
 void scalar_negate_seal(const SealCiphertextWrapper& arg,
                         std::shared_ptr<SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
                         const HESealBackend& he_seal_backend);
 
-void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out,
-                        const element::Type& element_type);
+void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out);
 
-inline void negate_seal(const std::vector<HEPlaintext>& arg,
-                        std::vector<HEPlaintext>& out,
-                        const element::Type& element_type, size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    scalar_negate_seal(arg[i], out[i], element_type);
-  }
-}
-
-inline void negate_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, const HESealBackend& he_seal_backend,
-    size_t count) {
+inline void scalar_negate_seal(HEType& arg, HEType& out,
+                               const element::Type& element_type,
+                               const HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_negate_seal(*arg[i], out[i], element_type, he_seal_backend);
+  NGRAPH_CHECK(arg.complex_packing() == out.complex_packing(),
+               "Complex packing types don't match");
+  out.complex_packing() = arg.complex_packing();
+
+  if (arg.is_ciphertext() && out.is_ciphertext()) {
+    scalar_negate_seal(*arg.get_ciphertext(), out.get_ciphertext(),
+                       he_seal_backend);
+  } else if (arg.is_plaintext() && out.is_plaintext()) {
+    scalar_negate_seal(arg.get_plaintext(), out.get_plaintext());
+  } else {
+    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
+
+inline void negate_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
+                        size_t count, const element::Type& element_type,
+                        const HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+  NGRAPH_CHECK(count <= arg.size(), "Count ", count,
+               " is too large for arg, with size ", arg.size());
+  NGRAPH_CHECK(count <= out.size(), "Count ", count,
+               " is too large for out, with size ", out.size());
+
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_negate_seal(arg[i], out[i], element_type, he_seal_backend);
+  }
+}
+
 }  // namespace he
 }  // namespace ngraph

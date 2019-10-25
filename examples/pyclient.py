@@ -20,7 +20,7 @@ import argparse
 
 
 def main(FLAGS):
-    data = (1, 2, 3, 4)
+    data = (2, 4, 6, 8)
 
     port = 34000
     batch_size = 1

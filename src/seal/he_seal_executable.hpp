@@ -115,7 +115,8 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] message Message to process
   void handle_message(const TCPMessage& message);
 
-  /// \brief Processes a client message with ciphertexts to call the function
+  /// \brief Processes a client message with ciphertexts to call the appropriate
+  /// function
   /// \param[in] proto_msg Message to process
   void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
 
@@ -148,23 +149,22 @@ class HESealExecutable : public runtime::Executable {
   void load_eval_key(const he_proto::TCPMessage& proto_msg);
 
   /// \brief Processes the ReLU operation if the client is enabled
-  /// \param[in] arg0_cipher Encrypted tensor argumnet
-  /// \param[out] out_cipher Encrypted tensor result
+  /// \param[in] arg Tensor argumnet
+  /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
-  void handle_server_relu_op(std::shared_ptr<HESealCipherTensor>& arg0_cipher,
-                             std::shared_ptr<HESealCipherTensor>& out_cipher,
+  void handle_server_relu_op(const std::shared_ptr<HETensor>& arg,
+                             const std::shared_ptr<HETensor>& out,
                              const NodeWrapper& node_wrapper);
 
   /// \brief Processes the MaxPool operation if the client is enabled
-  /// \param[in] arg0_cipher Encrypted tensor argumnet
-  /// \param[out] out_cipher Encrypted tensor result
+  /// \param[in] arg Tensor argumnet
+  /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
   // TODO: rename
-  void handle_server_max_pool_op(
-      std::shared_ptr<HESealCipherTensor>& arg0_cipher,
-      std::shared_ptr<HESealCipherTensor>& out_cipher,
-      const NodeWrapper& node_wrapper);
+  void handle_server_max_pool_op(const std::shared_ptr<HETensor>& arg,
+                                 const std::shared_ptr<HETensor>& out,
+                                 const NodeWrapper& node_wrapper);
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
@@ -252,9 +252,8 @@ class HESealExecutable : public runtime::Executable {
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<HETensor>> m_client_outputs;
 
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_relu_ciphertexts;
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_max_pool_ciphertexts;
-  std::vector<std::shared_ptr<SealCiphertextWrapper>> m_minimum_ciphertexts;
+  std::vector<HEType> m_relu_data;
+  std::vector<HEType> m_max_pool_data;
 
   std::set<std::string> m_verbose_ops;
 

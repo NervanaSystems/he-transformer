@@ -72,9 +72,8 @@ inline seal::sec_level_type seal_security_level(size_t bits) {
 /// chain index
 /// \returns The minimum chain index of the ciphertexts in ciphers
 /// TODO: move to he_seal_backend
-size_t match_to_smallest_chain_index(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    const HESealBackend& he_seal_backend);
+size_t match_to_smallest_chain_index(std::vector<HEType>& ciphers,
+                                     const HESealBackend& he_seal_backend);
 
 /// \brief Returns whether or not two cipher/plaintexts have a similar scale
 /// \param[in] arg0 Ciphertext or plaintext
@@ -210,7 +209,7 @@ void multiply_plain_inplace(
 
 /// \brief Multiplies a ciphertext with a scalar in every slot
 /// \param[in] encrypted Ciphertext to multply
-/// \param[in] value Multiplicand multiplied with the ciphertext
+/// \param[in] value Value to multiply the ciphertext by
 /// \param[out] destination Ciphertext storing the result
 /// \param[in] he_seal_backend Backend whose context is used for encoding and
 /// multiplication
@@ -264,7 +263,7 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
 void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
              const HEPlaintext& input, seal::parms_id_type parms_id,
              const ngraph::element::Type& element_type, double scale,
-             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+             seal::CKKSEncoder& ckks_encoder, const seal::Encryptor& encryptor,
              bool complex_packing);
 
 /// \brief Decode SEAL plaintext into plaintext values
@@ -279,16 +278,19 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
 /// \param[out] input Plaintext to write
 /// \param[in] type Datatype to write
 /// \param[in] count Number of values to write
-void decode(void* output, const HEPlaintext& input, const element::Type& type,
-            size_t count);
+void write_plaintext(void* output, const HEPlaintext& input,
+                     const element::Type& type, size_t count);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to
 /// \param[in] input Ciphertext to decrypt
+/// \param[in] complex_packing Whether or not to decrypt values using complex
+/// packing
 /// \param[in] decryptor Used for decryption
 /// \param[in] ckks_encoder Used for decoding
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
-             seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder);
+             const bool complex_packing, seal::Decryptor& decryptor,
+             seal::CKKSEncoder& ckks_encoder);
 
 }  // namespace he
 }  // namespace ngraph

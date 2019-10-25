@@ -16,26 +16,19 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "ngraph/type/element_type.hpp"
+#include "he_type.hpp"
+#include "ngraph/coordinate_transform.hpp"
+#include "ngraph/shape_util.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
-#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
-void softmax_seal(const std::vector<HEPlaintext>& arg,
-                  std::vector<HEPlaintext>& out, const Shape& shape,
-                  const AxisSet& axes);
-
-void softmax_seal(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const Shape& shape, const AxisSet& axes,
-    const HESealBackend& he_seal_backend);
+void softmax_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
+                  const Shape& shape, const AxisSet& axes,
+                  const element::Type& element_type,
+                  HESealBackend& he_seal_backend);
 
 }  // namespace he
 }  // namespace ngraph

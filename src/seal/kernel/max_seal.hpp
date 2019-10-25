@@ -28,60 +28,58 @@
 
 namespace ngraph {
 namespace he {
-inline void max_seal(const std::vector<HEPlaintext>& arg,
-                     std::vector<HEPlaintext>& out, const Shape& in_shape,
-                     const Shape& out_shape, const AxisSet& reduction_axes) {
-  size_t batch_size = 1;
-  if (arg.size() > 0) {
-    batch_size = arg[0].num_values();
-    if (batch_size == 0) {
-      batch_size = 1;
-    }
-  }
 
-  HEPlaintext min_val(std::vector<double>(
-      batch_size, -std::numeric_limits<double>::infinity()));
+inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
+                     const Shape& in_shape, const Shape& out_shape,
+                     const AxisSet& reduction_axes, size_t batch_size,
+                     const seal::parms_id_type& parms_id, double scale,
+                     seal::CKKSEncoder& ckks_encoder,
+                     seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
+  std::vector<HEPlaintext> out_plain(
+      out.size(), HEPlaintext(std::vector<double>(
+                      batch_size, -std::numeric_limits<double>::infinity())));
+
   CoordinateTransform output_transform(out_shape);
-
-  for (const Coordinate& output_coord : output_transform) {
-    out[output_transform.index(output_coord)] = min_val;
-  }
-
   CoordinateTransform input_transform(in_shape);
 
   for (const Coordinate& input_coord : input_transform) {
     Coordinate output_coord = reduce(input_coord, reduction_axes);
     size_t out_idx = output_transform.index(output_coord);
 
-    auto x = arg[input_transform.index(input_coord)];
-    auto& new_vals = x.values();
-    auto& cur_max = out[out_idx].values();
+    const HEType& max_cmp = arg[input_transform.index(input_coord)];
+    HEPlaintext max_cmp_plain;
+    if (max_cmp.is_plaintext()) {
+      max_cmp_plain = max_cmp.get_plaintext();
+    } else {
+      decrypt(max_cmp_plain, *max_cmp.get_ciphertext(),
+              max_cmp.complex_packing(), decryptor, ckks_encoder);
+      max_cmp_plain.resize(batch_size);
+    }
+    for (size_t i = 0; i < max_cmp_plain.size(); ++i) {
+      out_plain[out_idx][i] = std::max(out_plain[out_idx][i], max_cmp_plain[i]);
+    }
+  }
 
-    for (size_t i = 0; i < cur_max.size(); ++i) {
-      if (new_vals[i] > cur_max[i]) {
-        cur_max[i] = new_vals[i];
-      }
+  for (const Coordinate& output_coord : output_transform) {
+    size_t out_idx = output_transform.index(output_coord);
+    if (out[out_idx].is_plaintext()) {
+      out[out_idx].set_plaintext(out_plain[out_idx]);
+    } else {
+      encrypt(out[out_idx].get_ciphertext(), out_plain[out_idx], parms_id,
+              ngraph::element::f32, scale, ckks_encoder, encryptor,
+              out[out_idx].complex_packing());
     }
   }
 }
 
-inline void max_seal(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const Shape& in_shape, const Shape& out_shape,
-    const AxisSet& reduction_axes, const HESealBackend& he_seal_backend) {
-  std::vector<HEPlaintext> plain_arg(arg.size());
-  std::vector<HEPlaintext> plain_out(out.size());
-  for (size_t arg_idx = 0; arg_idx < arg.size(); ++arg_idx) {
-    he_seal_backend.decrypt(plain_arg[arg_idx], *arg[arg_idx]);
-  }
-
-  max_seal(plain_arg, plain_out, in_shape, out_shape, reduction_axes);
-
-  for (size_t out_idx = 0; out_idx < out.size(); ++out_idx) {
-    he_seal_backend.encrypt(out[out_idx], plain_out[out_idx], element::f32,
-                            he_seal_backend.complex_packing());
-  }
+inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
+                     const Shape& in_shape, const Shape& out_shape,
+                     const AxisSet& reduction_axes, size_t batch_size,
+                     const HESealBackend& he_seal_backend) {
+  max_seal(arg, out, in_shape, out_shape, reduction_axes, batch_size,
+           he_seal_backend.get_context()->first_parms_id(),
+           he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
+           *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
 }  // namespace he

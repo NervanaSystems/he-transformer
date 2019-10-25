@@ -14,23 +14,18 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/negate_seal.hpp"
+#pragma once
 
+#include <vector>
+
+#include "he_type.hpp"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 namespace ngraph {
 namespace he {
 
-void scalar_negate_seal(const SealCiphertextWrapper& arg,
-                        std::shared_ptr<SealCiphertextWrapper>& out,
-                        const HESealBackend& he_seal_backend) {
-  he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
-}
-
-void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  HEPlaintext out_vals(arg.size());
-  std::transform(arg.begin(), arg.end(), out_vals.begin(),
-                 std::negate<double>());
-  out = std::move(out_vals);
-}
+void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
+                  const bool verbose = false);
 
 }  // namespace he
 }  // namespace ngraph

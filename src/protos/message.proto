@@ -15,8 +15,7 @@ message TCPMessage {
   EncryptionParameters encryption_parameters = 3;
   EvaluationKey eval_key = 4;
   PublicKey public_key = 5;
-  repeated SealCipherTensor cipher_tensors = 6;
-  repeated PlainTensor plain_tensors = 7;
+  repeated HETensor he_tensors = 6;
 }
 
 message EncryptionParameters {
@@ -35,45 +34,19 @@ message Function {
   string function = 1;
 }
 
-message SealCiphertextWrapper {
-  bool complex_packing = 1;
-  bool known_value = 2;
-  float value = 3;
-  bytes ciphertext = 4;
-}
-
-message Plaintext {
-  repeated float value = 1;
-}
-
-/// \brief Represents a ciphertext tensor
-/// Due to the 2GB limit in protobuf, large cipher tensors may not be able to
-/// store the entire tensor in one SealCipherTensor message. In this case, the
-/// offset argument is used to decribe how far into the cipher tensor array the
-/// current message's ciphertexts begin.  For example, if we have a cipher
-/// tensor of shape {1000,10}, and maximum size of store 100 ciphertexts per
-/// message, 100 messages with offsets 0, 100, 200, 300, ..., 9900,
-/// respectively, would be used to store the entire cipher tensor
-message SealCipherTensor {
+message HETensor {
   string name = 1;
   repeated uint64 shape = 2;
-  uint64 offset = 3;
-  bool packed = 4;
-  repeated SealCiphertextWrapper ciphertexts = 5;
+  bool packed = 3;
+  uint64 offset = 4;
+  repeated HEType data = 5;
 }
 
-/// \brief Represents a plaintext tensor
-/// Due to the 2GB limit in protobuf, large cipher tensors may not be able to
-/// store the entire tensor in one PlainTensor message. In this case, the
-/// offset argument is used to decribe how far into the tensor array the
-/// current message's plaintexts begin.  For example, if we have a cipher
-/// tensor of shape {1000,10}, and maximum size of store 100 plaintexts per
-/// message, 100 messages with offsets 0, 100, 200, 300, ..., 9900,
-/// respectively, would be used to store the entire cipher tensor
-message PlainTensor {
-  string name = 1;
-  repeated uint64 shape = 2;
-  uint64 offset = 3;
-  bool packed = 4;
-  repeated Plaintext plaintexts = 5;
+message HEType {
+  bool is_plaintext = 1;
+  bool plaintext_packing = 2;
+  bool complex_packing = 3;
+  uint64 batch_size = 4;
+  repeated float plain = 5;
+  bytes ciphertext = 6;
 }

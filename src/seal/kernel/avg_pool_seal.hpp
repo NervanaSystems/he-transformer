@@ -19,28 +19,30 @@
 #include <memory>
 #include <vector>
 
-#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-inline void avg_pool_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const Shape& arg_shape, const Shape& out_shape, const Shape& window_shape,
-    const Strides& window_movement_strides, const Shape& padding_below,
-    const Shape& padding_above, bool include_padding_in_avg_computation,
-    HESealBackend& he_seal_backend) {
+inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
+                          const Shape& arg_shape, const Shape& out_shape,
+                          const Shape& window_shape,
+                          const Strides& window_movement_strides,
+                          const Shape& padding_below,
+                          const Shape& padding_above,
+                          bool include_padding_in_avg_computation,
+                          size_t batch_size, HESealBackend& he_seal_backend) {
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
   for (const Coordinate& out_coord : output_transform) {
+    size_t out_coord_idx = output_transform.index(out_coord);
+
     // Our output coordinate O will have the form:
     //
     //   (N,chan,i_1,...,i_n)
@@ -115,7 +117,8 @@ inline void avg_pool_seal(
     //   n_elements := n_elements + 1
 
     // T result = 0;
-    std::shared_ptr<SealCiphertextWrapper> sum;
+    // TODO: better type which matches arguments?
+    auto sum = HEType(HEPlaintext(), false);
     bool first_add = true;
 
     size_t n_elements = 0;
@@ -128,107 +131,16 @@ inline void avg_pool_seal(
         // T v = in_bounds ?: 0;
         // result += v;
 
-        if (first_add) {
-          sum = std::make_shared<SealCiphertextWrapper>(
-              *arg[input_batch_transform.index(input_batch_coord)]);
-          first_add = false;
-        } else {
-          scalar_add_seal(*sum,
-                          *arg[input_batch_transform.index(input_batch_coord)],
-                          sum, element::f32, he_seal_backend);
-        }
-        n_elements++;
-      }
-    }
-
-    if (n_elements == 0) {
-      throw std::runtime_error("AvgPool elements == 0, must be non-zero");
-    }
-    auto inv_n_elements = HEPlaintext(1.f / n_elements);
-
-    scalar_multiply_seal(*sum, inv_n_elements, sum, element::f32,
-                         he_seal_backend);
-
-    out[output_transform.index(out_coord)] = sum;
-  }
-};
-
-inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
-                          std::vector<HEPlaintext>& out, const Shape& arg_shape,
-                          const Shape& out_shape, const Shape& window_shape,
-                          const Strides& window_movement_strides,
-                          const Shape& padding_below,
-                          const Shape& padding_above,
-                          bool include_padding_in_avg_computation,
-                          HESealBackend& he_seal_backend) {
-  // At the outermost level we will walk over every output coordinate O.
-  CoordinateTransform output_transform(out_shape);
-
-  for (const Coordinate& out_coord : output_transform) {
-    size_t batch_index = out_coord[0];
-    size_t channel = out_coord[1];
-    size_t n_spatial_dimensions = arg_shape.size() - 2;
-
-    Coordinate input_batch_transform_start(2 + n_spatial_dimensions);
-    Coordinate input_batch_transform_end(2 + n_spatial_dimensions);
-    Strides input_batch_transform_source_strides(2 + n_spatial_dimensions, 1);
-    AxisVector input_batch_transform_source_axis_order(2 +
-                                                       n_spatial_dimensions);
-    CoordinateDiff input_batch_transform_padding_below(2 +
-                                                       n_spatial_dimensions);
-    CoordinateDiff input_batch_transform_padding_above(2 +
-                                                       n_spatial_dimensions);
-
-    input_batch_transform_start[0] = batch_index;
-    input_batch_transform_end[0] = batch_index + 1;
-    input_batch_transform_start[1] = channel;
-    input_batch_transform_end[1] = channel + 1;
-    input_batch_transform_padding_below[0] = 0;
-    input_batch_transform_padding_below[1] = 0;
-    input_batch_transform_padding_above[0] = 0;
-    input_batch_transform_padding_above[1] = 0;
-
-    for (size_t i = 2; i < n_spatial_dimensions + 2; i++) {
-      size_t window_shape_this_dim = window_shape[i - 2];
-      size_t movement_stride = window_movement_strides[i - 2];
-
-      input_batch_transform_start[i] = movement_stride * out_coord[i];
-      input_batch_transform_end[i] =
-          input_batch_transform_start[i] + window_shape_this_dim;
-      input_batch_transform_padding_below[i] = padding_below[i - 2];
-      input_batch_transform_padding_above[i] = padding_above[i - 2];
-    }
-
-    for (size_t i = 0; i < arg_shape.size(); i++) {
-      input_batch_transform_source_axis_order[i] = i;
-    }
-
-    CoordinateTransform input_batch_transform(
-        arg_shape, input_batch_transform_start, input_batch_transform_end,
-        input_batch_transform_source_strides,
-        input_batch_transform_source_axis_order,
-        input_batch_transform_padding_below,
-        input_batch_transform_padding_above);
-
-    // T result = 0;
-    HEPlaintext sum;
-    bool first_add = true;
-
-    size_t n_elements = 0;
-
-    for (const Coordinate& input_batch_coord : input_batch_transform) {
-      bool in_bounds =
-          input_batch_transform.has_source_coordinate(input_batch_coord);
-
-      if (in_bounds || include_padding_in_avg_computation) {
-        // T v = in_bounds ?: 0;
-        // result += v;
         if (first_add) {
           sum = arg[input_batch_transform.index(input_batch_coord)];
+          // TODO: batch size number of zeros?
+          HEPlaintext zero(std::vector<double>{0});
+          out[out_coord_idx].set_plaintext(zero);
           first_add = false;
         } else {
-          scalar_add_seal(
-              sum, arg[input_batch_transform.index(input_batch_coord)], sum);
+          scalar_add_seal(sum,
+                          arg[input_batch_transform.index(input_batch_coord)],
+                          sum, he_seal_backend);
         }
         n_elements++;
       }
@@ -237,13 +149,22 @@ inline void avg_pool_seal(std::vector<HEPlaintext>& arg,
     if (n_elements == 0) {
       throw std::runtime_error("AvgPool elements == 0, must be non-zero");
     }
-    auto inv_n_elements = HEPlaintext(1.f / n_elements);
 
-    scalar_multiply_seal(sum, inv_n_elements, sum, element::f32,
-                         he_seal_backend);
+    if (first_add) {
+      // TODO: batch size number of zeros?
+      HEPlaintext zero(std::vector<double>{0});
+      out[out_coord_idx].set_plaintext(zero);
+    } else {
+      // TODO: batch size number of zeros?
+      auto inv_n_elements =
+          HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
+                 sum.complex_packing());
 
-    out[output_transform.index(out_coord)] = sum;
+      scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
+      out[out_coord_idx] = sum;
+    }
   }
-};
+}
+
 }  // namespace he
 }  // namespace ngraph

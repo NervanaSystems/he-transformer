@@ -19,85 +19,111 @@
 #include <memory>
 #include <vector>
 
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/negate_seal.hpp"
+#include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-void scalar_subtract_seal(SealCiphertextWrapper& arg0,
-                          SealCiphertextWrapper& arg1,
-                          std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
-                          HESealBackend& he_seal_backend);
+/// \brief Subtracts two ciphertexts
+/// \param[in,out] arg0 Ciphertext argument to subtract from. May be rescaled
+/// \param[in,out] arg1 Ciphertext argument to subtract. May be rescaled
+/// \param[out] out Stores the encrypted sum
+/// \param[in] he_seal_backend Backend with which to perform subtractition
+/// \param[in] pool Memory pool used for new memory allocation
+void scalar_subtract_seal(
+    SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
+    std::shared_ptr<SealCiphertextWrapper>& out, HESealBackend& he_seal_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
+/// \brief Subtracts a ciphertext by a plaintext
+/// \param[in,out] arg0 Ciphertext argument to subtract from. May be rescaled
+/// \param[in] arg1 Plaintext argument to subtract
+/// \param[out] out Stores the encrypted sum
+/// \param[in] complex_packing Whether or not the ciphertext should be
+/// multiplied using complex packing
+/// \param[in] he_seal_backend Backend with which to perform subtractition
 void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
+                          const bool complex_packing,
                           HESealBackend& he_seal_backend);
 
+/// \brief Subtracts a plaintext by a ciphertext
+/// \param[in] arg0 Plaintext argument to subtract from
+/// \param[in,out] arg1 Ciphertext argument to subtract. May be rescaled
+/// \param[out] out Stores the encrypted sum
+/// \param[in] complex_packing Whether or not the ciphertext should be
+/// multiplied using complex packing
+/// \param[in] he_seal_backend Backend with which to perform subtractition
 void scalar_subtract_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
-                          const element::Type& element_type,
+                          const bool complex_packing,
                           HESealBackend& he_seal_backend);
 
+/// \brief Subtracts two plaintexts
+/// \param[in] arg0 Plaintext argument to subtract from
+/// \param[in] arg1 Plaintext argument to subtract
+/// \param[out] out Stores the plaintext difference
 void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out);
 
-inline void subtract_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(*arg0[i], *arg1[i], out[i], element_type,
+/// \brief Subtracts two ciphertext/plaintext elements
+/// \param[in] arg0 Cipher or plaintext data to subtract from
+/// \param[in] arg1 Cipher or plaintext data to subtract
+/// \param[in] out Stores the ciphertext or plaintext difference
+/// \param[in] he_seal_backend Backend used to perform subtraction
+inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
+                                 HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+               "Complex packing types don't match");
+  out.complex_packing() = arg0.complex_packing();
+
+  if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
+    scalar_subtract_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
+                         out.get_ciphertext(), he_seal_backend);
+  } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
+    scalar_subtract_seal(*arg0.get_ciphertext(), arg1.get_plaintext(),
+                         out.get_ciphertext(), arg0.complex_packing(),
                          he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
+    scalar_subtract_seal(arg0.get_plaintext(), *arg1.get_ciphertext(),
+                         out.get_ciphertext(), arg0.complex_packing(),
+                         he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
+    scalar_subtract_seal(arg0.get_plaintext(), arg1.get_plaintext(),
+                         out.get_plaintext());
+  } else {
+    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 
-inline void subtract_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-    const std::vector<HEPlaintext>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count) {
+/// \brief Subtracts two vectors of ciphertext/plaintext elements element-wise
+/// \param[in] arg0 Cipher or plaintext data to subtract from
+/// \param[in] arg1 Cipher or plaintext data to subtract
+/// \param[in] out Stores the ciphertext or plaintext difference
+/// \param[in] count Number of elements to subtract
+/// \param[in] element_type datatype of the data to subtract
+/// \param[in] he_seal_backend Backend used to perform multiplication
+inline void subtract_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
+                          std::vector<HEType>& out, size_t count,
+                          const element::Type& element_type,
+                          HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
+  NGRAPH_CHECK(count <= arg0.size(), "Count ", count,
+               " is too large for arg0, with size ", arg0.size());
+  NGRAPH_CHECK(count <= arg1.size(), "Count ", count,
+               " is too large for arg1, with size ", arg1.size());
+
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(*arg0[i], arg1[i], out[i], element_type,
-                         he_seal_backend);
+    scalar_subtract_seal(arg0[i], arg1[i], out[i], he_seal_backend);
   }
 }
 
-inline void subtract_seal(
-    const std::vector<HEPlaintext>& arg0,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(arg0[i], *arg1[i], out[i], element_type,
-                         he_seal_backend);
-  }
-}
-
-inline void subtract_seal(std::vector<HEPlaintext>& arg0,
-                          std::vector<HEPlaintext>& arg1,
-                          std::vector<HEPlaintext>& out, size_t count) {
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_subtract_seal(arg0[i], arg1[i], out[i]);
-  }
-}
 }  // namespace he
 }  // namespace ngraph

@@ -16,22 +16,17 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-void constant_seal(std::vector<HEPlaintext>& out,
-                   const element::Type& element_type, const void* data_ptr,
-                   const HESealBackend& he_seal_backend, size_t count);
+void constant_seal(std::vector<HEType>& out, const element::Type& element_type,
+                   const void* data_ptr, const HESealBackend& he_seal_backend,
+                   size_t count);
 
-void constant_seal(std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-                   const element::Type& element_type, const void* data_ptr,
-                   const HESealBackend& he_seal_backend, size_t count);
 }  // namespace he
 }  // namespace ngraph

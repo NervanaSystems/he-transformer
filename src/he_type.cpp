@@ -14,22 +14,34 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "seal/kernel/negate_seal.hpp"
+#include <memory>
+
+#include "he_type.hpp"
+
+#include "he_plaintext.hpp"
+#include "ngraph/type/element_type.hpp"
+#include "protos/message.pb.h"
+#include "seal/he_seal_backend.hpp"
+#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
 
-void scalar_negate_seal(const SealCiphertextWrapper& arg,
-                        std::shared_ptr<SealCiphertextWrapper>& out,
-                        const HESealBackend& he_seal_backend) {
-  he_seal_backend.get_evaluator()->negate(arg.ciphertext(), out->ciphertext());
-}
+HEType HEType::load(const he_proto::HEType& proto_he_type,
+                    std::shared_ptr<seal::SEALContext> context) {
+  if (proto_he_type.is_plaintext()) {
+    // TODO: HEPlaintext::load function
+    HEPlaintext vals{proto_he_type.plain().begin(),
+                     proto_he_type.plain().end()};
 
-void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  HEPlaintext out_vals(arg.size());
-  std::transform(arg.begin(), arg.end(), out_vals.begin(),
-                 std::negate<double>());
-  out = std::move(out_vals);
+    return HEType(vals, proto_he_type.complex_packing());
+  } else {
+    auto cipher = HESealBackend::create_empty_ciphertext();
+    SealCiphertextWrapper::load(*cipher, proto_he_type, context);
+
+    return HEType(cipher, proto_he_type.complex_packing(),
+                  proto_he_type.batch_size());
+  }
 }
 
 }  // namespace he

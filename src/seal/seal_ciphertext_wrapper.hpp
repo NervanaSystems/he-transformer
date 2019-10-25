@@ -54,57 +54,24 @@ inline void load(seal::Ciphertext& cipher,
 }
 
 /// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
-/// The wrapper contains two attributes in addition to the SEAL ciphertext.
-/// First, whether or not the ciphertext stores values using complex packing
-/// Second, whether or not the ciphertext represents a publicly-known value.
-/// Typically, a ciphertext represents encrypted data, which is not known unless
-/// decryption has been performed. However, two special cases result in a
-/// "known-valued" ciphertext. First, multiplying a ciphertext with a plaintext
-/// zero results in a "known-valued" ciphertext ith known value 0. Second, the
-/// "Pad" operation may pad a known plaintext value to HESealCipherTensor. The
-/// padded value itself is public, so the resulting ciphertext will be this
-/// known value. This is a design choice which allows HESealCipherTensors to
-/// store a vector of SealCiphertextWrappers.
 class SealCiphertextWrapper {
  public:
-  /// \brief Create an empty unknown-valued ciphertext without complex packing
-  SealCiphertextWrapper() : m_complex_packing(false), m_known_value(false) {}
-
-  /// \brief Create an unknown-valued ciphertext
-  /// \param[in] complex_packing Whether or not to use complex packing
-  SealCiphertextWrapper(bool complex_packing)
-      : m_complex_packing(complex_packing), m_known_value(false) {}
+  /// \brief Create an empty ciphertext
+  SealCiphertextWrapper() {}
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
-  /// \param[in] complex_packing Whether or not ciphertext uses complex packing
-  /// TODO: add move constructor
-  SealCiphertextWrapper(const seal::Ciphertext& cipher,
-                        bool complex_packing = false)
-      : m_ciphertext(cipher),
-        m_complex_packing(complex_packing),
-        m_known_value(false) {}
+  SealCiphertextWrapper(seal::Ciphertext cipher)
+      : m_ciphertext(std::move(cipher)) {}
 
-  /// \brief Returns the underyling SEAL ciphertext
+  /// \brief Returns the ciphertext
   inline seal::Ciphertext& ciphertext() { return m_ciphertext; }
 
-  /// \brief Returns the underyling SEAL ciphertext
+  /// \brief Returns the ciphertext
   inline const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
-  /// \brief Returns the size of the underlying ciphertext
+  /// \brief Returns the size of the ciphertext
   inline size_t size() const { return m_ciphertext.size(); }
-
-  /// \brief Returns whether or not the ciphertext represents a known value
-  inline bool known_value() const { return m_known_value; }
-
-  /// \brief Returns whether or not ciphertext represents a known value
-  inline bool& known_value() { return m_known_value; }
-
-  /// \brief Returns known value
-  inline float value() const { return m_value; }
-
-  /// \brief Returns known value
-  inline float& value() { return m_value; }
 
   /// \brief Returns scale of the ciphertext
   inline double& scale() { return m_ciphertext.scale(); }
@@ -112,22 +79,9 @@ class SealCiphertextWrapper {
   /// \brief Returns scale of the ciphertext
   inline double scale() const { return m_ciphertext.scale(); }
 
-  /// \brief Returns whether or not the ciphertext uses complex packing
-  inline bool complex_packing() const { return m_complex_packing; }
-
-  /// \brief Returns whether or not the ciphertext uses complex packing
-  inline bool& complex_packing() { return m_complex_packing; }
-
-  /// \brief Saves the cihertext to a protobuf ciphertext wrapper
-  /// \param[out] proto_cipher Protobuf ciphertext wrapper to store the
-  /// ciphertext
-  inline void save(he_proto::SealCiphertextWrapper& proto_cipher) const {
-    proto_cipher.set_complex_packing(complex_packing());
-    proto_cipher.set_known_value(known_value());
-    if (known_value()) {
-      proto_cipher.set_value(value());
-    }
-
+  /// \brief Writes the ciphertext to a protobuf object
+  /// \param[out] he_type Protobuf object to write ciphertext to
+  inline void save(he_proto::HEType& he_type) const {
     size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
     cipher_str.resize(cipher_size);
@@ -137,45 +91,27 @@ class SealCiphertextWrapper {
 
     NGRAPH_CHECK(save_size == cipher_size, "Save size != cipher size");
 
-    proto_cipher.set_ciphertext(std::move(cipher_str));
+    he_type.set_ciphertext(std::move(cipher_str));
   }
 
-  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
-  /// \param[out] dst Destination to load ciphertext wrapper to
-  /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context SEAL context of ciphertext to load
+  /// \brief Loads a ciphertext from a protobuf object
+  /// \param[out] dst Destination to load ciphertext to
+  /// \param[in] proto_he_type Protobuf object to load object from
+  /// \param[in] context SEAL context to validate loaded ciphertext against
   static inline void load(SealCiphertextWrapper& dst,
-                          const he_proto::SealCiphertextWrapper& src,
+                          const he_proto::HEType& proto_he_type,
                           std::shared_ptr<seal::SEALContext> context) {
-    dst.complex_packing() = src.complex_packing();
-    if (src.known_value()) {
-      dst.known_value() = true;
-      dst.value() = src.value();
-    } else {
-      // TODO: load from string directly
-      const std::string& cipher_str = src.ciphertext();
-      ngraph::he::load(dst.ciphertext(), context,
-                       reinterpret_cast<const std::byte*>(cipher_str.data()),
-                       cipher_str.size());
-    }
-  }
+    NGRAPH_CHECK(!proto_he_type.is_plaintext(),
+                 "Cannot load ciphertext from plaintext HEType");
 
-  /// \brief Loads a ciphertext from a buffer to a SealCiphertextWrapper
-  /// \param[out] dst Destination to load ciphertext wrapper to
-  /// \param[in] src Source to load ciphertext wrapper from
-  /// \param[in] context SEAL context of ciphertext to load
-  static inline void load(std::shared_ptr<SealCiphertextWrapper>& dst,
-                          const he_proto::SealCiphertextWrapper& src,
-                          std::shared_ptr<seal::SEALContext> context) {
-    dst = std::make_shared<SealCiphertextWrapper>();
-    load(*dst, src, context);
+    const std::string& cipher_str = proto_he_type.ciphertext();
+    ngraph::he::load(dst.ciphertext(), context,
+                     reinterpret_cast<const std::byte*>(cipher_str.data()),
+                     cipher_str.size());
   }
 
  private:
   seal::Ciphertext m_ciphertext;
-  bool m_complex_packing;
-  bool m_known_value;
-  float m_value{0.0f};
 };
 
 }  // namespace he

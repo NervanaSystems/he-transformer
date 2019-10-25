@@ -27,9 +27,30 @@
 
 namespace ngraph {
 namespace he {
-inline void result_seal(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out, size_t count) {
+
+inline void scalar_result_seal(const HEType& arg, HEType& out,
+                               HESealBackend& he_seal_backend) {
+  out.complex_packing() = arg.complex_packing();
+
+  if (arg.is_ciphertext() && out.is_ciphertext()) {
+    out = arg;
+  } else if (arg.is_ciphertext() && out.is_plaintext()) {
+    // TODO: decrypt instead?
+    out.set_ciphertext(arg.get_ciphertext());
+  } else if (arg.is_plaintext() && out.is_ciphertext()) {
+    // TODO: encrypt instead?
+    out.set_plaintext(arg.get_plaintext());
+
+  } else if (arg.is_plaintext() && out.is_plaintext()) {
+    out = arg;
+  } else {
+    NGRAPH_CHECK(false, "Unknown result type");
+  }
+}
+
+inline void result_seal(const std::vector<HEType>& arg,
+                        std::vector<HEType>& out, const size_t count,
+                        HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(arg.size() >= count, "Result arg size ", arg.size(),
                " smaller than count ", count);
   NGRAPH_CHECK(out.size() >= count, "Result out size ", out.size(),
@@ -37,26 +58,9 @@ inline void result_seal(
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    out[i] = arg[i];
+    scalar_result_seal(arg[i], out[i], he_seal_backend);
   }
 }
 
-inline void result_seal(const std::vector<HEPlaintext>& arg,
-                        std::vector<HEPlaintext>& out, size_t count) {
-  NGRAPH_CHECK(out.size() == arg.size(), "Result output size ", out.size(),
-               " does not match result input size ", arg.size());
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    out[i] = arg[i];
-  }
-}
-
-void result_seal(const std::vector<HEPlaintext>& arg,
-                 std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-                 size_t count, const HESealBackend& he_seal_backend);
-
-void result_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-                 std::vector<HEPlaintext>& out, size_t count,
-                 const HESealBackend& he_seal_backend);
 }  // namespace he
 }  // namespace ngraph

@@ -61,12 +61,12 @@ auto divide_test = [](const Shape& shape, const bool arg1_encrypted,
   vector<float> exp_result;
 
   for (int i = 0; i < shape_size(shape); ++i) {
-    input_a.emplace_back(i);
+    input_a.emplace_back(i + 1);
 
     if (i % 2 == 0) {
-      input_b.emplace_back(i);
+      input_b.emplace_back(i + 1);
     } else {
-      input_b.emplace_back(1 - i);
+      input_b.emplace_back(2 - i);
     }
 
     if (packed && complex_packing && arg1_encrypted && !arg2_encrypted) {

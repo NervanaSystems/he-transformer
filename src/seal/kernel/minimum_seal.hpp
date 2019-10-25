@@ -17,43 +17,25 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
+#include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-inline void scalar_minimum_seal(const HEPlaintext& arg0,
-                                const HEPlaintext& arg1, HEPlaintext& out) {
-  const std::vector<double>& arg0_vals = arg0.values();
-  const std::vector<double>& arg1_vals = arg1.values();
-  std::vector<double> out_vals(arg0.num_values());
 
-  NGRAPH_CHECK(arg0.num_values() == arg1.num_values(),
-               "arg0.num_values() = ", arg0.num_values(),
-               " does not match arg1.num_values()", arg1.num_values());
+void scalar_minimum_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                         HEPlaintext& out);
 
-  for (size_t i = 0; i < arg0.num_values(); ++i) {
-    out_vals[i] = arg0_vals[i] < arg1_vals[i] ? arg0_vals[i] : arg1_vals[i];
-  }
+void scalar_minimum_seal(HEType& arg0, HEType& arg1, HEType& out,
+                         HESealBackend& he_seal_backend);
 
-  out.set_values(out_vals);
-}
-
-inline void minimum_seal(const std::vector<HEPlaintext>& arg0,
-                         const std::vector<HEPlaintext>& arg1,
-                         std::vector<HEPlaintext>& out, size_t count) {
-  NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() = ", arg0.size(),
-               " does not match arg1.size()", arg1.size());
-  NGRAPH_CHECK(arg0.size() == out.size(), "arg0.size() = ", arg0.size(),
-               " does not match out.size()", out.size());
-  for (size_t i = 0; i < count; ++i) {
-    scalar_minimum_seal(arg0[i], arg1[i], out[i]);
-  }
-}
+void minimum_seal(const std::vector<HEType>& arg0,
+                  const std::vector<HEType>& arg1, std::vector<HEType>& out,
+                  size_t count, HESealBackend& he_seal_backend);
 
 }  // namespace he
 }  // namespace ngraph

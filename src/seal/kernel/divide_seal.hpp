@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "he_type.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
@@ -26,78 +27,21 @@
 
 namespace ngraph {
 namespace he {
-void scalar_divide_seal(SealCiphertextWrapper& arg0,
-                        SealCiphertextWrapper& arg1,
-                        std::shared_ptr<SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        HESealBackend& he_seal_backend);
-
-void scalar_divide_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
-                        std::shared_ptr<SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        HESealBackend& he_seal_backend);
-
-void scalar_divide_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
-                        std::shared_ptr<SealCiphertextWrapper>& out,
-                        const element::Type& element_type,
-                        HESealBackend& he_seal_backend);
-
-void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+void scalar_divide_seal(const HEPlaintext& arg, const HEPlaintext& arg1,
                         HEPlaintext& out);
 
-inline void divide_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_divide_seal(*arg0[i], *arg1[i], out[i], element_type,
-                       he_seal_backend);
-  }
-}
+void scalar_divide_seal(const HEType& arg0, const HEType& arg1, HEType& out,
+                        const seal::parms_id_type& parms_id, double scale,
+                        seal::CKKSEncoder& ckks_encoder,
+                        seal::Encryptor& encryptor, seal::Decryptor& decryptor);
 
-inline void divide_seal(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg0,
-    const std::vector<HEPlaintext>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_divide_seal(*arg0[i], arg1[i], out[i], element_type,
-                       he_seal_backend);
-  }
-}
+void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
+                        HESealBackend& he_seal_backend);
 
-inline void divide_seal(
-    const std::vector<HEPlaintext>& arg0,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg1,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const element::Type& element_type, HESealBackend& he_seal_backend,
-    size_t count) {
-  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
-               "Unsupported type ", element_type);
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_divide_seal(arg0[i], *arg1[i], out[i], element_type,
-                       he_seal_backend);
-  }
-}
+void divide_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
+                 std::vector<HEType>& out, size_t count,
+                 const element::Type& element_type,
+                 HESealBackend& he_seal_backend);
 
-inline void divide_seal(std::vector<HEPlaintext>& arg0,
-                        std::vector<HEPlaintext>& arg1,
-                        std::vector<HEPlaintext>& out, size_t count) {
-#pragma omp parallel for
-  for (size_t i = 0; i < count; ++i) {
-    scalar_divide_seal(arg0[i], arg1[i], out[i]);
-  }
-}
 }  // namespace he
 }  // namespace ngraph

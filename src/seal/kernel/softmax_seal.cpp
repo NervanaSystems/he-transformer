@@ -27,21 +27,30 @@
 #include "seal/kernel/softmax_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/kernel/sum_seal.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
 
-void softmax_seal(const std::vector<HEPlaintext>& arg,
-                  std::vector<HEPlaintext>& out, const Shape& shape,
-                  const AxisSet& axes) {
+void softmax_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
+                  const Shape& shape, const AxisSet& axes,
+                  const element::Type& element_type,
+                  HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+
   auto temp_shape = reduce(shape, axes);
   auto temp_elements = shape_size(temp_shape);
-  auto temp_ptr = std::vector<HEPlaintext>(temp_elements);
+  NGRAPH_CHECK(arg.size() > 0, "arg.size() == 0 in softmax");
 
-  max_seal(arg, temp_ptr, shape, temp_shape, axes);
+  // Avoid extra decryption by setting output of max to plaintext
+  // TODO: avoid extra decryptions in subtract, exp, sum, divide ops below
+  auto temp_ptr = std::vector<HEType>(
+      temp_elements,
+      HEType(HEPlaintext(arg[0].batch_size()), arg[0].complex_packing()));
+
+  max_seal(arg, temp_ptr, shape, temp_shape, axes, arg[0].batch_size(),
+           he_seal_backend);
 
   CoordinateTransform transform(shape);
   CoordinateTransform temp_transform(temp_shape);
@@ -50,37 +59,20 @@ void softmax_seal(const std::vector<HEPlaintext>& arg,
 
     scalar_subtract_seal(arg[transform.index(coord)],
                          temp_ptr[temp_transform.index(temp_coord)],
-                         out[transform.index(coord)]);
-    scalar_exp_seal(out[transform.index(coord)], out[transform.index(coord)]);
+                         out[transform.index(coord)], he_seal_backend);
+    scalar_exp_seal(out[transform.index(coord)], out[transform.index(coord)],
+                    he_seal_backend);
   }
 
-  sum_seal(out, temp_ptr, shape, temp_shape, axes);
+  sum_seal(out, temp_ptr, shape, temp_shape, axes, element_type,
+           he_seal_backend);
 
   for (const Coordinate& coord : transform) {
     Coordinate temp_coord = reduce(coord, axes);
 
     scalar_divide_seal(out[transform.index(coord)],
                        temp_ptr[temp_transform.index(temp_coord)],
-                       out[transform.index(coord)]);
-  }
-}
-
-void softmax_seal(
-    const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
-    const Shape& shape, const AxisSet& axes,
-    const HESealBackend& he_seal_backend) {
-  std::vector<HEPlaintext> plain_arg(arg.size());
-  std::vector<HEPlaintext> plain_out(out.size());
-  for (size_t arg_idx = 0; arg_idx < arg.size(); ++arg_idx) {
-    he_seal_backend.decrypt(plain_arg[arg_idx], *arg[arg_idx]);
-  }
-
-  softmax_seal(plain_arg, plain_out, shape, axes);
-
-  for (size_t out_idx = 0; out_idx < out.size(); ++out_idx) {
-    he_seal_backend.encrypt(out[out_idx], plain_out[out_idx], element::f32,
-                            he_seal_backend.complex_packing());
+                       out[transform.index(coord)], he_seal_backend);
   }
 }
 

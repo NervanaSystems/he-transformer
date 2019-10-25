@@ -17,10 +17,10 @@
 # HE transformer sources
 set(HE_SRC
     # main
-    he_plain_tensor.cpp
-    he_tensor.cpp
-    node_wrapper.cpp
     he_op_annotations.cpp
+    he_tensor.cpp
+    he_type.cpp
+    node_wrapper.cpp
     # pass
     pass/he_fusion.cpp
     pass/he_liveness.cpp
@@ -30,19 +30,22 @@ set(HE_SRC
     op/bounded_relu.cpp
     # seal kernels
     seal/kernel/add_seal.cpp
+    seal/kernel/bounded_relu_seal.cpp
+    seal/kernel/dot_seal.cpp
+    seal/kernel/convolution_seal.cpp
     seal/kernel/constant_seal.cpp
     seal/kernel/divide_seal.cpp
     seal/kernel/exp_seal.cpp
-    seal/kernel/pad_seal.cpp
+    seal/kernel/minimum_seal.cpp
     seal/kernel/multiply_seal.cpp
     seal/kernel/negate_seal.cpp
+    seal/kernel/pad_seal.cpp
     seal/kernel/relu_seal.cpp
-    seal/kernel/result_seal.cpp
+    seal/kernel/rescale_seal.cpp
     seal/kernel/softmax_seal.cpp
     seal/kernel/subtract_seal.cpp
     # seal backend
     seal/he_seal_backend.cpp
-    seal/he_seal_cipher_tensor.cpp
     seal/he_seal_client.cpp
     seal/he_seal_encryption_parameters.cpp
     seal/he_seal_executable.cpp
@@ -60,7 +63,6 @@ add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend
                            PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
                                   ${EXTERNAL_INSTALL_INCLUDE_DIR}
-                                  ${SEAL_INSTALL_INCLUDE_DIR}
                                   ${NGRAPH_TF_INCLUDE_DIR})
 
 target_link_libraries(he_seal_backend

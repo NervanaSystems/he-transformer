@@ -28,52 +28,31 @@ namespace ngraph {
 namespace he {
 
 void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  const std::vector<double>& arg_vals = arg.values();
-  std::vector<double> out_vals(arg.num_values());
+  out.resize(arg.size());
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
-  std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
-  out.set_values(out_vals);
+  std::transform(arg.begin(), arg.end(), out.begin(), relu);
 }
 
-void relu_seal(const std::vector<HEPlaintext>& arg,
-               std::vector<HEPlaintext>& out, size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    scalar_relu_seal(arg[i], out[i]);
-  }
-}
-
-void scalar_relu_seal_known_value(const SealCiphertextWrapper& arg,
-                                  std::shared_ptr<SealCiphertextWrapper>& out) {
-  auto relu = [](double d) { return d > 0 ? d : 0.; };
-  NGRAPH_CHECK(arg.known_value(), "Unknown arg value");
-  out->known_value() = true;
-  out->value() = relu(arg.value());
-}
-
-void scalar_relu_seal(const SealCiphertextWrapper& arg,
-                      std::shared_ptr<SealCiphertextWrapper>& out,
+void scalar_relu_seal(const HEType& arg, HEType& out,
                       const seal::parms_id_type& parms_id, double scale,
                       seal::CKKSEncoder& ckks_encoder,
                       seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
-  auto relu = [](double d) { return d > 0 ? d : 0.; };
-
-  if (arg.known_value()) {
-    scalar_relu_seal_known_value(arg, out);
+  if (arg.is_plaintext()) {
+    out.set_plaintext(arg.get_plaintext());
+    scalar_relu_seal(arg.get_plaintext(), out.get_plaintext());
   } else {
     HEPlaintext plain;
-    decrypt(plain, arg, decryptor, ckks_encoder);
-    const std::vector<double>& arg_vals = plain.values();
-    std::vector<double> out_vals(plain.num_values());
-    std::transform(arg_vals.begin(), arg_vals.end(), out_vals.begin(), relu);
-    plain.set_values(out_vals);
-    encrypt(out, plain, parms_id, ngraph::element::f32, scale, ckks_encoder,
-            encryptor, arg.complex_packing());
+    decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
+            ckks_encoder);
+    scalar_relu_seal(plain, plain);
+    encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
+            ckks_encoder, encryptor, arg.complex_packing());
+    out.set_ciphertext(out.get_ciphertext());
   }
 }
 
-void scalar_relu_seal(const SealCiphertextWrapper& arg,
-                      std::shared_ptr<SealCiphertextWrapper>& out,
+void scalar_relu_seal(const HEType& arg, HEType& out,
                       const HESealBackend& he_seal_backend) {
   scalar_relu_seal(
       arg, out, he_seal_backend.get_context()->first_parms_id(),
@@ -81,12 +60,11 @@ void scalar_relu_seal(const SealCiphertextWrapper& arg,
       *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
-void relu_seal(const std::vector<std::shared_ptr<SealCiphertextWrapper>>& arg,
-               std::vector<std::shared_ptr<SealCiphertextWrapper>>& out,
+void relu_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                size_t count, const HESealBackend& he_seal_backend) {
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_relu_seal(*arg[i], out[i], he_seal_backend);
+    scalar_relu_seal(arg[i], out[i], he_seal_backend);
   }
 }
 

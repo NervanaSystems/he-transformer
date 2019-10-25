@@ -63,7 +63,8 @@ void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
     }
     chain_ind0 = he_seal_backend.get_chain_index(arg0);
   }
-  NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain indices don't match (", chain_ind0, " != ", chain_ind1,")");
+  NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain indices don't match (",
+               chain_ind0, " != ", chain_ind1, ")");
   match_scale(arg0, arg1);
 }
 
@@ -215,40 +216,46 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
   }
 }
 
-size_t match_to_smallest_chain_index(
-    std::vector<std::shared_ptr<SealCiphertextWrapper>>& ciphers,
-    const HESealBackend& he_seal_backend) {
-  size_t num_elements = ciphers.size();
+size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
+                                     const HESealBackend& he_seal_backend) {
+  size_t num_elements = he_types.size();
 
-  // (cipher_ind, chain_ind)
+  // (idx, smallest chain_index)
   std::pair<size_t, size_t> smallest_chain_ind{
       0, std::numeric_limits<size_t>::max()};
-  for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
-    auto& cipher = *ciphers[cipher_idx];
-    if (!cipher.known_value()) {
+  for (size_t idx = 0; idx < num_elements; ++idx) {
+    if (he_types[idx].is_ciphertext()) {
+      auto& cipher = *he_types[idx].get_ciphertext();
       size_t chain_ind = he_seal_backend.get_chain_index(cipher);
       if (chain_ind < smallest_chain_ind.second) {
-        smallest_chain_ind = std::make_pair(cipher_idx, chain_ind);
+        smallest_chain_ind = std::make_pair(idx, chain_ind);
       }
     }
   }
-  NGRAPH_CHECK(smallest_chain_ind.second != std::numeric_limits<size_t>::max(),
-               "Can't match to modulus of all known values");
-  NGRAPH_DEBUG << "Matching to smallest chain index "
-               << smallest_chain_ind.second;
+  if (smallest_chain_ind.second == std::numeric_limits<size_t>::max()) {
+    NGRAPH_HE_LOG(3) << "Match to smallest chain index of all plaintexts";
+    return std::numeric_limits<size_t>::max();
+  }
+  NGRAPH_HE_LOG(3) << "Matching to smallest chain index "
+                   << smallest_chain_ind.second;
 
-  auto smallest_cipher = *ciphers[smallest_chain_ind.first];
+  // TODO: loop over only ciphertext indices?
+  auto smallest_cipher = *he_types[smallest_chain_ind.first].get_ciphertext();
 #pragma omp parallel for
-  for (size_t cipher_idx = 0; cipher_idx < num_elements; ++cipher_idx) {
-    auto& cipher = *ciphers[cipher_idx];
-    if (!cipher.known_value() && cipher_idx != smallest_chain_ind.second) {
-      match_modulus_and_scale_inplace(smallest_cipher, cipher, he_seal_backend);
-      size_t chain_ind = he_seal_backend.get_chain_index(cipher);
-      NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",
-                   chain_ind, " does not match smallest ",
-                   smallest_chain_ind.second);
+  for (size_t idx = 0; idx < num_elements; ++idx) {
+    if (he_types[idx].is_ciphertext()) {
+      auto& cipher = *he_types[idx].get_ciphertext();
+      if (idx != smallest_chain_ind.second) {
+        match_modulus_and_scale_inplace(smallest_cipher, cipher,
+                                        he_seal_backend);
+        size_t chain_ind = he_seal_backend.get_chain_index(cipher);
+        NGRAPH_CHECK(chain_ind == smallest_chain_ind.second, "chain_ind",
+                     chain_ind, " does not match smallest ",
+                     smallest_chain_ind.second);
+      }
     }
   }
+
   return smallest_chain_ind.second;
 }
 
@@ -421,18 +428,17 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
   const size_t slot_count = ckks_encoder.slot_count();
 
   switch (element_type.get_type_enum()) {
+    case element::Type_t::i32:
     case element::Type_t::i64:
     case element::Type_t::f32:
     case element::Type_t::f64: {
-      std::vector<double> double_vals(plaintext.values().begin(),
-                                      plaintext.values().end());
       if (complex_packing) {
         std::vector<std::complex<double>> complex_vals;
-        if (double_vals.size() == 1) {
-          std::complex<double> val(double_vals[0], double_vals[0]);
+        if (plaintext.size() == 1) {
+          std::complex<double> val(plaintext[0], plaintext[0]);
           complex_vals = std::vector<std::complex<double>>(slot_count, val);
         } else {
-          real_vec_to_complex_vec(complex_vals, double_vals);
+          real_vec_to_complex_vec(complex_vals, plaintext);
         }
         NGRAPH_CHECK(complex_vals.size() <= slot_count, "Cannot encode ",
                      complex_vals.size(), " elements, maximum size is ",
@@ -441,14 +447,14 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
         ckks_encoder.encode(complex_vals, parms_id, scale,
                             destination.plaintext());
       } else {
-        if (double_vals.size() == 1) {
-          ckks_encoder.encode(double_vals[0], parms_id, scale,
+        if (plaintext.size() == 1) {
+          ckks_encoder.encode(plaintext[0], parms_id, scale,
                               destination.plaintext());
         } else {
-          NGRAPH_CHECK(double_vals.size() <= slot_count, "Cannot encode ",
-                       double_vals.size(), " elements, maximum size is ",
+          NGRAPH_CHECK(plaintext.size() <= slot_count, "Cannot encode ",
+                       plaintext.size(), " elements, maximum size is ",
                        slot_count);
-          ckks_encoder.encode(double_vals, parms_id, scale,
+          ckks_encoder.encode(plaintext, parms_id, scale,
                               destination.plaintext());
         }
       }
@@ -456,7 +462,6 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
     }
     case element::Type_t::i8:
     case element::Type_t::i16:
-    case element::Type_t::i32:
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:
@@ -476,55 +481,46 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
 void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
              const HEPlaintext& input, seal::parms_id_type parms_id,
              const ngraph::element::Type& element_type, double scale,
-             seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
+             seal::CKKSEncoder& ckks_encoder, const seal::Encryptor& encryptor,
              bool complex_packing) {
   auto plaintext = SealPlaintextWrapper(complex_packing);
   encode(plaintext, input, ckks_encoder, parms_id, element_type, scale,
          complex_packing);
   encryptor.encrypt(plaintext.plaintext(), output->ciphertext());
-  output->complex_packing() = complex_packing;
-  output->known_value() = false;
 }
 
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder) {
-  std::vector<double> real_vals;
   if (input.complex_packing()) {
     std::vector<std::complex<double>> complex_vals;
     ckks_encoder.decode(input.plaintext(), complex_vals);
-    complex_vec_to_real_vec(real_vals, complex_vals);
+    complex_vec_to_real_vec(output, complex_vals);
   } else {
-    ckks_encoder.decode(input.plaintext(), real_vals);
+    ckks_encoder.decode(input.plaintext(), output);
   }
-  output.set_values(real_vals);
 }
 
-void decode(void* output, const HEPlaintext& input,
-            const element::Type& element_type, size_t count) {
+void write_plaintext(void* output, const HEPlaintext& input,
+                     const element::Type& element_type, size_t count) {
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(input.num_values() > 0, "Input has no values");
+  NGRAPH_CHECK(input.size() > 0, "Input has no values");
 
-  const std::vector<double>& values = input.values();
-  NGRAPH_CHECK(values.size() >= count);
-  if (values.size() > count) {
-    std::vector<double> resized_values{values.begin(), values.begin() + count};
+  NGRAPH_CHECK(input.size() >= count, "Input size ", input.size(),
+               " too small for count ", count);
+  if (input.size() > count) {
+    std::vector<double> resized_values{input.begin(), input.begin() + count};
     double_vec_to_type_vec(output, element_type, resized_values);
   } else {
-    double_vec_to_type_vec(output, element_type, values);
+    double_vec_to_type_vec(output, element_type, input);
   }
 }
 
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
-             seal::Decryptor& decryptor, seal::CKKSEncoder& ckks_encoder) {
-  if (input.known_value()) {
-    NGRAPH_DEBUG << "Decrypting known value " << input.value();
-    const size_t slot_count = ckks_encoder.slot_count();
-    output.set_values(std::vector<double>(slot_count, input.value()));
-  } else {
-    auto plaintext_wrapper = SealPlaintextWrapper(input.complex_packing());
-    decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
-    decode(output, plaintext_wrapper, ckks_encoder);
-  }
+             const bool complex_packing, seal::Decryptor& decryptor,
+             seal::CKKSEncoder& ckks_encoder) {
+  auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
+  decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
+  decode(output, plaintext_wrapper, ckks_encoder);
 }
 
 }  // namespace he

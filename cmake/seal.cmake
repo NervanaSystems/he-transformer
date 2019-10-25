@@ -21,7 +21,7 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 set(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
-set(SEAL_GIT_TAG 3.4.1)
+set(SEAL_GIT_TAG 3.4.2)
 
 set(SEAL_USE_CXX17 ON)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -62,15 +62,17 @@ ExternalProject_Add(
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
                     # Skip updates
-                    # UPDATE_COMMAND ""
-  )
+  UPDATE_COMMAND "")
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)
 add_library(libseal STATIC IMPORTED)
+
+set(SEAL_HEADERS_PATH ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
+
+target_include_directories(libseal SYSTEM
+                           INTERFACE ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
 set_target_properties(libseal
                       PROPERTIES IMPORTED_LOCATION
                                  ${EXTERNAL_INSTALL_LIB_DIR}/libseal-3.4.a)
-
-set(SEAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
 
 add_dependencies(libseal ext_seal)

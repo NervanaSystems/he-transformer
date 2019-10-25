@@ -157,14 +157,21 @@ inline void double_vec_to_type_vec(void* target,
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       std::vector<float> float_values{input.begin(), input.end()};
-      const void* type_values_src =
-          static_cast<const void*>(float_values.data());
+      auto type_values_src = static_cast<const void*>(float_values.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;
     }
     case element::Type_t::f64: {
-      const void* type_values_src =
-          static_cast<const void*>(input.data());
+      auto type_values_src = static_cast<const void*>(input.data());
+      std::memcpy(target, type_values_src, type_byte_size * count);
+      break;
+    }
+    case element::Type_t::i32: {
+      std::vector<int32_t> int32_values(input.size());
+      for (size_t i = 0; i < input.size(); ++i) {
+        int32_values[i] = std::round(input[i]);
+      }
+      auto type_values_src = static_cast<const void*>(int32_values.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;
     }
@@ -173,14 +180,12 @@ inline void double_vec_to_type_vec(void* target,
       for (size_t i = 0; i < input.size(); ++i) {
         int64_values[i] = std::round(input[i]);
       }
-      const void* type_values_src =
-          static_cast<const void*>(int64_values.data());
+      auto type_values_src = static_cast<const void*>(int64_values.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;
     }
     case element::Type_t::i8:
     case element::Type_t::i16:
-    case element::Type_t::i32:
     case element::Type_t::u8:
     case element::Type_t::u16:
     case element::Type_t::u32:
@@ -211,13 +216,6 @@ map_to_double_map(
         {elem.first, std::make_pair(elem.second.first, double_inputs)});
   }
   return outputs;
-}
-
-inline ngraph::Shape proto_shape_to_ngraph_shape(
-    const google::protobuf::RepeatedField<google::protobuf::uint64>&
-        proto_shape) {
-  std::vector<uint64_t> dims{proto_shape.begin(), proto_shape.end()};
-  return ngraph::Shape{dims};
 }
 
 inline bool param_originates_from_name(const ngraph::op::Parameter& param,
