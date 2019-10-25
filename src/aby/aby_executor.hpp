@@ -38,7 +38,7 @@ namespace aby {
 class ABYExecutor {
  public:
   ABYExecutor(std::string role, std::string mpc_protocol,
-              const he::HESealExecutable& he_seal_executable,
+              he::HESealExecutable& he_seal_executable,
               std::string hostname = std::string("localhost"),
               std::size_t port = 7766, uint64_t security_level = 128,
               uint32_t bit_length = 64, uint32_t num_threads = 2,
@@ -71,8 +71,8 @@ class ABYExecutor {
     return circ;
   }
 
-  void process_unknown_relu_ciphers_batch(
-      const std::vector<he::HEType>& cipher_batch);
+  void mask_input_unknown_relu_ciphers_batch(
+      std::vector<he::HEType>& cipher_batch);
 
  private:
   size_t m_num_threads;
@@ -86,7 +86,7 @@ class ABYExecutor {
   uint64_t m_security_level;
   ABYParty* m_ABYParty;
 
-  const he::HESealExecutable& m_he_seal_executable;
+  he::HESealExecutable& m_he_seal_executable;
 
   std::default_random_engine m_random_generator;
   int64_t m_rand_max;

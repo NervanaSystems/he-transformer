@@ -15,12 +15,14 @@
 //*****************************************************************************
 
 #include "aby/aby_executor.hpp"
+#include "seal/kernel/subtract_seal.hpp"
+#include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace aby {
 
 ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
-                         const he::HESealExecutable& he_seal_executable,
+                         he::HESealExecutable& he_seal_executable,
                          std::string hostname, std::size_t port,
                          uint64_t security_level, uint32_t bit_length,
                          uint32_t num_threads, std::string mg_algo_str,
@@ -101,9 +103,9 @@ std::shared_ptr<he::HETensor> ABYExecutor::generate_gc_output_mask(
       m_he_seal_executable.he_seal_backend().mask_gc_outputs(), default_value);
 }
 
-void ABYExecutor::process_unknown_relu_ciphers_batch(
-    const std::vector<he::HEType>& cipher_batch) {
-  NGRAPH_HE_LOG(3) << "process_unknown_relu_ciphers_batch ";
+void ABYExecutor::mask_input_unknown_relu_ciphers_batch(
+    std::vector<he::HEType>& cipher_batch) {
+  NGRAPH_HE_LOG(3) << "mask_input_unknown_relu_ciphers_batch ";
 
   bool plaintext_packing = cipher_batch[0].plaintext_packing();
   bool complex_packing = cipher_batch[0].complex_packing();
@@ -117,9 +119,30 @@ void ABYExecutor::process_unknown_relu_ciphers_batch(
       generate_gc_output_mask(Shape{batch_size, cipher_batch.size()},
                               plaintext_packing, complex_packing);
 
+  std::vector<double> scales(cipher_batch.size());
+
   for (size_t i = 0; i < cipher_batch.size(); ++i) {
     auto& he_type = cipher_batch[i];
     auto& gc_input_mask = m_gc_input_mask->data(i);
+    auto cipher = he_type.get_ciphertext();
+
+    // Swith modulus to lowest values since mask values are drawn
+    // from (-q/2, q/2) for q the lowest coeff modulus
+    he::mod_switch_to_lowest(*cipher, m_he_seal_executable.he_seal_backend());
+
+    // Divide by scale so we can encode at the same scale as existing
+    // ciphertext
+    double scale = cipher->ciphertext().scale();
+    scales[i] = scale;
+
+    he::HEPlaintext scaled_gc_input_mask(gc_input_mask.get_plaintext());
+    for (size_t mask_idx = 0; mask_idx < scaled_gc_input_mask.size();
+         ++mask_idx) {
+      scaled_gc_input_mask[mask_idx] /= scale;
+    }
+    scalar_subtract_seal(*cipher, scaled_gc_input_mask, cipher,
+                         he_type.complex_packing(),
+                         m_he_seal_executable.he_seal_backend());
   }
 }
 

@@ -66,6 +66,13 @@ inline seal::sec_level_type seal_security_level(size_t bits) {
   return sec_level;
 }
 
+inline void mod_switch_to_lowest(SealCiphertextWrapper& arg,
+                                 const HESealBackend& he_seal_backend) {
+  auto& last_parms_id = he_seal_backend.get_context()->last_parms_id();
+  he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg.ciphertext(),
+                                                         last_parms_id);
+}
+
 /// \brief Returns the smallest chain index of a vector of ciphertexts
 /// \param[in] ciphers Vector of ciphertexts
 /// \param[in] he_seal_backend Backend whose context is used to determine the

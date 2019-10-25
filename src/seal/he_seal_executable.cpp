@@ -1473,42 +1473,43 @@ void HESealExecutable::handle_server_relu_op(
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
-  auto process_unknown_relu_ciphers_batch = [&](const std::vector<HEType>&
-                                                    cipher_batch) {
-    if (verbose) {
-      NGRAPH_HE_LOG(3) << "Sending relu request size " << cipher_batch.size();
-    }
+  auto process_unknown_relu_ciphers_batch =
+      [&](std::vector<HEType>& cipher_batch) {
+        if (verbose) {
+          NGRAPH_HE_LOG(3) << "Sending relu request size "
+                           << cipher_batch.size();
+        }
 
-    if (enable_garbled_circuits()) {
-      NGRAPH_INFO << "process_unknown_relu_ciphers_batch with garbled circuits";
+        if (enable_garbled_circuits()) {
+          NGRAPH_INFO
+              << "mask_input_unknown_relu_ciphers_batch with garbled circuits";
+          // Mask input values;
+          // TODO: bounded relu?
+          m_aby_executor->mask_input_unknown_relu_ciphers_batch(cipher_batch);
+        }
+        he_proto::TCPMessage proto_msg;
+        proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+        *proto_msg.mutable_function() = node_to_proto_function(node_wrapper);
 
-      m_aby_executor->process_unknown_relu_ciphers_batch(cipher_batch);
+        // TODO: set complex_packing to correct values?
+        HETensor relu_tensor(
+            arg->get_element_type(),
+            Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
+            arg->is_packed(), false, true, m_he_seal_backend);
+        relu_tensor.data() = cipher_batch;
 
-    } else {
-      he_proto::TCPMessage proto_msg;
-      proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
-      *proto_msg.mutable_function() = node_to_proto_function(node_wrapper);
+        std::vector<he_proto::HETensor> proto_tensors;
+        relu_tensor.write_to_protos(proto_tensors);
 
-      // TODO: set complex_packing to correct values?
-      HETensor relu_tensor(
-          arg->get_element_type(),
-          Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
-          arg->is_packed(), false, true, m_he_seal_backend);
-      relu_tensor.data() = cipher_batch;
+        NGRAPH_CHECK(proto_tensors.size() == 1,
+                     "Only support ReLU with 1 proto tensor");
+        *proto_msg.add_he_tensors() = proto_tensors[0];
 
-      std::vector<he_proto::HETensor> proto_tensors;
-      relu_tensor.write_to_protos(proto_tensors);
+        TCPMessage relu_message(std::move(proto_msg));
 
-      NGRAPH_CHECK(proto_tensors.size() == 1,
-                   "Only support ReLU with 1 proto tensor");
-      *proto_msg.add_he_tensors() = proto_tensors[0];
-
-      TCPMessage relu_message(std::move(proto_msg));
-
-      NGRAPH_HE_LOG(5) << "Server writing relu request message";
-      m_session->write_message(std::move(relu_message));
-    }
-  };
+        NGRAPH_HE_LOG(5) << "Server writing relu request message";
+        m_session->write_message(std::move(relu_message));
+      };
 
   // Process unknown values
   std::vector<HEType> relu_ciphers_batch;
@@ -1535,7 +1536,7 @@ void HESealExecutable::handle_server_relu_op(
   m_relu_done_count = 0;
 
   out->data() = m_relu_data;
-}
+}  // namespace he
 
 }  // namespace he
 }  // namespace ngraph

@@ -120,6 +120,8 @@ class HESealExecutable : public runtime::Executable {
     return m_he_seal_backend;
   }
 
+  inline HESealBackend& he_seal_backend() { return m_he_seal_backend; }
+
   /// \brief Checks whether or not the client supports the function
   /// \throws ngraph_error if function is unsupported
   /// Currently, we only support functions with a single client parameter and
