@@ -1487,6 +1487,7 @@ void HESealExecutable::handle_server_relu_op(
           // TODO: bounded relu?
           m_aby_executor->mask_input_unknown_relu_ciphers_batch(cipher_batch);
         }
+
         he_proto::TCPMessage proto_msg;
         proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
         *proto_msg.mutable_function() = node_to_proto_function(node_wrapper);
@@ -1536,7 +1537,7 @@ void HESealExecutable::handle_server_relu_op(
   m_relu_done_count = 0;
 
   out->data() = m_relu_data;
-}  // namespace he
+}
 
 }  // namespace he
 }  // namespace ngraph

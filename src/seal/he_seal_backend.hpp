@@ -322,6 +322,29 @@ class HESealBackend : public ngraph::runtime::Backend {
         ->chain_index();
   }
 
+  /// \brief Switches a ciphertext to the lowest modulus in the current context
+  /// \param[in] cipher Ciphertext to modulus switch
+  inline void mod_switch_to_lowest(SealCiphertextWrapper& cipher) {
+    auto last_parms_id = get_context()->last_parms_id();
+    try {
+      get_evaluator()->mod_switch_to_inplace(cipher.ciphertext(),
+                                             last_parms_id);
+    } catch (const std::exception& e) {
+      NGRAPH_INFO << "Error mod_switch_to_inplace: " << e.what();
+    }
+  }
+
+  /// \brief Switches a ciphertext to the lowest modulus in the current context
+  /// \param[in] cipher Ciphertext to modulus switch
+  inline void rescale_to_lowest(SealCiphertextWrapper& cipher) {
+    auto last_parms_id = get_context()->last_parms_id();
+    try {
+      get_evaluator()->rescale_to_inplace(cipher.ciphertext(), last_parms_id);
+    } catch (const std::exception& e) {
+      NGRAPH_INFO << "Error rescale_to_inplace: " << e.what();
+    }
+  }
+
   /// \brief Returns set of tensors to be provided by the client
   inline std::unordered_set<std::string> get_client_tensor_names() const {
     return m_client_tensor_names;

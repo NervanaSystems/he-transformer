@@ -111,9 +111,13 @@ void ABYExecutor::mask_input_unknown_relu_ciphers_batch(
   bool complex_packing = cipher_batch[0].complex_packing();
   size_t batch_size = cipher_batch[0].batch_size();
 
+  NGRAPH_INFO << "Generating gc input mask";
+
   m_gc_input_mask =
       generate_gc_input_mask(Shape{batch_size, cipher_batch.size()},
                              plaintext_packing, complex_packing);
+
+  NGRAPH_INFO << "Generating gc output mask";
 
   m_gc_output_mask =
       generate_gc_output_mask(Shape{batch_size, cipher_batch.size()},
@@ -124,22 +128,35 @@ void ABYExecutor::mask_input_unknown_relu_ciphers_batch(
   for (size_t i = 0; i < cipher_batch.size(); ++i) {
     auto& he_type = cipher_batch[i];
     auto& gc_input_mask = m_gc_input_mask->data(i);
+    NGRAPH_CHECK(he_type.is_ciphertext(), "HEType is not ciphertext");
+
     auto cipher = he_type.get_ciphertext();
+
+    auto chain_ind =
+        m_he_seal_executable.he_seal_backend().get_chain_index(*cipher);
+
+    NGRAPH_INFO << "chain ind " << chain_ind;
+
+    NGRAPH_INFO << "Mod switchign to lowest";
 
     // Swith modulus to lowest values since mask values are drawn
     // from (-q/2, q/2) for q the lowest coeff modulus
-    he::mod_switch_to_lowest(*cipher, m_he_seal_executable.he_seal_backend());
+    m_he_seal_executable.he_seal_backend().rescale_to_lowest(*cipher);
 
     // Divide by scale so we can encode at the same scale as existing
     // ciphertext
     double scale = cipher->ciphertext().scale();
     scales[i] = scale;
 
+    NGRAPH_INFO << "scaling input mask";
+
     he::HEPlaintext scaled_gc_input_mask(gc_input_mask.get_plaintext());
     for (size_t mask_idx = 0; mask_idx < scaled_gc_input_mask.size();
          ++mask_idx) {
       scaled_gc_input_mask[mask_idx] /= scale;
     }
+
+    NGRAPH_INFO << "scalar_subtract_seal";
     scalar_subtract_seal(*cipher, scaled_gc_input_mask, cipher,
                          he_type.complex_packing(),
                          m_he_seal_executable.he_seal_backend());
