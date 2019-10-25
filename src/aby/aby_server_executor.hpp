@@ -75,6 +75,10 @@ class ABYServerExecutor : public ABYExecutor {
   he::HESealExecutable& m_he_seal_executable;
   std::shared_ptr<he::HETensor> m_gc_input_mask;
   std::shared_ptr<he::HETensor> m_gc_output_mask;
+
+  std::default_random_engine m_random_generator;
+  int64_t m_rand_max;
+  std::uniform_int_distribution<int64_t> m_random_distribution;
 };
 
 }  // namespace aby

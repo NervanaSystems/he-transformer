@@ -34,6 +34,11 @@ ABYClientExecutor::ABYClientExecutor(
                   bit_length, num_threads, mg_algo_str, reserve_num_gates,
                   circuit_directory),
       m_he_seal_client(he_seal_client) {
+  m_lowest_coeff_modulus = m_he_seal_client.encryption_paramters()
+                               .seal_encryption_parameters()
+                               .coeff_modulus()[0]
+                               .value();
+
   NGRAPH_HE_LOG(1) << "Started ABYClientExecutor";
 }
 
@@ -106,9 +111,9 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   NGRAPH_HE_LOG(3) << "Client creating relu circuit";
   std::vector<uint64_t> zeros(tensor_size, 0);
-  auto circ = get_circuit();
+  BooleanCircuit& circ = *get_circuit();
   auto* relu_out =
-      ngraph::aby::relu_aby(*circ, tensor_size, zeros, client_gc_vals, zeros,
+      ngraph::aby::relu_aby(circ, tensor_size, zeros, client_gc_vals, zeros,
                             m_aby_bitlen, m_lowest_coeff_modulus);
   NGRAPH_HE_LOG(3) << "Client executing relu circuit";
 

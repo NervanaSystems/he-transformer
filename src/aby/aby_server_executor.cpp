@@ -111,8 +111,6 @@ void ABYServerExecutor::mask_input_unknown_relu_ciphers_batch(
     auto chain_ind =
         m_he_seal_executable.he_seal_backend().get_chain_index(*cipher);
 
-    NGRAPH_INFO << "chain ind " << chain_ind;
-
     NGRAPH_INFO << "Mod switchign to lowest";
 
     // Swith modulus to lowest values since mask values are drawn

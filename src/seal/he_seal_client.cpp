@@ -275,6 +275,7 @@ void HESealClient::handle_relu_request(he_proto::TCPMessage&& proto_msg) {
 
     m_aby_executor->prepare_aby_circuit(function, he_tensor);
     m_aby_executor->run_aby_circuit(function, he_tensor);
+    NGRAPH_INFO << "Client done running aby circuit";
 
   } else {
     size_t result_count = proto_tensor->data_size();

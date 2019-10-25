@@ -1484,6 +1484,7 @@ void HESealExecutable::handle_server_relu_op(
         *proto_msg.mutable_function() = node_to_proto_function(
             node_wrapper,
             {{"enable_gc", he::bool_to_string(enable_garbled_circuits())}});
+        std::string function_str = proto_msg.function().function();
 
         // TODO: set complex_packing to correct values?
         auto relu_tensor = std::make_shared<HETensor>(
@@ -1494,8 +1495,7 @@ void HESealExecutable::handle_server_relu_op(
 
         if (enable_garbled_circuits()) {
           // Masks input values
-          m_aby_executor->prepare_aby_circuit(proto_msg.function().function(),
-                                              relu_tensor);
+          m_aby_executor->prepare_aby_circuit(function_str, relu_tensor);
         }
 
         std::vector<he_proto::HETensor> proto_tensors;
@@ -1511,8 +1511,8 @@ void HESealExecutable::handle_server_relu_op(
         m_session->write_message(std::move(relu_message));
 
         if (enable_garbled_circuits()) {
-          m_aby_executor->run_aby_circuit(proto_msg.function().function(),
-                                          relu_tensor);
+          m_aby_executor->run_aby_circuit(function_str, relu_tensor);
+          NGRAPH_INFO << "Server done running relu circuit";
         }
       };
 

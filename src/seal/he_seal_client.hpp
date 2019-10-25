@@ -142,6 +142,11 @@ class HESealClient {
   /// \brief Returns the scale of the encryption parameters
   inline double scale() const { return m_encryption_params.scale(); }
 
+  inline const ngraph::he::HESealEncryptionParameters& encryption_paramters()
+      const {
+    return m_encryption_params;
+  }
+
  private:
   std::string m_hostname;  // Hostname of server to connect to
 

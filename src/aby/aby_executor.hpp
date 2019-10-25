@@ -45,8 +45,6 @@ class ABYExecutor {
   inline ABYParty* get_aby_party() { return m_ABYParty; }
 
   inline BooleanCircuit* get_circuit() {
-    NGRAPH_HE_LOG(1) << " Starting ABY Sharing on the server";
-
     std::vector<Sharing*>& sharings = m_ABYParty->GetSharings();
     auto circ = dynamic_cast<BooleanCircuit*>(
         sharings[m_aby_gc_protocol]->GetCircuitBuildRoutine());
@@ -81,10 +79,7 @@ class ABYExecutor {
   uint64_t m_security_level;
   ABYParty* m_ABYParty;
 
-  std::default_random_engine m_random_generator;
   size_t m_lowest_coeff_modulus;
-  int64_t m_rand_max;
-  std::uniform_int_distribution<int64_t> m_random_distribution;
 };
 
 }  // namespace aby
