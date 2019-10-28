@@ -306,7 +306,7 @@ void encode(double value, const ngraph::element::Type& element_type,
       NGRAPH_ERR << "coeff_mod_count " << coeff_mod_count;
       NGRAPH_ERR << "total coeff modulus bit count "
                  << context_data.total_coeff_modulus_bit_count();
-      throw ngraph_error("encoded value is too large");
+      // throw ngraph_error("encoded value is too large");
     }
   }
 

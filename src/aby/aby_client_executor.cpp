@@ -132,7 +132,7 @@ void ABYClientExecutor::run_aby_relu_circuit(
                             // and sent to server
   relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
                                 &result_count);
-  NGRAPH_INFO << "result_count" << result_count;
+  NGRAPH_INFO << "result_count " << result_count;
   for (size_t i = 0; i < result_count; ++i) {
     NGRAPH_INFO << out_vals_relu[i];
   }
@@ -155,7 +155,7 @@ void ABYClientExecutor::run_aby_relu_circuit(
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
-    NGRAPH_INFO << "Encrypting " << post_relu_vals;
+    NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
 
     ngraph::he::encrypt(
         cipher, post_relu_vals,

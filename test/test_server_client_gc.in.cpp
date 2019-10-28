@@ -229,7 +229,7 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(results, exp_results));
+  EXPECT_TRUE(test::he::all_close(results, exp_results, 1e-2f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_relu_packed_1) {
