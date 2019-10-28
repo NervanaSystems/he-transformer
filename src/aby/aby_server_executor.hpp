@@ -63,6 +63,9 @@ class ABYServerExecutor : public ABYExecutor {
   void run_aby_circuit(const std::string& function,
                        std::shared_ptr<he::HETensor>& tensor) override;
 
+  void post_process_aby_circuit(const std::string& function,
+                                std::shared_ptr<he::HETensor>& tensor);
+
   // TODO: remove
   void start_aby_circuit_unknown_relu_ciphers_batch(
       std::vector<he::HEType>& cipher_batch);
@@ -70,6 +73,8 @@ class ABYServerExecutor : public ABYExecutor {
   // TODO: remove
   void mask_input_unknown_relu_ciphers_batch(
       std::vector<he::HEType>& cipher_batch);
+
+  void post_process_aby_relu_circuit(std::shared_ptr<he::HETensor>& tensor);
 
  private:
   he::HESealExecutable& m_he_seal_executable;

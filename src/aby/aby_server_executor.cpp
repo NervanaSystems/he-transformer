@@ -188,6 +188,33 @@ void ABYServerExecutor::prepare_aby_circuit(
   }
 }
 
+void ABYServerExecutor::post_process_aby_relu_circuit(
+    std::shared_ptr<he::HETensor>& tensor) {
+  if (m_he_seal_executable.he_seal_backend().mask_gc_outputs()) {
+    NGRAPH_INFO << "Post-processing relu outptus";
+
+    size_t tensor_size = tensor->data().size();
+    double scale = m_he_seal_executable.he_seal_backend().get_scale();
+
+    for (size_t tensor_idx = 0; tensor_idx < tensor_size; ++tensor_idx) {
+      auto& data = tensor->data(tensor_idx);
+      NGRAPH_CHECK(data.is_ciphertext(), "Data is not ciphertext");
+
+      auto cipher = data.get_ciphertext();
+
+      auto mask = m_gc_output_mask->data(tensor_idx).get_plaintext();
+      NGRAPH_INFO << "Mask before " << mask;
+      for (auto& value : mask) {
+        value = (value - m_lowest_coeff_modulus / 2.0) / scale;
+      }
+      NGRAPH_INFO << "Mask after " << mask;
+
+      scalar_subtract_seal(*cipher, mask, cipher, data.complex_packing(),
+                           m_he_seal_executable.he_seal_backend());
+    }
+  }
+}
+
 void ABYServerExecutor::run_aby_circuit(const std::string& function,
                                         std::shared_ptr<he::HETensor>& tensor) {
   NGRAPH_HE_LOG(3) << "server run_aby_circuit with funciton " << function;
@@ -196,6 +223,21 @@ void ABYServerExecutor::run_aby_circuit(const std::string& function,
   auto name = js.at("function");
   if (name == "Relu") {
     start_aby_circuit_unknown_relu_ciphers_batch(tensor->data());
+  } else {
+    NGRAPH_ERR << "Unknown function name " << name;
+    throw ngraph_error("Unknown function name");
+  }
+}
+
+void ABYServerExecutor::post_process_aby_circuit(
+    const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
+  NGRAPH_HE_LOG(3) << "server post_process_aby_circuit with funciton "
+                   << function;
+
+  json js = json::parse(function);
+  auto name = js.at("function");
+  if (name == "Relu") {
+    post_process_aby_relu_circuit(tensor);
   } else {
     NGRAPH_ERR << "Unknown function name " << name;
     throw ngraph_error("Unknown function name");

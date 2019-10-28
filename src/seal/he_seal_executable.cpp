@@ -413,6 +413,14 @@ void HESealExecutable::handle_relu_result(
     m_relu_data[m_unknown_relu_idx[result_idx + m_relu_done_count]] =
         he_tensor->data(result_idx);
   }
+
+  // Shift
+  if (enable_garbled_circuits()) {
+    NGRAPH_INFO << "Performing garbled circuits output mask correction";
+    m_aby_executor->post_process_aby_circuit(proto_msg.function().function(),
+                                             he_tensor);
+  }
+
   m_relu_done_count += result_count;
   m_relu_cond.notify_all();
 }
