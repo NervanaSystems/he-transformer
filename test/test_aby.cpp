@@ -18,6 +18,7 @@
 
 #include "ENCRYPTO_utils/crypto/crypto.h"
 #include "ENCRYPTO_utils/parse_options.h"
+#include "aby/kernel/bounded_relu_aby.hpp"
 #include "aby/kernel/relu_aby.hpp"
 #include "aby/util.hpp"
 #include "abycore/aby/abyparty.h"
@@ -151,6 +152,125 @@ TEST(aby, relu_circuit_100_q9) { test_relu_circuit(100, 9); }
 
 TEST(aby, relu_circuit_100_q_large) {
   test_relu_circuit(100, 18014398509404161);
+}
+
+auto test_bounded_relu_circuit = [](size_t num_vals, size_t coeff_modulus) {
+  e_sharing sharing = S_BOOL;
+  uint32_t bitlen = 64;
+
+  NGRAPH_INFO << "coeff_modulus " << coeff_modulus;
+  NGRAPH_INFO << "num_vals " << num_vals;
+  std::vector<uint64_t> zeros(num_vals, 0);
+
+  std::vector<uint64_t> x(num_vals);
+  std::vector<uint64_t> xs(num_vals);
+  std::vector<uint64_t> xc(num_vals);
+  std::vector<uint64_t> bounds(num_vals);
+  std::vector<uint64_t> r(num_vals);
+  std::vector<uint64_t> exp_output(num_vals);
+
+  std::random_device rd;
+  std::mt19937 gen(0);  // rd());
+  std::uniform_int_distribution<uint64_t> dis(0, coeff_modulus - 1);
+  for (int i = 0; i < static_cast<int>(num_vals); ++i) {
+    x[i] = i;
+    r[i] = dis(gen);
+    xc[i] = dis(gen);
+    xs[i] = (x[i] % coeff_modulus + coeff_modulus) - xc[i];
+    xs[i] = xs[i] % coeff_modulus;
+
+    bounds[i] = i % (coeff_modulus / 2);
+    // Relu circuit expects transformation (-q/2, q/2) => (0,q) by adding q to
+    // values < 0
+
+    // x > q/2         => brelu(x) = 0
+    // q/2 > x > bound => brelu(x) = bound
+    // bound > x       => brelu(x) = x
+
+    uint64_t x_mod = x[i] % coeff_modulus;
+
+    if (x_mod > coeff_modulus / 2) {
+      exp_output[i] = 0;
+    } else if (x_mod > bounds[i]) {
+      exp_output[i] = bounds[i];
+    } else {
+      exp_output[i] = x_mod;
+    }
+
+    // Mask output value
+    exp_output[i] = (exp_output[i] + r[i]) % coeff_modulus;
+  }
+
+  // Server function
+  auto server_fun = [&]() {
+    NGRAPH_INFO << "server function";
+    auto server = std::make_unique<ABYParty>(
+        SERVER, "0.0.0.0", 30001, get_sec_lvl(128), 64, 1, MT_OT, 100000);
+
+    std::vector<Sharing*>& sharings = server->GetSharings();
+    BooleanCircuit& circ = dynamic_cast<BooleanCircuit&>(
+        *sharings[sharing]->GetCircuitBuildRoutine());
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    share* relu_out = ngraph::aby::bounded_relu_aby(
+        circ, num_vals, xs, zeros, r, bounds, bitlen, coeff_modulus);
+    server->ExecCircuit();
+    server->Reset();
+  };
+
+  // Client function
+  auto client_fun = [&]() {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    NGRAPH_INFO << "client function";
+    auto client = std::make_unique<ABYParty>(
+        CLIENT, "localhost", 30001, get_sec_lvl(128), 64, 1, MT_OT, 100000);
+
+    std::vector<Sharing*>& sharings = client->GetSharings();
+    BooleanCircuit& circ = dynamic_cast<BooleanCircuit&>(
+        *sharings[sharing]->GetCircuitBuildRoutine());
+
+    share* relu_out = ngraph::aby::bounded_relu_aby(
+        circ, num_vals, zeros, xc, zeros, zeros, bitlen, coeff_modulus);
+
+    client->ExecCircuit();
+
+    uint32_t out_bitlen_relu, out_num_aby_vals;
+    uint64_t* out_vals_relu;
+
+    relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
+                                  &out_num_aby_vals);
+
+    for (size_t i = 0; i < out_num_aby_vals; ++i) {
+      if (out_vals_relu[i] != exp_output[i]) {
+        NGRAPH_INFO << "Not same at index " << i;
+        NGRAPH_INFO << "\tx[i] " << x[i];
+        NGRAPH_INFO << "\txs[i] " << xs[i];
+        NGRAPH_INFO << "\txc[i] " << xc[i];
+        NGRAPH_INFO << "\tr[i] " << r[i];
+        NGRAPH_INFO << "\texp_output[i] " << exp_output[i];
+        NGRAPH_INFO << "\toutput " << out_vals_relu[i];
+      }
+      EXPECT_EQ(out_vals_relu[i], exp_output[i]);
+    }
+
+    client->Reset();
+  };
+  std::thread server_thread(server_fun);
+  client_fun();
+  server_thread.join();
+};
+
+TEST(aby, bounded_relu_circuit_10_q8) { test_bounded_relu_circuit(10, 8); }
+
+TEST(aby, bounded_relu_circuit_100_q8) { test_bounded_relu_circuit(100, 8); }
+
+TEST(aby, bounded_relu_circuit_10_q9) { test_bounded_relu_circuit(10, 9); }
+
+TEST(aby, bounded_relu_circuit_100_q9) { test_bounded_relu_circuit(100, 9); }
+
+TEST(aby, bounded_relu_circuit_100_q_large) {
+  test_bounded_relu_circuit(100, 18014398509404161);
 }
 
 TEST(aby, mod_reduce_zero_centered) {
