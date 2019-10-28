@@ -171,6 +171,7 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
   auto a = make_shared<op::Parameter>(element::f32, shape);
   shared_ptr<Function> f;
   if (bounded) {
+    NGRAPH_INFO << "Bounded relu bound " << bound_value;
     auto bounded_relu_op = make_shared<op::BoundedRelu>(a, bound_value);
     f = make_shared<Function>(bounded_relu_op, ParameterVector{a});
   } else {
@@ -189,7 +190,7 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
   auto bounded_relu = [bound_value](double d) {
-    return d > bound_value ? bound_value : (d > 0) ? d : 0.;
+    return d > bound_value ? bound_value : ((d > 0) ? d : 0.);
   };
 
   // Server inputs which are not used
@@ -211,6 +212,7 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
     } else {
       exp_results[i] = relu(inputs[i]);
     }
+    NGRAPH_INFO << "ExpResults[" << i << "] = " << exp_results[i];
   }
 
   vector<float> results;

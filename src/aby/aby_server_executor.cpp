@@ -334,7 +334,19 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
   std::vector<uint64_t> gc_output_mask_vals(num_aby_vals);
   std::vector<uint64_t> bound_vals(num_aby_vals);
   for (size_t i = 0; i < bound_vals.size(); ++i) {
-    bound_vals[i] = bound / cipher_batch[i].get_ciphertext()->scale();
+    NGRAPH_INFO
+        << "Scale "
+        << cipher_batch[i % cipher_batch.size()].get_ciphertext()->scale();
+    bound_vals[i] = std::round(
+        bound *
+        cipher_batch[i % cipher_batch.size()].get_ciphertext()->scale());
+    if (bound_vals[i] > m_lowest_coeff_modulus) {
+      NGRAPH_WARN << "bound value " << bound_vals[i]
+                  << " too large for coeff modulus " << m_lowest_coeff_modulus;
+      bound_vals[i] = m_lowest_coeff_modulus - 1;
+    }
+
+    NGRAPH_INFO << "bound_vals[ " << i << "]=" << bound_vals[i];
   }
 
   m_gc_input_mask->read(gc_input_mask_vals.data(),
@@ -362,7 +374,6 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
     std::shared_ptr<he::HETensor>& tensor, double bound) {
   if (m_he_seal_executable.he_seal_backend().mask_gc_outputs()) {
     NGRAPH_INFO << "post_process_aby_bounded_relu_circuit with bound " << bound;
-
     size_t tensor_size = tensor->data().size();
     double scale = m_he_seal_executable.he_seal_backend().get_scale();
 
@@ -372,7 +383,6 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
     for (size_t tensor_idx = 0; tensor_idx < tensor_size; ++tensor_idx) {
       auto& data = tensor->data(tensor_idx);
       NGRAPH_CHECK(data.is_ciphertext(), "Data is not ciphertext");
-
       auto cipher = data.get_ciphertext();
 
       auto mask = m_gc_output_mask->data(tensor_idx).get_plaintext();
