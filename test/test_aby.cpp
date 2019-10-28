@@ -18,15 +18,16 @@
 
 #include "ENCRYPTO_utils/crypto/crypto.h"
 #include "ENCRYPTO_utils/parse_options.h"
+#include "aby/kernel/relu_aby.hpp"
+#include "aby/util.hpp"
 #include "abycore/aby/abyparty.h"
 #include "abycore/circuit/booleancircuits.h"
 #include "abycore/circuit/share.h"
 #include "abycore/sharing/sharing.h"
 #include "gtest/gtest.h"
 
-#include "aby/kernel/relu_aby.hpp"
-
 using namespace std;
+using namespace ngraph::aby;
 
 TEST(aby, trivial) {
   int a = 1;
@@ -150,4 +151,21 @@ TEST(aby, relu_circuit_100_q9) { test_relu_circuit(100, 9); }
 
 TEST(aby, relu_circuit_100_q_large) {
   test_relu_circuit(100, 18014398509404161);
+}
+
+TEST(aby, mod_reduce_zero_centered) {
+  // Already in range
+  EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(0.1, 2.0), 0.1);
+
+  // Below range
+  EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(-1.1, 2.0), 0.9);
+
+  // Far below range
+  EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(-9.1, 2.0), 0.9);
+
+  // Above range
+  EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(1.1, 2.0), -0.9);
+
+  // Far above range
+  EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(9.1, 2.0), -0.9);
 }

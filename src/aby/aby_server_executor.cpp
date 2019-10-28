@@ -114,17 +114,15 @@ void ABYServerExecutor::mask_input_unknown_relu_ciphers_batch(
     auto cipher = he_type.get_ciphertext();
 
     NGRAPH_INFO << "Mod switching to lowest";
-    // Swith modulus to lowest values since mask values are drawn
+    // Switch modulus to lowest values since mask values are drawn
     // from (-q/2, q/2) for q the lowest coeff modulus
-    m_he_seal_executable.he_seal_backend().rescale_to_lowest(*cipher);
+    m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 
     // Divide by scale so we can encode at the same scale as existing
     // ciphertext
+    NGRAPH_INFO << "scaling input mask";
     double scale = cipher->ciphertext().scale();
     scales[i] = scale;
-
-    NGRAPH_INFO << "scaling input mask";
-
     he::HEPlaintext scaled_gc_input_mask(gc_input_mask.get_plaintext());
     for (size_t mask_idx = 0; mask_idx < scaled_gc_input_mask.size();
          ++mask_idx) {
