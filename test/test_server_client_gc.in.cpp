@@ -263,3 +263,35 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_real_mask_in) {
 NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_real_mask_in_out) {
   server_client_gc_relu_packed_test(10, 2, false, true, true);
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_complex) {
+  server_client_gc_relu_packed_test(10, 1, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_complex_mask_out) {
+  server_client_gc_relu_packed_test(10, 1, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_complex_mask_in) {
+  server_client_gc_relu_packed_test(10, 1, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_complex_mask_in_out) {
+  server_client_gc_relu_packed_test(10, 1, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_complex) {
+  server_client_gc_relu_packed_test(10, 2, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_complex_mask_out) {
+  server_client_gc_relu_packed_test(10, 2, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_complex_mask_in) {
+  server_client_gc_relu_packed_test(10, 2, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_complex_mask_in_out) {
+  server_client_gc_relu_packed_test(10, 2, true, true, true);
+}
