@@ -164,6 +164,10 @@ void ABYServerExecutor::start_aby_circuit_unknown_relu_ciphers_batch(
 
   NGRAPH_HE_LOG(3) << "Server creating relu circuit";
   BooleanCircuit* circ = get_circuit();
+  NGRAPH_INFO << "num_aby_vals " << num_aby_vals;
+  NGRAPH_INFO << "gc_input_mask_vals " << gc_input_mask_vals.size();
+  NGRAPH_INFO << "gc_output_mask_vals " << gc_output_mask_vals.size();
+
   ngraph::aby::relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
                         gc_output_mask_vals, m_aby_bitlen,
                         m_lowest_coeff_modulus);

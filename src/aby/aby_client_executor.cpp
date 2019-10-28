@@ -82,6 +82,7 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   auto& tensor_data = tensor->data();
   size_t batch_size = tensor_data[0].batch_size();
+  NGRAPH_INFO << "Batch size " << batch_size;
   uint64_t tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
 
   std::vector<double> relu_vals(tensor_size);
@@ -106,7 +107,6 @@ void ABYClientExecutor::run_aby_relu_circuit(
     } else {
       relu_int_val = std::round(relu_val * scale);
     }
-
     client_gc_vals[i] = relu_int_val;
   }
 
@@ -139,15 +139,16 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   double scale = m_he_seal_client.scale();
 
-  NGRAPH_CHECK(result_count == tensor->data().size(),
-               "Wrong number of ABY result values");
-
   NGRAPH_INFO << "tensor size " << tensor->data().size();
 
-  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+  NGRAPH_CHECK(result_count == tensor->data().size() * batch_size,
+               "Wrong number of ABY result values, result_count=", result_count,
+               ", expected ", tensor->data().size() * batch_size);
+
+  for (size_t result_idx = 0; result_idx < tensor_data.size(); ++result_idx) {
     he::HEPlaintext post_relu_vals(batch_size);
     for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
-      size_t out_idx = result_idx + fill_idx * result_count;
+      size_t out_idx = result_idx + fill_idx * tensor_data.size();
       uint64_t out_val = out_vals_relu[out_idx];
       double d_out_val =
           ngraph::aby::uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
@@ -163,6 +164,7 @@ void ABYClientExecutor::run_aby_relu_circuit(
         scale, *m_he_seal_client.get_ckks_encoder(),
         *m_he_seal_client.get_encryptor(), m_he_seal_client.complex_packing());
 
+    NGRAPH_INFO << "Done encrypting";
     tensor->data(result_idx).set_ciphertext(cipher);
   }
 

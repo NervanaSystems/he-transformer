@@ -57,7 +57,6 @@ inline share* relu_aby(BooleanCircuit& circ, size_t num_vals,
                    << ", q/2 = " << q_half << " and " << num_vals
                    << " num vals, bitlen= " << bitlen;
   NGRAPH_INFO << "Num vals " << num_vals;
-
   check_argument_range(xs, 0UL, coeff_modulus);
   check_argument_range(xc, 0UL, coeff_modulus);
   check_argument_range(r, 0UL, coeff_modulus);

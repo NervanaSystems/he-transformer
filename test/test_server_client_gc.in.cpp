@@ -232,18 +232,34 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
   EXPECT_TRUE(test::he::all_close(results, exp_results, 1e-2f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_relu_packed_1) {
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_real) {
   server_client_gc_relu_packed_test(10, 1, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_relu_packed_1_mask_in_out) {
-  server_client_gc_relu_packed_test(10, 1, false, true, true);
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_real_mask_out) {
+  server_client_gc_relu_packed_test(10, 1, false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_relu_packed_1_mask_in) {
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_real_mask_in) {
   server_client_gc_relu_packed_test(10, 1, false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_relu_packed_1_mask_out) {
-  server_client_gc_relu_packed_test(10, 1, false, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_1_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(10, 1, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_real) {
+  server_client_gc_relu_packed_test(10, 2, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_real_mask_out) {
+  server_client_gc_relu_packed_test(10, 2, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_real_mask_in) {
+  server_client_gc_relu_packed_test(10, 2, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_10_2_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(10, 2, false, true, true);
 }
