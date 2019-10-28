@@ -147,6 +147,21 @@ class HESealClient {
     return m_encryption_params;
   }
 
+  /// \brief Returns the CKKS encoder
+  const std::shared_ptr<seal::CKKSEncoder> get_ckks_encoder() const {
+    return m_ckks_encoder;
+  }
+
+  /// \brief Returns pointer to encryptor
+  const inline std::shared_ptr<seal::Encryptor> get_encryptor() const {
+    return m_encryptor;
+  }
+
+  /// \brief Returns pointer to SEAL context
+  const inline std::shared_ptr<seal::SEALContext> get_context() const {
+    return m_context;
+  }
+
  private:
   std::string m_hostname;  // Hostname of server to connect to
 

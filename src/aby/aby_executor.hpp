@@ -64,6 +64,8 @@ class ABYExecutor {
   virtual void run_aby_circuit(const std::string& function,
                                std::shared_ptr<he::HETensor>& tensor) = 0;
 
+  void reset_party() { m_ABYParty->Reset(); }
+
  protected:
   size_t m_num_threads;
 

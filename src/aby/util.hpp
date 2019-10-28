@@ -50,6 +50,19 @@ void check_argument_range(const std::vector<T>& values, const T min_val,
   }
 }
 
+// Maps numbers from (0, q) to (-q/(2 * scale), q/(2*scale))
+inline double uint64_to_double(uint64_t i, uint64_t q, double scale) {
+  if (i >= q) {
+    NGRAPH_WARN << "i " << i << " is too large for q " << q;
+    throw ngraph_error("i is too large");
+  }
+  if (i > q / 2) {
+    return (i - q / 2) / scale;
+  } else {
+    return (q / 2 - i) / (-scale);
+  }
+}
+
 // Reduces d to range (-q/2, q/2) by adding / subtracting q
 inline double mod_reduce_zero_centered(const double d, const double q) {
   double ret = d;
@@ -71,5 +84,6 @@ inline share* reduce_mod(BooleanCircuit& circ, share* x, share* mod) {
   x = circ.PutMUXGate(x, circ.PutSUBGate(x, mod), sel_share);
   return x;
 };
+
 }  // namespace aby
 }  // namespace ngraph

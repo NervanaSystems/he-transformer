@@ -18,6 +18,7 @@
 
 #include "aby/aby_client_executor.hpp"
 #include "nlohmann/json.hpp"
+#include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
 
 using json = nlohmann::json;
@@ -80,8 +81,8 @@ void ABYClientExecutor::run_aby_relu_circuit(
   NGRAPH_HE_LOG(3) << "run_aby_relu_circuit";
 
   auto& tensor_data = tensor->data();
-  uint64_t tensor_size =
-      static_cast<uint64_t>(tensor_data.size() * tensor_data[0].batch_size());
+  size_t batch_size = tensor_data[0].batch_size();
+  uint64_t tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
 
   std::vector<double> relu_vals(tensor_size);
   size_t num_bytes = tensor_size * tensor->get_element_type().size();
@@ -126,12 +127,46 @@ void ABYClientExecutor::run_aby_relu_circuit(
       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
       << "us";
 
-  uint32_t out_bitlen_relu, out_num_aby_vals;
+  uint32_t out_bitlen_relu, result_count;
   uint64_t* out_vals_relu;  // output of circuit this value will be encrypted
                             // and sent to server
   relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
-                                &out_num_aby_vals);
-}
+                                &result_count);
+  NGRAPH_INFO << "result_count" << result_count;
+  for (size_t i = 0; i < result_count; ++i) {
+    NGRAPH_INFO << out_vals_relu[i];
+  }
 
+  double scale = m_he_seal_client.scale();
+
+  NGRAPH_CHECK(result_count == tensor->data().size(),
+               "Wrong number of ABY result values");
+
+  NGRAPH_INFO << "tensor size " << tensor->data().size();
+
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    he::HEPlaintext post_relu_vals(batch_size);
+    for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
+      size_t out_idx = result_idx + fill_idx * result_count;
+      uint64_t out_val = out_vals_relu[out_idx];
+      double d_out_val =
+          ngraph::aby::uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
+      post_relu_vals[fill_idx] = d_out_val;
+    }
+
+    auto cipher = he::HESealBackend::create_empty_ciphertext();
+    NGRAPH_INFO << "Encrypting " << post_relu_vals;
+
+    ngraph::he::encrypt(
+        cipher, post_relu_vals,
+        m_he_seal_client.get_context()->first_parms_id(), ngraph::element::f64,
+        scale, *m_he_seal_client.get_ckks_encoder(),
+        *m_he_seal_client.get_encryptor(), m_he_seal_client.complex_packing());
+
+    tensor->data(result_idx).set_ciphertext(cipher);
+  }
+
+  reset_party();
+}
 }  // namespace aby
 }  // namespace ngraph

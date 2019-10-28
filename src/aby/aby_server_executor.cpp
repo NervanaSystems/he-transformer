@@ -58,6 +58,10 @@ std::shared_ptr<he::HETensor> ABYServerExecutor::generate_gc_mask(
   } else {
     rand_vals = std::vector<uint64_t>(rand_vals.size(), default_value);
   }
+  NGRAPH_INFO << "Random mask vals:";
+  for (const auto& elem : rand_vals) {
+    NGRAPH_INFO << elem;
+  };
   tensor->write(rand_vals.data(), rand_vals.size() * sizeof(uint64_t));
 
   return tensor;
@@ -166,6 +170,8 @@ void ABYServerExecutor::start_aby_circuit_unknown_relu_ciphers_batch(
 
   NGRAPH_HE_LOG(3) << "server executing relu circuit";
   m_ABYParty->ExecCircuit();
+
+  reset_party();
 }
 
 void ABYServerExecutor::prepare_aby_circuit(
