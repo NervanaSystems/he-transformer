@@ -314,6 +314,7 @@ void HESealExecutable::start_server() {
     try {
       m_io_context.run();
     } catch (std::exception& e) {
+      NGRAPH_ERR << "Server error hanndling thread: " << std::string(e.what());
       NGRAPH_CHECK(false, "Server error hanndling thread: ", e.what());
     };
   });
@@ -1492,6 +1493,8 @@ void HESealExecutable::handle_server_relu_op(
             Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
             arg->is_packed(), false, true, m_he_seal_backend);
         relu_tensor->data() = cipher_batch;
+        NGRAPH_INFO << "relu tensor shape " << relu_tensor->get_shape()
+                    << " with batch size " << relu_tensor->get_batch_size();
 
         if (enable_garbled_circuits()) {
           // Masks input values

@@ -34,6 +34,7 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                      std::shared_ptr<SealCiphertextWrapper>& out,
                      const bool complex_packing,
                      HESealBackend& he_seal_backend) {
+  NGRAPH_INFO << "add seal C+P" << arg1;
   // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = (arg1.size() == 1) && (arg1[0] == 0.0);
 
@@ -43,8 +44,10 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
   } else {
     // TODO: optimize for adding single complex number
     if ((arg1.size() == 1) && !complex_packing) {
+      NGRAPH_INFO << "Adding plain";
       add_plain(arg0.ciphertext(), arg1[0], out->ciphertext(), he_seal_backend);
     } else {
+      NGRAPH_INFO << "Adding plain complex";
       auto p = SealPlaintextWrapper(complex_packing);
       encode(p, arg1, *he_seal_backend.get_ckks_encoder(),
              arg0.ciphertext().parms_id(), element::f32,

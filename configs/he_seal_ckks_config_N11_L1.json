@@ -5,5 +5,5 @@
   "coeff_modulus": [
     54
   ],
-  "complex_packing": true
+  "complex_packing": false
 }

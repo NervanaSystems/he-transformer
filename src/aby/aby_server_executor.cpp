@@ -88,6 +88,7 @@ void ABYServerExecutor::mask_input_unknown_relu_ciphers_batch(
   size_t batch_size = cipher_batch[0].batch_size();
 
   NGRAPH_INFO << "Generating gc input mask";
+  NGRAPH_INFO << "complex_packing? " << complex_packing;
 
   m_gc_input_mask =
       generate_gc_input_mask(Shape{batch_size, cipher_batch.size()},
@@ -95,9 +96,9 @@ void ABYServerExecutor::mask_input_unknown_relu_ciphers_batch(
 
   NGRAPH_INFO << "Generating gc output mask";
 
-  m_gc_output_mask =
-      generate_gc_output_mask(Shape{batch_size, cipher_batch.size()},
-                              plaintext_packing, complex_packing);
+  m_gc_output_mask = generate_gc_output_mask(
+      Shape{batch_size, cipher_batch.size()}, plaintext_packing,
+      complex_packing, m_lowest_coeff_modulus / 2);
 
   std::vector<double> scales(cipher_batch.size());
 
@@ -125,11 +126,13 @@ void ABYServerExecutor::mask_input_unknown_relu_ciphers_batch(
          ++mask_idx) {
       scaled_gc_input_mask[mask_idx] /= scale;
     }
+    NGRAPH_INFO << "scaled_gc_input_mask " << scaled_gc_input_mask;
 
     NGRAPH_INFO << "scalar_subtract_seal";
     scalar_subtract_seal(*cipher, scaled_gc_input_mask, cipher,
                          he_type.complex_packing(),
                          m_he_seal_executable.he_seal_backend());
+    NGRAPH_INFO << "donew with scalar_subtract_seal";
   }
 
   for (const auto& scale : scales) {
@@ -167,7 +170,7 @@ void ABYServerExecutor::start_aby_circuit_unknown_relu_ciphers_batch(
 
 void ABYServerExecutor::prepare_aby_circuit(
     const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "server prepare_aby_circuit with funciton " << function;
+  NGRAPH_HE_LOG(3) << "server prepare_aby_circuit with function " << function;
   json js = json::parse(function);
   auto name = js.at("function");
 

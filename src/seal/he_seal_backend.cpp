@@ -139,11 +139,15 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       m_mask_gc_inputs = string_to_bool(setting.c_str(), false);
       if (m_mask_gc_inputs) {
         NGRAPH_HE_LOG(3) << "Masking garbled circuits inputs from config";
+      } else {
+        NGRAPH_HE_LOG(3) << "Not masking garbled circuits inputs from config";
       }
     } else if (option == "mask_gc_outputs") {
       m_mask_gc_outputs = string_to_bool(setting.c_str(), false);
       if (m_mask_gc_outputs) {
         NGRAPH_HE_LOG(3) << "Masking garbled circuits outputs from config";
+      } else {
+        NGRAPH_HE_LOG(3) << "Not masking garbled circuits outputs from config";
       }
     } else {
       NGRAPH_WARN << "Unknown config option " << option;

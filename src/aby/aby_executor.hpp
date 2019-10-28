@@ -66,8 +66,6 @@ class ABYExecutor {
 
  protected:
   size_t m_num_threads;
-  bool m_mask_gc_inputs;
-  bool m_mask_gc_outputs;
 
   std::vector<Sharing*> m_sharings;
 

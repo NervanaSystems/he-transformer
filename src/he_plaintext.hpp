@@ -23,7 +23,34 @@
 namespace ngraph {
 namespace he {
 /// \brief Class representing a plaintext value
-using HEPlaintext = std::vector<double>;
+class HEPlaintext : public std::vector<double> {
+ public:
+  HEPlaintext() {}
+  HEPlaintext(const std::initializer_list<double>& values)
+      : std::vector<double>(values) {}
+
+  HEPlaintext(const HEPlaintext& plain) : std::vector<double>(plain) {}
+
+  HEPlaintext(const std::vector<double>& values)
+      : std::vector<double>(values) {}
+
+  HEPlaintext(size_t n, double initial_value = 0)
+      : std::vector<double>(n, initial_value) {}
+
+  template <class InputIterator>
+  HEPlaintext(InputIterator first, InputIterator last)
+      : std::vector<double>(first, last) {}
+
+  HEPlaintext& operator=(const HEPlaintext& v) {
+    static_cast<std::vector<double>*>(this)->operator=(v);
+    return *this;
+  }
+
+  HEPlaintext& operator=(HEPlaintext&& v) {
+    static_cast<std::vector<double>*>(this)->operator=(v);
+    return *this;
+  }
+};
 
 inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
   os << "HEPlaintext(";
