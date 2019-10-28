@@ -82,12 +82,17 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   auto& tensor_data = tensor->data();
   size_t batch_size = tensor_data[0].batch_size();
-  NGRAPH_INFO << "Batch size " << batch_size;
+
   uint64_t tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
+  NGRAPH_INFO << "Batch size " << batch_size;
+  NGRAPH_INFO << "tensor_data.size() " << tensor_data.size();
+  NGRAPH_INFO << "tensor_size " << tensor_size;
 
   std::vector<double> relu_vals(tensor_size);
   size_t num_bytes = tensor_size * tensor->get_element_type().size();
   tensor->read(relu_vals.data(), num_bytes);
+
+  NGRAPH_HE_LOG(3) << "Converting client values to ABY integers";
 
   std::vector<uint64_t> client_gc_vals(tensor_size);
   for (size_t i = 0; i < tensor_size; ++i) {

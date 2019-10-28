@@ -66,12 +66,14 @@ inline double uint64_to_double(uint64_t i, uint64_t q, double scale) {
 // Reduces d to range (-q/2, q/2) by adding / subtracting q
 inline double mod_reduce_zero_centered(const double d, const double q) {
   double ret = d;
-  while (d < -q / 2) {
+  // TODO: change to while loop
+  if (d < -q / 2) {
     ret += q;
   }
-  while (d > q / 2) {
+  if (d > q / 2) {
     ret -= q;
   }
+
   NGRAPH_CHECK(ret <= q / 2 && ret >= -q / 2, "d ", d, " outside valid range [",
                -q / 2, ", ", q / 2, "]");
   return ret;
