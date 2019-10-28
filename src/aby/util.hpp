@@ -67,7 +67,6 @@ inline double uint64_to_double(uint64_t i, uint64_t q, double scale) {
 // Reduces d to range (-q/2, q/2) by adding / subtracting q
 inline double mod_reduce_zero_centered(double d, const double q) {
   NGRAPH_CHECK(q >= 0, "q should be positive");
-  // TODO: change to while loop
   if (d < -q / 2) {
     d += ceilf(-1 / 2. - d / q) * q;
   } else if (d > q / 2) {

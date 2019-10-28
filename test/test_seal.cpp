@@ -182,3 +182,117 @@ TEST(seal_util, save) {
   }
   ngraph::ngraph_free(buffer);
 }
+
+TEST(seal, add_mod_wrap) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  size_t poly_modulus_degree = 8192;
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus(
+      CoeffModulus::Create(poly_modulus_degree, {20, 20, 20}));
+
+  auto coeff_modulus = parms.coeff_modulus()[0];
+  NGRAPH_HE_LOG(3) << "Coeff modlus " << coeff_modulus.value();
+
+  auto context = SEALContext::Create(parms);
+  // print_parameters(context);
+
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys();
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  auto context_data = context->first_context_data();
+  NGRAPH_HE_LOG(3) << "context_data.total_coeff_modulus_bit_count() "
+                   << context_data->total_coeff_modulus_bit_count();
+
+  vector<double> output;
+
+  Plaintext plain;
+  NGRAPH_HE_LOG(3) << "Encoding input";
+
+  int64_t int_val = (1UL << 38);
+  NGRAPH_HE_LOG(3) << "int val " << int_val;
+  NGRAPH_HE_LOG(3) << "get_significant_bit_count(int_val) "
+                   << seal::util::get_significant_bit_count(int_val);
+
+  encoder.encode(int_val, plain);
+  NGRAPH_HE_LOG(3) << "plain.scale() " << plain.scale();
+  NGRAPH_HE_LOG(3) << "plain.coeff_count() " << plain.coeff_count();
+
+  NGRAPH_HE_LOG(3) << "Encoded plain " << int_val;
+  for (size_t i = 0; i < 1; ++i) {
+    NGRAPH_HE_LOG(3) << "plain[" << i << "] = " << plain[i];
+  }
+
+  Ciphertext encrypted;
+  NGRAPH_HE_LOG(3) << "Encrypting input";
+  encryptor.encrypt(plain, encrypted);
+  for (size_t i = 0; i < 1; ++i) {
+    NGRAPH_HE_LOG(3) << "Encrypted[" << i << "] = " << encrypted[i];
+  }
+
+  NGRAPH_HE_LOG(3) << "Fresh chain ind";
+  NGRAPH_HE_LOG(3)
+      << context->get_context_data(encrypted.parms_id())->chain_index();
+
+  Plaintext mask;
+  int64_t mask_val = (coeff_modulus.value() / 2 - 1);
+  NGRAPH_HE_LOG(3) << "Encoding mask_val " << mask_val;
+  encoder.encode(mask_val, mask);
+
+  NGRAPH_HE_LOG(3) << "Adding plain inplace";
+  Ciphertext post_add;
+  evaluator.add_plain(encrypted, mask, post_add);
+  for (size_t i = 0; i < 10; ++i) {
+    NGRAPH_HE_LOG(3) << "post_add[" << i << "] = " << post_add[i];
+    if (post_add[i] != encrypted[i] + mask[i]) {
+      NGRAPH_HE_LOG(3) << "Detected overflow";
+    }
+  }
+
+  decryptor.decrypt(post_add, plain);
+  NGRAPH_HE_LOG(3) << "Decrypted output plaintext";
+  for (size_t i = 0; i < 1; ++i) {
+    NGRAPH_HE_LOG(3) << "Plain output[" << i << "] = " << plain[i];
+  }
+  encoder.decode(plain, output);
+
+  size_t q0 = coeff_modulus.value();
+
+  auto mod_reduce = [](double d, double q) {
+    while (d > q / 2) {
+      d -= q;
+    }
+    while (d < -q / 2) {
+      d += q;
+    }
+    NGRAPH_CHECK(d <= q / 2);
+    NGRAPH_CHECK(d >= -q / 2);
+    return d;
+  };
+
+  NGRAPH_HE_LOG(3) << "Decoded output";
+  for (size_t i = 0; i < 1; ++i) {
+    NGRAPH_HE_LOG(3) << "original output[i] " << output[i];
+
+    // Reduce result to (-q/2, q/2)
+    output[i] = mod_reduce(output[i], q0);
+
+    auto exp_output = int_val + mask_val;
+    auto exp_output_mod_q = mod_reduce(exp_output, q0);
+    NGRAPH_HE_LOG(3) << "exp_output " << exp_output;
+    NGRAPH_HE_LOG(3) << "exp_output_mod_q " << exp_output_mod_q;
+
+    double diff = output[i] - exp_output_mod_q;
+    double pct = diff / double(int_val) * 100.;
+    NGRAPH_HE_LOG(3) << std::setprecision(10) << output[i] << " (diff " << diff
+                     << ", " << pct << "%)";
+  }
+}

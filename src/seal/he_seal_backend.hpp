@@ -331,6 +331,7 @@ class HESealBackend : public ngraph::runtime::Backend {
                                              last_parms_id);
     } catch (const std::exception& e) {
       NGRAPH_INFO << "Error mod_switch_to_inplace: " << e.what();
+      throw(e);
     }
   }
 
@@ -342,6 +343,7 @@ class HESealBackend : public ngraph::runtime::Backend {
       get_evaluator()->rescale_to_inplace(cipher.ciphertext(), last_parms_id);
     } catch (const std::exception& e) {
       NGRAPH_INFO << "Error rescale_to_inplace: " << e.what();
+      throw(e);
     }
   }
 

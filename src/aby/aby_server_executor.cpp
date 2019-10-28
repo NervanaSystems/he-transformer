@@ -210,9 +210,15 @@ void ABYServerExecutor::post_process_aby_relu_circuit(
         value = (value - m_lowest_coeff_modulus / 2.0) / scale;
       }
       NGRAPH_INFO << "Mask after " << mask;
+      // TODO: do subtraction mod p_0 instead of p_L
+
+      m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 
       scalar_subtract_seal(*cipher, mask, cipher, data.complex_packing(),
                            m_he_seal_executable.he_seal_backend());
+
+      auto& int_array = cipher->ciphertext().int_array();
+      NGRAPH_INFO << "int_array.size " << int_array.size();
     }
   }
 }
