@@ -414,7 +414,6 @@ void HESealExecutable::handle_relu_result(
         he_tensor->data(result_idx);
   }
 
-  // Shift
   if (enable_garbled_circuits()) {
     NGRAPH_INFO << "Performing garbled circuits output mask correction";
     m_aby_executor->post_process_aby_circuit(proto_msg.function().function(),

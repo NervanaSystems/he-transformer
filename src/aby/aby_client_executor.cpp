@@ -17,6 +17,8 @@
 #include <chrono>
 
 #include "aby/aby_client_executor.hpp"
+#include "aby/kernel/bounded_relu_aby.hpp"
+#include "aby/kernel/relu_aby.hpp"
 #include "nlohmann/json.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
@@ -43,20 +45,6 @@ ABYClientExecutor::ABYClientExecutor(
   NGRAPH_HE_LOG(1) << "Started ABYClientExecutor";
 }
 
-void ABYClientExecutor::prepare_aby_circuit(
-    const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "client prepare_aby_circuit with function " << function;
-  json js = json::parse(function);
-  auto name = js.at("function");
-
-  if (name == "Relu") {
-    prepare_aby_relu_circuit(function, tensor);
-  } else {
-    NGRAPH_ERR << "Unknown function name " << name;
-    throw ngraph_error("Unknown function name");
-  }
-}
-
 void ABYClientExecutor::run_aby_circuit(const std::string& function,
                                         std::shared_ptr<he::HETensor>& tensor) {
   NGRAPH_HE_LOG(3) << "client run_aby_circuit with function " << function;
@@ -65,15 +53,12 @@ void ABYClientExecutor::run_aby_circuit(const std::string& function,
 
   if (name == "Relu") {
     run_aby_relu_circuit(function, tensor);
+  } else if (name == "BoundedRelu") {
+    run_aby_bounded_relu_circuit(function, tensor);
   } else {
     NGRAPH_ERR << "Unknown function name " << name;
     throw ngraph_error("Unknown function name");
   }
-}
-
-void ABYClientExecutor::prepare_aby_relu_circuit(
-    const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
-  NGRAPH_HE_LOG(3) << "prepare_aby_relu_circuit";
 }
 
 void ABYClientExecutor::run_aby_relu_circuit(
@@ -175,5 +160,107 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   reset_party();
 }
+
+void ABYClientExecutor::run_aby_bounded_relu_circuit(
+    const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
+  NGRAPH_HE_LOG(3) << "run_aby_bounded_relu_circuit";
+  json js = json::parse(function);
+  double bound = js["bound"];
+
+  auto& tensor_data = tensor->data();
+  size_t batch_size = tensor_data[0].batch_size();
+
+  uint64_t tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
+  NGRAPH_INFO << "Batch size " << batch_size;
+  NGRAPH_INFO << "tensor_data.size() " << tensor_data.size();
+  NGRAPH_INFO << "tensor_size " << tensor_size;
+
+  std::vector<double> relu_vals(tensor_size);
+  size_t num_bytes = tensor_size * tensor->get_element_type().size();
+  tensor->read(relu_vals.data(), num_bytes);
+
+  NGRAPH_HE_LOG(3) << "Converting client values to ABY integers";
+
+  std::vector<uint64_t> client_gc_vals(tensor_size);
+  for (size_t i = 0; i < tensor_size; ++i) {
+    // TOOD: check
+    he::HEType& he_type = tensor_data[i % tensor_data.size()];
+    NGRAPH_CHECK(he_type.is_ciphertext(), "HEType is not ciphertext");
+    auto scale = he_type.get_ciphertext()->scale();
+
+    // Reduce values to range (-q/(2*scale), q/(2*scale))
+    auto relu_val = aby::mod_reduce_zero_centered(
+        relu_vals[i], m_lowest_coeff_modulus / scale);
+
+    // Turn SEAL's mapping (-q/(2*scale), q/(2*scale)) to (0,q)
+    uint64_t relu_int_val;
+    if (relu_val <= 0) {
+      relu_int_val = std::round(relu_val * scale + m_lowest_coeff_modulus);
+    } else {
+      relu_int_val = std::round(relu_val * scale);
+    }
+    client_gc_vals[i] = relu_int_val;
+  }
+
+  NGRAPH_HE_LOG(3) << "Client creating bounded relu circuit";
+  std::vector<uint64_t> zeros(tensor_size, 0);
+  BooleanCircuit* circ = get_circuit();
+  auto* relu_out = ngraph::aby::bounded_relu_aby(
+      *circ, tensor_size, zeros, client_gc_vals, zeros, zeros, m_aby_bitlen,
+      m_lowest_coeff_modulus);
+  NGRAPH_HE_LOG(3) << "Client executing relu bounded circuit";
+
+  auto t1 = std::chrono::high_resolution_clock::now();
+  m_ABYParty->ExecCircuit();
+  auto t2 = std::chrono::high_resolution_clock::now();
+  NGRAPH_HE_LOG(3)
+      << "Client executing circuit took "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+      << "us";
+
+  uint32_t out_bitlen_relu, result_count;
+  uint64_t* out_vals_relu;  // output of circuit this value will be encrypted
+                            // and sent to server
+  relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
+                                &result_count);
+  NGRAPH_INFO << "result_count " << result_count;
+  for (size_t i = 0; i < result_count; ++i) {
+    NGRAPH_INFO << out_vals_relu[i];
+  }
+
+  double scale = m_he_seal_client.scale();
+
+  NGRAPH_INFO << "tensor size " << tensor->data().size();
+
+  NGRAPH_CHECK(result_count == tensor->data().size() * batch_size,
+               "Wrong number of ABY result values, result_count=", result_count,
+               ", expected ", tensor->data().size() * batch_size);
+
+  for (size_t result_idx = 0; result_idx < tensor_data.size(); ++result_idx) {
+    he::HEPlaintext post_relu_vals(batch_size);
+    for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
+      size_t out_idx = result_idx + fill_idx * tensor_data.size();
+      uint64_t out_val = out_vals_relu[out_idx];
+      double d_out_val =
+          ngraph::aby::uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
+      post_relu_vals[fill_idx] = d_out_val;
+    }
+
+    auto cipher = he::HESealBackend::create_empty_ciphertext();
+    NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
+
+    ngraph::he::encrypt(
+        cipher, post_relu_vals,
+        m_he_seal_client.get_context()->first_parms_id(), ngraph::element::f64,
+        scale, *m_he_seal_client.get_ckks_encoder(),
+        *m_he_seal_client.get_encryptor(), m_he_seal_client.complex_packing());
+
+    NGRAPH_INFO << "Done encrypting";
+    tensor->data(result_idx).set_ciphertext(cipher);
+  }
+
+  reset_party();
+}
+
 }  // namespace aby
 }  // namespace ngraph

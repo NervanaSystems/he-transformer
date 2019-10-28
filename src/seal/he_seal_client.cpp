@@ -320,12 +320,24 @@ void HESealClient::handle_bounded_relu_request(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  size_t result_count = proto_tensor->data_size();
-  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    scalar_bounded_relu_seal(he_tensor->data(result_idx),
-                             he_tensor->data(result_idx), bound,
-                             m_context->first_parms_id(), scale(),
-                             *m_ckks_encoder, *m_encryptor, *m_decryptor);
+  bool enable_gc = string_to_bool(std::string(js.at("enable_gc")));
+
+  if (enable_gc) {
+    NGRAPH_HE_LOG(3) << "Client bounded relu with GC";
+    init_aby_executor();
+
+    m_aby_executor->prepare_aby_circuit(function, he_tensor);
+    m_aby_executor->run_aby_circuit(function, he_tensor);
+    NGRAPH_INFO << "Client done running aby circuit";
+
+  } else {
+    size_t result_count = proto_tensor->data_size();
+    for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+      scalar_bounded_relu_seal(he_tensor->data(result_idx),
+                               he_tensor->data(result_idx), bound,
+                               m_context->first_parms_id(), scale(),
+                               *m_ckks_encoder, *m_encryptor, *m_decryptor);
+    }
   }
   std::vector<he_proto::HETensor> proto_output_tensors;
   he_tensor->write_to_protos(proto_output_tensors);

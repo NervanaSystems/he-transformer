@@ -57,7 +57,7 @@ inline share* bounded_relu_aby(BooleanCircuit& circ, size_t num_vals,
 
   size_t q = coeff_modulus;
   size_t q_half = coeff_modulus / 2;
-  NGRAPH_HE_LOG(3) << "Creating new relu aby circuit with q = " << q
+  NGRAPH_HE_LOG(3) << "Creating new bounded relu aby circuit with q = " << q
                    << ", q/2 = " << q_half;
 
   check_argument_range(xs, 0UL, coeff_modulus);
@@ -97,6 +97,8 @@ inline share* bounded_relu_aby(BooleanCircuit& circ, size_t num_vals,
   x = reduce_mod(circ, x, Q);
 
   out = circ.PutOUTGate(x, CLIENT);
+
+  NGRAPH_INFO << "Creating BRelu circuit";
   return out;
 }
 

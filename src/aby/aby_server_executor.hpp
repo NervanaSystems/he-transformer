@@ -17,7 +17,6 @@
 #pragma once
 
 #include "aby/aby_executor.hpp"
-#include "aby/kernel/relu_aby.hpp"
 #include "he_tensor.hpp"
 #include "he_type.hpp"
 #include "logging/ngraph_he_log.hpp"
@@ -66,15 +65,18 @@ class ABYServerExecutor : public ABYExecutor {
   void post_process_aby_circuit(const std::string& function,
                                 std::shared_ptr<he::HETensor>& tensor);
 
-  // TODO: remove
-  void start_aby_circuit_unknown_relu_ciphers_batch(
-      std::vector<he::HEType>& cipher_batch);
-
-  // TODO: remove
-  void mask_input_unknown_relu_ciphers_batch(
-      std::vector<he::HEType>& cipher_batch);
-
+  // Relu functions
+  void prepare_aby_relu_circuit(std::vector<he::HEType>& cipher_batch);
+  void run_aby_relu_circuit(std::vector<he::HEType>& cipher_batch);
   void post_process_aby_relu_circuit(std::shared_ptr<he::HETensor>& tensor);
+
+  // Bounded Relu functions
+  void prepare_aby_bounded_relu_circuit(std::vector<he::HEType>& cipher_batch,
+                                        double bound);
+  void run_aby_bounded_relu_circuit(std::vector<he::HEType>& cipher_batch,
+                                    double bound);
+  void post_process_aby_bounded_relu_circuit(
+      std::shared_ptr<he::HETensor>& tensor, double bound);
 
  private:
   he::HESealExecutable& m_he_seal_executable;
