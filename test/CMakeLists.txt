@@ -17,6 +17,7 @@
 set(SRC
     main.cpp
     test_aby.cpp
+    test_debug.cpp
     test_seal.cpp
     test_encryption_parameters.cpp
     test_perf_micro.cpp

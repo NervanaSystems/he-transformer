@@ -369,3 +369,141 @@ NGRAPH_TEST(${BACKEND_NAME},
             server_client_gc_10_2_bounded_relu_complex_mask_in_out) {
   server_client_gc_relu_packed_test(10, 2, true, true, true, true, 16.0);
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_real) {
+  server_client_gc_relu_packed_test(100, 1, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_real_mask_out) {
+  server_client_gc_relu_packed_test(100, 1, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_real_mask_in) {
+  server_client_gc_relu_packed_test(100, 1, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 1, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_real) {
+  server_client_gc_relu_packed_test(100, 2, false, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_real_mask_out) {
+  server_client_gc_relu_packed_test(100, 2, false, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_real_mask_in) {
+  server_client_gc_relu_packed_test(100, 2, false, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 2, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_complex) {
+  server_client_gc_relu_packed_test(100, 1, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_complex_mask_out) {
+  server_client_gc_relu_packed_test(100, 1, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_complex_mask_in) {
+  server_client_gc_relu_packed_test(100, 1, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_complex_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 1, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_complex) {
+  server_client_gc_relu_packed_test(100, 2, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_complex_mask_out) {
+  server_client_gc_relu_packed_test(100, 2, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_complex_mask_in) {
+  server_client_gc_relu_packed_test(100, 2, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_complex_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 2, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_bounded_relu_real) {
+  server_client_gc_relu_packed_test(100, 1, false, false, false, true, 1.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_1_bounded_relu_real_mask_out) {
+  server_client_gc_relu_packed_test(100, 1, false, false, true, true, 2.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_bounded_relu_real_mask_in) {
+  server_client_gc_relu_packed_test(100, 1, false, true, false, true, 3.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_1_bounded_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 1, false, true, true, true, 4.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_bounded_relu_real) {
+  server_client_gc_relu_packed_test(100, 2, false, false, false, true, 5.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_2_bounded_relu_real_mask_out) {
+  server_client_gc_relu_packed_test(100, 2, false, false, true, true, 6.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_bounded_relu_real_mask_in) {
+  server_client_gc_relu_packed_test(100, 2, false, true, false, true, 7.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_2_bounded_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 2, false, true, true, true, 8.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_bounded_relu_complex) {
+  server_client_gc_relu_packed_test(100, 1, true, false, false, true, 9.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_1_bounded_relu_complex_mask_out) {
+  server_client_gc_relu_packed_test(100, 1, true, false, true, true, 100.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_1_bounded_relu_complex_mask_in) {
+  server_client_gc_relu_packed_test(100, 1, true, true, false, true, 11.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_1_bounded_relu_complex_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 1, true, true, true, true, 12.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_bounded_relu_complex) {
+  server_client_gc_relu_packed_test(100, 2, true, false, false, true, 13.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_2_bounded_relu_complex_mask_out) {
+  server_client_gc_relu_packed_test(100, 2, true, false, true, true, 14.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_2_bounded_relu_complex_mask_in) {
+  server_client_gc_relu_packed_test(100, 2, true, true, false, true, 15.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME},
+            server_client_gc_100_2_bounded_relu_complex_mask_in_out) {
+  server_client_gc_relu_packed_test(100, 2, true, true, true, true, 16.0);
+}
