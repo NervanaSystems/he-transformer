@@ -180,7 +180,7 @@ void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    // TODO: better type which matches complex packing?
+    // TODO(fboemer): better type which matches complex packing?
     auto sum = HEType(HEPlaintext(arg0[0].batch_size()), false);
     bool first_add = true;
 
@@ -202,7 +202,7 @@ void convolution_seal(
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
 
-        // TODO: better type which matches arguments?
+        // TODO(fboemer): better type which matches arguments?
         auto prod = HEType(HEPlaintext(arg0[0].batch_size()), false);
 
         scalar_multiply_seal(mult_arg0, mult_arg1, prod, he_seal_backend);
@@ -217,7 +217,7 @@ void convolution_seal(
       ++filter_it;
     }
     if (first_add) {
-      // TODO: batch size number of zeros?
+      // TODO(fboemer): batch size number of zeros?
       HEPlaintext zero(std::vector<double>{0});
       out[out_coord_idx].set_plaintext(zero);
     } else {

@@ -61,7 +61,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   HESealBackend();
   /// \brief Constructs a backend with the given encryption parameters
   /// \param[in] parms Encryption parameters
-  HESealBackend(const HESealEncryptionParameters& parms);
+  HESealBackend(HESealEncryptionParameters parms);
 
   /// \brief Prepares the backend with the encryption context, including
   /// generating encryption keys, encryptor, decryptor, evaluator, and encoder
@@ -82,7 +82,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   /// \brief Compiles a function
   /// \brief param[in] function Function to compile
-  /// \brief param[in] enable_performance_data TODO: unused
+  /// \brief param[in] enable_performance_data TODO(fboemer): unused
   /// \returns An executable object
   std::shared_ptr<ngraph::runtime::Executable> compile(
       std::shared_ptr<Function> function,
@@ -187,16 +187,16 @@ class HESealBackend : public ngraph::runtime::Backend {
     return std::make_shared<SealCiphertextWrapper>(pool);
   }
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   void decode(void* output, const HEPlaintext& input, const element::Type& type,
               size_t count = 1) const;
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                const HEPlaintext& input, const element::Type& element_type,
                bool complex_packing = false) const;
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
                const bool complex_packing) const;
 
@@ -271,7 +271,7 @@ class HESealBackend : public ngraph::runtime::Backend {
     m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   }
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()
       const {
     return m_barrett64_ratio_map;

@@ -53,8 +53,8 @@ HESealBackend::HESealBackend()
     : HESealBackend(HESealEncryptionParameters::parse_config_or_use_default(
           getenv("NGRAPH_HE_SEAL_CONFIG"))) {}
 
-HESealBackend::HESealBackend(const HESealEncryptionParameters& parms)
-    : m_encryption_params(parms) {
+HESealBackend::HESealBackend(HESealEncryptionParameters parms)
+    : m_encryption_params(std::move(parms)) {
   generate_context();
 }
 
@@ -87,8 +87,8 @@ void HESealBackend::generate_context() {
     if (modulus_value < (1UL << 31)) {
       std::uint64_t numerator[3]{0, 1};
       std::uint64_t quotient[3]{0, 0};
-      seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,
-                                                quotient);
+      seal::util::divide_uint128_uint64_inplace(&numerator, modulus_value,
+                                                &quotient);
       std::uint64_t const_ratio = quotient[0];
 
       NGRAPH_CHECK(quotient[1] == 0, "Quotient[1] != 0 for modulus");

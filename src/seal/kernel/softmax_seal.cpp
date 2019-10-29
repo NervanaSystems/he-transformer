@@ -44,7 +44,7 @@ void softmax_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   NGRAPH_CHECK(arg.size() > 0, "arg.size() == 0 in softmax");
 
   // Avoid extra decryption by setting output of max to plaintext
-  // TODO: avoid extra decryptions in subtract, exp, sum, divide ops below
+  // TODO(fboemer): avoid extra decryptions in subtract, exp, sum, divide ops below
   auto temp_ptr = std::vector<HEType>(
       temp_elements,
       HEType(HEPlaintext(arg[0].batch_size()), arg[0].complex_packing()));

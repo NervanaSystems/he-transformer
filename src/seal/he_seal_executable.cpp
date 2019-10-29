@@ -110,7 +110,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
       m_session_started(false),
       m_client_inputs_received(false) {
   m_context = he_seal_backend.get_context();
-  // TODO: use clone_function? (check
+  // TODO(fboemer): use clone_function? (check
   // https://github.com/NervanaSystems/ngraph/pull/3773 is merged)
   m_function = function;
 
@@ -500,7 +500,7 @@ void HESealExecutable::handle_client_ciphers(
                "Client received empty tensor message");
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Client only supports 1 client tensor");
-  // TODO: check for uniqueness of batch size if > 1 input tensor
+  // TODO(fboemer): check for uniqueness of batch size if > 1 input tensor
 
   const ParameterVector& input_parameters = get_parameters();
 
@@ -812,7 +812,7 @@ bool HESealExecutable::call(
 
         NGRAPH_HE_LOG(3) << "Get output packing / encrypted";
 
-        // TODO: remove case once Constant becomes an op
+        // TODO(fboemer): remove case once Constant becomes an op
         // (https://github.com/NervanaSystems/ngraph/pull/3752)
         bool encrypted_out;
         bool packed_out;
@@ -840,7 +840,7 @@ bool HESealExecutable::call(
         // Avoid broadcasting from constant to output with batch size
         // first dimension. This happens because not every constant is
         // packed, for example convolution kernels.
-        // TODO: remove?
+        // TODO(fboemer): remove?
         if (shape.size() > 0 && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
           packed_out = true;
@@ -1366,7 +1366,7 @@ void HESealExecutable::handle_server_max_pool_op(
   Shape unpacked_arg_shape = node.get_input_shape(0);
   Shape out_shape = HETensor::pack_shape(node.get_output_shape(0));
 
-  // TODO: call max_pool_seal directly?
+  // TODO(fboemer): call max_pool_seal directly?
   std::vector<std::vector<size_t>> maximize_list = max_pool_seal_max_list(
       unpacked_arg_shape, out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
@@ -1444,10 +1444,10 @@ void HESealExecutable::handle_server_relu_op(
     NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
   }
 
-  // TODO: better initialization?
+  // TODO(fboemer): better initialization?
   m_relu_data.resize(element_count, HEType(HEPlaintext(), false));
 
-  // TODO: tune
+  // TODO(fboemer): tune
   const size_t max_relu_message_cnt = 1000;
 
   m_unknown_relu_idx.clear();
@@ -1482,7 +1482,7 @@ void HESealExecutable::handle_server_relu_op(
         he_proto::TCPMessage proto_msg;
         proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
-        // TODO: factor out serializing the function
+        // TODO(fboemer): factor out serializing the function
         json js = {{"function", node.description()}};
         if (type_id == OP_TYPEID::BoundedRelu) {
           const op::BoundedRelu* bounded_relu =
@@ -1495,7 +1495,7 @@ void HESealExecutable::handle_server_relu_op(
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
-        // TODO: set complex_packing to correct values?
+        // TODO(fboemer): set complex_packing to correct values?
         HETensor relu_tensor(
             arg->get_element_type(),
             Shape{cipher_batch[0].batch_size(), cipher_batch.size()},

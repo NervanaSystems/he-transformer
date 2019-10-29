@@ -1,0 +1,4 @@
+Checks:          'bugprone-,cert-,clang-analyzer-,cppcoreguidelines-,google-,hicpp-,llvm-,misc-,modernize-,performance-,readability-'
+WarningsAsErrors: '*'
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: true

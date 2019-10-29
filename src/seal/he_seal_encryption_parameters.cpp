@@ -103,7 +103,7 @@ void HESealEncryptionParameters::validate_parameters() const {
 
   NGRAPH_CHECK(context->parameters_set(), "Invalid parameters");
 
-  // TODO: validate scale is reasonable
+  // TODO(fboemer): validate scale is reasonable
 }
 
 bool HESealEncryptionParameters::operator==(

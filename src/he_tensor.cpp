@@ -244,7 +244,7 @@ void HETensor::read(void* target, size_t n) const {
 }
 
 void HETensor::write_to_protos(std::vector<he_proto::HETensor>& protos) const {
-  // TODO: support large shapes
+  // TODO(fboemer): support large shapes
   protos.resize(1);
   protos[0].set_name(get_name());
   protos[0].set_packed(m_packed);

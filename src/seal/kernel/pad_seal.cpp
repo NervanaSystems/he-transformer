@@ -147,7 +147,7 @@ void pad_seal(std::vector<HEType>& arg0,
         break;
       }
       case op::PadMode::SYMMETRIC: {
-        // TODO: Add support for Symmetric mode
+        // TODO(fboemer): Add support for Symmetric mode
         throw ngraph_error("Symmetric mode padding not supported");
       }
     }

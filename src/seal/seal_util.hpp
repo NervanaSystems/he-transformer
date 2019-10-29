@@ -71,7 +71,7 @@ inline seal::sec_level_type seal_security_level(size_t bits) {
 /// \param[in] he_seal_backend Backend whose context is used to determine the
 /// chain index
 /// \returns The minimum chain index of the ciphertexts in ciphers
-/// TODO: move to he_seal_backend
+/// TODO(fboemer): move to he_seal_backend
 size_t match_to_smallest_chain_index(std::vector<HEType>& ciphers,
                                      const HESealBackend& he_seal_backend);
 
@@ -144,7 +144,7 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
 /// \param[in] coeff_count Number of terms in the polynomial
 /// \param[in] scalar Value with which to multiply
 /// \param[in] modulus_value modulus with which to reduce each product
-/// \param[in] const_ratio TODO
+/// \param[in] const_ratio TODO(fboemer)
 /// \param[out] result Will store the result of the multiplication
 void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
                                      uint64_t scalar,
@@ -224,7 +224,7 @@ inline void multiply_plain(
 
 /// \brief Optimized encoding of single value into vector of coefficients
 /// \param[in] value Value to be encoded
-/// \param[in] element_type TODO: remove
+/// \param[in] element_type TODO(fboemer): remove
 /// \param[in] scale Scale at which to encode value
 /// \param[in] parms_id Seal parameter id to use in encoding
 /// \param[out] destination Encoded value in CRT form

@@ -126,7 +126,7 @@ class HESealEncryptionParameters {
   inline double scale() const { return m_scale; }
 
   /// \brief Returns the scale
-  /// TODO: verify scale is valid
+  /// TODO(fboemer): verify scale is valid
   inline double& scale() { return m_scale; }
 
   /// \brief Returns the security level

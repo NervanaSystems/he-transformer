@@ -46,7 +46,7 @@ class HESealExecutable : public runtime::Executable {
  public:
   /// \brief Constructs an exectuable object
   /// \param[in] function Function in the executable
-  /// \param[in] enable_performance_collection Unused: TODO use
+  /// \param[in] enable_performance_collection Unused: TODO(fboemer) use
   /// \param[in] he_seal_backend Backend storing encryption context
   /// \param[in] enable_client Whether or not to rely on a client to store the
   /// secret key
@@ -83,7 +83,7 @@ class HESealExecutable : public runtime::Executable {
   // \brief Returns the port at which the server is expecting a connection
   size_t get_port() const { return m_port; }
 
-  // TODO: merge _done() methods
+  // TODO(fboemer): merge _done() methods
 
   /// \brief Returns whether or not the maxpool op has completed
   bool max_pool_done() const { return m_max_pool_done; }
@@ -152,7 +152,7 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] arg Tensor argumnet
   /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
-  // TODO: rename
+  // TODO(fboemer): rename
   void handle_server_relu_op(const std::shared_ptr<HETensor>& arg,
                              const std::shared_ptr<HETensor>& out,
                              const NodeWrapper& node_wrapper);
@@ -161,7 +161,7 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] arg Tensor argumnet
   /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
-  // TODO: rename
+  // TODO(fboemer): rename
   void handle_server_max_pool_op(const std::shared_ptr<HETensor>& arg,
                                  const std::shared_ptr<HETensor>& out,
                                  const NodeWrapper& node_wrapper);
@@ -223,7 +223,7 @@ class HESealExecutable : public runtime::Executable {
 
  private:
   HESealBackend& m_he_seal_backend;
-  bool m_is_compiled;
+  bool m_is_compiled{false};
   bool m_verbose_all_ops;
   std::shared_ptr<Function> m_function;
 
@@ -268,12 +268,12 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when max_pool is done
   std::mutex m_max_pool_mutex;
   std::condition_variable m_max_pool_cond;
-  bool m_max_pool_done;
+  bool m_max_pool_done{false};
 
   // To trigger when minimum is done
   std::mutex m_minimum_mutex;
   std::condition_variable m_minimum_cond;
-  bool m_minimum_done;
+  bool m_minimum_done{false};
 
   // To trigger when result message has been written
   std::mutex m_result_mutex;

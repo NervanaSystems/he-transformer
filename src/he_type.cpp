@@ -30,7 +30,7 @@ namespace he {
 HEType HEType::load(const he_proto::HEType& proto_he_type,
                     std::shared_ptr<seal::SEALContext> context) {
   if (proto_he_type.is_plaintext()) {
-    // TODO: HEPlaintext::load function
+    // TODO(fboemer): HEPlaintext::load function
     HEPlaintext vals{proto_he_type.plain().begin(),
                      proto_he_type.plain().end()};
 

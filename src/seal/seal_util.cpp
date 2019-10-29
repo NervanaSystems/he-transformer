@@ -150,8 +150,8 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   }
 
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
-  // TODO: explore using different scales! Smaller scales might reduce # of
-  // rescalings
+  // TODO(fboemer): explore using different scales! Smaller scales might reduce
+  // # of rescalings
   double scale = encrypted.scale();
   encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
          plaintext_vals, he_seal_backend);
@@ -239,7 +239,7 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
   NGRAPH_HE_LOG(3) << "Matching to smallest chain index "
                    << smallest_chain_ind.second;
 
-  // TODO: loop over only ciphertext indices?
+  // TODO(fboemer): loop over only ciphertext indices?
   auto smallest_cipher = *he_types[smallest_chain_ind.first].get_ciphertext();
 #pragma omp parallel for
   for (size_t idx = 0; idx < num_elements; ++idx) {
@@ -313,7 +313,7 @@ void encode(double value, const ngraph::element::Type& element_type,
   double two_pow_64 = pow(2.0, 64);
 
   // Resize destination to appropriate size
-  // TODO: use reserve?
+  // TODO(fboemer): use reserve?
   destination.resize(coeff_mod_count);
 
   double coeffd = std::round(value);

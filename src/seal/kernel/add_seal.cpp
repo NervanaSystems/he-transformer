@@ -34,14 +34,14 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                      std::shared_ptr<SealCiphertextWrapper>& out,
                      const bool complex_packing,
                      HESealBackend& he_seal_backend) {
-  // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
+  // TODO(fboemer): handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = (arg1.size() == 1) && (arg1[0] == 0.0);
 
   if (add_zero) {
     SealCiphertextWrapper tmp(arg0);
     out = std::make_shared<SealCiphertextWrapper>(tmp);
   } else {
-    // TODO: optimize for adding single complex number
+    // TODO(fboemer): optimize for adding single complex number
     if ((arg1.size() == 1) && !complex_packing) {
       add_plain(arg0.ciphertext(), arg1[0], out->ciphertext(), he_seal_backend);
     } else {

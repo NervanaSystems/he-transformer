@@ -108,8 +108,8 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
 void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           HEType& out, HESealBackend& he_seal_backend,
                           const seal::MemoryPoolHandle& pool) {
-  // TODO: check multiplying by small numbers behavior more thoroughly
-  // TODO: check if abs(values) < scale?
+  // TODO(fboemer): check multiplying by small numbers behavior more thoroughly
+  // TODO(fboemer): check if abs(values) < scale?
   if (std::all_of(arg1.begin(), arg1.end(),
                   [](double f) { return std::abs(f) < 1e-5f; })) {
     HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
