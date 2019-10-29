@@ -35,13 +35,12 @@ HEType HEType::load(const he_proto::HEType& proto_he_type,
                      proto_he_type.plain().end()};
 
     return HEType(vals, proto_he_type.complex_packing());
-  } else {
-    auto cipher = HESealBackend::create_empty_ciphertext();
-    SealCiphertextWrapper::load(*cipher, proto_he_type, std::move(context));
-
-    return HEType(cipher, proto_he_type.complex_packing(),
-                  proto_he_type.batch_size());
   }
+  auto cipher = HESealBackend::create_empty_ciphertext();
+  SealCiphertextWrapper::load(*cipher, proto_he_type, std::move(context));
+
+  return HEType(cipher, proto_he_type.complex_packing(),
+                proto_he_type.batch_size());
 }
 
 }  // namespace he

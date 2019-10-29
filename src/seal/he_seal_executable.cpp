@@ -353,9 +353,9 @@ void HESealExecutable::send_inference_shape() {
       std::vector<uint64_t> shape{input_param->get_shape()};
       *proto_he_tensor->mutable_shape() = {shape.begin(), shape.end()};
 
-      std::string name = (input_param->get_provenance_tags().size() > 0)
-                             ? *input_param->get_provenance_tags().begin()
-                             : input_param->get_name();
+      std::string name = input_param->get_provenance_tags().empty()
+                             ? input_param->get_name()
+                             : *input_param->get_provenance_tags().begin();
 
       NGRAPH_HE_LOG(1) << "Server setting inference tensor name " << name
                        << " (corresponding to Parameter "
@@ -478,7 +478,7 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
       break;
     }
     case he_proto::TCPMessage_Type_REQUEST: {
-      if (proto_msg->he_tensors_size()) {
+      if (proto_msg->he_tensors_size() > 0) {
         handle_client_ciphers(*proto_msg);
       }
       break;
@@ -838,7 +838,7 @@ bool HESealExecutable::call(
         // first dimension. This happens because not every constant is
         // packed, for example convolution kernels.
         // TODO(fboemer): remove?
-        if (shape.size() > 0 && shape[0] == m_batch_size &&
+        if (!shape.empty() && shape[0] == m_batch_size &&
             op->description() == "Broadcast") {
           packed_out = true;
         }
@@ -1383,7 +1383,7 @@ void HESealExecutable::handle_server_max_pool_op(
       cipher_batch.emplace_back(arg->data(max_ind));
     }
 
-    NGRAPH_CHECK(cipher_batch.size() > 0, "Maxpool cipher batch is empty");
+    NGRAPH_CHECK(!cipher_batch.empty(), "Maxpool cipher batch is empty");
 
     HETensor max_pool_tensor(
         arg->get_element_type(),
@@ -1521,7 +1521,7 @@ void HESealExecutable::handle_server_relu_op(
       relu_ciphers_batch.clear();
     }
   }
-  if (relu_ciphers_batch.size() != 0) {
+  if (!relu_ciphers_batch.empty()) {
     process_unknown_relu_ciphers_batch(relu_ciphers_batch);
     relu_ciphers_batch.clear();
   }

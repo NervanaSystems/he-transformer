@@ -66,13 +66,13 @@ inline seal::sec_level_type seal_security_level(size_t bits) {
   return sec_level;
 }
 
-/// \brief Returns the smallest chain index of a vector of ciphertexts
-/// \param[in] ciphers Vector of ciphertexts
+/// \brief Returns the smallest chain index of a vector of HE data
+/// \param[in] he_types Vector of HE data
 /// \param[in] he_seal_backend Backend whose context is used to determine the
 /// chain index
-/// \returns The minimum chain index of the ciphertexts in ciphers
+/// \returns The minimum chain index of the HE data
 /// TODO(fboemer): move to he_seal_backend
-size_t match_to_smallest_chain_index(std::vector<HEType>& ciphers,
+size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
                                      const HESealBackend& he_seal_backend);
 
 /// \brief Returns whether or not two cipher/plaintexts have a similar scale
@@ -276,10 +276,10 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
 /// \brief Writes plaintext to byte output
 /// \param[out] output Pointer to destination
 /// \param[out] input Plaintext to write
-/// \param[in] type Datatype to write
+/// \param[in] element_type Datatype to write
 /// \param[in] count Number of values to write
 void write_plaintext(void* output, const HEPlaintext& input,
-                     const element::Type& type, size_t count);
+                     const element::Type& element_type, size_t count);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to

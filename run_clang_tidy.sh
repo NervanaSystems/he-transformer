@@ -12,4 +12,5 @@ llvm-*,\
 misc-*,\
 modernize-*,\
 performance-*,\
+readability-*,\
 "

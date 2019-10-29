@@ -67,7 +67,7 @@ auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
   auto t_b =
       test::he::tensor_from_flags(*he_backend, shape_b, arg2_encrypted, false);
   auto t_result = test::he::tensor_from_flags(
-      *he_backend, t->get_shape(), arg1_encrypted | arg2_encrypted, packed);
+      *he_backend, t->get_shape(), arg1_encrypted || arg2_encrypted, packed);
 
   copy_data(t_a, input_a);
   copy_data(t_b, input_b);

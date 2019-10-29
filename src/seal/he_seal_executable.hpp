@@ -69,12 +69,12 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Calls the executable on the given input tensors.
   /// If the client is enabled, the inputs are dummy values and ignored.
   /// Instead, the inputs will be provided by the client
-  /// \param[in] inputs Input tensor arguments to the function.
-  /// \param[out] outputs Output tensors storing the result of the
-  /// function
-  bool call(
-      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
+  /// \param[in] server_inputs Input tensor arguments to the function, provided
+  /// by the backend. \param[out] outputs Output tensors storing the result of
+  /// the function
+  bool call(const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+            const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
+      override;
 
   // TOOD
   std::vector<runtime::PerformanceCounter> get_performance_data()
@@ -289,9 +289,10 @@ class HESealExecutable : public runtime::Executable {
   std::condition_variable m_client_inputs_cond;
   bool m_client_inputs_received{false};
 
-  void generate_calls(const element::Type& type, const NodeWrapper& op,
-                      const std::vector<std::shared_ptr<HETensor>>& outputs,
-                      const std::vector<std::shared_ptr<HETensor>>& inputs);
+  void generate_calls(const element::Type& type,
+                      const NodeWrapper& node_wrapper,
+                      const std::vector<std::shared_ptr<HETensor>>& out,
+                      const std::vector<std::shared_ptr<HETensor>>& args);
 
   bool m_stop_const_fold{flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };

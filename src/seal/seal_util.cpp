@@ -507,7 +507,7 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
 void write_plaintext(void* output, const HEPlaintext& input,
                      const element::Type& element_type, size_t count) {
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(input.size() > 0, "Input has no values");
+  NGRAPH_CHECK(!input.empty(), "Input has no values");
 
   NGRAPH_CHECK(input.size() >= count, "Input size ", input.size(),
                " too small for count ", count);

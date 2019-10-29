@@ -27,7 +27,7 @@
 
 namespace ngraph {
 namespace he {
-void scalar_divide_seal(const HEPlaintext& arg, const HEPlaintext& arg1,
+void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out);
 
 void scalar_divide_seal(const HEType& arg0, const HEType& arg1, HEType& out,

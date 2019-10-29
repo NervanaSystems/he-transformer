@@ -68,14 +68,14 @@ class HESealBackend : public ngraph::runtime::Backend {
   void generate_context();
 
   /// \brief Constructs an unpacked plaintext tensor
-  /// \param[in] element_type Datatype to store in the tensor
+  /// \param[in] type Datatype to store in the tensor
   /// \param[in] shape Shape of the tensor
-  std::shared_ptr<runtime::Tensor> create_tensor(
-      const element::Type& element_type, const Shape& shape) override;
+  std::shared_ptr<runtime::Tensor> create_tensor(const element::Type& type,
+                                                 const Shape& shape) override;
 
   /// \brief Unimplemented
   inline std::shared_ptr<runtime::Tensor> create_tensor(
-      const element::Type& element_type, const Shape& shape,
+      const element::Type& type, const Shape& shape,
       void* memory_pointer) override {
     throw ngraph_error("create_tensor unimplemented");
   }
@@ -141,27 +141,29 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
-      const element::Type& element_type, const Shape& shape) const;
+      const element::Type& type, const Shape& shape) const;
 
   /// \brief Creates a plaintext tensor
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
-  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] plaintext_packing Whether or not to use plaintext packing
   /// \param[in] name Name of the created tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
-      const element::Type& element_type, const Shape& shape,
-      const bool packed = false, const std::string& name = "external") const;
+      const element::Type& type, const Shape& shape,
+      const bool plaintext_packing = false,
+      const std::string& name = "external") const;
 
   /// \brief Creates a ciphertext tensor
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
-  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] plaintext_packing Whether or not to use plaintext packing
   /// \param[in] name Name of the created tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
-      const element::Type& element_type, const Shape& shape,
-      const bool packed = false, const std::string& name = "external") const;
+      const element::Type& type, const Shape& shape,
+      const bool plaintext_packing = false,
+      const std::string& name = "external") const;
 
   /// \brief Creates empty ciphertext
   /// \returns Pointer to created ciphertext
@@ -193,7 +195,7 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   /// \brief TODO(fboemer)
   void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
-               const HEPlaintext& input, const element::Type& element_type,
+               const HEPlaintext& input, const element::Type& type,
                bool complex_packing = false) const;
 
   /// \brief TODO(fboemer)

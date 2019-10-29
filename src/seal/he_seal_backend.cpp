@@ -135,7 +135,7 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
     }
   }
 
-  if (m_client_tensor_names.size() > 0 && !m_enable_client) {
+  if (!m_client_tensor_names.empty() && !m_enable_client) {
     NGRAPH_WARN
         << "Configuration specifies client input, but client is not enabled";
     m_client_tensor_names.clear();
@@ -199,7 +199,7 @@ HESealBackend::create_packed_plain_tensor(const element::Type& type,
 }
 
 std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
-    std::shared_ptr<Function> function, bool enable_performance_collection) {
+    std::shared_ptr<Function> function, bool enable_performance_data) {
   auto from_client_annotation =
       std::make_shared<HEOpAnnotations>(true, false, false);
 
@@ -220,7 +220,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     bool matching_param = false;
     bool has_tag = false;
     for (auto& param : function->get_parameters()) {
-      has_tag |= (param->get_provenance_tags().size() != 0);
+      has_tag |= (!param->get_provenance_tags().empty());
 
       if (param_originates_from_name(*param, name)) {
         NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
@@ -297,8 +297,8 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     }
   }
 
-  return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this, m_enable_client);
+  return std::make_shared<HESealExecutable>(function, enable_performance_data,
+                                            *this, m_enable_client);
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {
@@ -310,7 +310,7 @@ bool HESealBackend::is_supported(const ngraph::Node& node) const {
 void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             const HEPlaintext& input, const element::Type& type,
                             bool complex_packing) const {
-  NGRAPH_CHECK(input.size() > 0, "Input has no values in encrypt");
+  NGRAPH_CHECK(!input.empty(), "Input has no values in encrypt");
   ngraph::he::encrypt(output, input, m_context->first_parms_id(), type,
                       get_scale(), *m_ckks_encoder, *m_encryptor,
                       complex_packing);
