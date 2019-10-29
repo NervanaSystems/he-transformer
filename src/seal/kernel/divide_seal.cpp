@@ -32,7 +32,7 @@ void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out) {
   std::vector<double> out_vals(arg0.size());
   std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 std::divides<double>());
+                 std::divides<>());
   out = HEPlaintext({out_vals});
 }
 

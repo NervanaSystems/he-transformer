@@ -43,7 +43,7 @@ enum class ngraph::he::OP_TYPEID {
 /// switch() instead of if/else statements
 class ngraph::he::NodeWrapper {
  public:
-  NodeWrapper(const std::shared_ptr<const ngraph::Node>& node);
+  NodeWrapper(std::shared_ptr<const ngraph::Node> node);
 
   std::shared_ptr<const Node> get_node() const { return m_node; }
   ngraph::he::OP_TYPEID get_typeid() const { return m_typeid; }

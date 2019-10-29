@@ -37,8 +37,7 @@ void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           const bool complex_packing,
                           HESealBackend& he_seal_backend) {
   HEPlaintext neg_arg1(arg1.size());
-  std::transform(arg1.cbegin(), arg1.cend(), neg_arg1.begin(),
-                 std::negate<double>());
+  std::transform(arg1.cbegin(), arg1.cend(), neg_arg1.begin(), std::negate<>());
   scalar_add_seal(arg0, neg_arg1, out, complex_packing, he_seal_backend);
 }
 
@@ -55,7 +54,7 @@ void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out) {
   HEPlaintext out_vals(arg0.size());
   std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 std::minus<double>());
+                 std::minus<>());
   out = std::move(out_vals);
 }
 }  // namespace he

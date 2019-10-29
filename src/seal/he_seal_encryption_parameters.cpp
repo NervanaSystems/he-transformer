@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/he_seal_encryption_parameters.hpp"
+
 #include <stdexcept>
 #include <unordered_set>
 
@@ -21,7 +23,6 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/file_util.hpp"
-#include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {
@@ -37,10 +38,10 @@ HESealEncryptionParameters::HESealEncryptionParameters() {
 }
 
 HESealEncryptionParameters::HESealEncryptionParameters(
-    const std::string& scheme_name, const seal::EncryptionParameters& parms,
+    std::string scheme_name, seal::EncryptionParameters parms,
     std::uint64_t security_level, double scale, bool complex_packing)
-    : m_scheme_name(scheme_name),
-      m_seal_encryption_parameters(parms),
+    : m_scheme_name(std::move(scheme_name)),
+      m_seal_encryption_parameters(std::move(parms)),
       m_security_level(security_level),
       m_scale(scale),
       m_complex_packing(complex_packing) {
@@ -61,10 +62,10 @@ HESealEncryptionParameters::default_complex_packing_parms() {
 }
 
 HESealEncryptionParameters::HESealEncryptionParameters(
-    const std::string& scheme_name, std::uint64_t poly_modulus_degree,
+    const std::string scheme_name, std::uint64_t poly_modulus_degree,
     std::vector<int> coeff_modulus_bits, std::uint64_t security_level,
     double scale, bool complex_packing)
-    : m_scheme_name(scheme_name),
+    : m_scheme_name(std::move(scheme_name)),
       m_security_level(security_level),
       m_scale(scale),
       m_complex_packing(complex_packing) {

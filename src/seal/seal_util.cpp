@@ -322,7 +322,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 
   // Use faster decomposition methods when possible
   if (coeff_bit_count <= 64) {
-    uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
+    auto coeffu = static_cast<uint64_t>(fabs(coeffd));
 
     if (is_negative) {
       for (size_t j = 0; j < coeff_mod_count; j++) {

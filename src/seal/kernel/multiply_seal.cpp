@@ -168,16 +168,16 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   if (arg0.size() == 1) {
     std::transform(
         arg1.begin(), arg1.end(), std::back_inserter(out_vals),
-        std::bind(std::multiplies<double>(), std::placeholders::_1, arg0[0]));
+        std::bind(std::multiplies<>(), std::placeholders::_1, arg0[0]));
   } else if (arg1.size() == 1) {
     std::transform(
         arg0.begin(), arg0.end(), std::back_inserter(out_vals),
-        std::bind(std::multiplies<double>(), std::placeholders::_1, arg1[0]));
+        std::bind(std::multiplies<>(), std::placeholders::_1, arg1[0]));
   } else {
     NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() ", arg0.size(),
                  " != arg0.size() ", arg1.size(), " in plain-plain multiply");
     std::transform(arg0.begin(), arg0.end(), arg1.begin(),
-                   std::back_inserter(out_vals), std::multiplies<double>());
+                   std::back_inserter(out_vals), std::multiplies<>());
   }
   out = std::move(out_vals);
 }

@@ -36,8 +36,8 @@ class HESealEncryptionParameters {
   /// precision of the computation
   /// \param[in] complex_packing Whether or not to pack scalars (a,b,c,d) as (a
   /// +bi, c+di)
-  HESealEncryptionParameters(const std::string& scheme_name,
-                             const seal::EncryptionParameters& parms,
+  HESealEncryptionParameters(std::string scheme_name,
+                             seal::EncryptionParameters parms,
                              std::uint64_t security_level, double scale,
                              bool complex_packing);
 
@@ -65,7 +65,7 @@ class HESealEncryptionParameters {
   ///  \param[in] coeff_modulus_bits Vector of bit-widths of the cofficient
   ///  moduli.
   /// \throws ngraph_error if scheme_name is not "HE_SEAL"
-  HESealEncryptionParameters(const std::string& scheme_name,
+  HESealEncryptionParameters(std::string scheme_name,
                              std::uint64_t poly_modulus_degree,
                              std::vector<int> coeff_modulus_bits,
                              std::uint64_t security_level, double scale,

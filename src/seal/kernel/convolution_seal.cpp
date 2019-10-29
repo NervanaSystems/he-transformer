@@ -14,11 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/convolution_seal.hpp"
+
 #include <memory>
 #include <vector>
 
 #include "logging/ngraph_he_log.hpp"
-#include "seal/kernel/convolution_seal.hpp"
 
 namespace ngraph {
 namespace he {
@@ -179,6 +180,8 @@ void convolution_seal(
     CoordinateTransform::Iterator filter_it = filter_transform.begin();
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
+
+    // TODO:a sd f
 
     // TODO(fboemer): better type which matches complex packing?
     auto sum = HEType(HEPlaintext(arg0[0].batch_size()), false);

@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "node_wrapper.hpp"
+
 #include "ngraph/op/abs.hpp"
 #include "ngraph/op/acos.hpp"
 #include "ngraph/op/add.hpp"
@@ -115,9 +116,8 @@
 #include "ngraph/op/xor.hpp"
 #include "op/bounded_relu.hpp"
 
-ngraph::he::NodeWrapper::NodeWrapper(
-    const std::shared_ptr<const ngraph::Node>& node)
-    : m_node{node} {
+ngraph::he::NodeWrapper::NodeWrapper(std::shared_ptr<const ngraph::Node> node)
+    : m_node{std::move(node)} {
 // This expands the op list in op_tbl.hpp into a list of enumerations that look
 // like this:
 // {"Abs", ngraph::he::OP_TYPEID::Abs},

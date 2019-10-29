@@ -224,7 +224,7 @@ class HESealExecutable : public runtime::Executable {
  private:
   HESealBackend& m_he_seal_backend;
   bool m_is_compiled{false};
-  bool m_verbose_all_ops;
+  bool m_verbose_all_ops{false};
   std::shared_ptr<Function> m_function;
 
   bool m_sent_inference_shape{false};
@@ -232,7 +232,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_client_eval_key_set{false};
 
   bool m_enable_client;
-  bool m_server_setup;
+  bool m_server_setup{false};
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
@@ -262,7 +262,7 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when relu is done
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
-  size_t m_relu_done_count;
+  size_t m_relu_done_count{0};
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when max_pool is done
@@ -282,12 +282,12 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when session has started
   std::mutex m_session_mutex;
   std::condition_variable m_session_cond;
-  bool m_session_started;
+  bool m_session_started{false};
 
   // To trigger when client inputs have been received
   std::mutex m_client_inputs_mutex;
   std::condition_variable m_client_inputs_cond;
-  bool m_client_inputs_received;
+  bool m_client_inputs_received{false};
 
   void generate_calls(const element::Type& type, const NodeWrapper& op,
                       const std::vector<std::shared_ptr<HETensor>>& outputs,

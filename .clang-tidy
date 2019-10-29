@@ -10,9 +10,25 @@ misc-*,\
 modernize-*,\
 performance-*,\
 readability-*,\
--fuchsia-default-arguments,\
+-fuchsia-default-arguments-declarations,\
+-fuchsia-default-arguments-calls,\
 "
 
-WarningsAsErrors: '*'
+WarningsAsErrors: "-*,\
+bugprone-*,\
+cert-*,\
+clang-analyzer-*,\
+cppcoreguidelines-*,\
+google-*,\
+hicpp-*,\
+llvm-*,\
+misc-*,\
+modernize-*,\
+performance-*,\
+readability-*,\
+-fuchsia-default-arguments-declarations,\
+-fuchsia-default-arguments-calls,\
+"
+
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: true

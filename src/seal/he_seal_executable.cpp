@@ -101,15 +101,9 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
                                    HESealBackend& he_seal_backend,
                                    bool enable_client)
     : m_he_seal_backend(he_seal_backend),
-      m_verbose_all_ops(false),
-      m_enable_client(enable_client),
-      m_server_setup(false),
-      m_batch_size(1),
-      m_port(34000),
-      m_relu_done_count(0),
-      m_max_pool_done(false),
-      m_session_started(false),
-      m_client_inputs_received(false) {
+      m_enable_client{enable_client},
+      m_batch_size{1},
+      m_port{34000} {
   m_context = he_seal_backend.get_context();
   // TODO(fboemer): use clone_function? (check
   // https://github.com/NervanaSystems/ngraph/pull/3773 is merged)
@@ -723,8 +717,7 @@ bool HESealExecutable::call(
   std::unordered_map<ngraph::descriptor::Tensor*, std::shared_ptr<HETensor>>
       tensor_map;
   size_t input_count = 0;
-  for (size_t param_idx = 0; param_idx < parameters.size(); ++param_idx) {
-    auto& param = parameters[param_idx];
+  for (const auto& param : parameters) {
     for (size_t param_out_idx = 0; param_out_idx < param->get_output_size();
          ++param_out_idx) {
       descriptor::Tensor* tensor =
@@ -965,7 +958,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::AvgPool: {
-      const op::AvgPool* avg_pool = static_cast<const op::AvgPool*>(&node);
+      const auto avg_pool = static_cast<const op::AvgPool*>(&node);
       Shape op_in_shape = args[0]->get_packed_shape();
       Shape op_out_shape = out[0]->get_packed_shape();
 
@@ -983,8 +976,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::BatchNormInference: {
-      const ngraph::op::BatchNormInference* bn =
-          static_cast<const ngraph::op::BatchNormInference*>(&node);
+      const auto bn = static_cast<const ngraph::op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
       NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ", args.size(),
                    "arguments (expected 5).");
@@ -1002,8 +994,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::BoundedRelu: {
-      const op::BoundedRelu* bounded_relu =
-          static_cast<const op::BoundedRelu*>(&node);
+      const auto bounded_relu = static_cast<const op::BoundedRelu*>(&node);
       float alpha = bounded_relu->get_alpha();
       size_t output_size = args[0]->get_batched_element_count();
       if (m_enable_client) {
@@ -1020,7 +1011,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Broadcast: {
-      const op::Broadcast* broadcast = static_cast<const op::Broadcast*>(&node);
+      const auto broadcast = static_cast<const op::Broadcast*>(&node);
       broadcast_seal(args[0]->data(), out[0]->data(),
                      args[0]->get_packed_shape(), out[0]->get_packed_shape(),
                      broadcast->get_broadcast_axes());
@@ -1029,7 +1020,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::BroadcastLike:
       break;
     case OP_TYPEID::Concat: {
-      const op::Concat* concat = static_cast<const op::Concat*>(&node);
+      const auto* concat = static_cast<const op::Concat*>(&node);
       std::vector<Shape> in_shapes;
       std::vector<std::vector<HEType>> in_args;
       for (auto& arg : args) {
@@ -1041,13 +1032,13 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Constant: {
-      const op::Constant* constant = static_cast<const op::Constant*>(&node);
+      const auto* constant = static_cast<const op::Constant*>(&node);
       constant_seal(out[0]->data(), type, constant->get_data_ptr(),
                     m_he_seal_backend, out[0]->get_batched_element_count());
       break;
     }
     case OP_TYPEID::Convolution: {
-      const op::Convolution* c = static_cast<const op::Convolution*>(&node);
+      const auto* c = static_cast<const op::Convolution*>(&node);
       auto window_movement_strides = c->get_window_movement_strides();
       auto window_dilation_strides = c->get_window_dilation_strides();
       auto padding_below = c->get_padding_below();
@@ -1081,7 +1072,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Dot: {
-      const op::Dot* dot = static_cast<const op::Dot*>(&node);
+      const auto* dot = static_cast<const op::Dot*>(&node);
 
       Shape in_shape0 = args[0]->get_packed_shape();
       Shape in_shape1 = args[1]->get_packed_shape();
@@ -1108,7 +1099,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Max: {
-      const op::Max* max = static_cast<const op::Max*>(&node);
+      const auto* max = static_cast<const op::Max*>(&node);
       auto reduction_axes = max->get_reduction_axes();
       NGRAPH_CHECK(!args[0]->is_packed() ||
                        (reduction_axes.find(0) == reduction_axes.end()),
@@ -1129,7 +1120,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::MaxPool: {
-      const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+      const auto* max_pool = static_cast<const op::MaxPool*>(&node);
       if (m_enable_client) {
         handle_server_max_pool_op(args[0], out[0], node_wrapper);
       } else {
@@ -1166,7 +1157,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Pad: {
-      const op::Pad* pad = static_cast<const op::Pad*>(&node);
+      const auto* pad = static_cast<const op::Pad*>(&node);
       pad_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                args[0]->get_packed_shape(), out[0]->get_packed_shape(),
                pad->get_padding_below(), pad->get_padding_above(),
@@ -1178,8 +1169,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Passthrough: {
-      const op::Passthrough* passthrough =
-          static_cast<const op::Passthrough*>(&node);
+      const auto* passthrough = static_cast<const op::Passthrough*>(&node);
       throw unsupported_op{"Unsupported operation language: " +
                            passthrough->language()};
     }
@@ -1199,7 +1189,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Reshape: {
-      const op::Reshape* reshape = static_cast<const op::Reshape*>(&node);
+      const auto* reshape = static_cast<const op::Reshape*>(&node);
       if (verbose) {
         NGRAPH_HE_LOG(3) << args[0]->get_packed_shape() << " reshape "
                          << out[0]->get_packed_shape();
@@ -1215,7 +1205,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Reverse: {
-      const op::Reverse* reverse = static_cast<const op::Reverse*>(&node);
+      const auto* reverse = static_cast<const op::Reverse*>(&node);
       if (verbose) {
         NGRAPH_HE_LOG(3) << args[0]->get_packed_shape() << " reshape "
                          << out[0]->get_packed_shape();
@@ -1228,7 +1218,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Slice: {
-      const op::Slice* slice = static_cast<const op::Slice*>(&node);
+      const auto* slice = static_cast<const op::Slice*>(&node);
       const Shape& in_shape = args[0]->get_packed_shape();
       const Shape& out_shape = out[0]->get_packed_shape();
       Coordinate lower_bounds = slice->get_lower_bounds();
@@ -1241,7 +1231,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Softmax: {
-      const op::Softmax* softmax = static_cast<const op::Softmax*>(&node);
+      const auto* softmax = static_cast<const op::Softmax*>(&node);
       auto axes = softmax->get_axes();
       NGRAPH_CHECK(!args[0]->is_packed() || (axes.find(0) == axes.end()),
                    "Softmax axes cannot contain 0 for packed tensors");
@@ -1257,7 +1247,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Sum: {
-      const op::Sum* sum = static_cast<const op::Sum*>(&node);
+      const auto* sum = static_cast<const op::Sum*>(&node);
       sum_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                out[0]->get_packed_shape(), sum->get_reduction_axes(), type,
                m_he_seal_backend);
@@ -1360,7 +1350,7 @@ void HESealExecutable::handle_server_max_pool_op(
 
   const Node& node = *node_wrapper.get_node();
   bool verbose = verbose_op(node);
-  const op::MaxPool* max_pool = static_cast<const op::MaxPool*>(&node);
+  const auto* max_pool = static_cast<const op::MaxPool*>(&node);
 
   m_max_pool_done = false;
 
@@ -1368,14 +1358,14 @@ void HESealExecutable::handle_server_max_pool_op(
   Shape out_shape = HETensor::pack_shape(node.get_output_shape(0));
 
   // TODO(fboemer): call max_pool_seal directly?
-  std::vector<std::vector<size_t>> maximize_list = max_pool_seal_max_list(
+  std::vector<std::vector<size_t>> maximize_lists = max_pool_seal_max_list(
       unpacked_arg_shape, out_shape, max_pool->get_window_shape(),
       max_pool->get_window_movement_strides(), max_pool->get_padding_below(),
       max_pool->get_padding_above());
 
   m_max_pool_data.clear();
 
-  for (size_t list_ind = 0; list_ind < maximize_list.size(); list_ind++) {
+  for (const auto& maximize_list : maximize_lists) {
     he_proto::TCPMessage proto_msg;
     proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
 
@@ -1385,7 +1375,7 @@ void HESealExecutable::handle_server_max_pool_op(
     *proto_msg.mutable_function() = f;
 
     std::vector<HEType> cipher_batch;
-    for (const size_t max_ind : maximize_list[list_ind]) {
+    for (const size_t max_ind : maximize_list) {
       cipher_batch.emplace_back(arg->data(max_ind));
     }
 
@@ -1463,8 +1453,7 @@ void HESealExecutable::handle_server_relu_op(
         scalar_relu_seal(he_type.get_plaintext(),
                          m_relu_data[relu_idx].get_plaintext());
       } else {
-        const op::BoundedRelu* bounded_relu =
-            static_cast<const op::BoundedRelu*>(&node);
+        const auto* bounded_relu = static_cast<const op::BoundedRelu*>(&node);
         float alpha = bounded_relu->get_alpha();
         scalar_bounded_relu_seal(he_type.get_plaintext(),
                                  m_relu_data[relu_idx].get_plaintext(), alpha);
@@ -1486,8 +1475,7 @@ void HESealExecutable::handle_server_relu_op(
         // TODO(fboemer): factor out serializing the function
         json js = {{"function", node.description()}};
         if (type_id == OP_TYPEID::BoundedRelu) {
-          const op::BoundedRelu* bounded_relu =
-              static_cast<const op::BoundedRelu*>(&node);
+          const auto* bounded_relu = static_cast<const op::BoundedRelu*>(&node);
           float alpha = bounded_relu->get_alpha();
           js["bound"] = alpha;
         }
