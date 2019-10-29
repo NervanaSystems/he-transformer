@@ -33,7 +33,7 @@ namespace he {
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,
-                                     seal::MemoryPoolHandle pool) {
+                                     const seal::MemoryPoolHandle& pool) {
   size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
   size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
 
@@ -119,7 +119,7 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
 
 void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
                             const HESealBackend& he_seal_backend,
-                            seal::MemoryPoolHandle pool) {
+                            const seal::MemoryPoolHandle& pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   if (!seal::is_metadata_valid_for(encrypted, context)) {
@@ -262,7 +262,11 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
 void encode(double value, const ngraph::element::Type& element_type,
             double scale, seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
-            const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
+            const HESealBackend& he_seal_backend,
+            const seal::MemoryPoolHandle& pool) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->get_context_data(parms_id);

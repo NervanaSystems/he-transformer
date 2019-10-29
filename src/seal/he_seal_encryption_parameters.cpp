@@ -75,8 +75,8 @@ HESealEncryptionParameters::HESealEncryptionParameters(
 
   m_seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
-  auto coeff_modulus =
-      seal::CoeffModulus::Create(poly_modulus_degree, coeff_modulus_bits);
+  auto coeff_modulus = seal::CoeffModulus::Create(
+      poly_modulus_degree, std::move(coeff_modulus_bits));
 
   m_seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 

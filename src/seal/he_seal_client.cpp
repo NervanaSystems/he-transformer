@@ -147,7 +147,7 @@ void HESealClient::handle_inference_request(
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only input parameter");
 
-  auto proto_tensor = proto_msg.he_tensors(0);
+  const auto& proto_tensor = proto_msg.he_tensors(0);
   auto& proto_name = proto_tensor.name();
   auto proto_shape = proto_tensor.shape();
   Shape shape{proto_shape.begin(), proto_shape.end()};
@@ -221,7 +221,7 @@ void HESealClient::handle_result(const he_proto::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
                "Client supports only results with one tensor");
 
-  auto proto_tensor = proto_msg.he_tensors(0);
+  const auto& proto_tensor = proto_msg.he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
       proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);

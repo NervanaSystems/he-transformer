@@ -104,6 +104,9 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
       m_enable_client{enable_client},
       m_batch_size{1},
       m_port{34000} {
+  // TODO(fboemer): Use
+  (void)enable_performance_collection;  // Avoid unused parameter warning
+
   m_context = he_seal_backend.get_context();
   // TODO(fboemer): use clone_function? (check
   // https://github.com/NervanaSystems/ngraph/pull/3773 is merged)
@@ -391,7 +394,7 @@ void HESealExecutable::handle_relu_result(
                "Can only handle one tensor at a time, got ",
                proto_msg.he_tensors_size());
 
-  auto proto_tensor = proto_msg.he_tensors(0);
+  const auto& proto_tensor = proto_msg.he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
       proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
       m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
@@ -421,7 +424,7 @@ void HESealExecutable::handle_max_pool_result(
                "Can only handle one tensor at a time, got ",
                proto_msg.he_tensors_size());
 
-  auto proto_tensor = proto_msg.he_tensors(0);
+  const auto& proto_tensor = proto_msg.he_tensors(0);
   size_t result_count = proto_tensor.data_size();
 
   NGRAPH_CHECK(result_count == 1, "Maxpool only supports result_count 1, got ",
@@ -583,10 +586,9 @@ void HESealExecutable::handle_client_ciphers(
 std::vector<ngraph::runtime::PerformanceCounter>
 HESealExecutable::get_performance_data() const {
   std::vector<runtime::PerformanceCounter> rc;
-  for (const std::pair<std::shared_ptr<const Node>, stopwatch> p :
-       m_timer_map) {
-    rc.emplace_back(p.first, p.second.get_total_microseconds(),
-                    p.second.get_call_count());
+  for (const auto& [node, stop_watch] : m_timer_map) {
+    rc.emplace_back(node, stop_watch.get_total_microseconds(),
+                    stop_watch.get_call_count());
   }
   return rc;
 }
@@ -707,6 +709,7 @@ bool HESealExecutable::call(
 
   NGRAPH_HE_LOG(3) << "Converting outputs to HETensor";
   std::vector<std::shared_ptr<HETensor>> he_outputs;
+  he_outputs.reserve(outputs.size());
   for (auto& tensor : outputs) {
     he_outputs.push_back(std::static_pointer_cast<HETensor>(tensor));
   }
@@ -1039,11 +1042,11 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Convolution: {
       const auto* c = static_cast<const op::Convolution*>(&node);
-      auto window_movement_strides = c->get_window_movement_strides();
-      auto window_dilation_strides = c->get_window_dilation_strides();
-      auto padding_below = c->get_padding_below();
-      auto padding_above = c->get_padding_above();
-      auto data_dilation_strides = c->get_data_dilation_strides();
+      const auto& window_movement_strides = c->get_window_movement_strides();
+      const auto& window_dilation_strides = c->get_window_dilation_strides();
+      const auto& padding_below = c->get_padding_below();
+      const auto& padding_above = c->get_padding_above();
+      const auto& data_dilation_strides = c->get_data_dilation_strides();
 
       Shape in_shape0 = args[0]->get_packed_shape();
       Shape in_shape1 = args[1]->get_packed_shape();
@@ -1161,7 +1164,7 @@ void HESealExecutable::generate_calls(
       pad_seal(args[0]->data(), args[1]->data(), out[0]->data(),
                args[0]->get_packed_shape(), out[0]->get_packed_shape(),
                pad->get_padding_below(), pad->get_padding_above(),
-               pad->get_pad_mode(), m_batch_size, m_he_seal_backend);
+               pad->get_pad_mode());
       break;
     }
     case OP_TYPEID::Parameter: {
@@ -1221,8 +1224,8 @@ void HESealExecutable::generate_calls(
       const auto* slice = static_cast<const op::Slice*>(&node);
       const Shape& in_shape = args[0]->get_packed_shape();
       const Shape& out_shape = out[0]->get_packed_shape();
-      Coordinate lower_bounds = slice->get_lower_bounds();
-      Coordinate upper_bounds = slice->get_upper_bounds();
+      const Coordinate& lower_bounds = slice->get_lower_bounds();
+      const Coordinate& upper_bounds = slice->get_upper_bounds();
       const Strides& strides = slice->get_strides();
 
       slice_seal(args[0]->data(), out[0]->data(), in_shape, lower_bounds,
@@ -1375,6 +1378,7 @@ void HESealExecutable::handle_server_max_pool_op(
     *proto_msg.mutable_function() = f;
 
     std::vector<HEType> cipher_batch;
+    cipher_batch.reserve(maximize_list.size());
     for (const size_t max_ind : maximize_list) {
       cipher_batch.emplace_back(arg->data(max_ind));
     }

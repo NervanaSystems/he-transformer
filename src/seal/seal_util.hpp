@@ -114,7 +114,7 @@ inline void match_scale(S& arg0, const T& arg1) {
 void match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend,
-    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Adds a ciphertext with a scalar in every slot
 /// \param[in,out] encrypted Ciphertext to add to.
@@ -205,7 +205,7 @@ inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
 void multiply_plain_inplace(
     seal::Ciphertext& encrypted, double value,
     const HESealBackend& he_seal_backend,
-    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Multiplies a ciphertext with a scalar in every slot
 /// \param[in] encrypted Ciphertext to multply
@@ -217,7 +217,7 @@ void multiply_plain_inplace(
 inline void multiply_plain(
     const seal::Ciphertext& encrypted, double value,
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
-    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
   multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
@@ -230,11 +230,11 @@ inline void multiply_plain(
 /// \param[out] destination Encoded value in CRT form
 /// \param[in] he_seal_backend Backend whose context is used for encoding
 /// \param[in] pool Memory pool used for new memory allocation
-void encode(double value, const ngraph::element::Type& element_type,
-            double scale, seal::parms_id_type parms_id,
-            std::vector<std::uint64_t>& destination,
-            const HESealBackend& he_seal_backend,
-            seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+void encode(
+    double value, const ngraph::element::Type& element_type, double scale,
+    seal::parms_id_type parms_id, std::vector<std::uint64_t>& destination,
+    const HESealBackend& he_seal_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Encode value into each slot of a plaintext
 /// \param[out] destination Encoded value in CRT form

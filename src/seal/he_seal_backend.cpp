@@ -100,13 +100,14 @@ void HESealBackend::generate_context() {
 
 bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
                                std::string& error) {
+  (void)error;  // Avoid unused parameter warning
   NGRAPH_HE_LOG(3) << "Setting config";
   for (const auto& [option, setting] : config) {
     std::string lower_option = ngraph::to_lower(option);
     std::vector<std::string> lower_settings =
         ngraph::split(ngraph::to_lower(setting), ',');
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
-    std::string tensor_name = option.substr(0, option.find(":", 0));
+    std::string tensor_name = option.substr(0, option.find(':', 0));
 
     for (const auto& lower_setting : lower_settings) {
       if (lower_setting == "client_input") {

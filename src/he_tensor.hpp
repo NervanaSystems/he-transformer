@@ -189,7 +189,7 @@ class HETensor : public runtime::Tensor {
   seal::Decryptor& m_decryptor;
   const ngraph::he::HESealEncryptionParameters& m_encryption_params;
 
-  void check_io_bounds(const void* p, size_t n) const;
+  void check_io_bounds(size_t n) const;
 };
 
 }  // namespace he

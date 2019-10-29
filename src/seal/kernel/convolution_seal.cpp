@@ -184,7 +184,7 @@ void convolution_seal(
     // TODO:a sd f
 
     // TODO(fboemer): better type which matches complex packing?
-    auto sum = HEType(HEPlaintext(arg0[0].batch_size()), false);
+    auto sum = HEType(HEPlaintext(batch_size), false);
     bool first_add = true;
 
     while (input_it != input_end && filter_it != filter_end) {
@@ -206,7 +206,7 @@ void convolution_seal(
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
 
         // TODO(fboemer): better type which matches arguments?
-        auto prod = HEType(HEPlaintext(arg0[0].batch_size()), false);
+        auto prod = HEType(HEPlaintext(batch_size), false);
 
         scalar_multiply_seal(mult_arg0, mult_arg1, prod, he_seal_backend);
         if (first_add) {

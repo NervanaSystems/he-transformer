@@ -160,7 +160,7 @@ bool HETensor::any_encrypted_data() const {
   });
 }
 
-void HETensor::check_io_bounds(const void* p, size_t n) const {
+void HETensor::check_io_bounds(size_t n) const {
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
 
@@ -175,7 +175,7 @@ void HETensor::check_io_bounds(const void* p, size_t n) const {
 }
 
 void HETensor::write(const void* p, size_t n) {
-  check_io_bounds(p, n / get_batch_size());
+  check_io_bounds(n / get_batch_size());
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_write = n / (element_type.size() * get_batch_size());
@@ -208,7 +208,7 @@ void HETensor::write(const void* p, size_t n) {
 }
 
 void HETensor::read(void* p, size_t n) const {
-  check_io_bounds(p, n);
+  check_io_bounds(n / get_batch_size());
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());

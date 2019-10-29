@@ -60,8 +60,8 @@ TEST(perf_micro, encode) {
     auto context = SEALContext::Create(parms);
     CKKSEncoder encoder(context);
     KeyGenerator keygen(context);
-    auto secret_key = keygen.secret_key();
-    auto public_key = keygen.public_key();
+    const auto& secret_key = keygen.secret_key();
+    const auto& public_key = keygen.public_key();
     Encryptor encryptor(context, public_key);
     Decryptor decryptor(context, secret_key);
     Evaluator evaluator(context);
