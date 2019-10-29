@@ -1,4 +1,18 @@
-Checks:          'bugprone-,cert-,clang-analyzer-,cppcoreguidelines-,google-,hicpp-,llvm-,misc-,modernize-,performance-,readability-'
+Checks: "-*,\
+bugprone-*,\
+cert-*,\
+clang-analyzer-*,\
+cppcoreguidelines-*,\
+google-*,\
+hicpp-*,\
+llvm-*,\
+misc-*,\
+modernize-*,\
+performance-*,\
+readability-*,\
+-fuchsia-default-arguments,\
+"
+
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: true

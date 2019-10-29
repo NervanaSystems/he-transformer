@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/he_seal_executable.hpp"
+
 #include <functional>
 #include <limits>
 #include <tuple>
@@ -60,7 +62,6 @@
 #include "pass/supported_ops.hpp"
 #include "protos/message.pb.h"
 #include "seal/he_seal_backend.hpp"
-#include "seal/he_seal_executable.hpp"
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/avg_pool_seal.hpp"
 #include "seal/kernel/batch_norm_inference_seal.hpp"

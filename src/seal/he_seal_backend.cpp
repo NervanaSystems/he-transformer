@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/he_seal_backend.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -23,7 +25,6 @@
 #include "ngraph/runtime/backend_manager.hpp"
 #include "ngraph/util.hpp"
 #include "nlohmann/json.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
