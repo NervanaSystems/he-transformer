@@ -85,7 +85,7 @@ void HESealBackend::generate_context() {
   // Set barrett ratio map
   for (const seal::SmallModulus& modulus : coeff_moduli) {
     const std::uint64_t modulus_value = modulus.value();
-    if (modulus_value < (1UL << 31)) {
+    if (modulus_value < (1UL << 31U)) {
       std::uint64_t numerator[3]{0, 1};
       std::uint64_t quotient[3]{0, 0};
       seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,

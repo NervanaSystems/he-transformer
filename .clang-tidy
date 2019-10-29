@@ -1,10 +1,11 @@
 Checks: "-*,\
 bugprone-*,\
-cert-*,\
-clang-analyzer-*,\
 cppcoreguidelines-*,\
 google-*,\
 hicpp-*,\
+-hicpp-no-array-decay*,\
+-hicpp-special-member-functions*,\
+-hicpp-vararg*,\
 llvm-*,\
 misc-*,\
 modernize-*,\
@@ -16,7 +17,6 @@ readability-*,\
 
 WarningsAsErrors: "-*,\
 bugprone-*,\
-cert-*,\
 clang-analyzer-*,\
 cppcoreguidelines-*,\
 google-*,\

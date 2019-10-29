@@ -171,7 +171,7 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[j].value() < (1UL << 31)) {
+      if (coeff_modulus[j].value() < (1UL << 31U)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",

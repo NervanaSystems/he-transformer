@@ -107,7 +107,7 @@ class HESealClient {
 
   /// \brief Writes a mesage to the server
   /// \param[in] message Message to write
-  inline void write_message(const ngraph::he::TCPMessage&& message) {
+  inline void write_message(ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 

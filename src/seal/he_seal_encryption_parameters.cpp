@@ -50,8 +50,9 @@ HESealEncryptionParameters::HESealEncryptionParameters(
 
 HESealEncryptionParameters
 HESealEncryptionParameters::default_real_packing_parms() {
-  return HESealEncryptionParameters(
-      "HE_SEAL", 1024, std::vector<int>{30, 30, 30, 30, 30}, 0, 1 << 30, false);
+  return HESealEncryptionParameters("HE_SEAL", 1024,
+                                    std::vector<int>{30, 30, 30, 30, 30}, 0,
+                                    1UL << 30U, false);
 }
 
 HESealEncryptionParameters
@@ -62,7 +63,7 @@ HESealEncryptionParameters::default_complex_packing_parms() {
 }
 
 HESealEncryptionParameters::HESealEncryptionParameters(
-    const std::string scheme_name, std::uint64_t poly_modulus_degree,
+    std::string scheme_name, std::uint64_t poly_modulus_degree,
     std::vector<int> coeff_modulus_bits, std::uint64_t security_level,
     double scale, bool complex_packing)
     : m_scheme_name(std::move(scheme_name)),
