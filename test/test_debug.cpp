@@ -38,7 +38,7 @@ TEST(add, mod_wrap) {
   // NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1_small.json
 
   // No modulus wrap
-  for (size_t i = 1; i < 1024; i += 1) {
+  for (size_t i = 1; i <= 1024; i += 1) {
     HEPlaintext plain(std::vector<double>(i, -24.5698));
     HEPlaintext mask(std::vector<double>(i, -31.4277));
 
@@ -69,5 +69,61 @@ TEST(add, mod_wrap) {
     plain = HEPlaintext(std::vector<double>{plain.begin(), plain.begin() + 2});
 
     NGRAPH_INFO << "i " << i << " plain " << plain[0];
+  }
+}
+
+TEST(add, mod_wrap_seal) {
+  using namespace seal;
+
+  EncryptionParameters parms(scheme_type::CKKS);
+  size_t poly_modulus_degree = 2048;
+  parms.set_poly_modulus_degree(poly_modulus_degree);
+  parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, {30}));
+
+  auto context = SEALContext::Create(parms);
+  KeyGenerator keygen(context);
+  auto public_key = keygen.public_key();
+  auto secret_key = keygen.secret_key();
+  auto relin_keys = keygen.relin_keys();
+
+  Encryptor encryptor(context, public_key);
+  Evaluator evaluator(context);
+  Decryptor decryptor(context, secret_key);
+  CKKSEncoder encoder(context);
+
+  Plaintext plain;
+  Plaintext mask;
+  Ciphertext cipher;
+
+  double scale = 1 << 24;
+
+  for (size_t i = 1; i <= 1024; i += 1) {
+    std::vector<double> plain_val(i, -24.5698);
+    std::vector<double> mask_val(i, -31.4277);
+
+    // Bad case
+    {
+      for (size_t j = 1; j < i; ++j) {
+        plain_val[j] = 24;
+      }
+      encoder.encode(plain_val, scale, plain);
+      encoder.encode(mask_val, scale, mask);
+      encryptor.encrypt(plain, cipher);
+      evaluator.add_plain_inplace(cipher, mask);
+      decryptor.decrypt(cipher, plain);
+      encoder.decode(plain, plain_val);
+      NGRAPH_INFO << "i " << i << " plain bad " << plain_val[0];
+    }
+    // Good case
+    {
+      plain_val = std::vector<double>(i, -24.5698);
+      encoder.encode(plain_val, scale, plain);
+      encoder.encode(mask_val, scale, mask);
+      encryptor.encrypt(plain, cipher);
+      evaluator.add_plain_inplace(cipher, mask);
+      decryptor.decrypt(cipher, plain);
+      encoder.decode(plain, plain_val);
+      NGRAPH_INFO << "i " << i << " plain good " << plain_val[0];
+    }
   }
 }
