@@ -29,7 +29,6 @@ import tensorflow as tf
 import model
 import ngraph_bridge
 import os
-from tensorflow.core.protobuf import rewriter_config_pb2
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
