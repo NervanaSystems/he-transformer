@@ -32,7 +32,7 @@ void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
   auto bounded_relu = [alpha](double f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
-  std::transform(arg.begin(), arg.end(), out.begin(), relu);
+  std::transform(arg.begin(), arg.end(), out.begin(), bounded_relu);
 }
 
 void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,

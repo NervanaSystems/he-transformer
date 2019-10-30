@@ -80,27 +80,27 @@ class HESealClient {
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
   void handle_encryption_parameters_response(
-      const he_proto::TCPMessage& message);
+      const proto::TCPMessage& message);
 
   /// \brief Processes a request to perform ReLU function
   /// \param[in] message Message to process
-  void handle_relu_request(he_proto::TCPMessage&& message);
+  void handle_relu_request(proto::TCPMessage&& message);
 
   /// \brief Processes a request to perform MaxPool function
   /// \param[in] message Message to process
-  void handle_max_pool_request(he_proto::TCPMessage&& message);
+  void handle_max_pool_request(proto::TCPMessage&& message);
 
   /// \brief Processes a request to perform BoundedReLU function
   /// \param[in] message Message to process
-  void handle_bounded_relu_request(he_proto::TCPMessage&& message);
+  void handle_bounded_relu_request(proto::TCPMessage&& message);
 
   /// \brief Processes a message containing the result from the server
   /// \param[in] message Message to process
-  void handle_result(const he_proto::TCPMessage& message);
+  void handle_result(const proto::TCPMessage& message);
 
   /// \brief Processes a message containing the inference shape
   /// \param[in] message Message to process
-  void handle_inference_request(const he_proto::TCPMessage& message);
+  void handle_inference_request(const proto::TCPMessage& message);
 
   /// \brief Sends the public key and relinearization keys to the server
   void send_public_and_relin_keys();

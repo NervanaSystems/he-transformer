@@ -243,12 +243,12 @@ bool HESealExecutable::server_setup() {
     std::stringstream param_stream;
     m_he_seal_backend.get_encryption_parameters().save(param_stream);
 
-    he_proto::EncryptionParameters proto_parms;
+    proto::EncryptionParameters proto_parms;
     *proto_parms.mutable_encryption_parameters() = param_stream.str();
 
-    he_proto::TCPMessage proto_msg;
+    proto::TCPMessage proto_msg;
     *proto_msg.mutable_encryption_parameters() = proto_parms;
-    proto_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+    proto_msg.set_type(proto::TCPMessage_Type_RESPONSE);
 
     TCPMessage parms_message(std::move(proto_msg));
     NGRAPH_HE_LOG(3) << "Server waiting until session started";
@@ -316,7 +316,7 @@ void HESealExecutable::start_server() {
   });
 }
 
-void HESealExecutable::load_public_key(const he_proto::TCPMessage& proto_msg) {
+void HESealExecutable::load_public_key(const proto::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_public_key(), "proto_msg doesn't have public key");
 
   seal::PublicKey key;
@@ -328,7 +328,7 @@ void HESealExecutable::load_public_key(const he_proto::TCPMessage& proto_msg) {
   m_client_public_key_set = true;
 }
 
-void HESealExecutable::load_eval_key(const he_proto::TCPMessage& proto_msg) {
+void HESealExecutable::load_eval_key(const proto::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_eval_key(), "proto_msg doesn't have eval key");
 
   seal::RelinKeys keys;
@@ -345,12 +345,12 @@ void HESealExecutable::send_inference_shape() {
 
   const ParameterVector& input_parameters = get_parameters();
 
-  he_proto::TCPMessage proto_msg;
-  proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+  proto::TCPMessage proto_msg;
+  proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
 
   for (const auto& input_param : input_parameters) {
     if (from_client(*input_param)) {
-      he_proto::HETensor* proto_he_tensor = proto_msg.add_he_tensors();
+      proto::HETensor* proto_he_tensor = proto_msg.add_he_tensors();
 
       std::vector<uint64_t> shape{input_param->get_shape()};
       *proto_he_tensor->mutable_shape() = {shape.begin(), shape.end()};
@@ -378,7 +378,7 @@ void HESealExecutable::send_inference_shape() {
                    << proto_msg.he_tensors_size() << " parameters";
 
   json js = {{"function", "Parameter"}};
-  he_proto::Function f;
+  proto::Function f;
   f.set_function(js.dump());
   NGRAPH_HE_LOG(3) << "js " << js.dump();
   *proto_msg.mutable_function() = f;
@@ -388,7 +388,7 @@ void HESealExecutable::send_inference_shape() {
 }
 
 void HESealExecutable::handle_relu_result(
-    const he_proto::TCPMessage& proto_msg) {
+    const proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Server handling relu result";
   std::lock_guard<std::mutex> guard(m_relu_mutex);
 
@@ -414,12 +414,12 @@ void HESealExecutable::handle_relu_result(
 }
 
 void HESealExecutable::handle_bounded_relu_result(
-    const he_proto::TCPMessage& proto_msg) {
+    const proto::TCPMessage& proto_msg) {
   handle_relu_result(proto_msg);
 }
 
 void HESealExecutable::handle_max_pool_result(
-    const he_proto::TCPMessage& proto_msg) {
+    const proto::TCPMessage& proto_msg) {
   std::lock_guard<std::mutex> guard(m_max_pool_mutex);
 
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
@@ -445,12 +445,12 @@ void HESealExecutable::handle_max_pool_result(
 
 void HESealExecutable::handle_message(const TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Server handling message";
-  std::shared_ptr<he_proto::TCPMessage> proto_msg = message.proto_message();
+  std::shared_ptr<proto::TCPMessage> proto_msg = message.proto_message();
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
   switch (proto_msg->type()) {
-    case he_proto::TCPMessage_Type_RESPONSE: {
+    case proto::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_public_key()) {
         load_public_key(*proto_msg);
       }
@@ -479,13 +479,13 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
       }
       break;
     }
-    case he_proto::TCPMessage_Type_REQUEST: {
+    case proto::TCPMessage_Type_REQUEST: {
       if (proto_msg->he_tensors_size() > 0) {
         handle_client_ciphers(*proto_msg);
       }
       break;
     }
-    case he_proto::TCPMessage_Type_UNKNOWN:
+    case proto::TCPMessage_Type_UNKNOWN:
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
@@ -493,7 +493,7 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
 }
 
 void HESealExecutable::handle_client_ciphers(
-    const he_proto::TCPMessage& proto_msg) {
+    const proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Handling client tensors";
 
   NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
@@ -913,16 +913,16 @@ void HESealExecutable::send_client_results() {
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 
-  he_proto::TCPMessage result_msg;
-  result_msg.set_type(he_proto::TCPMessage_Type_RESPONSE);
+  proto::TCPMessage result_msg;
+  result_msg.set_type(proto::TCPMessage_Type_RESPONSE);
 
-  std::vector<he_proto::HETensor> he_proto_tensors;
-  m_client_outputs[0]->write_to_protos(he_proto_tensors);
+  std::vector<proto::HETensor> proto_tensors;
+  m_client_outputs[0]->write_to_protos(proto_tensors);
 
-  NGRAPH_CHECK(he_proto_tensors.size() == 1,
+  NGRAPH_CHECK(proto_tensors.size() == 1,
                "Support only results which fit in single tensor");
 
-  *result_msg.add_he_tensors() = he_proto_tensors[0];
+  *result_msg.add_he_tensors() = proto_tensors[0];
 
   m_session->write_message(std::move(result_msg));
   std::unique_lock<std::mutex> mlock(m_result_mutex);
@@ -1390,11 +1390,11 @@ void HESealExecutable::handle_server_max_pool_op(
   m_max_pool_data.clear();
 
   for (const auto& maximize_list : maximize_lists) {
-    he_proto::TCPMessage proto_msg;
-    proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+    proto::TCPMessage proto_msg;
+    proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
 
     json js = {{"function", node.description()}};
-    he_proto::Function f;
+    proto::Function f;
     f.set_function(js.dump());
     *proto_msg.mutable_function() = f;
 
@@ -1412,7 +1412,7 @@ void HESealExecutable::handle_server_max_pool_op(
         cipher_batch[0].plaintext_packing(), cipher_batch[0].complex_packing(),
         true, m_he_seal_backend);
     max_pool_tensor.data() = cipher_batch;
-    std::vector<he_proto::HETensor> proto_tensors;
+    std::vector<proto::HETensor> proto_tensors;
     max_pool_tensor.write_to_protos(proto_tensors);
     NGRAPH_CHECK(proto_tensors.size() == 1,
                  "Only support MaxPool with 1 proto tensor");
@@ -1494,8 +1494,8 @@ void HESealExecutable::handle_server_relu_op(
                            << cipher_batch.size();
         }
 
-        he_proto::TCPMessage proto_msg;
-        proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+        proto::TCPMessage proto_msg;
+        proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
 
         // TODO(fboemer): factor out serializing the function
         json js = {{"function", node.description()}};
@@ -1505,7 +1505,7 @@ void HESealExecutable::handle_server_relu_op(
           js["bound"] = alpha;
         }
 
-        he_proto::Function f;
+        proto::Function f;
         f.set_function(js.dump());
         *proto_msg.mutable_function() = f;
 
@@ -1516,7 +1516,7 @@ void HESealExecutable::handle_server_relu_op(
             arg->is_packed(), false, true, m_he_seal_backend);
         relu_tensor.data() = cipher_batch;
 
-        std::vector<he_proto::HETensor> proto_tensors;
+        std::vector<proto::HETensor> proto_tensors;
         relu_tensor.write_to_protos(proto_tensors);
 
         NGRAPH_CHECK(proto_tensors.size() == 1,

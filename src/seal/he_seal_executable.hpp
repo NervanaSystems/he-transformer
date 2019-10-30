@@ -118,21 +118,21 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Processes a client message with ciphertexts to call the appropriate
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
+  void handle_client_ciphers(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a ReLU function
   /// \param[in] proto_msg Message to process
-  void handle_relu_result(const he_proto::TCPMessage& proto_msg);
+  void handle_relu_result(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a BoundedReLU
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_bounded_relu_result(const he_proto::TCPMessage& proto_msg);
+  void handle_bounded_relu_result(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a MaxPool
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_max_pool_result(const he_proto::TCPMessage& proto_msg);
+  void handle_max_pool_result(const proto::TCPMessage& proto_msg);
 
   /// \brief Sends results to the client
   void send_client_results();
@@ -142,11 +142,11 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Loads the public key from the message
   /// \param[in] proto_msg from which to load the public key
-  void load_public_key(const he_proto::TCPMessage& proto_msg);
+  void load_public_key(const proto::TCPMessage& proto_msg);
 
   /// \brief Loads the evaluation key from the message
   /// \param[in] proto_msg from which to load the evluation key
-  void load_eval_key(const he_proto::TCPMessage& proto_msg);
+  void load_eval_key(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes the ReLU operation if the client is enabled
   /// \param[in] arg Tensor argumnet

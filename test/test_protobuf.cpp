@@ -33,16 +33,16 @@ using namespace ngraph::he;
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
 
 TEST(protobuf, serialize_cipher) {
-  he_proto::TCPMessage message;
+  proto::TCPMessage message;
 
-  he_proto::Function f;
+  proto::Function f;
   f.set_function("123");
   *message.mutable_function() = f;
 
   stringstream s;
   message.SerializeToOstream(&s);
 
-  he_proto::TCPMessage deserialize;
+  proto::TCPMessage deserialize;
   deserialize.ParseFromIstream(&s);
 
   EXPECT_TRUE(
@@ -50,8 +50,8 @@ TEST(protobuf, serialize_cipher) {
 }
 
 TEST(tcp_message, create) {
-  he_proto::TCPMessage proto_msg;
-  he_proto::Function f;
+  proto::TCPMessage proto_msg;
+  proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   stringstream s;
@@ -74,8 +74,8 @@ TEST(tcp_message, encode_decode) {
 TEST(tcp_message, pack_unpack) {
   using data_buffer = vector<char>;
 
-  he_proto::TCPMessage proto_msg;
-  he_proto::Function f;
+  proto::TCPMessage proto_msg;
+  proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   stringstream s;

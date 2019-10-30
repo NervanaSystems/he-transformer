@@ -93,46 +93,46 @@ For large batch sizes, constant folding incurs significant overhead during graph
   --backend=HE_SEAL
   ```
 
-6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~50GB memory.
+6. To call inference using encrypted data, run the below command. ***Warning***: this requires ~50GB memory.
 ```bash
-OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
+OMP_NUM_THREADS=56 \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
 --batch_size=2048 \
---encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
 --encrypt_server_data=true \
---backend=HE_SEAL
+--backend=HE_SEAL \
+--encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json
 ```
 
 6a. To try on a larger model, call:
   ```bash
   STOP_CONST_FOLD=1 \
   OMP_NUM_THREADS=56 \
-  NGRAPH_TF_BACKEND=HE_SEAL \
-  NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
-  NGRAPH_ENCRYPT_DATA=1 \
   python test.py \
   --image_size=128 \
   --data_dir=$DATA_DIR \
   --ngraph=true \
   --model=./model/mobilenet_v2_0.35_128_opt.pb \
-  --batch_size=30
+  --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+  --batch_size=30 \
+  --backend=HE_SEAL \
+  --encrypt_server_data=true
   ```
 
-7. To double the throughput using complex packing, run the below command.  ***Warning***: this will take ~120GB memory.
+7. To double the throughput using complex packing, run the below command.  ***Warning***: this requires ~120GB memory.
 ```bash
-OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
-NGRAPH_COMPLEX_PACK=1 \
-NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+OMP_NUM_THREADS=56 \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
---batch_size=4096
+--encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json \
+--batch_size=4096 \
+--backend=HE_SEAL  \
+--encrypt_server_data=true
+```
 
 8. To enable the client, in one terminal, run:
 ```bash
@@ -143,7 +143,7 @@ NGRAPH_VOPS=BoundedRelu \
 NGRAPH_COMPLEX_PACK=1 \
 NGRAPH_ENCRYPT_DATA=1 \
 NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json \
 python test.py \
   --batch_size=4096  \
   --image_size=96 \
