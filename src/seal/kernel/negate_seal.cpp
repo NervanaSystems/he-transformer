@@ -27,8 +27,7 @@ void scalar_negate_seal(const SealCiphertextWrapper& arg,
 
 void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out) {
   HEPlaintext out_vals(arg.size());
-  std::transform(arg.begin(), arg.end(), out_vals.begin(),
-                 std::negate<double>());
+  std::transform(arg.begin(), arg.end(), out_vals.begin(), std::negate<>());
   out = std::move(out_vals);
 }
 

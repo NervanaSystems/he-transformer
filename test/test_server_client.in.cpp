@@ -482,7 +482,8 @@ auto server_client_relu_packed_test = [](size_t element_count,
   vector<float> inputs(shape_size(shape));
   vector<float> exp_results(shape_size(shape));
   for (size_t i = 0; i < shape_size(shape); ++i) {
-    inputs[i] = static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
+    inputs[i] =
+        static_cast<float>(i) - static_cast<float>(shape_size(shape)) / 2.0;
 
     if (bounded) {
       exp_results[i] = bounded_relu(inputs[i]);

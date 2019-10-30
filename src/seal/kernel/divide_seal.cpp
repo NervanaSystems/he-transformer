@@ -32,7 +32,7 @@ void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out) {
   std::vector<double> out_vals(arg0.size());
   std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 std::divides<double>());
+                 std::divides<>());
   out = HEPlaintext({out_vals});
 }
 
@@ -44,8 +44,8 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
     NGRAPH_WARN << " Dividing ciphertext / ciphertext without client "
                    "is not privacy-preserving ";
 
-    // TODO: enable with client?
-    // TODO: complex packing?
+    // TODO(fboemer): enable with client?
+    // TODO(fboemer): complex packing?
     HEPlaintext plain_arg0, plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
                             arg0.complex_packing());
@@ -69,8 +69,8 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
     NGRAPH_WARN << " Dividing plaintext / ciphertext without client "
                    "is not privacy-preserving ";
 
-    // TODO: enable with client?
-    // TODO: complex packing?
+    // TODO(fboemer): enable with client?
+    // TODO(fboemer): complex packing?
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
                             arg1.complex_packing());

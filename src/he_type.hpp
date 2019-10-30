@@ -52,7 +52,7 @@ class HEType {
     proto_he_type.set_batch_size(batch_size());
 
     if (is_plaintext()) {
-      // TODO: more efficient
+      // TODO(fboemer): more efficient
       for (auto& elem : get_plaintext()) {
         proto_he_type.add_plain(elem);
       }

@@ -46,7 +46,7 @@ class HESealExecutable : public runtime::Executable {
  public:
   /// \brief Constructs an exectuable object
   /// \param[in] function Function in the executable
-  /// \param[in] enable_performance_collection Unused: TODO use
+  /// \param[in] enable_performance_collection Unused: TODO(fboemer) use
   /// \param[in] he_seal_backend Backend storing encryption context
   /// \param[in] enable_client Whether or not to rely on a client to store the
   /// secret key
@@ -69,12 +69,12 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Calls the executable on the given input tensors.
   /// If the client is enabled, the inputs are dummy values and ignored.
   /// Instead, the inputs will be provided by the client
-  /// \param[in] inputs Input tensor arguments to the function.
-  /// \param[out] outputs Output tensors storing the result of the
-  /// function
-  bool call(
-      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
+  /// \param[in] server_inputs Input tensor arguments to the function, provided
+  /// by the backend. \param[out] outputs Output tensors storing the result of
+  /// the function
+  bool call(const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+            const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
+      override;
 
   // TOOD
   std::vector<runtime::PerformanceCounter> get_performance_data()
@@ -83,7 +83,7 @@ class HESealExecutable : public runtime::Executable {
   // \brief Returns the port at which the server is expecting a connection
   size_t get_port() const { return m_port; }
 
-  // TODO: merge _done() methods
+  // TODO(fboemer): merge _done() methods
 
   /// \brief Returns whether or not the maxpool op has completed
   bool max_pool_done() const { return m_max_pool_done; }
@@ -152,7 +152,7 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] arg Tensor argumnet
   /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
-  // TODO: rename
+  // TODO(fboemer): rename
   void handle_server_relu_op(const std::shared_ptr<HETensor>& arg,
                              const std::shared_ptr<HETensor>& out,
                              const NodeWrapper& node_wrapper);
@@ -161,7 +161,7 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] arg Tensor argumnet
   /// \param[out] out Tensor result
   /// \param[in] node_wrapper Wrapper around operation to perform
-  // TODO: rename
+  // TODO(fboemer): rename
   void handle_server_max_pool_op(const std::shared_ptr<HETensor>& arg,
                                  const std::shared_ptr<HETensor>& out,
                                  const NodeWrapper& node_wrapper);
@@ -223,8 +223,8 @@ class HESealExecutable : public runtime::Executable {
 
  private:
   HESealBackend& m_he_seal_backend;
-  bool m_is_compiled;
-  bool m_verbose_all_ops;
+  bool m_is_compiled{false};
+  bool m_verbose_all_ops{false};
   std::shared_ptr<Function> m_function;
 
   bool m_sent_inference_shape{false};
@@ -232,7 +232,7 @@ class HESealExecutable : public runtime::Executable {
   bool m_client_eval_key_set{false};
 
   bool m_enable_client;
-  bool m_server_setup;
+  bool m_server_setup{false};
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
@@ -262,18 +262,18 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when relu is done
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
-  size_t m_relu_done_count;
+  size_t m_relu_done_count{0};
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when max_pool is done
   std::mutex m_max_pool_mutex;
   std::condition_variable m_max_pool_cond;
-  bool m_max_pool_done;
+  bool m_max_pool_done{false};
 
   // To trigger when minimum is done
   std::mutex m_minimum_mutex;
   std::condition_variable m_minimum_cond;
-  bool m_minimum_done;
+  bool m_minimum_done{false};
 
   // To trigger when result message has been written
   std::mutex m_result_mutex;
@@ -282,16 +282,17 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when session has started
   std::mutex m_session_mutex;
   std::condition_variable m_session_cond;
-  bool m_session_started;
+  bool m_session_started{false};
 
   // To trigger when client inputs have been received
   std::mutex m_client_inputs_mutex;
   std::condition_variable m_client_inputs_cond;
-  bool m_client_inputs_received;
+  bool m_client_inputs_received{false};
 
-  void generate_calls(const element::Type& type, const NodeWrapper& op,
-                      const std::vector<std::shared_ptr<HETensor>>& outputs,
-                      const std::vector<std::shared_ptr<HETensor>>& inputs);
+  void generate_calls(const element::Type& type,
+                      const NodeWrapper& node_wrapper,
+                      const std::vector<std::shared_ptr<HETensor>>& out,
+                      const std::vector<std::shared_ptr<HETensor>>& args);
 
   bool m_stop_const_fold{flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };

@@ -34,14 +34,14 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                      std::shared_ptr<SealCiphertextWrapper>& out,
                      const bool complex_packing,
                      HESealBackend& he_seal_backend) {
-  // TODO: handle case where arg1 = {0, 0, 0, 0, ...}
+  // TODO(fboemer): handle case where arg1 = {0, 0, 0, 0, ...}
   bool add_zero = (arg1.size() == 1) && (arg1[0] == 0.0);
 
   if (add_zero) {
     SealCiphertextWrapper tmp(arg0);
     out = std::make_shared<SealCiphertextWrapper>(tmp);
   } else {
-    // TODO: optimize for adding single complex number
+    // TODO(fboemer): optimize for adding single complex number
     if ((arg1.size() == 1) && !complex_packing) {
       add_plain(arg0.ciphertext(), arg1[0], out->ciphertext(), he_seal_backend);
     } else {
@@ -64,18 +64,16 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                      HEPlaintext& out) {
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
-    std::transform(
-        arg1.begin(), arg1.end(), std::back_inserter(out_vals),
-        std::bind(std::plus<double>(), std::placeholders::_1, arg0[0]));
+    std::transform(arg1.begin(), arg1.end(), std::back_inserter(out_vals),
+                   std::bind(std::plus<>(), std::placeholders::_1, arg0[0]));
   } else if (arg1.size() == 1) {
-    std::transform(
-        arg0.begin(), arg0.end(), std::back_inserter(out_vals),
-        std::bind(std::plus<double>(), std::placeholders::_1, arg1[0]));
+    std::transform(arg0.begin(), arg0.end(), std::back_inserter(out_vals),
+                   std::bind(std::plus<>(), std::placeholders::_1, arg1[0]));
   } else {
     NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() ", arg0.size(),
                  " != arg0.size() ", arg1.size(), " in plain-plain add");
     std::transform(arg0.begin(), arg0.end(), arg1.begin(),
-                   std::back_inserter(out_vals), std::plus<double>());
+                   std::back_inserter(out_vals), std::plus<>());
   }
   out = std::move(out_vals);
 }

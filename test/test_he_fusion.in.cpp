@@ -32,7 +32,7 @@ using namespace ngraph::he;
 
 static string s_manifest = "${MANIFEST}";
 
-static void check_bounded_relu(Shape param_shape, float constant_val) {
+static void check_bounded_relu(const Shape& param_shape, float constant_val) {
   auto make_function = [](Shape input_shape, float alpha_val) {
     auto relu_input = make_shared<op::Parameter>(element::f32, input_shape);
     auto relu = make_shared<op::Relu>(relu_input);
@@ -49,7 +49,7 @@ static void check_bounded_relu(Shape param_shape, float constant_val) {
   test::Uniform<float> rng(-10.0f, 10.0f);
   vector<vector<float>> args;
 
-  for (shared_ptr<op::Parameter> param : int_f->get_parameters()) {
+  for (const auto& param : int_f->get_parameters()) {
     vector<float> tensor_val(shape_size(param->get_shape()));
     rng.initialize(tensor_val);
     args.push_back(tensor_val);

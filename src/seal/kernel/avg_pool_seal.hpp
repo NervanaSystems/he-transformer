@@ -117,7 +117,7 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
     //   n_elements := n_elements + 1
 
     // T result = 0;
-    // TODO: better type which matches arguments?
+    // TODO(fboemer): better type which matches arguments?
     auto sum = HEType(HEPlaintext(), false);
     bool first_add = true;
 
@@ -133,7 +133,7 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
 
         if (first_add) {
           sum = arg[input_batch_transform.index(input_batch_coord)];
-          // TODO: batch size number of zeros?
+          // TODO(fboemer): batch size number of zeros?
           HEPlaintext zero(std::vector<double>{0});
           out[out_coord_idx].set_plaintext(zero);
           first_add = false;
@@ -151,11 +151,11 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
     }
 
     if (first_add) {
-      // TODO: batch size number of zeros?
+      // TODO(fboemer): batch size number of zeros?
       HEPlaintext zero(std::vector<double>{0});
       out[out_coord_idx].set_plaintext(zero);
     } else {
-      // TODO: batch size number of zeros?
+      // TODO(fboemer): batch size number of zeros?
       auto inv_n_elements =
           HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
                  sum.complex_packing());

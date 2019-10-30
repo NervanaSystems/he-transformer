@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/he_seal_backend.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -23,7 +25,6 @@
 #include "ngraph/runtime/backend_manager.hpp"
 #include "ngraph/util.hpp"
 #include "nlohmann/json.hpp"
-#include "seal/he_seal_backend.hpp"
 #include "seal/he_seal_executable.hpp"
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
@@ -53,8 +54,8 @@ HESealBackend::HESealBackend()
     : HESealBackend(HESealEncryptionParameters::parse_config_or_use_default(
           getenv("NGRAPH_HE_SEAL_CONFIG"))) {}
 
-HESealBackend::HESealBackend(const HESealEncryptionParameters& parms)
-    : m_encryption_params(parms) {
+HESealBackend::HESealBackend(HESealEncryptionParameters parms)
+    : m_encryption_params(std::move(parms)) {
   generate_context();
 }
 
@@ -84,7 +85,7 @@ void HESealBackend::generate_context() {
   // Set barrett ratio map
   for (const seal::SmallModulus& modulus : coeff_moduli) {
     const std::uint64_t modulus_value = modulus.value();
-    if (modulus_value < (1UL << 31)) {
+    if (modulus_value < (1UL << 31U)) {
       std::uint64_t numerator[3]{0, 1};
       std::uint64_t quotient[3]{0, 0};
       seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,
@@ -99,13 +100,14 @@ void HESealBackend::generate_context() {
 
 bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
                                std::string& error) {
+  (void)error;  // Avoid unused parameter warning
   NGRAPH_HE_LOG(3) << "Setting config";
   for (const auto& [option, setting] : config) {
     std::string lower_option = ngraph::to_lower(option);
     std::vector<std::string> lower_settings =
         ngraph::split(ngraph::to_lower(setting), ',');
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
-    std::string tensor_name = option.substr(0, option.find(":", 0));
+    std::string tensor_name = option.substr(0, option.find(':', 0));
 
     for (const auto& lower_setting : lower_settings) {
       if (lower_setting == "client_input") {
@@ -133,7 +135,7 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
     }
   }
 
-  if (m_client_tensor_names.size() > 0 && !m_enable_client) {
+  if (!m_client_tensor_names.empty() && !m_enable_client) {
     NGRAPH_WARN
         << "Configuration specifies client input, but client is not enabled";
     m_client_tensor_names.clear();
@@ -197,7 +199,7 @@ HESealBackend::create_packed_plain_tensor(const element::Type& type,
 }
 
 std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
-    std::shared_ptr<Function> function, bool enable_performance_collection) {
+    std::shared_ptr<Function> function, bool enable_performance_data) {
   auto from_client_annotation =
       std::make_shared<HEOpAnnotations>(true, false, false);
 
@@ -218,7 +220,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     bool matching_param = false;
     bool has_tag = false;
     for (auto& param : function->get_parameters()) {
-      has_tag |= (param->get_provenance_tags().size() != 0);
+      has_tag |= (!param->get_provenance_tags().empty());
 
       if (param_originates_from_name(*param, name)) {
         NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
@@ -295,8 +297,8 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     }
   }
 
-  return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this, m_enable_client);
+  return std::make_shared<HESealExecutable>(function, enable_performance_data,
+                                            *this, m_enable_client);
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {
@@ -308,7 +310,7 @@ bool HESealBackend::is_supported(const ngraph::Node& node) const {
 void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             const HEPlaintext& input, const element::Type& type,
                             bool complex_packing) const {
-  NGRAPH_CHECK(input.size() > 0, "Input has no values in encrypt");
+  NGRAPH_CHECK(!input.empty(), "Input has no values in encrypt");
   ngraph::he::encrypt(output, input, m_context->first_parms_id(), type,
                       get_scale(), *m_ckks_encoder, *m_encryptor,
                       complex_packing);

@@ -56,7 +56,7 @@ auto add_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   auto t_b =
       test::he::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
   auto t_result = test::he::tensor_from_flags(
-      *he_backend, shape, arg1_encrypted | arg2_encrypted, packed);
+      *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
 
   vector<float> input_a;
   vector<float> input_b;

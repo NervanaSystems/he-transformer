@@ -38,7 +38,7 @@ TEST(he_tensor, pack) {
 
   vector<HEType> elements;
   for (size_t i = 0; i < shape_size(shape); ++i) {
-    elements.push_back(HEType(HEPlaintext({static_cast<double>(i)}), false));
+    elements.emplace_back(HEPlaintext({static_cast<double>(i)}), false);
   }
   plain.data() = elements;
   plain.pack();
@@ -65,8 +65,8 @@ TEST(he_tensor, unpack) {
   HETensor plain(element::f32, shape, true, false, false, *he_backend);
   vector<HEType> elements;
 
-  elements.push_back(HEType(HEPlaintext(vector<double>{0, 1}), false));
-  elements.push_back(HEType(HEPlaintext(vector<double>{2, 3}), false));
+  elements.emplace_back(HEPlaintext(vector<double>{0, 1}), false);
+  elements.emplace_back(HEPlaintext(vector<double>{2, 3}), false);
   plain.data() = elements;
   plain.unpack();
 

@@ -33,7 +33,7 @@ namespace he {
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,
-                                     seal::MemoryPoolHandle pool) {
+                                     const seal::MemoryPoolHandle& pool) {
   size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
   size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
 
@@ -119,7 +119,7 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
 
 void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
                             const HESealBackend& he_seal_backend,
-                            seal::MemoryPoolHandle pool) {
+                            const seal::MemoryPoolHandle& pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   if (!seal::is_metadata_valid_for(encrypted, context)) {
@@ -150,8 +150,8 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   }
 
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
-  // TODO: explore using different scales! Smaller scales might reduce # of
-  // rescalings
+  // TODO(fboemer): explore using different scales! Smaller scales might reduce
+  // # of rescalings
   double scale = encrypted.scale();
   encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
          plaintext_vals, he_seal_backend);
@@ -171,7 +171,7 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[j].value() < (1UL << 31)) {
+      if (coeff_modulus[j].value() < (1UL << 31U)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
@@ -239,7 +239,7 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
   NGRAPH_HE_LOG(3) << "Matching to smallest chain index "
                    << smallest_chain_ind.second;
 
-  // TODO: loop over only ciphertext indices?
+  // TODO(fboemer): loop over only ciphertext indices?
   auto smallest_cipher = *he_types[smallest_chain_ind.first].get_ciphertext();
 #pragma omp parallel for
   for (size_t idx = 0; idx < num_elements; ++idx) {
@@ -262,7 +262,11 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
 void encode(double value, const ngraph::element::Type& element_type,
             double scale, seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
-            const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
+            const HESealBackend& he_seal_backend,
+            const seal::MemoryPoolHandle& pool) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->get_context_data(parms_id);
@@ -313,7 +317,7 @@ void encode(double value, const ngraph::element::Type& element_type,
   double two_pow_64 = pow(2.0, 64);
 
   // Resize destination to appropriate size
-  // TODO: use reserve?
+  // TODO(fboemer): use reserve?
   destination.resize(coeff_mod_count);
 
   double coeffd = std::round(value);
@@ -322,7 +326,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 
   // Use faster decomposition methods when possible
   if (coeff_bit_count <= 64) {
-    uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
+    auto coeffu = static_cast<uint64_t>(fabs(coeffd));
 
     if (is_negative) {
       for (size_t j = 0; j < coeff_mod_count; j++) {
@@ -503,7 +507,7 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
 void write_plaintext(void* output, const HEPlaintext& input,
                      const element::Type& element_type, size_t count) {
   NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(input.size() > 0, "Input has no values");
+  NGRAPH_CHECK(!input.empty(), "Input has no values");
 
   NGRAPH_CHECK(input.size() >= count, "Input size ", input.size(),
                " too small for count ", count);
