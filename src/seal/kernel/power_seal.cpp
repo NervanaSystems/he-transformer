@@ -28,14 +28,28 @@ namespace he {
 
 void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                        HEPlaintext& out) {
-  std::vector<double> out_vals(arg0.size());
-  auto power = [](auto x, auto y) -> auto { return std::pow(x, y); };
-  std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 power);
-
   NGRAPH_INFO << "arg0 " << arg0;
   NGRAPH_INFO << "arg1 " << arg1;
-  out = HEPlaintext({out_vals});
+  HEPlaintext out_vals;
+  if (arg0.size() == 1) {
+    std::transform(arg1.begin(), arg1.end(),
+                   std::back_inserter(out_vals), [&](auto y) -> auto {
+                     return std::pow(arg0[0], y);
+                   });
+  } else if (arg1.size() == 1) {
+    std::transform(arg0.begin(), arg0.end(),
+                   std::back_inserter(out_vals), [&](auto x) -> auto {
+                     return std::pow(x, arg1[0]);
+                   });
+  } else {
+    size_t min_size = std::min(arg0.size(), arg1.size());
+    out_vals.resize(min_size);
+    for (size_t i = 0; i < min_size; ++i) {
+      out_vals[i] = std::pow(arg0[i], arg1[i]);
+    }
+  }
+  out = std::move(out_vals);
+
   NGRAPH_INFO << "out " << out;
 }
 
@@ -53,6 +67,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
                             arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
                             arg1.complex_packing());
+    plain_arg0.resize(arg0.batch_size());
+    plain_arg1.resize(arg1.batch_size());
     scalar_power_seal(plain_arg0, plain_arg1, plain_arg1);
 
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
@@ -62,6 +78,7 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     HEPlaintext plain_arg0;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
                             arg0.complex_packing());
+    plain_arg0.resize(arg0.batch_size());
     scalar_power_seal(plain_arg0, arg1.get_plaintext(), plain_arg0);
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0,
                             ngraph::element::f32, arg0.complex_packing());
@@ -70,6 +87,7 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
                             arg1.complex_packing());
+    plain_arg1.resize(arg0.batch_size());
     scalar_power_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
                             ngraph::element::f32, arg0.complex_packing());
