@@ -223,6 +223,10 @@ inline bool param_originates_from_name(const ngraph::op::Parameter& param,
   if (param.get_name() == name) {
     return true;
   }
+  for (const auto& tag : param.get_provenance_tags()) {
+    NGRAPH_INFO << "Param " << param.get_name() << " has tag " << tag;
+  }
+
   return std::any_of(param.get_provenance_tags().begin(),
                      param.get_provenance_tags().end(),
                      [&](const std::string& tag) { return tag == name; });

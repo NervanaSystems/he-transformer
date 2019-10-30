@@ -71,8 +71,11 @@ def train(FLAGS):
     model = Sequential()
     model.add(
         Conv2D(
-            32, kernel_size=(3, 3), activation='relu',
-            input_shape=input_shape))
+            32,
+            kernel_size=(3, 3),
+            activation='relu',
+            input_shape=input_shape,
+            name='input_1'))
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
@@ -102,7 +105,7 @@ def train(FLAGS):
 
 def test(FLAGS):
     import ngraph_bridge
-    config = server_config_from_flags(FLAGS, 'input_1')
+    config = server_config_from_flags(FLAGS, 'input_1_input')
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)
 

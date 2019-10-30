@@ -667,6 +667,10 @@ bool HESealExecutable::call(
           } else {
             he_input->unpack();
           }
+        } else {
+          NGRAPH_HE_LOG(5) << "Parameter " << param->get_name()
+                           << " is encrypted; setting notation to encrypted";
+          current_annotation->set_encrypted(true);
         }
 
         if (current_annotation->encrypted()) {
