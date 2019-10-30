@@ -304,7 +304,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
 bool HESealBackend::is_supported(const ngraph::Node& node) const {
   return m_unsupported_op_name_list.find(node.description()) ==
              m_unsupported_op_name_list.end() &&
-         is_supported_type(node.get_element_type());
+         is_supported_type(node.get_output_element_type(0));
 }
 
 void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,

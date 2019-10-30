@@ -30,7 +30,7 @@ bool pass::SupportedOps::run_on_function(
 
   for (const auto& op : ops) {
     NGRAPH_CHECK(is_supported(*op), "Unsupported op ", op->description(),
-                 " with type ", op->get_element_type());
+                 " with type ", op->get_output_element_type(0));
   }
   return true;
 }

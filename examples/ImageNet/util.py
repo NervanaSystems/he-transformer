@@ -219,6 +219,11 @@ def server_argument_parser():
         default=False,
         help=
         'Encrypt server data (should not be used when enable_client is used)')
+    parser.add_argument(
+        '--pack_data',
+        type=str2bool,
+        default=True,
+        help='Use plaintext packing on data')
 
     return parser
 
@@ -241,7 +246,7 @@ def server_config_from_flags(FLAGS, tensor_param_name):
     elif FLAGS.encrypt_server_data:
         server_config.parameter_map[tensor_param_name].s = b'encrypt'
     if FLAGS.pack_data:
-        server_config parameter_map[tensor_param_name].s = b'packed'
+        server_config.parameter_map[tensor_param_name].s = b'packed'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(
