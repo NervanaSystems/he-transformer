@@ -17,7 +17,6 @@
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np
-import json
 import argparse
 import time
 import PIL

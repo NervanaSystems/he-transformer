@@ -134,15 +134,13 @@ python test.py \
 --encrypt_server_data=true
 ```
 
+# TODO: remove batch size argument
 8. To enable the client, in one terminal, run:
 ```bash
-NGRAPH_ENABLE_CLIENT=1 \
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
 NGRAPH_VOPS=BoundedRelu \
-NGRAPH_COMPLEX_PACK=1 \
-NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_TF_BACKEND=HE_SEAL \
+NGRAPH_HE_LOG_LEVEL=3 \
 NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json \
 python test.py \
   --batch_size=4096  \
@@ -150,15 +148,15 @@ python test.py \
   --ngraph=true \
   --model=./model/mobilenet_v2_0.35_96_opt.pb \
   --data_dir=$DATA_DIR \
-  --ngraph=true
+  --backend=HE_SEAL  \
+  --ngraph=true \
+  --enable_client=yes
 ```
-Since this will take a while to run, you may want to add verbosity, e.g.
-the `NGRAPH_VOPS=all` flag, to the above command.
+Since this will take a while to run, we have added verbosity flags to the above command, e.g. `NGRAPH_VOPS=all NGRAPH_HE_LOG_LEVEL=3`
 
 In another terminal (with the python environment active), run
 ```bash
 OMP_NUM_THREADS=56 \
-NGRAPH_COMPLEX_PACK=1 \
 python client.py \
   --batch_size=4096 \
   --image_size=96 \

@@ -387,8 +387,7 @@ void HESealExecutable::send_inference_shape() {
   m_session->write_message(std::move(execute_msg));
 }
 
-void HESealExecutable::handle_relu_result(
-    const proto::TCPMessage& proto_msg) {
+void HESealExecutable::handle_relu_result(const proto::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Server handling relu result";
   std::lock_guard<std::mutex> guard(m_relu_mutex);
 

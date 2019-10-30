@@ -133,8 +133,7 @@ void HESealClient::handle_encryption_parameters_response(
   send_public_and_relin_keys();
 }
 
-void HESealClient::handle_inference_request(
-    const proto::TCPMessage& message) {
+void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Client handling inference request";
 
   // Note: the message tensors are used to store the inference shapes.
@@ -251,8 +250,9 @@ void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  size_t result_count = proto_tensor->data_size();
-  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < proto_tensor->data_size();
+       ++result_idx) {
     scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
                      m_context->first_parms_id(), scale(), *m_ckks_encoder,
                      *m_encryptor, *m_decryptor);
@@ -287,8 +287,9 @@ void HESealClient::handle_bounded_relu_request(proto::TCPMessage&& message) {
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  size_t result_count = proto_tensor->data_size();
-  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < proto_tensor->data_size();
+       ++result_idx) {
     scalar_bounded_relu_seal(he_tensor->data(result_idx),
                              he_tensor->data(result_idx), bound,
                              m_context->first_parms_id(), scale(),

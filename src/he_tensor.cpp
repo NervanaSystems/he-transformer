@@ -255,6 +255,7 @@ void HETensor::write_to_protos(
   std::vector<uint64_t> int_shape{get_shape()};
   *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
 
+  // TODO: parallelize?
   for (const auto& he_type : m_data) {
     he_type.save(*proto_tensors[0].add_data());
   }
