@@ -39,4 +39,3 @@ weights/
 *.data-*-of*
 *ckpt.index
 *ckpt.meta
-compile_commands.json

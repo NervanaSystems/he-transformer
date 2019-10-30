@@ -10,9 +10,9 @@ cd $HE_TRANSFORMER/build
 source external/venv-tf-py3/bin/activate
 make install python_client
 ```
-This will create `python/dist/pyhe_client-0.0.0.dev0-*.whl`. Install it using
+This will create `python/dist/pyhe_client-*.whl`. Install it using
 ```bash
-pip install python/dist/pyhe_client-0.0.0.dev0-*.whl
+pip install python/dist/pyhe_client-*.whl
 ```
 To check the installation worked correctly, run
 ```bash
@@ -25,7 +25,7 @@ To test:
   1. In one terminal, run
   ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-NGRAPH_ENABLE_CLIENT=1 NGRAPH_ENCRYPT_DATA=1 NGRAPH_TF_BACKEND=HE_SEAL python $HE_TRANSFORMER/examples/ax.py
+python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --enable_client=yes
   ```
 
   This will start the server, which will wait for encrypted inputs from a client.
