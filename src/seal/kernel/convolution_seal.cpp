@@ -181,8 +181,6 @@ void convolution_seal(
     CoordinateTransform::Iterator input_end = input_batch_transform.end();
     CoordinateTransform::Iterator filter_end = filter_transform.end();
 
-    // TODO:a sd f
-
     // TODO(fboemer): better type which matches complex packing?
     auto sum = HEType(HEPlaintext(batch_size), false);
     bool first_add = true;
