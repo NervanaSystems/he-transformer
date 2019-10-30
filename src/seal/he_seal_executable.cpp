@@ -1236,8 +1236,28 @@ void HESealExecutable::generate_calls(
       const Shape& in_shape = args[0]->get_packed_shape();
       const Shape& out_shape = out[0]->get_packed_shape();
       const Coordinate& lower_bounds = slice->get_lower_bounds();
-      const Coordinate& upper_bounds = slice->get_upper_bounds();
+      Coordinate upper_bounds = slice->get_upper_bounds();
       const Strides& strides = slice->get_strides();
+
+      if (verbose) {
+        NGRAPH_HE_LOG(3) << "in_shape " << in_shape;
+        NGRAPH_HE_LOG(3) << "out_shape " << out_shape;
+        NGRAPH_HE_LOG(3) << "lower_bounds " << lower_bounds;
+        NGRAPH_HE_LOG(3) << "upper_bounds " << upper_bounds;
+        NGRAPH_HE_LOG(3) << "strides " << strides;
+      }
+
+      if (!upper_bounds.empty() && !upper_bounds.empty() &&
+          (upper_bounds[0] > in_shape[0])) {
+        NGRAPH_CHECK(upper_bounds[0] == out[0]->get_batch_size(),
+                     "Slice upper bound shape ", upper_bounds,
+                     " is not compatible with tensor output shape ",
+                     out[0]->get_shape());
+        upper_bounds[0] = 1;
+        if (verbose) {
+          NGRAPH_HE_LOG(3) << "new upper_bounds " << upper_bounds;
+        }
+      }
 
       slice_seal(args[0]->data(), out[0]->data(), in_shape, lower_bounds,
                  upper_bounds, strides, out_shape);

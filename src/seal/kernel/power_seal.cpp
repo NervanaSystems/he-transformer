@@ -28,8 +28,6 @@ namespace he {
 
 void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                        HEPlaintext& out) {
-  NGRAPH_INFO << "arg0 " << arg0;
-  NGRAPH_INFO << "arg1 " << arg1;
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
     std::transform(arg1.begin(), arg1.end(),
