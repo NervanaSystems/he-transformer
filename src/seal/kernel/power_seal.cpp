@@ -32,7 +32,11 @@ void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   auto power = [](auto x, auto y) -> auto { return std::pow(x, y); };
   std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
                  power);
+
+  NGRAPH_INFO << "arg0 " << arg0;
+  NGRAPH_INFO << "arg1 " << arg1;
   out = HEPlaintext({out_vals});
+  NGRAPH_INFO << "out " << out;
 }
 
 void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,

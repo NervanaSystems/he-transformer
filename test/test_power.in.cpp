@@ -63,14 +63,12 @@ auto power_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   vector<float> exp_result;
 
   for (int i = 0; i < ngraph::shape_size(shape); ++i) {
-    input_a.emplace_back(i);
-
-    if (i % 2 == 0) {
-      input_b.emplace_back(i);
-    } else {
-      input_b.emplace_back(1 - i);
-    }
+    input_a.emplace_back(i + 1);
+    input_b.emplace_back(static_cast<float>(i + 1) / ngraph::shape_size(shape));
     exp_result.emplace_back(std::pow(input_a.back(), input_b.back()));
+
+    NGRAPH_INFO << "A " << input_a.back() << ", B = " << input_b.back()
+                << " => " << exp_result.back();
   }
   copy_data(t_a, input_a);
   copy_data(t_b, input_b);

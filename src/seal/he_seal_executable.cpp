@@ -1183,8 +1183,8 @@ void HESealExecutable::generate_calls(
       NGRAPH_WARN
           << "Performing Power without client is not privacy preserving ";
 
-      power_seal(args[0]->data(), out[0]->data(), out[0]->data().size(), type,
-                 m_he_seal_backend);
+      power_seal(args[0]->data(), args[1]->data(), out[0]->data(),
+                 out[0]->data().size(), type, m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Relu: {
