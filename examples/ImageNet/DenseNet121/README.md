@@ -10,7 +10,7 @@ python test.py \
 --backend=HE_SEAL
 ```
 
-# To test on encrypted dataa
+# To test on encrypted data
 ```bash
 python test.py \
 --data_dir=$DATA_DIR \
@@ -20,3 +20,4 @@ python test.py \
 --backend=HE_SEAL \
 --encrypt_server_data=yes
 ```
+Note: currently doesn't actually encrypt the data!
