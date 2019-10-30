@@ -21,7 +21,6 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/relu_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {

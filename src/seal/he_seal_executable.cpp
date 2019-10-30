@@ -37,6 +37,7 @@
 #include "ngraph/op/max_pool.hpp"
 #include "ngraph/op/pad.hpp"
 #include "ngraph/op/passthrough.hpp"
+#include "ngraph/op/power.hpp"
 #include "ngraph/op/reshape.hpp"
 #include "ngraph/op/result.hpp"
 #include "ngraph/op/reverse.hpp"
@@ -79,6 +80,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/kernel/pad_seal.hpp"
+#include "seal/kernel/power_seal.hpp"
 #include "seal/kernel/relu_seal.hpp"
 #include "seal/kernel/rescale_seal.hpp"
 #include "seal/kernel/reshape_seal.hpp"
@@ -1176,6 +1178,15 @@ void HESealExecutable::generate_calls(
       throw unsupported_op{"Unsupported operation language: " +
                            passthrough->language()};
     }
+    case OP_TYPEID::Power: {
+      // TODO(fboemer): implement with client
+      NGRAPH_WARN
+          << "Performing Power without client is not privacy preserving ";
+
+      power_seal(args[0]->data(), out[0]->data(), out[0]->data().size(), type,
+                 m_he_seal_backend);
+      break;
+    }
     case OP_TYPEID::Relu: {
       if (m_enable_client) {
         handle_server_relu_op(args[0], out[0], node_wrapper);
@@ -1305,7 +1316,6 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::NotEqual:
     case OP_TYPEID::OneHot:
     case OP_TYPEID::Or:
-    case OP_TYPEID::Power:
     case OP_TYPEID::Product:
     case OP_TYPEID::Quantize:
     case OP_TYPEID::QuantizedAvgPool:

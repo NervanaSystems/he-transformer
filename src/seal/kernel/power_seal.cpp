@@ -19,83 +19,76 @@
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/divide_seal.hpp"
-#include "seal/kernel/multiply_seal.hpp"
+#include "seal/kernel/power_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
 
-void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
-                        HEPlaintext& out) {
+void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
+                       HEPlaintext& out) {
   std::vector<double> out_vals(arg0.size());
+  auto power = [](auto x, auto y) -> auto { return std::pow(x, y); };
   std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 std::divides<>());
+                 power);
   out = HEPlaintext({out_vals});
 }
 
-void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
-                        HESealBackend& he_seal_backend) {
+void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
+                       HESealBackend& he_seal_backend) {
+  // TODO(fboemer): enable with client?
+  // TODO(fboemer): complex packing?
+
   if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
-    NGRAPH_WARN << " Dividing ciphertext / ciphertext without client "
-                   "is not privacy-preserving ";
 
-    // TODO(fboemer): enable with client?
-    // TODO(fboemer): complex packing?
     HEPlaintext plain_arg0, plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
                             arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
                             arg1.complex_packing());
-    scalar_divide_seal(plain_arg0, plain_arg1, plain_arg1);
+    scalar_power_seal(plain_arg0, plain_arg1, plain_arg1);
 
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
                             ngraph::element::f32, arg0.complex_packing());
 
   } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
-    HEType arg1_inv = arg1;
-    HEPlaintext& arg1_plain = arg1.get_plaintext();
-    HEPlaintext& arg1_inv_plain = arg1_inv.get_plaintext();
-    for (size_t i = 0; i < arg1.get_plaintext().size(); ++i) {
-      arg1_inv_plain[i] = 1 / arg1_plain[i];
-    }
-    scalar_multiply_seal(arg0, arg1_inv, out, he_seal_backend);
+    HEPlaintext plain_arg0;
+    he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
+                            arg0.complex_packing());
+    scalar_power_seal(plain_arg0, arg1.get_plaintext(), plain_arg0);
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0,
+                            ngraph::element::f32, arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
-    NGRAPH_WARN << " Dividing plaintext / ciphertext without client "
-                   "is not privacy-preserving ";
-
-    // TODO(fboemer): enable with client?
-    // TODO(fboemer): complex packing?
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
                             arg1.complex_packing());
-    scalar_divide_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
+    scalar_power_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
                             ngraph::element::f32, arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     out.set_plaintext(arg0.get_plaintext());
-    scalar_divide_seal(arg0.get_plaintext(), arg1.get_plaintext(),
-                       out.get_plaintext());
+    scalar_power_seal(arg0.get_plaintext(), arg1.get_plaintext(),
+                      out.get_plaintext());
   } else {
     NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 
-void divide_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
-                 std::vector<HEType>& out, size_t count,
-                 const element::Type& element_type,
-                 HESealBackend& he_seal_backend) {
+void power_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
+                std::vector<HEType>& out, size_t count,
+                const element::Type& element_type,
+                HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
 
 #pragma omp parallel for
   for (size_t i = 0; i < count; ++i) {
-    scalar_divide_seal(arg0[i], arg1[i], out[i], he_seal_backend);
+    scalar_power_seal(arg0[i], arg1[i], out[i], he_seal_backend);
   }
 }
 

@@ -70,7 +70,6 @@ python test.py \
   --backend=CPU
 ```
 
-##
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
 STOP_CONST_FOLD=1 \

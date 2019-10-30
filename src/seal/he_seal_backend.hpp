@@ -409,7 +409,6 @@ class HESealBackend : public ngraph::runtime::Backend {
       "NotEqual",
       "OneHot",
       "Or",
-      "Power",
       "Product",
       "Quantize",
       "QuantizedAvgPool",
