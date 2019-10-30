@@ -28,13 +28,11 @@ namespace he {
 
 void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
                               float alpha) {
-  std::vector<double> out_vals(arg.size());
-
+  out.resize(arg.size());
   auto bounded_relu = [alpha](double f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
-  std::transform(arg.begin(), arg.end(), out_vals.begin(), bounded_relu);
-  out = HEPlaintext(std::vector<double>{out_vals});
+  std::transform(arg.begin(), arg.end(), out.begin(), relu);
 }
 
 void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
@@ -49,6 +47,7 @@ void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
     HEPlaintext plain;
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
             ckks_encoder);
+    plain.resize(arg.batch_size());
     scalar_bounded_relu_seal(plain, plain, alpha);
     encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());

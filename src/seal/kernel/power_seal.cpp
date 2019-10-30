@@ -47,8 +47,6 @@ void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
     }
   }
   out = std::move(out_vals);
-
-  NGRAPH_INFO << "out " << out;
 }
 
 void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,

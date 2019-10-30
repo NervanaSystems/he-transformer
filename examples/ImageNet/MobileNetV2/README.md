@@ -79,32 +79,31 @@ python test.py \
 --backend=HE_SEAL
 ```
 Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
-For large batch sizes, const folding incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
+For large batch sizes, constant folding incurs significant overhead during graph compilation. For best inference performance, `STOP_CONST_FOLD` should not be enabled (i.e. set to `0`)
 
   5.a To try on a larger model, call:
   ```bash
   STOP_CONST_FOLD=1 \
-  NGRAPH_VOPS=all \
-  NGRAPH_TF_BACKEND=HE_SEAL \
   python test.py \
   --image_size=128 \
   --data_dir=$DATA_DIR \
   --batch_size=30 \
   --model=./model/mobilenet_v2_0.35_128_opt.pb \
-  --ngraph=true
+  --ngraph=true \
+  --backend=HE_SEAL
   ```
 
 6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~50GB memory.
 ```bash
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
-NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_ENCRYPT_DATA=1 \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
---batch_size=2048
+--batch_size=2048 \
+--encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+--encrypt_server_data=true \
+--backend=HE_SEAL
 ```
 
 6a. To try on a larger model, call:

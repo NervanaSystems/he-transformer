@@ -836,15 +836,6 @@ bool HESealExecutable::call(
                             return he_tensor->is_packed();
                           });
         }
-        // Avoid broadcasting from constant to output with batch size
-        // first dimension. This happens because not every constant is
-        // packed, for example convolution kernels.
-        // TODO(fboemer): remove?
-        if (!shape.empty() && shape[0] == m_batch_size &&
-            op->description() == "Broadcast") {
-          packed_out = true;
-        }
-
         NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
         NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
         if (packed_out) {
