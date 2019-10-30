@@ -17,7 +17,6 @@
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np
-import json
 import argparse
 import os
 import time
@@ -219,6 +218,11 @@ def server_argument_parser():
         default=False,
         help=
         'Encrypt server data (should not be used when enable_client is used)')
+    parser.add_argument(
+        '--pack_data',
+        type=str2bool,
+        default=True,
+        help='Use plaintext packing on data')
 
     return parser
 
@@ -234,14 +238,18 @@ def server_config_from_flags(FLAGS, tensor_param_name):
     server_config.parameter_map["device_id"].s = b''
     server_config.parameter_map[
         "encryption_parameters"].s = FLAGS.encryption_parameters.encode()
-    server_config.parameter_map['enable_client'].s = (str(
-        FLAGS.enable_client)).encode()
+    server_config.parameter_map['enable_client'].s = str(
+        FLAGS.enable_client).encode()
+
     if FLAGS.enable_client:
         server_config.parameter_map[tensor_param_name].s = b'client_input'
     elif FLAGS.encrypt_server_data:
         server_config.parameter_map[tensor_param_name].s = b'encrypt'
+    else:
+        server_config.parameter_map[tensor_param_name].s = b'plain'
+
     if FLAGS.pack_data:
-        server_config parameter_map[tensor_param_name].s = b'packed'
+        server_config.parameter_map[tensor_param_name].s += b',packed'
 
     config = tf.compat.v1.ConfigProto()
     config.MergeFrom(

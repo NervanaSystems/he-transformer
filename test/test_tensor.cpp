@@ -99,7 +99,7 @@ TEST(he_tensor, save) {
   copy_data(tensor, tensor_data);
   auto he_tensor = static_pointer_cast<HETensor>(tensor);
 
-  vector<he_proto::HETensor> protos;
+  vector<proto::HETensor> protos;
   he_tensor->write_to_protos(protos);
 
   EXPECT_EQ(protos.size(), 1);

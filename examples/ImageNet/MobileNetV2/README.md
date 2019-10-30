@@ -70,7 +70,6 @@ python test.py \
   --backend=CPU
 ```
 
-##
 5. To call inference using HE_SEAL's plaintext operations (for debugging), call
 ```bash
 STOP_CONST_FOLD=1 \
@@ -80,89 +79,86 @@ python test.py \
 --backend=HE_SEAL
 ```
 Note, the `STOP_CONST_FOLD` flag will prevent the constant folding graph optimization.
-For large batch sizes, const folding incurs significant overhead during graph compilation, and doesn't result in much runtime speedup.
+For large batch sizes, constant folding incurs significant overhead during graph compilation. For best inference performance, `STOP_CONST_FOLD` should not be enabled (i.e. set to `0`)
 
   5.a To try on a larger model, call:
   ```bash
   STOP_CONST_FOLD=1 \
-  NGRAPH_VOPS=all \
-  NGRAPH_TF_BACKEND=HE_SEAL \
   python test.py \
   --image_size=128 \
   --data_dir=$DATA_DIR \
   --batch_size=30 \
   --model=./model/mobilenet_v2_0.35_128_opt.pb \
-  --ngraph=true
+  --ngraph=true \
+  --backend=HE_SEAL
   ```
 
-6. To call inference using encrypted data, run the below command. ***Warning***: this will take ~50GB memory.
+6. To call inference using encrypted data, run the below command. ***Warning***: this requires ~50GB memory.
 ```bash
-OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
-NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_ENCRYPT_DATA=1 \
+OMP_NUM_THREADS=56 \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
---batch_size=2048
+--batch_size=2048 \
+--encrypt_server_data=true \
+--backend=HE_SEAL \
+--encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json
 ```
 
 6a. To try on a larger model, call:
   ```bash
   STOP_CONST_FOLD=1 \
   OMP_NUM_THREADS=56 \
-  NGRAPH_TF_BACKEND=HE_SEAL \
-  NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
-  NGRAPH_ENCRYPT_DATA=1 \
   python test.py \
   --image_size=128 \
   --data_dir=$DATA_DIR \
   --ngraph=true \
   --model=./model/mobilenet_v2_0.35_128_opt.pb \
-  --batch_size=30
+  --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+  --batch_size=30 \
+  --backend=HE_SEAL \
+  --encrypt_server_data=true
   ```
 
-7. To double the throughput using complex packing, run the below command.  ***Warning***: this will take ~120GB memory.
+7. To double the throughput using complex packing, run the below command.  ***Warning***: this requires ~120GB memory.
 ```bash
-OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
-NGRAPH_COMPLEX_PACK=1 \
-NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+OMP_NUM_THREADS=56 \
 python test.py \
 --data_dir=$DATA_DIR \
 --ngraph=true \
---batch_size=4096
+--encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json \
+--batch_size=4096 \
+--backend=HE_SEAL  \
+--encrypt_server_data=true
+```
 
+# TODO: remove batch size argument
 8. To enable the client, in one terminal, run:
 ```bash
-NGRAPH_ENABLE_CLIENT=1 \
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
 NGRAPH_VOPS=BoundedRelu \
-NGRAPH_COMPLEX_PACK=1 \
-NGRAPH_ENCRYPT_DATA=1 \
-NGRAPH_TF_BACKEND=HE_SEAL \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4.json \
+NGRAPH_HE_LOG_LEVEL=3 \
 python test.py \
-  --batch_size=4096  \
+  --batch_size=10  \
   --image_size=96 \
   --ngraph=true \
   --model=./model/mobilenet_v2_0.35_96_opt.pb \
   --data_dir=$DATA_DIR \
-  --ngraph=true
+  --backend=HE_SEAL  \
+  --ngraph=true \
+  --enable_client=yes \
+  --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json
 ```
-Since this will take a while to run, you may want to add verbosity, e.g.
-the `NGRAPH_VOPS=all` flag, to the above command.
+Since this will take a while to run, we have added verbosity flags to the above command, e.g. `NGRAPH_VOPS=all NGRAPH_HE_LOG_LEVEL=3`
 
 In another terminal (with the python environment active), run
 ```bash
 OMP_NUM_THREADS=56 \
-NGRAPH_COMPLEX_PACK=1 \
 python client.py \
-  --batch_size=4096 \
+  --batch_size=10 \
   --image_size=96 \
   --data_dir=$DATA_DIR
 ```

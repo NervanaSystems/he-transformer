@@ -28,7 +28,7 @@
 
 namespace ngraph {
 namespace he {
-/// \brief Represents a message. A wrapper around he_proto::TCPMessage
+/// \brief Represents a message. A wrapper around proto::TCPMessage
 class TCPMessage {
  public:
   enum { header_length = sizeof(size_t) };
@@ -39,26 +39,26 @@ class TCPMessage {
 
   /// \brief Creates message from given protobuf message
   /// \param[in] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(he_proto::TCPMessage& proto_message) = delete;
+  TCPMessage(proto::TCPMessage& proto_message) = delete;
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(he_proto::TCPMessage&& proto_message)
+  TCPMessage(proto::TCPMessage&& proto_message)
       : m_proto_message(
-            std::make_shared<he_proto::TCPMessage>(std::move(proto_message))) {}
+            std::make_shared<proto::TCPMessage>(std::move(proto_message))) {}
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(std::shared_ptr<he_proto::TCPMessage> proto_message)
+  TCPMessage(std::shared_ptr<proto::TCPMessage> proto_message)
       : m_proto_message(proto_message) {}
 
   /// \brief Returns pointer to udnerlying protobuf message
-  std::shared_ptr<he_proto::TCPMessage> proto_message() {
+  std::shared_ptr<proto::TCPMessage> proto_message() {
     return m_proto_message;
   }
 
   /// \brief Returns pointer to udnerlying protobuf message
-  std::shared_ptr<he_proto::TCPMessage> proto_message() const {
+  std::shared_ptr<proto::TCPMessage> proto_message() const {
     return m_proto_message;
   }
 
@@ -99,14 +99,14 @@ class TCPMessage {
   /// \returns Whether or not the operation was successful
   bool unpack(const data_buffer& buffer) {
     if (!m_proto_message) {
-      m_proto_message = std::make_shared<he_proto::TCPMessage>();
+      m_proto_message = std::make_shared<proto::TCPMessage>();
     }
     return m_proto_message->ParseFromArray(&buffer[header_length],
                                            buffer.size() - header_length);
   }
 
  private:
-  std::shared_ptr<he_proto::TCPMessage> m_proto_message;
+  std::shared_ptr<proto::TCPMessage> m_proto_message;
 };
 }  // namespace he
 }  // namespace ngraph

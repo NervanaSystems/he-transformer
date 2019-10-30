@@ -245,7 +245,7 @@ void HETensor::read(void* p, size_t n) const {
 }
 
 void HETensor::write_to_protos(
-    std::vector<he_proto::HETensor>& proto_tensors) const {
+    std::vector<proto::HETensor>& proto_tensors) const {
   // TODO(fboemer): support large shapes
   proto_tensors.resize(1);
   proto_tensors[0].set_name(get_name());
@@ -255,13 +255,14 @@ void HETensor::write_to_protos(
   std::vector<uint64_t> int_shape{get_shape()};
   *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
 
+  // TODO: parallelize?
   for (const auto& he_type : m_data) {
     he_type.save(*proto_tensors[0].add_data());
   }
 }
 
 std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
-    const std::vector<he_proto::HETensor>& proto_tensors,
+    const std::vector<proto::HETensor>& proto_tensors,
     seal::CKKSEncoder& ckks_encoder, std::shared_ptr<seal::SEALContext> context,
     const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
     const ngraph::he::HESealEncryptionParameters& encryption_params) {

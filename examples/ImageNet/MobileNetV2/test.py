@@ -17,7 +17,6 @@
 import tensorflow as tf
 from tensorflow.python.platform import gfile
 import numpy as np
-import json
 import argparse
 import time
 import PIL
@@ -84,12 +83,6 @@ def main(FLAGS):
 
     sess = tf.compat.v1.Session(config=config)
     graph_def = load_model(FLAGS.model)
-
-    for node in graph_def.node:
-        if 'FusedBatchNorm' in node.name or 'Pow' in node.name:
-            print(node)
-
-    #print('node names', [n.name for n in graph_def.node])
 
     tf.import_graph_def(graph_def, name='')
 

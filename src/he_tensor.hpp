@@ -142,7 +142,7 @@ class HETensor : public runtime::Tensor {
   /// Due to the 2GB limit on protobufs, large ciphertext tensors may not be
   /// able to store the entire tensor in one SealCipherTensor message.
   /// \param[out] proto_tensors
-  void write_to_protos(std::vector<he_proto::HETensor>& proto_tensors) const;
+  void write_to_protos(std::vector<proto::HETensor>& proto_tensors) const;
 
   /// \brief Loads a tensor from protobuf tensors
   /// \param[in] proto_tensors vector of protobuf tensors to load from
@@ -154,7 +154,7 @@ class HETensor : public runtime::Tensor {
   /// loaded tensor
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensors(
-      const std::vector<he_proto::HETensor>& proto_tensors,
+      const std::vector<proto::HETensor>& proto_tensors,
       seal::CKKSEncoder& ckks_encoder,
       std::shared_ptr<seal::SEALContext> context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
@@ -170,7 +170,7 @@ class HETensor : public runtime::Tensor {
   /// loaded tensor
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensor(
-      const he_proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
+      const proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
       std::shared_ptr<seal::SEALContext> context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params) {
