@@ -16,6 +16,8 @@
 
 #include "he_tensor.hpp"
 
+#include <limits>
+
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
@@ -182,17 +184,16 @@ void HETensor::write(const void* p, size_t n) {
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements_to_write; ++i) {
-    std::vector<double> values(get_batch_size());
+    HEPlaintext plain(get_batch_size());
     for (size_t j = 0; j < get_batch_size(); ++j) {
       const auto* src = static_cast<const void*>(
           static_cast<const char*>(p) +
           type_byte_size * (i + j * num_elements_to_write));
-      values[j] = type_to_double(src, element_type);
+      plain[j] = type_to_double(src, element_type);
     }
 
-    HEPlaintext plain({values});
     if (m_data[i].is_plaintext()) {
-      m_data[i].set_plaintext(plain);
+      m_data[i].set_plaintext(std::move(plain));
     } else if (m_data[i].is_ciphertext()) {
       auto cipher = HESealBackend::create_empty_ciphertext();
 
@@ -252,11 +253,33 @@ void HETensor::write_to_protos(
   proto_tensors[0].set_packed(m_packed);
   proto_tensors[0].set_offset(0);
 
+  NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
+
   std::vector<uint64_t> int_shape{get_shape()};
   *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
 
+  auto* mutable_data = proto_tensors[0].mutable_data();
+
+  size_t current_size = proto_tensors[0].ByteSize();
+  NGRAPH_INFO << "Current size " << current_size;
+  if (m_data.size() > 0) {
+    m_data[0].save(*proto_tensors[0].add_data());
+    size_t new_size = proto_tensors[0].ByteSize();
+
+    NGRAPH_INFO << "new_size " << new_size;
+
+    size_t he_type_size = (new_size - current_size);
+
+    size_t estimated_size_limit = std::ceil(
+        (std::numeric_limits<int32_t>::max() - current_size) / he_type_size);
+
+    NGRAPH_INFO << "Estimate num cipherS " << estimated_size_limit;
+  }
+
   // TODO: parallelize?
   for (const auto& he_type : m_data) {
+    NGRAPH_INFO << "proto_tensors[0]->ByteSize() "
+                << proto_tensors[0].ByteSize();
     he_type.save(*proto_tensors[0].add_data());
   }
 }

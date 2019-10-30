@@ -195,9 +195,11 @@ void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
       m_context, *m_encryptor, *m_decryptor, m_encryption_params, proto_name);
 
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
+  NGRAPH_HE_LOG(3) << "Writing to tensor";
   he_tensor.write(input_data.data(), num_bytes);
 
   std::vector<proto::HETensor> tensor_protos;
+  NGRAPH_HE_LOG(3) << "Writing to protos";
   he_tensor.write_to_protos(tensor_protos);
   for (const auto& tensor_proto : tensor_protos) {
     proto::TCPMessage inputs_msg;

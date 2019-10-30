@@ -608,6 +608,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1000) {
   server_client_relu_packed_test(1000, 1, true, false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_100000) {
+  server_client_relu_packed_test(100000, 1, true, false);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_845) {
   server_client_relu_packed_test(845, 1, true, true, 6.0);
 }
