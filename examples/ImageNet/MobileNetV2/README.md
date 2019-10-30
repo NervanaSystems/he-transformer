@@ -141,16 +141,16 @@ OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
 NGRAPH_VOPS=BoundedRelu \
 NGRAPH_HE_LOG_LEVEL=3 \
-NGRAPH_HE_SEAL_CONFIG=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json \
 python test.py \
-  --batch_size=4096  \
+  --batch_size=10  \
   --image_size=96 \
   --ngraph=true \
   --model=./model/mobilenet_v2_0.35_96_opt.pb \
   --data_dir=$DATA_DIR \
   --backend=HE_SEAL  \
   --ngraph=true \
-  --enable_client=yes
+  --enable_client=yes \
+  --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json
 ```
 Since this will take a while to run, we have added verbosity flags to the above command, e.g. `NGRAPH_VOPS=all NGRAPH_HE_LOG_LEVEL=3`
 
@@ -158,7 +158,7 @@ In another terminal (with the python environment active), run
 ```bash
 OMP_NUM_THREADS=56 \
 python client.py \
-  --batch_size=4096 \
+  --batch_size=10 \
   --image_size=96 \
   --data_dir=$DATA_DIR
 ```
