@@ -201,6 +201,7 @@ void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
   std::vector<proto::HETensor> tensor_protos;
   NGRAPH_HE_LOG(3) << "Writing to protos";
   he_tensor.write_to_protos(tensor_protos);
+  NGRAPH_INFO << "Protos size " << tensor_protos.size();
   for (const auto& tensor_proto : tensor_protos) {
     proto::TCPMessage inputs_msg;
     inputs_msg.set_type(proto::TCPMessage_Type_REQUEST);

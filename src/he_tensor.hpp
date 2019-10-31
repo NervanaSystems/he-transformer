@@ -178,6 +178,14 @@ class HETensor : public runtime::Tensor {
                                    encryptor, decryptor, encryption_params);
   }
 
+  /// \brief Loads a tensor from protobuf tensor to an he_tensor
+  /// \param[in] he_tensor Tensor to load to
+  /// \param[in] proto_tensor protobuf tensor to load from
+  /// \param[in] context SEAL context to associate with loaded tensor
+  static void load_from_proto_tensor(
+      std::shared_ptr<HETensor> he_tensor, const proto::HETensor& proto_tensor,
+      std::shared_ptr<seal::SEALContext> context);
+
  private:
   bool m_packed;
   Shape m_packed_shape;

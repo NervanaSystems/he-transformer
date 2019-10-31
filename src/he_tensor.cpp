@@ -248,40 +248,71 @@ void HETensor::read(void* p, size_t n) const {
 void HETensor::write_to_protos(
     std::vector<proto::HETensor>& proto_tensors) const {
   // TODO(fboemer): support large shapes
+
+  // Populate attributes of tensor to estimate byte size
   proto_tensors.resize(1);
   proto_tensors[0].set_name(get_name());
   proto_tensors[0].set_packed(m_packed);
   proto_tensors[0].set_offset(0);
+  std::vector<uint64_t> int_shape{get_shape()};
+  *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+  size_t description_size = proto_tensors[0].ByteSize();
 
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
 
-  std::vector<uint64_t> int_shape{get_shape()};
-  *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
-
-  auto* mutable_data = proto_tensors[0].mutable_data();
-
-  size_t current_size = proto_tensors[0].ByteSize();
-  NGRAPH_INFO << "Current size " << current_size;
+  NGRAPH_INFO << "description_size " << description_size;
   if (m_data.size() > 0) {
-    m_data[0].save(*proto_tensors[0].add_data());
-    size_t new_size = proto_tensors[0].ByteSize();
+    proto::HEType tmp_type;
+    m_data[0].save(tmp_type);
 
-    NGRAPH_INFO << "new_size " << new_size;
+    size_t he_type_size = tmp_type.ByteSize();
+    size_t max_num_data_per_tensor =
+        std::floor(std::numeric_limits<int32_t>::max() /
+                   static_cast<float>(he_type_size)) -
+        2;
 
-    size_t he_type_size = (new_size - current_size);
+    NGRAPH_INFO << "max_num_data_per_tensor " << max_num_data_per_tensor;
 
-    size_t estimated_size_limit = std::ceil(
-        (std::numeric_limits<int32_t>::max() - current_size) / he_type_size);
+    size_t num_tensors = m_data.size() / max_num_data_per_tensor;
+    if (m_data.size() % max_num_data_per_tensor != 0) {
+      num_tensors++;
+    }
+    NGRAPH_INFO << "num_tensors " << num_tensors;
+    proto_tensors.resize(num_tensors);
 
-    NGRAPH_INFO << "Estimate num cipherS " << estimated_size_limit;
+    size_t offset = 0;
+
+    for (size_t tensor_idx = 0; tensor_idx < num_tensors; ++tensor_idx) {
+      proto_tensors[tensor_idx].set_name(get_name());
+      proto_tensors[tensor_idx].set_packed(m_packed);
+      proto_tensors[tensor_idx].set_offset(offset);
+      *proto_tensors[tensor_idx].mutable_shape() = {int_shape.begin(),
+                                                    int_shape.end()};
+
+      auto* mutable_data = proto_tensors[tensor_idx].mutable_data();
+      size_t num_data_in_tensor = max_num_data_per_tensor;
+      if (tensor_idx == num_tensors - 1) {
+        num_data_in_tensor =
+            m_data.size() - tensor_idx * max_num_data_per_tensor;
+      }
+      NGRAPH_INFO << "num_data_in_tensor " << tensor_idx << ": "
+                  << num_data_in_tensor;
+
+      for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
+        mutable_data->Add();
+      }
+
+#pragma omp parallel for
+      for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
+        size_t data_offset = tensor_idx * num_data_in_tensor + data_idx;
+        m_data[data_offset].save(*mutable_data->Mutable(data_idx));
+      }
+      NGRAPH_INFO << "Done writing to proto " << tensor_idx;
+      NGRAPH_INFO << "Bytre size " << proto_tensors[tensor_idx].ByteSize();
+      offset += num_data_in_tensor;
+    }
   }
-
-  // TODO: parallelize?
-  for (const auto& he_type : m_data) {
-    NGRAPH_INFO << "proto_tensors[0]->ByteSize() "
-                << proto_tensors[0].ByteSize();
-    he_type.save(*proto_tensors[0].add_data());
-  }
+  NGRAPH_INFO << "Done writing to protos";
 }
 
 std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
@@ -298,20 +329,54 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
   const auto& proto_shape = proto_tensor.shape();
   size_t result_count = proto_tensor.data_size();
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
-  auto element_type = element::f64;
 
   auto he_tensor = std::make_shared<HETensor>(
-      element_type, shape, proto_packed, encryption_params.complex_packing(),
+      element::f64, shape, proto_packed, encryption_params.complex_packing(),
       false, ckks_encoder, context, encryptor, decryptor, encryption_params,
       proto_name);
 
+  NGRAPH_INFO << "Created tensor shape " << shape << " with " << result_count
+              << " inputs";
+  NGRAPH_INFO << "he_tensor->data.size " << he_tensor->data().size();
 #pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    auto loaded = HEType::load(proto_tensor.data(result_idx), context);
+    const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
     he_tensor->data(result_idx) = loaded;
   }
+  NGRAPH_INFO << "Done loading tensor shape " << shape << " with "
+              << result_count << " inputs";
 
   return he_tensor;
+}
+
+void HETensor::load_from_proto_tensor(
+    std::shared_ptr<HETensor> he_tensor, const proto::HETensor& proto_tensor,
+    std::shared_ptr<seal::SEALContext> context) {
+  const auto& proto_name = proto_tensor.name();
+  const auto& proto_packed = proto_tensor.packed();
+  const auto& proto_shape = proto_tensor.shape();
+  const auto& proto_offset = proto_tensor.offset();
+  size_t result_count = proto_tensor.data_size();
+  ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+
+  NGRAPH_INFO << "load_from_proto_tensor shape " << shape;
+  NGRAPH_INFO << "proto_tensor.data().size() " << proto_tensor.data().size();
+  NGRAPH_INFO << "he_tensor.data().size() " << he_tensor->data().size();
+
+  NGRAPH_CHECK(he_tensor->get_shape() == shape, "HETensor has wrong shape ",
+               he_tensor->get_shape(), ", expected ", shape);
+  NGRAPH_CHECK(he_tensor->get_name() == proto_name, "HETensor has wrong name ",
+               he_tensor->get_name(), ", expected ", proto_name);
+  NGRAPH_CHECK(he_tensor->is_packed() == proto_packed,
+               "HETensor has wrong packing ", he_tensor->is_packed(),
+               ", expected ", proto_packed);
+
+#pragma omp parallel for
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
+    he_tensor->data(proto_offset + result_idx) = loaded;
+  }
+  NGRAPH_INFO << "Done load_from_proto_tensor shape " << shape;
 }
 
 }  // namespace he
