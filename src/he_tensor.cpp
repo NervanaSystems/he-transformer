@@ -206,6 +206,7 @@ void HETensor::write(const void* p, size_t n) {
       NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
     }
   }
+  m_write_count += num_elements_to_write;
 }
 
 void HETensor::read(void* p, size_t n) const {
@@ -343,8 +344,11 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
     const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
     he_tensor->data(result_idx) = loaded;
   }
-  NGRAPH_INFO << "Done loading tensor shape " << shape << " with "
-              << result_count << " inputs";
+  he_tensor->m_write_count += result_count;
+  NGRAPH_INFO << "Loaded tensor shape " << shape << " with " << result_count
+              << " inputs";
+  NGRAPH_INFO << "he_tensor->m_write_count " << he_tensor->m_write_count;
+  NGRAPH_INFO << "Tensor is done loading? " << he_tensor->done_loading();
 
   return he_tensor;
 }
@@ -376,7 +380,11 @@ void HETensor::load_from_proto_tensor(
     const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
     he_tensor->data(proto_offset + result_idx) = loaded;
   }
+  he_tensor->m_write_count += result_count;
+
   NGRAPH_INFO << "Done load_from_proto_tensor shape " << shape;
+  NGRAPH_INFO << "he_tensor->m_write_count " << he_tensor->m_write_count;
+  NGRAPH_INFO << "Tensor is done loading? " << he_tensor->done_loading();
 }
 
 }  // namespace he

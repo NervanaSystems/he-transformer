@@ -550,18 +550,11 @@ void HESealExecutable::handle_client_ciphers(
         *m_he_seal_backend.get_decryptor(),
         m_he_seal_backend.get_encryption_parameters());
     m_client_inputs[param_idx] = he_tensor;
-    m_client_load_idx[param_idx] += proto_tensor.data().size();
-    NGRAPH_INFO << "m_client_load_idx[" << param_idx
-                << "] = " << m_client_load_idx[param_idx];
-
     NGRAPH_INFO << "Loaded tensor from proto tensor";
   } else {
     NGRAPH_INFO << "Updating tensor from proto tensor";
     HETensor::load_from_proto_tensor(m_client_inputs[param_idx], proto_tensor,
                                      m_he_seal_backend.get_context());
-    m_client_load_idx[param_idx] += proto_tensor.data().size();
-    NGRAPH_INFO << "m_client_load_idx[" << param_idx
-                << "] = " << m_client_load_idx[param_idx];
   }
 
   auto done_loading = [&]() {
@@ -571,15 +564,8 @@ void HESealExecutable::handle_client_ciphers(
         NGRAPH_HE_LOG(5) << "From client param shape " << param->get_shape();
         NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
 
-        const auto& shape = param->get_shape();
-        size_t param_size = shape_size(shape) / m_batch_size;
-        size_t current_load_idx = m_client_load_idx[parm_idx];
-
-        NGRAPH_INFO << "current_load_idx " << current_load_idx;
-        NGRAPH_INFO << "param_size " << param_size;
-
         if (m_client_inputs[parm_idx] == nullptr ||
-            (current_load_idx != param_size)) {
+            !m_client_inputs[parm_idx]->done_loading()) {
           return false;
         }
       }

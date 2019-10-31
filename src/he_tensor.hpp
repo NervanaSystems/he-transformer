@@ -186,10 +186,14 @@ class HETensor : public runtime::Tensor {
       std::shared_ptr<HETensor> he_tensor, const proto::HETensor& proto_tensor,
       std::shared_ptr<seal::SEALContext> context);
 
+  bool done_loading() const { return m_write_count == m_data.size(); }
+
  private:
   bool m_packed;
   Shape m_packed_shape;
   std::vector<HEType> m_data;
+
+  size_t m_write_count{0};  // Number of elements written to the tensor
 
   seal::CKKSEncoder& m_ckks_encoder;
   std::shared_ptr<seal::SEALContext> m_context;
