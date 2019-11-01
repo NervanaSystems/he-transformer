@@ -77,7 +77,7 @@ set(PROTOBUF_FOUND TRUE)
 
 # Create copies of protobuf to allow pyhe_client to find it
 add_custom_target(libprotobuf_soft_link ALL
-                  DEPENDS libprotobuf
+                  DEPENDS protobuf::libprotobuf
                   COMMAND ${CMAKE_COMMAND}
                           -E
                           make_directory
@@ -85,5 +85,5 @@ add_custom_target(libprotobuf_soft_link ALL
                   COMMAND ${CMAKE_COMMAND}
                           -E
                           copy
-                          ${EXTERNAL_INSTALL_LIB_DIR}/libprotobuf.so*
+                          ${Protobuf_LIBRARIES}
                           ${NGRAPH_TF_LIB_DIR})

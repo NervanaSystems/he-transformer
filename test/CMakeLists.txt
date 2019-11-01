@@ -71,11 +71,6 @@ add_executable(unit-test ${SRC})
 
 target_include_directories(unit-test PRIVATE ".")
 
-set(
-  CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\""
-  )
-
 # Add ngraph test utils library
 add_library(ngraph_test_util STATIC IMPORTED)
 set_target_properties(

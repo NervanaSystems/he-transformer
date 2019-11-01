@@ -86,9 +86,7 @@ endif()
 
 # Build options python version used in virtual environment
 find_package(PythonInterp 3)
-if(PYTHONINTERP_FOUND)
-  message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
-elseif()
+if(NOT PYTHONINTERP_FOUND)
   message(FATAL_ERROR "Python3 not found.")
 endif()
 
@@ -104,6 +102,7 @@ option(NGRAPH_HE_DOC_BUILD_ENABLE "Enable building of documentation" OFF)
 message(STATUS "NGRAPH_HE_CXX_STANDARD:     ${NGRAPH_HE_CXX_STANDARD}")
 message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
 message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
+message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
   message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")

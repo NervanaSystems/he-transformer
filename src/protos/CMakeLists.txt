@@ -41,12 +41,11 @@ add_custom_command(OUTPUT ${message_proto_srcs} ${message_proto_hdrs}
                    DEPENDS ${message_proto} protobuf::protoc
                            protobuf::libprotobuf)
 
-add_custom_target(protobuf_files ALL
-                  DEPENDS ${message_proto_srcs} ${message_proto_hdrs})
-
-add_library(libprotobuf INTERFACE)
-# Include generated *.pb.h files
-message(STATUS "Including pb directory ${CMAKE_CURRENT_BINARY_DIR}")
-target_include_directories(libprotobuf INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(libprotobuf INTERFACE libprotobuf_orig)
-add_dependencies(libprotobuf libprotobuf_orig protobuf_files)
+# add_custom_target(protobuf_files ALL DEPENDS ${message_proto_srcs}
+# ${message_proto_hdrs})
+#
+# add_library(libprotobuf INTERFACE) Include generated *.pb.h files
+# message(STATUS "Including pb directory ${CMAKE_CURRENT_BINARY_DIR}")
+# target_include_directories(libprotobuf INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
+# target_link_libraries(libprotobuf INTERFACE libprotobuf_orig)
+# add_dependencies(libprotobuf libprotobuf_orig protobuf_files)
