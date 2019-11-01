@@ -25,7 +25,7 @@
 namespace ngraph {
 namespace he {
 void HEPlaintext::write(void* target, const element::Type& element_type) {
-  NGRAPH_CHECK(size() > 0, "Input has no values");
+  NGRAPH_CHECK(!empty(), "Input has no values");
   size_t count = this->size();
   size_t type_byte_size = element_type.size();
 

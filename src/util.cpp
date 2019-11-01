@@ -41,11 +41,11 @@ bool flag_to_bool(const char* flag, bool default_value) {
 
   if (on_map.find(flag_str) != on_map.end()) {
     return true;
-  } else if (off_map.find(flag_str) != off_map.end()) {
-    return false;
-  } else {
-    throw ngraph_error("Unknown flag value " + std::string(flag));
   }
+  if (off_map.find(flag_str) != off_map.end()) {
+    return false;
+  }
+  throw ngraph_error("Unknown flag value " + std::string(flag));
 }
 
 double type_to_double(const void* src, const element::Type& element_type) {

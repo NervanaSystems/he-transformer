@@ -193,7 +193,7 @@ void HETensor::write(const void* p, size_t n) {
     }
 
     if (m_data[i].is_plaintext()) {
-      m_data[i].set_plaintext(std::move(plain));
+      m_data[i].set_plaintext(plain);
     } else if (m_data[i].is_ciphertext()) {
       auto cipher = HESealBackend::create_empty_ciphertext();
 
@@ -280,7 +280,7 @@ void HETensor::write_to_protos(
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
 
   NGRAPH_INFO << "description_size " << description_size;
-  if (m_data.size() > 0) {
+  if (!m_data.empty()) {
     proto::HEType tmp_type;
     m_data[0].save(tmp_type);
 

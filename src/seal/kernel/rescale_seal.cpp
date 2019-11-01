@@ -70,7 +70,7 @@ void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
   }
 
 #pragma omp parallel for
-  for (size_t i = 0; i < arg.size(); ++i) {
+  for (size_t i = 0; i < arg.size(); ++i) {  // NOLINT
     auto cipher = arg[i];
     if (arg[i].is_ciphertext()) {
       he_seal_backend.get_evaluator()->rescale_to_next_inplace(

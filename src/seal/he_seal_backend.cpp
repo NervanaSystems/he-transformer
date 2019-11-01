@@ -198,6 +198,7 @@ HESealBackend::create_packed_plain_tensor(const element::Type& type,
   return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
 }
 
+// NOLINTNEXTLINE
 std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_data) {
   auto from_client_annotation =

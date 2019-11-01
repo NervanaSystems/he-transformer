@@ -1,0 +1,27 @@
+# Configure clang-tidy for this project.
+
+# Disabled:
+#  -google-readability-namespace-comments the *_CLIENT_NS is a macro, and
+#   clang-tidy fails to match it against the initial value.
+Checks: >
+  -*,
+  bugprone-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -google-readability-namespace-comments,
+  -google-runtime-int,
+  -google-runtime-references,
+  -misc-non-private-member-variables-in-classes,
+  -readability-named-parameter,
+  -readability-braces-around-statements,
+  -readability-magic-numbers
+# Turn all the warnings from the checks above into errors.
+WarningsAsErrors: "*"
+
+CheckOptions:
+  - { key: readability-identifier-naming.PrivateMemberPrefix,    value: m_          }
+  - { key: readability-identifier-naming.ProtectedMemberPrefix,  value: m_          }

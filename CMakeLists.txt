@@ -99,18 +99,44 @@ endif()
 
 option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 option(NGRAPH_HE_DOC_BUILD_ENABLE "Enable building of documentation" OFF)
+option(NGRAPH_HE_CLANG_TIDY "Enable clang-tidy checks" ON)
 
 # Print options
 message(STATUS "NGRAPH_HE_CXX_STANDARD:     ${NGRAPH_HE_CXX_STANDARD}")
 message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
-message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
-message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
+message(STATUS "NGRAPH_HE_CLANG_TIDY:       ${NGRAPH_HE_CLANG_TIDY}")
+message(STATUS "PYTHON_VENV_VERSION:        ${PYTHON_VENV_VERSION}")
+message(STATUS "PYTHON_VERSION_STRING:      ${PYTHON_VERSION_STRING}")
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
   message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
+
+if(NGRAPH_HE_CLANG_TIDY)
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "CMake_RUN_CLANG_TIDY requires an out-of-source build!")
+  endif()
+  find_program(CLANG_TIDY_COMMAND NAMES clang-tidy)
+  if(NOT CLANG_TIDY_COMMAND)
+    message(
+      FATAL_ERROR "CMake_RUN_CLANG_TIDY is ON but clang-tidy is not found!")
+  endif()
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+
+  # Create a preprocessor definition that depends on .clang-tidy content so the
+  # compile command will change when .clang-tidy changes.  This ensures that a
+  # subsequent build re-runs clang-tidy on all sources even if they do not
+  # otherwise need to be recompiled.  Nothing actually uses this definition.  We
+  # add it to targets on which we run clang-tidy just to get the build
+  # dependency on the .clang-tidy file.
+  file(SHA1 ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy clang_tidy_sha1)
+  set(CLANG_TIDY_DEFINITIONS "CLANG_TIDY_SHA1=${clang_tidy_sha1}")
+  unset(clang_tidy_sha1)
+  message("CMAKE_CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY}")
+endif()
+# configure_file(.clang-tidy .clang-tidy COPYONLY)
 
 # ------------------------------------------------------------------------------
 # Installation logic...
