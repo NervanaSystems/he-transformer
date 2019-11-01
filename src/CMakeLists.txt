@@ -65,13 +65,9 @@ set_source_files_properties(${message_proto_srcs}
 
 message("message_proto_srcs ${message_proto_srcs}")
 
-# Target library
+# Create library and link to dependencies
 add_library(he_seal_backend SHARED ${HE_SRC})
-
-target_include_directories(he_seal_backend
-                           PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
-                                  ${NGRAPH_TF_INCLUDE_DIR})
-
+target_include_directories(he_seal_backend PUBLIC ${HE_TRANSFORMER_SOURCE_DIR})
 target_link_libraries(he_seal_backend
                       PUBLIC libjson
                              libboost
@@ -120,7 +116,7 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
         PATTERN "*.hpp"
         PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${NGRAPH_HE_INSTALL_LIB}
+        DESTINATION ${NGRAPH_HE_INSTALL_INCLUDE}
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")
