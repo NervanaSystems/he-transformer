@@ -263,11 +263,7 @@ bool HESealExecutable::server_setup() {
     // Set client inputs to dummy values
     if (m_is_compiled) {
       m_client_inputs.clear();
-      m_client_load_idx.clear();
-
       m_client_inputs.resize(get_parameters().size());
-      m_client_load_idx = std::vector<size_t>(m_client_inputs.size(), 0);
-
     } else {
       NGRAPH_HE_LOG(1) << "Client already setup";
     }
