@@ -22,8 +22,6 @@ set(NGRAPH_HE_PROTOBUF_GIT_REPO_URL
     "https://github.com/protocolbuffers/protobuf")
 set(NGRAPH_HE_PROTOBUF_GIT_TAG "v3.10.1")
 
-message(STATUS "Installing protobuf to ${EXTERNAL_INSTALL_DIR}")
-
 ExternalProject_Add(
   ext_protobuf
   PREFIX protobuf

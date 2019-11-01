@@ -63,8 +63,6 @@ set_source_files_properties(${message_proto_srcs}
                             GENERATED
                             TRUE)
 
-message("message_proto_srcs ${message_proto_srcs}")
-
 # Create library and link to dependencies
 add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend PUBLIC ${HE_TRANSFORMER_SOURCE_DIR})
@@ -76,14 +74,6 @@ target_link_libraries(he_seal_backend
                              protobuf::libprotobuf
                              generated_proto_files
                              ngraph)
-
-message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
-message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-# Get library names
-set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
-message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
 
 # Install he-transformer to installation location and into ngraph-tf
 install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
@@ -113,6 +103,3 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h")
-
-message(STATUS "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
-message(STATUS "CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")

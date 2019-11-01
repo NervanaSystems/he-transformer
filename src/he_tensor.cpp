@@ -236,7 +236,7 @@ void HETensor::read(void* p, size_t n) const {
 
 #pragma omp parallel for
   for (size_t i = 0; i < num_elements_to_read; ++i) {
-    NGRAPH_INFO << "Reading element " << i;
+    // NGRAPH_INFO << "Reading element " << i;
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
       ngraph::he::decrypt(plain, *m_data[i].get_ciphertext(),
@@ -245,7 +245,7 @@ void HETensor::read(void* p, size_t n) const {
     } else {
       plain = m_data[i].get_plaintext();
     }
-    NGRAPH_INFO << "loaded element " << i << " plain " << plain;
+    // NGRAPH_INFO << "loaded element " << i << " plain " << plain;
     NGRAPH_INFO << "element_type " << element_type;
 
     void* dst = ngraph::ngraph_malloc(type_byte_size * get_batch_size());

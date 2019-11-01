@@ -16,8 +16,6 @@
 
 include(ExternalProject)
 
-# ${CMAKE_CURRENT_BINARY_DIR} is he-transformer/build
-
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 set(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
@@ -72,7 +70,6 @@ add_library(libseal INTERFACE)
 
 find_package(ZLIB 1.2.11 EXACT)
 if(ZLIB_FOUND)
-  message(STATUS "ZLIB_LIBRARIES ${ZLIB_LIBRARIES}")
   target_link_libraries(libseal INTERFACE ZLIB::ZLIB)
 endif()
 
