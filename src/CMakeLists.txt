@@ -77,13 +77,6 @@ target_link_libraries(he_seal_backend
                              generated_proto_files
                              ngraph)
 
-# SEAL uses zlib
-find_package(ZLIB 1.2.11 EXACT)
-if(ZLIB_FOUND)
-  message(STATUS "ZLIB_LIBRARIES ${ZLIB_LIBRARIES}")
-  target_link_libraries(he_seal_backend PUBLIC ZLIB::ZLIB)
-endif()
-
 message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
 message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
 # Get library names

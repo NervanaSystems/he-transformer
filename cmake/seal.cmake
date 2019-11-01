@@ -56,14 +56,24 @@ ExternalProject_Add(
   UPDATE_COMMAND "")
 
 ExternalProject_Get_Property(ext_seal SOURCE_DIR)
-add_library(libseal STATIC IMPORTED)
+add_library(libseal_only STATIC IMPORTED)
 
 set(SEAL_HEADERS_PATH ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
 
-target_include_directories(libseal SYSTEM
+target_include_directories(libseal_only SYSTEM
                            INTERFACE ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
-set_target_properties(libseal
+set_target_properties(libseal_only
                       PROPERTIES IMPORTED_LOCATION
                                  ${EXTERNAL_INSTALL_LIB_DIR}/libseal-3.4.a)
+add_dependencies(libseal_only ext_seal)
 
-add_dependencies(libseal ext_seal)
+# Link to this library to also link with zlib, which SEAL uses
+add_library(libseal INTERFACE)
+
+find_package(ZLIB 1.2.11 EXACT)
+if(ZLIB_FOUND)
+  message(STATUS "ZLIB_LIBRARIES ${ZLIB_LIBRARIES}")
+  target_link_libraries(libseal INTERFACE ZLIB::ZLIB)
+endif()
+
+target_link_libraries(libseal INTERFACE libseal_only)
