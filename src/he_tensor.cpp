@@ -296,24 +296,18 @@ void HETensor::write_to_protos(
         num_data_in_tensor =
             m_data.size() - tensor_idx * max_num_data_per_tensor;
       }
-      NGRAPH_INFO << "num_data_in_tensor " << tensor_idx << ": "
-                  << num_data_in_tensor;
-
       for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
         mutable_data->Add();
       }
 
 #pragma omp parallel for
       for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
-        size_t data_offset = tensor_idx * num_data_in_tensor + data_idx;
+        size_t data_offset = offset + data_idx;
         m_data[data_offset].save(*mutable_data->Mutable(data_idx));
       }
-      NGRAPH_INFO << "Done writing to proto " << tensor_idx;
-      NGRAPH_INFO << "Bytre size " << proto_tensors[tensor_idx].ByteSize();
       offset += num_data_in_tensor;
     }
   }
-  NGRAPH_INFO << "Done writing to protos";
 }
 
 std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
@@ -354,7 +348,7 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
 }
 
 void HETensor::load_from_proto_tensor(
-    std::shared_ptr<HETensor> he_tensor, const proto::HETensor& proto_tensor,
+    std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
     std::shared_ptr<seal::SEALContext> context) {
   const auto& proto_name = proto_tensor.name();
   const auto& proto_packed = proto_tensor.packed();
@@ -364,9 +358,11 @@ void HETensor::load_from_proto_tensor(
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
 
   NGRAPH_INFO << "load_from_proto_tensor shape " << shape;
+  NGRAPH_INFO << "proto_tensor.offset() " << proto_tensor.offset();
   NGRAPH_INFO << "proto_tensor.data().size() " << proto_tensor.data().size();
   NGRAPH_INFO << "he_tensor.data().size() " << he_tensor->data().size();
 
+  NGRAPH_CHECK(he_tensor != nullptr, "HETensor is empty");
   NGRAPH_CHECK(he_tensor->get_shape() == shape, "HETensor has wrong shape ",
                he_tensor->get_shape(), ", expected ", shape);
   NGRAPH_CHECK(he_tensor->get_name() == proto_name, "HETensor has wrong name ",

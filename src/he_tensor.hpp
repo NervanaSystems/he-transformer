@@ -183,7 +183,7 @@ class HETensor : public runtime::Tensor {
   /// \param[in] proto_tensor protobuf tensor to load from
   /// \param[in] context SEAL context to associate with loaded tensor
   static void load_from_proto_tensor(
-      std::shared_ptr<HETensor> he_tensor, const proto::HETensor& proto_tensor,
+      std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
       std::shared_ptr<seal::SEALContext> context);
 
   bool done_loading() const { return m_write_count == m_data.size(); }

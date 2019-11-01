@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <math.h>
 #include <chrono>
 #include <memory>
 #include <thread>
@@ -484,6 +485,9 @@ auto server_client_relu_packed_test = [](size_t element_count,
   for (size_t i = 0; i < shape_size(shape); ++i) {
     inputs[i] =
         static_cast<float>(i) - static_cast<float>(shape_size(shape)) / 2.0;
+    if (inputs[i] > 1000) {
+      inputs[i] = fmod(inputs[i], 1000);
+    }
 
     if (bounded) {
       exp_results[i] = bounded_relu(inputs[i]);
@@ -608,8 +612,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1000) {
   server_client_relu_packed_test(1000, 1, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_100000) {
-  server_client_relu_packed_test(100000, 1, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_50000) {
+  server_client_relu_packed_test(50000, 1, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_845) {
@@ -618,6 +622,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_845) {
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_1000) {
   server_client_relu_packed_test(1000, 1, true, true, 6.0);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_50000) {
+  server_client_relu_packed_test(50000, 1, true, true, 6.0);
 }
 
 auto server_client_maxpool_test = [](const Shape& shape,

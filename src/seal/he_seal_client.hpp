@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "he_tensor.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
@@ -79,8 +80,7 @@ class HESealClient {
 
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
-  void handle_encryption_parameters_response(
-      const proto::TCPMessage& message);
+  void handle_encryption_parameters_response(const proto::TCPMessage& message);
 
   /// \brief Processes a request to perform ReLU function
   /// \param[in] message Message to process
@@ -153,8 +153,11 @@ class HESealClient {
   std::condition_variable m_is_done_cond;
   std::mutex m_is_done_mutex;
 
+  std::shared_ptr<HETensor> m_loaded_function_tensor;
+
   // Function inputs and configuration
   HETensorConfigMap<double> m_input_config;
+  std::shared_ptr<HETensor> m_result_tensor;
   std::vector<double> m_results;  // Function outputs
 
 };  // namespace he

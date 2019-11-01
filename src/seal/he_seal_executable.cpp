@@ -403,7 +403,6 @@ void HESealExecutable::handle_relu_result(const proto::TCPMessage& proto_msg) {
       m_he_seal_backend.get_encryption_parameters());
 
   size_t result_count = proto_tensor.data_size();
-#pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     m_relu_data[m_unknown_relu_idx[result_idx + m_relu_done_count]] =
         he_tensor->data(result_idx);
@@ -1464,7 +1463,6 @@ void HESealExecutable::handle_server_relu_op(
     NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
   }
 
-  // TODO(fboemer): better initialization?
   m_relu_data.resize(element_count, HEType(HEPlaintext(), false));
 
   // TODO(fboemer): tune
@@ -1498,21 +1496,6 @@ void HESealExecutable::handle_server_relu_op(
                            << cipher_batch.size();
         }
 
-        proto::TCPMessage proto_msg;
-        proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
-
-        // TODO(fboemer): factor out serializing the function
-        json js = {{"function", node.description()}};
-        if (type_id == OP_TYPEID::BoundedRelu) {
-          const auto* bounded_relu = static_cast<const op::BoundedRelu*>(&node);
-          float alpha = bounded_relu->get_alpha();
-          js["bound"] = alpha;
-        }
-
-        proto::Function f;
-        f.set_function(js.dump());
-        *proto_msg.mutable_function() = f;
-
         // TODO(fboemer): set complex_packing to correct values?
         HETensor relu_tensor(
             arg->get_element_type(),
@@ -1522,15 +1505,29 @@ void HESealExecutable::handle_server_relu_op(
 
         std::vector<proto::HETensor> proto_tensors;
         relu_tensor.write_to_protos(proto_tensors);
+        for (const auto& proto_tensor : proto_tensors) {
+          proto::TCPMessage proto_msg;
+          proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
 
-        NGRAPH_CHECK(proto_tensors.size() == 1,
-                     "Only support ReLU with 1 proto tensor");
-        *proto_msg.add_he_tensors() = proto_tensors[0];
+          // TODO(fboemer): factor out serializing the function
+          json js = {{"function", node.description()}};
+          if (type_id == OP_TYPEID::BoundedRelu) {
+            const auto* bounded_relu =
+                static_cast<const op::BoundedRelu*>(&node);
+            float alpha = bounded_relu->get_alpha();
+            js["bound"] = alpha;
+          }
 
-        TCPMessage relu_message(std::move(proto_msg));
+          proto::Function f;
+          f.set_function(js.dump());
+          *proto_msg.mutable_function() = f;
 
-        NGRAPH_HE_LOG(5) << "Server writing relu request message";
-        m_session->write_message(std::move(relu_message));
+          *proto_msg.add_he_tensors() = proto_tensor;
+          TCPMessage relu_message(std::move(proto_msg));
+
+          NGRAPH_HE_LOG(5) << "Server writing relu request message";
+          m_session->write_message(std::move(relu_message));
+        }
       };
 
   // Process unknown values
