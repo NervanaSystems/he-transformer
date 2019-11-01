@@ -63,8 +63,11 @@ set_source_files_properties(${message_proto_srcs}
                             GENERATED
                             TRUE)
 
+message("message_proto_srcs ${message_proto_srcs}")
+
 # Target library
 add_library(he_seal_backend SHARED ${HE_SRC})
+
 target_include_directories(he_seal_backend
                            PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
                                   ${EXTERNAL_INSTALL_INCLUDE_DIR}
@@ -76,6 +79,7 @@ target_link_libraries(he_seal_backend
                              libseal
                              libngraph_tf
                              protobuf::libprotobuf
+                             generated_proto_files
                              ngraph)
 
 # SEAL uses zlib
