@@ -57,14 +57,6 @@ set(NGRAPH_HE_FORWARD_CMAKE_ARGS
     -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Wall -march=native -Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
-
-# This allows libhe_seal_backend.so to find libraries in the same directory
-set(CMAKE_INSTALL_RPATH "\$ORIGIN")
-
 # These variables are undocumented but useful.
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -114,11 +106,54 @@ message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
 message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
 
+# ------------------------------------------------------------------------------
+# Installation logic...
+# ------------------------------------------------------------------------------
+
+if(LINUX)
+  include(GNUInstallDirs)
+else()
+  set(CMAKE_INSTALL_BINDIR "bin")
+  set(CMAKE_INSTALL_INCLUDEDIR "include")
+  set(CMAKE_INSTALL_DOCDIR "doc")
+  set(CMAKE_INSTALL_LIBDIR "lib")
+endif()
+
+if(DEFINED NGRAPH_HE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX ${NGRAPH_HE_INSTALL_PREFIX})
+endif()
+message(STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
+
+set(NGRAPH_INSTALL_LIB "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(NGRAPH_INSTALL_INCLUDE
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+set(NGRAPH_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+set(NGRAPH_INSTALL_BIN "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+
 if(NGRAPH_HE_SANITIZE_ADDRESS)
   message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()
+
+# Destinations
+set(NGRAPH_HE_INSTALL_LIB "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(NGRAPH_HE_INSTALL_INCLUDE
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+set(NGRAPH_HE_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+set(NGRAPH_HE_INSTALL_BIN "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+
+# ------------------------------------------------------------------------------
+# Compiler-specific logic...
+# ------------------------------------------------------------------------------
+
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -Wall -march=native -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
+
+# This allows libhe_seal_backend.so to find libraries in the same directory
+set(CMAKE_INSTALL_RPATH "\$ORIGIN")
 
 # Get OS version
 if(NOT APPLE)
