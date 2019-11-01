@@ -106,6 +106,12 @@ message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
 message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 message(STATUS "PYTHON_VERSION_STRING " ${PYTHON_VERSION_STRING})
 
+if(NGRAPH_HE_SANITIZE_ADDRESS)
+  message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
+  set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
+endif()
+
 # ------------------------------------------------------------------------------
 # Installation logic...
 # ------------------------------------------------------------------------------
@@ -123,18 +129,6 @@ if(DEFINED NGRAPH_HE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX ${NGRAPH_HE_INSTALL_PREFIX})
 endif()
 message(STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
-
-set(NGRAPH_INSTALL_LIB "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-set(NGRAPH_INSTALL_INCLUDE
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
-set(NGRAPH_INSTALL_DOC "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
-set(NGRAPH_INSTALL_BIN "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
-
-if(NGRAPH_HE_SANITIZE_ADDRESS)
-  message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
-  set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
-endif()
 
 # Destinations
 set(NGRAPH_HE_INSTALL_LIB "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
