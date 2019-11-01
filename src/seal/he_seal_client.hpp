@@ -116,13 +116,7 @@ class HESealClient {
 
   /// \brief Returns decrypted results
   /// \warning Will lock until results are ready
-  inline std::vector<double> get_results() {
-    NGRAPH_INFO << "Client waiting for results";
-
-    std::unique_lock<std::mutex> mlock(m_is_done_mutex);
-    m_is_done_cond.wait(mlock, std::bind(&HESealClient::is_done, this));
-    return m_results;
-  }
+  std::vector<double> get_results();
 
   /// \brief Closes conection with the server
   void close_connection();
@@ -149,7 +143,8 @@ class HESealClient {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   size_t m_batch_size;
-  bool m_is_done;
+
+  bool m_is_done{false};
   std::condition_variable m_is_done_cond;
   std::mutex m_is_done_mutex;
 

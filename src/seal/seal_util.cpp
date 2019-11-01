@@ -504,21 +504,6 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
   }
 }
 
-void write_plaintext(void* output, const HEPlaintext& input,
-                     const element::Type& element_type, size_t count) {
-  NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(!input.empty(), "Input has no values");
-
-  NGRAPH_CHECK(input.size() >= count, "Input size ", input.size(),
-               " too small for count ", count);
-  if (input.size() > count) {
-    std::vector<double> resized_values{input.begin(), input.begin() + count};
-    double_vec_to_type_vec(output, element_type, resized_values);
-  } else {
-    double_vec_to_type_vec(output, element_type, input);
-  }
-}
-
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              const bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder) {

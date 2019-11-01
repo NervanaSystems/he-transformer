@@ -44,7 +44,7 @@ namespace he {
 HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
                            const HETensorConfigMap<double>& inputs)
-    : m_batch_size{batch_size}, m_is_done{false}, m_input_config{inputs} {
+    : m_batch_size{batch_size}, m_input_config{inputs} {
   NGRAPH_HE_LOG(5) << "Creating HESealClient from config";
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only one input parameter");
@@ -126,7 +126,8 @@ void HESealClient::handle_encryption_parameters_response(
       message.encryption_parameters().encryption_parameters();
   std::stringstream param_stream(enc_parms_str);
 
-  NGRAPH_HE_LOG(3) << "Client loading encryption parameters";
+  NGRAPH_HE_LOG(3) << "Client loading encryption parameters from stream size "
+                   << enc_parms_str.size();
   m_encryption_params = HESealEncryptionParameters::load(param_stream);
 
   set_seal_context();
@@ -240,9 +241,12 @@ void HESealClient::handle_result(const proto::TCPMessage& message) {
     NGRAPH_INFO << "m_result_tensor->get_batch_size "
                 << m_result_tensor->get_batch_size();
     m_results.resize(data_size * m_result_tensor->get_batch_size());
-    size_t num_bytes = data_size * m_result_tensor->get_element_type().size() *
-                       m_result_tensor->get_batch_size();
+    size_t num_bytes =
+        m_results.size() * m_result_tensor->get_element_type().size();
+    NGRAPH_INFO << "m_result_tensor->get_element_type().size() "
+                << m_result_tensor->get_element_type().size();
     m_result_tensor->read(m_results.data(), num_bytes);
+    NGRAPH_INFO << "Done reading from result tesnsor";
 
     close_connection();
   }
@@ -411,12 +415,27 @@ void HESealClient::handle_message(const TCPMessage& message) {
 #pragma clang diagnostic pop
 }
 
+std::vector<double> HESealClient::get_results() {
+  NGRAPH_INFO << "Client waiting for results";
+
+  std::unique_lock<std::mutex> mlock(m_is_done_mutex);
+  m_is_done_cond.wait(mlock, std::bind(&HESealClient::is_done, this));
+  NGRAPH_INFO << "Client done waiting";
+  for (auto& result : m_results) {
+    NGRAPH_INFO << result;
+  }
+  return m_results;
+}
+
 void HESealClient::close_connection() {
   NGRAPH_HE_LOG(5) << "Closing connection";
   m_tcp_client->close();
 
+  NGRAPH_INFO << "Getting m_is_done_mutex";
   std::lock_guard<std::mutex> guard(m_is_done_mutex);
+  NGRAPH_INFO << "Setting m_is_done = true";
   m_is_done = true;
+  NGRAPH_INFO << "Notifying m_is_done_cond";
   m_is_done_cond.notify_all();
 }
 

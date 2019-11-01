@@ -70,10 +70,11 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
     std::transform(arg0.begin(), arg0.end(), std::back_inserter(out_vals),
                    std::bind(std::plus<>(), std::placeholders::_1, arg1[0]));
   } else {
-    NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() ", arg0.size(),
-                 " != arg0.size() ", arg1.size(), " in plain-plain add");
-    std::transform(arg0.begin(), arg0.end(), arg1.begin(),
-                   std::back_inserter(out_vals), std::plus<>());
+    size_t min_size = std::min(arg0.size(), arg1.size());
+    out_vals.resize(min_size);
+    for (size_t i = 0; i < min_size; ++i) {
+      out_vals[i] = arg0[i] + arg1[i];
+    }
   }
   out = std::move(out_vals);
 }

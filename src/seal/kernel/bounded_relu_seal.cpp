@@ -47,7 +47,6 @@ void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
     HEPlaintext plain;
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
             ckks_encoder);
-    plain.resize(arg.batch_size());
     scalar_bounded_relu_seal(plain, plain, alpha);
     encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());
