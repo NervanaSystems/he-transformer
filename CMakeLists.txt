@@ -20,6 +20,21 @@ cmake_minimum_required(VERSION 3.10)
 # Global project name
 project(he_transformer LANGUAGES CXX)
 
+if(CMAKE_BUILD_TYPE)
+  set(RELEASE_TYPES
+      Debug
+      Release
+      RelWithDebInfo
+      MinSizeRel)
+  list(FIND RELEASE_TYPES ${CMAKE_BUILD_TYPE} INDEX_FOUND)
+  if(${INDEX_FOUND} EQUAL -1)
+    message(
+      FATAL_ERROR
+        "CMAKE_BUILD_TYPE must be one of Debug, Release, RelWithDebInfo, or MinSizeRel"
+      )
+  endif()
+endif()
+
 # Cmake flags SEAL requires C++17
 set(NGRAPH_HE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD ${NGRAPH_HE_CXX_STANDOARD})
@@ -31,6 +46,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Create compilation database compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(NGRAPH_HE_FORWARD_CMAKE_ARGS
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+    -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
+    -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}
+    -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=${CMAKE_EXPORT_COMPILE_COMMANDS}
+    -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 
 set(CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} -Wall -march=native -Wno-deprecated-declarations")
@@ -47,21 +72,6 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   message(STATUS "Setting clang flags...")
   include(cmake/clang_flags.cmake)
-endif()
-
-if(CMAKE_BUILD_TYPE)
-  set(RELEASE_TYPES
-      Debug
-      Release
-      RelWithDebInfo
-      MinSizeRel)
-  list(FIND RELEASE_TYPES ${CMAKE_BUILD_TYPE} INDEX_FOUND)
-  if(${INDEX_FOUND} EQUAL -1)
-    message(
-      FATAL_ERROR
-        "CMAKE_BUILD_TYPE must be one of Debug, Release, RelWithDebInfo, or MinSizeRel"
-      )
-  endif()
 endif()
 
 include(cmake/sdl.cmake)
@@ -145,6 +155,7 @@ endif()
 # ------------------------------------------------------------------------------
 # Print Global Options
 # ------------------------------------------------------------------------------
+message(STATUS "NGRAPH_HE_FORWARD_CMAKE_ARGS ${NGRAPH_HE_FORWARD_CMAKE_ARGS}")
 message(STATUS "Compile Flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS "Shared Link Flags: ${CMAKE_SHARED_LINKER_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}")

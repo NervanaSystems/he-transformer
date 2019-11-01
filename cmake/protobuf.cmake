@@ -53,12 +53,11 @@ set(Protobuf_LIBRARY ${Protobuf_INSTALL_PREFIX}/lib/libprotobuf.a)
 set(Protobuf_LIBRARIES ${Protobuf_LIBRARY})
 
 if(NOT TARGET protobuf::libprotobuf)
-  add_library(protobuf::libprotobuf UNKNOWN IMPORTED)
+  add_library(protobuf::libprotobuf STATIC IMPORTED)
+  target_include_directories(protobuf::libprotobuf SYSTEM
+                             INTERFACE "${Protobuf_INCLUDE_DIR}")
   set_target_properties(protobuf::libprotobuf
-                        PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                   "${Protobuf_INCLUDE_DIR}"
-                                   IMPORTED_LOCATION
-                                   "${Protobuf_LIBRARY}")
+                        PROPERTIES IMPORTED_LOCATION "${Protobuf_LIBRARY}")
   add_dependencies(protobuf::libprotobuf ext_protobuf)
 endif()
 

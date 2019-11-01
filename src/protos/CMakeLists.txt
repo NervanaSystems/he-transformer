@@ -14,9 +14,7 @@
 # the License.
 # ******************************************************************************
 
-if(Protobuf_FOUND)
-  message("protobuf found")
-else()
+if(NOT Protobuf_FOUND)
   message(FATAL_ERROR "Cannot find Protobuf")
 endif()
 
