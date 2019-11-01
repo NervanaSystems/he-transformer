@@ -92,7 +92,7 @@ NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_2) {
     EXPECT_TRUE(
         test::he::all_close(read_vector<double>(a), (vector<double>{5, 6})));
   }
-   {
+  {
     auto a = he_backend->create_plain_tensor(element::i32, shape);
     copy_data(a, vector<int32_t>{5, 6});
     EXPECT_TRUE(
@@ -230,7 +230,7 @@ NGRAPH_TEST(${BACKEND_NAME}, cipher_tv_write_read_2) {
     EXPECT_TRUE(
         test::he::all_close(read_vector<double>(a), (vector<double>{5, 6})));
   }
-   {
+  {
     auto a = he_backend->create_cipher_tensor(element::i32, shape);
     copy_data(a, vector<int32_t>{5, 6});
     EXPECT_TRUE(

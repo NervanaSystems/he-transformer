@@ -16,6 +16,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+#include "seal/seal_util.hpp"
+
 #include <chrono>
 #include <limits>
 #include <utility>
@@ -24,7 +26,6 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_util.hpp"
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 

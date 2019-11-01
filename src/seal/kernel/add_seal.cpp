@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "seal/kernel/add_seal.hpp"
+
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
 

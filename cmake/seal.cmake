@@ -23,15 +23,6 @@ set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 set(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
 set(SEAL_GIT_TAG 3.4.2)
 
-set(SEAL_USE_CXX17 ON)
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
-    set(SEAL_USE_CXX17 OFF)
-  endif()
-endif()
-
-message(STATUS "SEAL_USE_CXX17 ${SEAL_USE_CXX17}")
-
 # Without these, SEAL's globals.cpp will be deallocated twice, once by
 # he_seal_backend, which loads libseal.a, and once by the global destructor.
 set(SEAL_CXX_FLAGS
@@ -46,7 +37,6 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   add_compile_options(-Wno-extra-semi)
   add_compile_options(-Wno-old-style-cast)
 endif()
-message(STATUS "SEAL_CXX_FLAGS ${SEAL_CXX_FLAGS}")
 
 ExternalProject_Add(
   ext_seal
@@ -60,7 +50,7 @@ ExternalProject_Add(
                     -DCMAKE_CXX_FLAGS=${SEAL_CXX_FLAGS}
                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                    -DSEAL_USE_CXX17=${SEAL_USE_CXX17}
+                    -DSEAL_USE_CXX17=ON
                     # Skip updates
   UPDATE_COMMAND "")
 

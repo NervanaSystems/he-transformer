@@ -254,7 +254,8 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_upacked) {
       false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_2channel_2image_plain_complex_unpacked) {
   max_pool_test(
       Shape{2, 2, 14}, Shape{3},
       test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
@@ -326,7 +327,8 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_packed) {
       true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_2channel_2image_cipher_complex_unpacked) {
   max_pool_test(
       Shape{2, 2, 14}, Shape{3},
       test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
@@ -344,7 +346,8 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_complex_unpacked
       true, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_1d_2channel_2image_cipher_complex_packed) {
   max_pool_test(
       Shape{2, 2, 14}, Shape{3},
       test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
@@ -460,7 +463,8 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_packed) {
                 false, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_2d_2channel_2image_plain_complex_unpacked) {
   max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
                 test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                            {0, 3, 2, 0, 0},
@@ -656,7 +660,8 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_packed) {
                 true, false, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_complex_unpacked) {
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_2d_2channel_2image_cipher_complex_unpacked) {
   max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
                 test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                            {0, 3, 2, 0, 0},
@@ -705,8 +710,8 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_complex_unpacked
                 true, true, false);
 }
 
-
-NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_complex_packed) {
+NGRAPH_TEST(${BACKEND_NAME},
+            max_pool_2d_2channel_2image_cipher_complex_packed) {
   max_pool_test(Shape{2, 2, 5, 5}, Shape{2, 3},
                 test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                            {0, 3, 2, 0, 0},

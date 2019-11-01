@@ -14,11 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/minimum_seal.hpp"
+
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/minimum_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 

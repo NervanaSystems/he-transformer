@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/rescale_seal.hpp"
+
 #include <memory>
 #include <vector>
-
-#include "seal/kernel/rescale_seal.hpp"
 
 namespace ngraph {
 namespace he {

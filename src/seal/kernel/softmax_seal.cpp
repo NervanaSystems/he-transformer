@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/softmax_seal.hpp"
+
 #include <memory>
 #include <vector>
 
@@ -24,7 +26,6 @@
 #include "seal/kernel/divide_seal.hpp"
 #include "seal/kernel/exp_seal.hpp"
 #include "seal/kernel/max_seal.hpp"
-#include "seal/kernel/softmax_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/kernel/sum_seal.hpp"
 #include "seal/seal_util.hpp"

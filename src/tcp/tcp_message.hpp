@@ -53,9 +53,7 @@ class TCPMessage {
       : m_proto_message(proto_message) {}
 
   /// \brief Returns pointer to udnerlying protobuf message
-  std::shared_ptr<proto::TCPMessage> proto_message() {
-    return m_proto_message;
-  }
+  std::shared_ptr<proto::TCPMessage> proto_message() { return m_proto_message; }
 
   /// \brief Returns pointer to udnerlying protobuf message
   std::shared_ptr<proto::TCPMessage> proto_message() const {

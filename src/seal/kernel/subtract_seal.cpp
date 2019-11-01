@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "seal/kernel/subtract_seal.hpp"
+
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"

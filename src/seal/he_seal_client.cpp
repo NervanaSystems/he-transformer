@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/he_seal_client.hpp"
+
 #include <algorithm>
 #include <boost/asio.hpp>
 #include <functional>
@@ -26,7 +28,6 @@
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
-#include "seal/he_seal_client.hpp"
 #include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/kernel/max_pool_seal.hpp"
 #include "seal/kernel/relu_seal.hpp"

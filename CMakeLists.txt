@@ -21,10 +21,17 @@ cmake_minimum_required(VERSION 3.10)
 project(he_transformer LANGUAGES CXX)
 
 # Cmake flags SEAL requires C++17
-set(CMAKE_CXX_STANDARD 17)
+set(NGRAPH_HE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD ${NGRAPH_HE_CXX_STANDOARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(CMAKE_INSTALL_MESSAGE LAZY)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# Create compilation database compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} -Wall -march=native -Wno-deprecated-declarations")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
@@ -89,12 +96,14 @@ if(NOT DEFINED PYTHON_VENV_VERSION)
   set(PYTHON_VENV_VERSION
       "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 endif()
-message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 option(NGRAPH_HE_DOC_BUILD_ENABLE "Enable building of documentation" OFF)
 
+# Print options
+message(STATUS "NGRAPH_HE_CXX_STANDARD:     ${NGRAPH_HE_CXX_STANDARD}")
 message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
+message(STATUS "PYTHON_VENV_VERSION ${PYTHON_VENV_VERSION}")
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
   message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
@@ -120,9 +129,27 @@ if(NOT APPLE)
                OS_VERSION
                "${OS_VERSION}")
   message(STATUS "OS version: ${OS_VERSION}")
-else()
-  # Handle the case for MacOS TBD
 endif()
+
+if(UNIX OR APPLE)
+  add_custom_target(
+    style-check
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/maint/check-code-format.sh)
+  add_custom_target(
+    style-apply
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/maint/apply-code-format.sh)
+  add_custom_target(
+    style
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/maint/apply-code-format.sh)
+endif()
+
+# ------------------------------------------------------------------------------
+# Print Global Options
+# ------------------------------------------------------------------------------
+message(STATUS "Compile Flags: ${CMAKE_CXX_FLAGS}")
+message(STATUS "Shared Link Flags: ${CMAKE_SHARED_LINKER_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 
 include(cmake/ngraph-tf.cmake)
 include(cmake/gtest.cmake)

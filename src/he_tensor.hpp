@@ -17,9 +17,9 @@
 #pragma once
 
 #include <memory>
-#include "he_type.hpp"
 
 #include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "protos/message.pb.h"

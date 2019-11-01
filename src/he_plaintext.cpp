@@ -14,9 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_plaintext.hpp"
+
 #include <cstring>
 
-#include "he_plaintext.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"

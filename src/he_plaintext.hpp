@@ -18,6 +18,7 @@
 
 #include <ostream>
 #include <vector>
+
 #include "ngraph/type/element_type.hpp"
 
 namespace ngraph {

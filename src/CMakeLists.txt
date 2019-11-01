@@ -14,6 +14,8 @@
 # the License.
 # *****************************************************************************
 
+add_subdirectory(protos)
+
 # HE transformer sources
 set(HE_SRC
     # main
@@ -73,8 +75,7 @@ target_link_libraries(he_seal_backend
                              libboost
                              libseal
                              libngraph_tf
-                             libprotobuf
-                             libprotobuf_orig
+                             protobuf::libprotobuf
                              ngraph)
 
 # SEAL uses zlib
