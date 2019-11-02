@@ -48,3 +48,13 @@ add_dependencies(generated_proto_files generated_proto_files_target)
 # Use include protos/*.pb.h
 target_include_directories(generated_proto_files
                            INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/../)
+message("CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
+
+# Create dummy file with almost no clang-tidy checks. This prevents the
+# generated protobuf files from being tidied. See https://
+# gitlab.kitware.com/cmake/cmake/commit/b13bc8659f87567b1b091806d42f5023b2a6b48b
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy" "
+---
+Checks: '-*,llvm-twine-local'
+...
+")

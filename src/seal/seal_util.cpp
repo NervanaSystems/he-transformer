@@ -199,6 +199,7 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
                                      const std::uint64_t modulus_value,
                                      const std::uint64_t const_ratio,
                                      uint64_t* result) {
+  // NOLINTNEXTLINE
   for (; coeff_count--; poly++, result++) {
     // Multiplication
     unsigned long long z = *poly * scalar;
@@ -388,6 +389,7 @@ void encode(double value, const ngraph::element::Type& element_type,
                                       value_copy.get());
 
             // Starting from the top, reduce always 128-bit blocks
+            // NOLINTNEXTLINE
             for (std::size_t k = coeff_mod_count_ - 1; k--;) {
               value_copy[k] = seal::util::barrett_reduce_128(
                   value_copy.get() + k, coeff_modulus_[j]);
