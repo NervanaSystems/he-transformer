@@ -29,9 +29,8 @@ namespace he {
 
 HETensor::HETensor(
     const element::Type& element_type, const Shape& shape,
-    const bool plaintext_packing, const bool complex_packing,
-    const bool encrypted, seal::CKKSEncoder& ckks_encoder,
-    std::shared_ptr<seal::SEALContext> context,
+    bool plaintext_packing, bool complex_packing, bool encrypted,
+    seal::CKKSEncoder& ckks_encoder, std::shared_ptr<seal::SEALContext> context,
     const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
     const ngraph::he::HESealEncryptionParameters& encryption_params,
     const std::string& name)
@@ -71,8 +70,8 @@ HETensor::HETensor(
 }
 
 HETensor::HETensor(const element::Type& element_type, const Shape& shape,
-                   const bool plaintext_packing, const bool complex_packing,
-                   const bool encrypted, const HESealBackend& he_seal_backend,
+                   bool plaintext_packing, bool complex_packing, bool encrypted,
+                   const HESealBackend& he_seal_backend,
                    const std::string& name)
     : HETensor(element_type, shape, plaintext_packing, complex_packing,
                encrypted, *he_seal_backend.get_ckks_encoder(),
@@ -149,7 +148,7 @@ void HETensor::unpack() {
   m_packed_shape = get_shape();
 }
 
-uint64_t HETensor::batch_size(const Shape& shape, const bool packed) {
+uint64_t HETensor::batch_size(const Shape& shape, bool packed) {
   if (!shape.empty() && packed) {
     return shape[0];
   }
@@ -183,6 +182,7 @@ void HETensor::write(const void* p, size_t n) {
   size_t num_elements_to_write = n / (element_type.size() * get_batch_size());
 
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t i = 0; i < num_elements_to_write; ++i) {
     HEPlaintext plain(get_batch_size());
     for (size_t j = 0; j < get_batch_size(); ++j) {
@@ -235,6 +235,7 @@ void HETensor::read(void* p, size_t n) const {
   };
 
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t i = 0; i < num_elements_to_read; ++i) {
     // NGRAPH_INFO << "Reading element " << i;
     HEPlaintext plain;
@@ -319,6 +320,7 @@ void HETensor::write_to_protos(
       }
 
 #pragma omp parallel for
+      // NOLINTNEXTLINE
       for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
         size_t data_offset = offset + data_idx;
         m_data[data_offset].save(*mutable_data->Mutable(data_idx));
@@ -352,6 +354,7 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
               << " inputs";
   NGRAPH_INFO << "he_tensor->data.size " << he_tensor->data().size();
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
     he_tensor->data(result_idx) = loaded;
@@ -390,6 +393,7 @@ void HETensor::load_from_proto_tensor(
                ", expected ", proto_packed);
 
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
     he_tensor->data(proto_offset + result_idx) = loaded;

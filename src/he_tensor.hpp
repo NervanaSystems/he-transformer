@@ -50,8 +50,8 @@ class HETensor : public runtime::Tensor {
   /// loaded tensor
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
-           const bool plaintext_packing, const bool complex_packing,
-           const bool encrypted, seal::CKKSEncoder& ckks_encoder,
+           bool plaintext_packing, bool complex_packing, bool encrypted,
+           seal::CKKSEncoder& ckks_encoder,
            std::shared_ptr<seal::SEALContext> context,
            const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
            const ngraph::he::HESealEncryptionParameters& encryption_params,
@@ -68,11 +68,11 @@ class HETensor : public runtime::Tensor {
   /// \param[in] he_seal_backend Backend used for encryption and decryption
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
-           const bool plaintext_packing, const bool complex_packing,
-           const bool encrypted, const HESealBackend& he_seal_backend,
+           bool plaintext_packing, bool complex_packing, bool encrypted,
+           const HESealBackend& he_seal_backend,
            const std::string& name = "external");
 
-  virtual ~HETensor() override {}
+  ~HETensor() override = default;
 
   /// \brief Write bytes directly into the tensor
   /// \param[in] p Pointer to source of data
@@ -117,7 +117,7 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns the batch size of a given shape
   /// \param[in] shape Shape of the tensor
   /// \param[in] packed Whether or not batch-axis packing is used
-  static uint64_t batch_size(const Shape& shape, const bool packed);
+  static uint64_t batch_size(const Shape& shape, bool packed);
 
   /// \brief Returns the shape of the un-expanded (i.e. packed) tensor.
   const Shape& get_packed_shape() const { return m_packed_shape; }
@@ -174,8 +174,9 @@ class HETensor : public runtime::Tensor {
       std::shared_ptr<seal::SEALContext> context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params) {
-    return load_from_proto_tensors({proto_tensor}, ckks_encoder, context,
-                                   encryptor, decryptor, encryption_params);
+    return load_from_proto_tensors({proto_tensor}, ckks_encoder,
+                                   std::move(context), encryptor, decryptor,
+                                   encryption_params);
   }
 
   /// \brief Loads a tensor from protobuf tensor to an he_tensor

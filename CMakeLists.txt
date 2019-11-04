@@ -135,6 +135,7 @@ if(NGRAPH_HE_CLANG_TIDY)
   set(CLANG_TIDY_DEFINITIONS "CLANG_TIDY_SHA1=${clang_tidy_sha1}")
   unset(clang_tidy_sha1)
   message("CMAKE_CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY}")
+  message("CLANG_TIDY_DEFINITIONS ${CLANG_TIDY_DEFINITIONS}")
 endif()
 configure_file(.clang-tidy .clang-tidy COPYONLY)
 

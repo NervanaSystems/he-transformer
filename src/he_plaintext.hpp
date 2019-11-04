@@ -30,12 +30,12 @@ class HEPlaintext : public std::vector<double> {
   HEPlaintext(const std::initializer_list<double>& values)
       : std::vector<double>(values) {}
 
-  HEPlaintext(const HEPlaintext& plain) : std::vector<double>(plain) {}
+  HEPlaintext(const HEPlaintext& plain) = default;
 
-  HEPlaintext(const std::vector<double>& values)
+  explicit HEPlaintext(const std::vector<double>& values)
       : std::vector<double>(values) {}
 
-  HEPlaintext(size_t n, double initial_value = 0)
+  explicit HEPlaintext(size_t n, double initial_value = 0)
       : std::vector<double>(n, initial_value) {}
 
   template <class InputIterator>
@@ -47,7 +47,7 @@ class HEPlaintext : public std::vector<double> {
     return *this;
   }
 
-  HEPlaintext& operator=(HEPlaintext&& v) {
+  HEPlaintext& operator=(HEPlaintext&& v) noexcept {
     static_cast<std::vector<double>*>(this)->operator=(v);
     return *this;
   }
