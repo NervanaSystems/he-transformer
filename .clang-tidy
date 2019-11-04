@@ -7,19 +7,13 @@ Checks: >
   -*,
   bugprone-*,
   google-*,
+  -google-runtime-references,
   misc-*,
   modernize-*,
   performance-*,
   portability-*,
   readability-*,
   readability-identifier-naming,
-  -google-readability-namespace-comments,
-  -google-runtime-int,
-  -google-runtime-references,
-  -misc-non-private-member-variables-in-classes,
-  #-readability-named-parameter,
-  -readability-braces-around-statements,
-  -readability-magic-numbers
 
 HeaderFilterRegex: 'src/[^/]*\.(h|hpp|cpp)$'
 
