@@ -14,8 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <math.h>
 #include <chrono>
+#include <cmath>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -66,8 +66,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
   auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
   copy_data(t_c, std::vector<float>{4, 5, 6});
 
   std::vector<float> results;
@@ -75,18 +75,23 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
     std::vector<float> inputs{1, 2, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {b->get_name(), make_pair("plain", inputs)}});
 
     auto double_results = he_client.get_results();
+    NGRAPH_INFO << "Got client results";
     results = std::vector<float>(double_results.begin(), double_results.end());
+    NGRAPH_INFO << "Set results vector";
   });
 
   auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
       he_backend->compile(f));
 
+  NGRAPH_INFO << "call_with_validate";
   handle->call_with_validate({t_result}, {t_dummy, t_c});
+  NGRAPH_INFO << "Waiting on client thread";
   client_thread.join();
+  NGRAPH_INFO << "client thread joined";
   EXPECT_TRUE(ngraph::test::he::all_close(
       results, std::vector<float>{5.1, 7.2, 9.3}, 1e-3f));
 }
@@ -121,8 +126,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
   auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
   copy_data(t_c, std::vector<float>{4, 5, 6});
 
   std::vector<float> results;
@@ -130,7 +135,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
     std::vector<float> inputs{1, 2, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -169,15 +174,15 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
   auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {
     std::vector<float> inputs{1, 2, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -218,15 +223,15 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {
     std::vector<float> inputs{-1, -0.2, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -268,16 +273,16 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
   auto t_result = he_backend->create_cipher_tensor(ngraph::element::f64, shape);
 
   // Used for dummy server inputs
-  double DUMMY_FLOAT = 99;
+  double dummy_float = 99;
   copy_data(t_dummy,
-            std::vector<double>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+            std::vector<double>{dummy_float, dummy_float, dummy_float});
 
   std::vector<double> results;
   auto client_thread = std::thread([&]() {
     std::vector<double> inputs{-1, -0.2, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<double>{
+        ngraph::he::HETensorConfigMap<double>{
             {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -318,16 +323,16 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
   auto t_result = he_backend->create_cipher_tensor(ngraph::element::i64, shape);
 
   // Used for dummy server inputs
-  double DUMMY_FLOAT = 99;
+  double dummy_float = 99;
   copy_data(t_dummy,
-            std::vector<double>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+            std::vector<double>{dummy_float, dummy_float, dummy_float});
 
   std::vector<int64_t> results;
   auto client_thread = std::thread([&]() {
     std::vector<int64_t> inputs{-1, 0, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<int64_t>{
+        ngraph::he::HETensorConfigMap<int64_t>{
             {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -377,15 +382,15 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
       he_backend->create_cipher_tensor(ngraph::element::f32, result_shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {
     std::vector<float> inputs{-1, 3, 7};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -432,15 +437,15 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
       he_backend->create_cipher_tensor(ngraph::element::f32, result_shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {
     std::vector<float> inputs{-1, -0.2, 3};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -507,8 +512,8 @@ auto server_client_relu_packed_test = [](size_t element_count,
       he_backend->create_packed_cipher_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>(shape_size(shape), DUMMY_FLOAT));
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>(shape_size(shape), dummy_float));
 
   std::vector<float> inputs(shape_size(shape));
   std::vector<float> exp_results(shape_size(shape));
@@ -530,7 +535,7 @@ auto server_client_relu_packed_test = [](size_t element_count,
   auto client_thread = std::thread([&]() {
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
@@ -691,17 +696,17 @@ auto server_client_maxpool_test = [](const ngraph::Shape& shape,
   auto t_result = ngraph::test::he::tensor_from_flags(
       *he_backend, t->get_shape(), arg1_encrypted, packed);
   size_t batch_size =
-      std::static_pointer_cast<ngraph::he::ngraph::he::HETensor>(t_dummy)->get_batch_size();
+      std::static_pointer_cast<ngraph::he::HETensor>(t_dummy)->get_batch_size();
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>(shape_size(shape), DUMMY_FLOAT));
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>(shape_size(shape), dummy_float));
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {a->get_name(), make_pair("encrypt", input)}});
 
     auto double_results = he_client.get_results();
@@ -836,15 +841,15 @@ NGRAPH_TEST(${BACKEND_NAME},
       he_backend->create_cipher_tensor(ngraph::element::f32, shape_r);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, std::vector<float>(shape_size(shape_a), DUMMY_FLOAT));
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>(shape_size(shape_a), dummy_float));
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {
     std::vector<float> inputs{-1, -1, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
     auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        ngraph::he::ngraph::he::HETensorConfigMap<float>{
+        ngraph::he::HETensorConfigMap<float>{
             {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();

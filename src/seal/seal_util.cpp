@@ -359,42 +359,45 @@ void encode(double value, const ngraph::element::Type& element_type,
   } else {
     // From evaluator.h
     auto decompose_single_coeff =
-        [](const seal::SEALContext::ContextData& context_data_,
-           const std::uint64_t* value_, std::uint64_t* destination_,
-           seal::util::MemoryPool& pool_) {
-          auto& parms_ = context_data_.parms();
-          auto& coeff_modulus_ = parms_.coeff_modulus();
-          std::size_t coeff_mod_count_ = coeff_modulus_.size();
+        [](const seal::SEALContext::ContextData& local_context_data,
+           const std::uint64_t* local_value, std::uint64_t* local_destination,
+           seal::util::MemoryPool& local_pool) {
+          auto& local_parms = local_context_data.parms();
+          auto& local_coeff_modulus = local_parms.coeff_modulus();
+          std::size_t local_coeff_mod_count = local_coeff_modulus.size();
 #ifdef SEAL_DEBUG
-          if (value_ == nullptr) {
-            throw ngraph_error("value_ cannot be null");
+          if (local_value == nullptr) {
+            throw ngraph_error("local_value cannot be null");
           }
-          if (destination_ == nullptr) {
-            throw ngraph_error("destination_ cannot be null");
+          if (local_destination == nullptr) {
+            throw ngraph_error("local_destination cannot be null");
           }
-          if (destination_ == value_) {
-            throw ngraph_error("value_ cannot be the same as destination_");
+          if (local_destination == local_value) {
+            throw ngraph_error(
+                "local_value cannot be the same as local_destination");
           }
 #endif
-          if (coeff_mod_count_ == 1) {
-            seal::util::set_uint_uint(value_, coeff_mod_count_, destination_);
+          if (local_coeff_mod_count == 1) {
+            seal::util::set_uint_uint(local_value, local_coeff_mod_count,
+                                      local_destination);
             return;
           }
 
-          auto value_copy(seal::util::allocate_uint(coeff_mod_count_, pool_));
-          for (std::size_t j = 0; j < coeff_mod_count_; j++) {
+          auto value_copy(
+              seal::util::allocate_uint(local_coeff_mod_count, local_pool));
+          for (std::size_t j = 0; j < local_coeff_mod_count; j++) {
             // Manually inlined for efficiency
             // Make a fresh copy of value
-            seal::util::set_uint_uint(value_, coeff_mod_count_,
+            seal::util::set_uint_uint(local_value, local_coeff_mod_count,
                                       value_copy.get());
 
             // Starting from the top, reduce always 128-bit blocks
             // NOLINTNEXTLINE
-            for (std::size_t k = coeff_mod_count_ - 1; k--;) {
+            for (std::size_t k = local_coeff_mod_count - 1; k--;) {
               value_copy[k] = seal::util::barrett_reduce_128(
-                  value_copy.get() + k, coeff_modulus_[j]);
+                  value_copy.get() + k, local_coeff_modulus[j]);
             }
-            destination_[j] = value_copy[0];
+            local_destination[j] = value_copy[0];
           }
         };
 

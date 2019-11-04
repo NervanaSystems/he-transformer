@@ -29,9 +29,6 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
   size_t count = this->size();
   size_t type_byte_size = element_type.size();
 
-  NGRAPH_INFO << "writing plaintext with " << count << " elements";
-  NGRAPH_INFO << "double_vec_to_type_vec type_byte_size " << type_byte_size;
-
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       std::vector<float> float_values{begin(), end()};
@@ -41,9 +38,7 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
     }
     case element::Type_t::f64: {
       auto type_values_src = static_cast<const void*>(this->data());
-      NGRAPH_INFO << "Doubvle vec to type vec f64";
       std::memcpy(target, type_values_src, type_byte_size * count);
-      NGRAPH_INFO << "Doubvle vec to type vec f64 ok";
       break;
     }
     case element::Type_t::i32: {

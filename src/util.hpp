@@ -37,7 +37,7 @@ namespace he {
 template <typename T>
 inline void complex_vec_to_real_vec(std::vector<T>& output,
                                     const std::vector<std::complex<T>>& input) {
-  NGRAPH_CHECK(output.size() == 0, "Output vector is not empty");
+  NGRAPH_CHECK(output.empty(), "Output vector is not empty");
   output.reserve(input.size() * 2);
   for (const std::complex<T>& value : input) {
     output.emplace_back(value.real());
@@ -53,7 +53,7 @@ inline void complex_vec_to_real_vec(std::vector<T>& output,
 template <typename T>
 inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
                                     const std::vector<T>& input) {
-  NGRAPH_CHECK(output.size() == 0, "Output vector is not empty");
+  NGRAPH_CHECK(output.empty(), "Output vector is not empty");
   output.reserve(input.size() / 2);
   std::vector<T> complex_parts(2, 0);
   for (size_t i = 0; i < input.size(); ++i) {

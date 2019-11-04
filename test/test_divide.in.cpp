@@ -68,10 +68,10 @@ auto divide_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
     if (packed && complex_packing && arg1_encrypted && !arg2_encrypted) {
       exp_result.emplace_back(
           input_a.back() /
-          input_b[i % shape_size(ngraph::he::ngraph::he::HETensor::pack_shape(shape))]);
+          input_b[i % shape_size(ngraph::he::HETensor::pack_shape(shape))]);
     } else if (packed && complex_packing && !arg1_encrypted && arg2_encrypted) {
       exp_result.emplace_back(
-          input_a[i % shape_size(ngraph::he::ngraph::he::HETensor::pack_shape(shape))] /
+          input_a[i % shape_size(ngraph::he::HETensor::pack_shape(shape))] /
           input_b.back());
     } else {
       exp_result.emplace_back(input_a.back() / input_b.back());

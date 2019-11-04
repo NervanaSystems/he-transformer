@@ -220,16 +220,11 @@ void HETensor::read(void* p, size_t n) const {
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
     auto* src = static_cast<char*>(const_cast<void*>(type_values_src));
-    NGRAPH_INFO << "Copy batch values to src";
     for (size_t j = 0; j < get_batch_size(); ++j) {
       auto* dst_with_offset = static_cast<void*>(
           static_cast<char*>(copy_target) +
           type_byte_size * (element_idx + j * num_elements_to_read));
-      NGRAPH_INFO << "src " << &src;
-      NGRAPH_INFO << "dst_with_offset " << &dst_with_offset;
-      NGRAPH_INFO << "type_byte_size " << type_byte_size;
       std::memcpy(dst_with_offset, src, type_byte_size);
-      NGRAPH_INFO << "memcpy ok";
       src += type_byte_size;
     }
   };
@@ -246,20 +241,13 @@ void HETensor::read(void* p, size_t n) const {
     } else {
       plain = m_data[i].get_plaintext();
     }
-    // NGRAPH_INFO << "loaded element " << i << " plain " << plain;
-    NGRAPH_INFO << "element_type " << element_type;
 
     void* dst = ngraph::ngraph_malloc(type_byte_size * get_batch_size());
     plain.resize(get_batch_size());
     plain.write(dst, element_type);
 
-    NGRAPH_INFO << "wrote plaintext";
-
-    NGRAPH_INFO << "get_batch_size " << get_batch_size();
-
     copy_batch_values_to_src(i, p, dst);
 
-    NGRAPH_INFO << "copy_batch_values_to_src";
     ngraph::ngraph_free(dst);
   }
   NGRAPH_INFO << "Done reading " << num_elements_to_read;

@@ -27,8 +27,8 @@ TEST(encryption_parameters, create) {
 
   seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
-  auto coeff_modulus =
-      seal::CoeffModulus::Create(poly_modulus_degree, std::vector<int>{30, 30, 30});
+  auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
+                                                  std::vector<int>{30, 30, 30});
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
@@ -56,8 +56,8 @@ TEST(encryption_parameters, create) {
       "HE_SEAL", seal_encryption_parameters, 0, 1.23, false));
 
   // Attributes set properly
-  auto parms = ngraph::he::HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
-                                          128, 1.23, true);
+  auto parms = ngraph::he::HESealEncryptionParameters(
+      "HE_SEAL", seal_encryption_parameters, 128, 1.23, true);
   EXPECT_EQ(parms.complex_packing(), true);
   EXPECT_EQ(parms.scale(), 1.23);
   EXPECT_EQ(parms.security_level(), 128);
@@ -70,8 +70,8 @@ TEST(encryption_parameters, save) {
 
   seal_encryption_parameters.set_poly_modulus_degree(poly_modulus_degree);
 
-  auto coeff_modulus =
-      seal::CoeffModulus::Create(poly_modulus_degree, std::vector<int>{30, 30, 30});
+  auto coeff_modulus = seal::CoeffModulus::Create(poly_modulus_degree,
+                                                  std::vector<int>{30, 30, 30});
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
@@ -97,10 +97,11 @@ TEST(encryption_parameters, from_string) {
         "security_level" : 128,
         "coeff_modulus" : [54],
         "scale" : 1.23,
-        "complex_packing" : True
+        "complex_packing" : true
     })";
   auto he_parms =
-      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(config.c_str());
+      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
+          config.c_str());
 
   EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
   EXPECT_EQ(he_parms.security_level(), 128);

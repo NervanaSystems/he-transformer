@@ -40,11 +40,11 @@ CheckOptions:
   - key:    readability-identifier-naming.PrivateMemberPrefix
     value:  m_
   - key:    readability-identifier-naming.ProtectedMemberPrefix
-    value:  m
+    value:  m_
   - key:    readability-identifier-naming.PublicMemberPrefix
-    value:  m
+    value:  m_
   - key:    readability-identifier-naming.MemberPrefix
-    value:  m
+    value:  m_
 
 
 # Turn all the warnings from the checks above into errors.
