@@ -25,11 +25,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-using namespace seal;
-
 static string s_manifest = "${MANIFEST}";
 
 TEST(perf_micro, encode) {

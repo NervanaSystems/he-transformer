@@ -23,10 +23,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-
 static string s_manifest = "${MANIFEST}";
 
 auto dot_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,

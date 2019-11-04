@@ -55,6 +55,6 @@ message("CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
 # gitlab.kitware.com/cmake/cmake/commit/b13bc8659f87567b1b091806d42f5023b2a6b48b
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy" "
 ---
-Checks: '-*,llvm-twine-local'
+Checks: '*,llvm-twine-local'
 ...
 ")

@@ -23,5 +23,5 @@ Checks: >
 WarningsAsErrors: "*"
 
 CheckOptions:
-  - { key: readability-identifier-naming.PrivateMemberPrefix,    value: m_          }
+  - { key: readability-identifier-naming.PrivateMemberPrefix,    value: s_          }
   - { key: readability-identifier-naming.ProtectedMemberPrefix,  value: m_          }

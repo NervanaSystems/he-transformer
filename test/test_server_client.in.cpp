@@ -34,10 +34,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-
 static string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {

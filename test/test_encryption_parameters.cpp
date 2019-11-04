@@ -20,10 +20,6 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-
 TEST(encryption_parameters, create) {
   size_t poly_modulus_degree{4096};
   auto seal_encryption_parameters =

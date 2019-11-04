@@ -136,7 +136,7 @@ if(NGRAPH_HE_CLANG_TIDY)
   unset(clang_tidy_sha1)
   message("CMAKE_CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY}")
 endif()
-# configure_file(.clang-tidy .clang-tidy COPYONLY)
+configure_file(.clang-tidy .clang-tidy COPYONLY)
 
 # ------------------------------------------------------------------------------
 # Installation logic...

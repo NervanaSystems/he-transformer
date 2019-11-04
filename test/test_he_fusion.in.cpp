@@ -26,10 +26,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-
 static string s_manifest = "${MANIFEST}";
 
 static void check_bounded_relu(const Shape& param_shape, float constant_val) {

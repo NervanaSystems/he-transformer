@@ -25,8 +25,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-
 TEST(seal_example, trivial) {
   int a = 1;
   int b = 2;
@@ -34,7 +32,6 @@ TEST(seal_example, trivial) {
 }
 
 TEST(seal_example, seal_ckks_basics) {
-  using namespace seal;
 
   EncryptionParameters parms(scheme_type::CKKS);
   size_t poly_modulus_degree = 8192;
