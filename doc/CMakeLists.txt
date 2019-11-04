@@ -14,7 +14,7 @@
 # the License.
 # ******************************************************************************
 
-if("${NGRAPH_HE_DOC_BUILD_ENABLE}" MATCHES "^ON$")
+if(NGRAPH_HE_DOC_BUILD_ENABLE)
   add_custom_target(docs COMMENT "Build doxygen documentation.")
   add_subdirectory(doxygen)
 else()

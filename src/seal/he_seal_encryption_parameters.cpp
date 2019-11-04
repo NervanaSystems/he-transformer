@@ -23,6 +23,7 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/file_util.hpp"
+#include "nlohmann/json.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {

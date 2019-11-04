@@ -16,8 +16,6 @@
 
 include(ExternalProject)
 
-set(PROTOBUF_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf)
-set(PROTOBUF_SRC_DIR ${PROTOBUF_PREFIX}/src/ext_protobuf)
 set(NGRAPH_HE_PROTOBUF_GIT_REPO_URL
     "https://github.com/protocolbuffers/protobuf")
 set(NGRAPH_HE_PROTOBUF_GIT_TAG "v3.10.1")
@@ -71,16 +69,3 @@ endif()
 
 set(Protobuf_FOUND TRUE)
 set(PROTOBUF_FOUND TRUE)
-
-# Create copies of protobuf to allow pyhe_client to find it
-add_custom_target(libprotobuf_soft_link ALL
-                  DEPENDS protobuf::libprotobuf
-                  COMMAND ${CMAKE_COMMAND}
-                          -E
-                          make_directory
-                          ${NGRAPH_TF_LIB_DIR}
-                  COMMAND ${CMAKE_COMMAND}
-                          -E
-                          copy
-                          ${Protobuf_LIBRARIES}
-                          ${NGRAPH_TF_LIB_DIR})

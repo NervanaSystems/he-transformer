@@ -134,8 +134,6 @@ if(NGRAPH_HE_CLANG_TIDY)
   file(SHA1 ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy clang_tidy_sha1)
   set(CLANG_TIDY_DEFINITIONS "CLANG_TIDY_SHA1=${clang_tidy_sha1}")
   unset(clang_tidy_sha1)
-  message("CMAKE_CXX_CLANG_TIDY ${CMAKE_CXX_CLANG_TIDY}")
-  message("CLANG_TIDY_DEFINITIONS ${CLANG_TIDY_DEFINITIONS}")
 endif()
 configure_file(.clang-tidy .clang-tidy COPYONLY)
 
@@ -218,6 +216,17 @@ message(STATUS "CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}")
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 
 include(cmake/ngraph-tf.cmake)
+
+# Install he-transformer to installation location and into ngraph-tf
+set(INSTALL_LIB_DIRS
+    ${EXTERNAL_INSTALL_LIB_DIR}
+    ${NGRAPH_TF_VENV_LIB_DIR}
+    ${NGRAPH_TF_LIB_DIR}
+    ${NGRAPH_HE_INSTALL_LIB})
+
+set(INSTALL_INCLUDE_DIRS ${EXTERNAL_INSTALL_INCLUDE_DIR}
+                         ${NGRAPH_HE_INSTALL_INCLUDE})
+
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 include(cmake/openmp.cmake)
@@ -228,10 +237,7 @@ include(cmake/protobuf.cmake)
 # HE transformer source and test directories
 add_subdirectory(src)
 add_subdirectory(test)
-
-if(NGRAPH_HE_DOC_BUILD_ENABLE)
-  add_subdirectory(doc)
-endif()
+add_subdirectory(doc)
 
 # For python bindings
 add_subdirectory(python)

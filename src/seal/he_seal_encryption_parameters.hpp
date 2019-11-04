@@ -20,7 +20,6 @@
 #include <iostream>
 #include <string>
 
-#include "nlohmann/json.hpp"
 #include "seal/seal.h"
 
 namespace ngraph {

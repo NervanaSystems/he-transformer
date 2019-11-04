@@ -21,15 +21,13 @@ set(JSON_SRC_DIR ${JSON_PREFIX}/src/ext_json)
 set(JSON_GIT_REPO_URL https://github.com/nlohmann/json)
 set(JSON_GIT_LABEL v3.5.0)
 
+message(STATUS "EXTERNAL_INSTALL_DIR ${EXTERNAL_INSTALL_DIR}")
 ExternalProject_Add(ext_json
                     PREFIX json
                     GIT_REPOSITORY ${JSON_GIT_REPO_URL}
                     GIT_TAG ${JSON_GIT_LABEL}
                     CONFIGURE_COMMAND ""
-                    BUILD_COMMAND cp
-                                  -r
-                                  ${JSON_SRC_DIR}/single_include/nlohmann
-                                  ${EXTERNAL_INSTALL_DIR}/include/
+                    BUILD_COMMAND ""
                     INSTALL_COMMAND ""
                     UPDATE_COMMAND ""
                     EXCLUDE_FROM_ALL TRUE)
@@ -38,3 +36,5 @@ ExternalProject_Get_Property(ext_json SOURCE_DIR)
 add_library(libjson INTERFACE)
 target_include_directories(libjson SYSTEM INTERFACE ${SOURCE_DIR}/include)
 add_dependencies(libjson ext_json)
+
+set(json_INCLUDE_DIR ${SOURCE_DIR}/include)

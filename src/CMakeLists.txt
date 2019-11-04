@@ -75,31 +75,40 @@ target_link_libraries(he_seal_backend
                              generated_proto_files
                              ngraph)
 
-# Install he-transformer to installation location and into ngraph-tf
-install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
-install(TARGETS he_seal_backend DESTINATION ${NGRAPH_TF_VENV_LIB_DIR})
-install(TARGETS he_seal_backend DESTINATION ${NGRAPH_TF_LIB_DIR})
-install(TARGETS he_seal_backend DESTINATION ${NGRAPH_HE_INSTALL_LIB})
+foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
+  install(TARGETS he_seal_backend DESTINATION ${INSTALL_LIB_DIR})
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${NGRAPH_HE_INSTALL_LIB}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
+  message("Installing protobuf to ${INSTALL_LIB_DIR} ")
+  message("Protobuf_LIBRARIES ${Protobuf_LIBRARIES}")
+  add_custom_command(TARGET he_seal_backend POST_BUILD
+                     COMMAND ${CMAKE_COMMAND}
+                             -E
+                             copy
+                             ${Protobuf_LIBRARIES}
+                             ${INSTALL_LIB_DIR}
+                     DEPENDS protobuf::libprotobuf)
+endforeach()
 
-# Install protobuf files
-install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
-        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${NGRAPH_HE_INSTALL_INCLUDE}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
+message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
+
+foreach(INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIRS})
+  message("Installing headers to ${INSTALL_INCLUDE_DIR}")
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+          DESTINATION ${INSTALL_INCLUDE_DIR}
+          FILES_MATCHING
+          PATTERN "*.hpp"
+          PATTERN "*.h")
+  install(DIRECTORY ${Protobuf_INCLUDE_DIR}/
+          DESTINATION ${INSTALL_INCLUDE_DIR}
+          FILES_MATCHING
+          PATTERN "*.h"
+          PATTERN "*.hpp"
+          PATTERN "*.inc") # For port_def.inc
+  message("Installing json_INCLUDE_DIR ${json_INCLUDE_DIR}")
+  install(DIRECTORY ${json_INCLUDE_DIR}/
+          DESTINATION ${INSTALL_INCLUDE_DIR}
+          FILES_MATCHING
+          PATTERN "*.h"
+          PATTERN "*.hpp")
+
+endforeach()
