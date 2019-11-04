@@ -23,31 +23,31 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-static string s_manifest = "${MANIFEST}";
+static std::string s_manifest = "${MANIFEST}";
 
-auto exp_test = [](const Shape& shape, const bool arg1_encrypted,
+auto exp_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
                    const bool complex_packing, const bool packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Exp>(a);
-  auto f = make_shared<Function>(t, ParameterVector{a});
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto t = std::make_shared<ngraph::op::Exp>(a);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
   a->set_op_annotations(
-      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
 
   auto t_a =
-      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+      ngraph::test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
   auto t_result =
-      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+      ngraph::test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
 
-  vector<float> input_a;
-  vector<float> exp_result;
+  std::vector<float> input_a;
+  std::vector<float> exp_result;
 
   for (int i = 0; i < shape_size(shape); ++i) {
     if (i % 2 == 0) {
@@ -62,37 +62,37 @@ auto exp_test = [](const Shape& shape, const bool arg1_encrypted,
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
   EXPECT_TRUE(
-      test::he::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+      ngraph::test::he::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_plain_real_unpacked) {
-  exp_test(Shape{2, 3}, false, false, false);
+  exp_test(ngraph::Shape{2, 3}, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_plain_real_packed) {
-  exp_test(Shape{2, 3}, false, false, true);
+  exp_test(ngraph::Shape{2, 3}, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_plain_complex_unpacked) {
-  exp_test(Shape{2, 3}, false, true, false);
+  exp_test(ngraph::Shape{2, 3}, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_plain_complex_packed) {
-  exp_test(Shape{2, 3}, false, true, true);
+  exp_test(ngraph::Shape{2, 3}, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_cipher_real_unpacked) {
-  exp_test(Shape{2, 3}, true, false, false);
+  exp_test(ngraph::Shape{2, 3}, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_cipher_real_packed) {
-  exp_test(Shape{2, 3}, true, false, true);
+  exp_test(ngraph::Shape{2, 3}, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_cipher_complex_unpacked) {
-  exp_test(Shape{2, 3}, true, true, false);
+  exp_test(ngraph::Shape{2, 3}, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_cipher_complex_packed) {
-  exp_test(Shape{2, 3}, true, true, true);
+  exp_test(ngraph::Shape{2, 3}, true, true, true);
 }

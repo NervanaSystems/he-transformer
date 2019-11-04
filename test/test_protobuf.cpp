@@ -30,16 +30,16 @@
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
 
 TEST(protobuf, serialize_cipher) {
-  proto::TCPMessage message;
+  ngraph::he::proto::TCPMessage message;
 
-  proto::Function f;
+  ngraph::he::proto::Function f;
   f.set_function("123");
   *message.mutable_function() = f;
 
-  stringstream s;
+  std::stringstream s;
   message.SerializeToOstream(&s);
 
-  proto::TCPMessage deserialize;
+  ngraph::he::proto::TCPMessage deserialize;
   deserialize.ParseFromIstream(&s);
 
   EXPECT_TRUE(
@@ -47,42 +47,42 @@ TEST(protobuf, serialize_cipher) {
 }
 
 TEST(tcp_message, create) {
-  proto::TCPMessage proto_msg;
-  proto::Function f;
+  ngraph::he::proto::TCPMessage proto_msg;
+  ngraph::he::proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
-  stringstream s;
+  std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  TCPMessage tcp_message(move(proto_msg));
+  ngraph::he::proto::TCPMessage tcp_message(std::move(proto_msg));
   EXPECT_EQ(1, 1);
 }
 
 TEST(tcp_message, encode_decode) {
-  using data_buffer = vector<char>;
+  using data_buffer = std::vector<char>;
   data_buffer buffer;
   buffer.resize(20);
 
   size_t encode_size = 10;
-  TCPMessage::encode_header(buffer, encode_size);
-  size_t decoded_size = TCPMessage::decode_header(buffer);
+  ngraph::he::TCPMessage::encode_header(buffer, encode_size);
+  size_t decoded_size = ngraph::he::TCPMessage::decode_header(buffer);
   EXPECT_EQ(decoded_size, encode_size);
 }
 
 TEST(tcp_message, pack_unpack) {
-  using data_buffer = vector<char>;
+  using data_buffer = std::vector<char>;
 
-  proto::TCPMessage proto_msg;
-  proto::Function f;
+  ngraph::he::proto::TCPMessage proto_msg;
+  ngraph::he::proto::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
-  stringstream s;
+  std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  TCPMessage message1(move(proto_msg));
+  ngraph::he::TCPMessage message1(std::move(proto_msg));
 
   data_buffer buffer;
   message1.pack(buffer);
 
-  TCPMessage message2;
+  ngraph::he::TCPMessage message2;
   message2.unpack(buffer);
 
   EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(

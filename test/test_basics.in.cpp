@@ -26,7 +26,7 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-static string s_manifest = "${MANIFEST}";
+static std::string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, trivial) {
   int x = 1;
@@ -36,46 +36,46 @@ NGRAPH_TEST(${BACKEND_NAME}, trivial) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   EXPECT_EQ(1, 1);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
-  backend->create_tensor(element::f32, shape);
+  ngraph::Shape shape{2, 2};
+  backend->create_tensor(ngraph::element::f32, shape);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
-  Shape shape{2, 2};
-  he_backend->create_cipher_tensor(element::f32, shape);
+  ngraph::Shape shape{2, 2};
+  he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_plain_tensor) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
-  Shape shape{2, 2};
-  he_backend->create_plain_tensor(element::f32, shape);
+  ngraph::Shape shape{2, 2};
+  he_backend->create_plain_tensor(ngraph::element::f32, shape);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_count) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
+  ngraph::Shape shape{2, 2};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::f32, shape);
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
+  auto a = backend->create_tensor(ngraph::element::f32, shape);
+  auto b = backend->create_tensor(ngraph::element::f32, shape);
+  auto c = backend->create_tensor(ngraph::element::f32, shape);
 
   auto handle = backend->compile(f);
 
@@ -83,18 +83,18 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_count) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_type) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
+  ngraph::Shape shape{2, 2};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::i32, shape);
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
+  auto a = backend->create_tensor(ngraph::element::i32, shape);
+  auto b = backend->create_tensor(ngraph::element::f32, shape);
+  auto c = backend->create_tensor(ngraph::element::f32, shape);
 
   auto handle = backend->compile(f);
 
@@ -102,18 +102,18 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_type) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_shape) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
+  ngraph::Shape shape{2, 2};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::f32, {2, 3});
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
+  auto a = backend->create_tensor(ngraph::element::f32, {2, 3});
+  auto b = backend->create_tensor(ngraph::element::f32, shape);
+  auto c = backend->create_tensor(ngraph::element::f32, shape);
 
   auto handle = backend->compile(f);
 
@@ -121,19 +121,19 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_input_shape) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_count) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
+  ngraph::Shape shape{2, 2};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::f32, shape);
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
-  auto d = backend->create_tensor(element::f32, shape);
+  auto a = backend->create_tensor(ngraph::element::f32, shape);
+  auto b = backend->create_tensor(ngraph::element::f32, shape);
+  auto c = backend->create_tensor(ngraph::element::f32, shape);
+  auto d = backend->create_tensor(ngraph::element::f32, shape);
 
   auto handle = backend->compile(f);
 
@@ -141,18 +141,18 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_count) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_type) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
+  ngraph::Shape shape{2, 2};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::i32, shape);
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
+  auto a = backend->create_tensor(ngraph::element::i32, shape);
+  auto b = backend->create_tensor(ngraph::element::f32, shape);
+  auto c = backend->create_tensor(ngraph::element::f32, shape);
 
   auto handle = backend->compile(f);
 
@@ -160,18 +160,18 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_type) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{2, 2};
+  ngraph::Shape shape{2, 2};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
-  auto a = backend->create_tensor(element::f32, {2, 3});
-  auto b = backend->create_tensor(element::f32, shape);
-  auto c = backend->create_tensor(element::f32, shape);
+  auto a = backend->create_tensor(ngraph::element::f32, {2, 3});
+  auto b = backend->create_tensor(ngraph::element::f32, shape);
+  auto c = backend->create_tensor(ngraph::element::f32, shape);
 
   auto handle = backend->compile(f);
 
@@ -179,50 +179,50 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_call_output_shape) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{10000, 1};
+  ngraph::Shape shape{10000, 1};
 
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto f =
-      make_shared<Function>(make_shared<op::Add>(A, B), ParameterVector{A, B});
+      std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B), ngraph::ParameterVector{A, B});
 
   auto handle =
-      static_pointer_cast<ngraph::he::HESealExecutable>(backend->compile(f));
+      std::static_pointer_cast<ngraph::he::HESealExecutable>(backend->compile(f));
 
   EXPECT_THROW({ handle->set_batch_size(10000); }, ngraph::CheckFailure);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, unsupported_op) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{11};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>(make_shared<op::Cos>(A), ParameterVector{A});
+  ngraph::Shape shape{11};
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto f = std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Cos>(A), ngraph::ParameterVector{A});
 
   EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, unsupported_op_type) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
-  Shape shape{11};
-  auto A = make_shared<op::Parameter>(element::i8, shape);
-  auto B = make_shared<op::Parameter>(element::i8, shape);
+  ngraph::Shape shape{11};
+  auto A = std::make_shared<ngraph::op::Parameter>(ngraph::element::i8, shape);
+  auto B = std::make_shared<ngraph::op::Parameter>(ngraph::element::i8, shape);
   {
-    auto f = make_shared<Function>(make_shared<op::Add>(A, B),
-                                   ParameterVector{A, B});
+    auto f = std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Add>(A, B),
+                                   ngraph::ParameterVector{A, B});
     EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
   }
   {
-    auto f = make_shared<Function>(make_shared<op::Multiply>(A, B),
-                                   ParameterVector{A, B});
+    auto f = std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Multiply>(A, B),
+                                   ngraph::ParameterVector{A, B});
     EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
   }
   {
-    auto f = make_shared<Function>(make_shared<op::Subtract>(A, B),
-                                   ParameterVector{A, B});
+    auto f = std::make_shared<ngraph::Function>(std::make_shared<ngraph::op::Subtract>(A, B),
+                                   ngraph::ParameterVector{A, B});
     EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
   }
 }
