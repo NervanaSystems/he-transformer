@@ -363,7 +363,7 @@ void HESealExecutable::send_inference_shape() {
 
       if (plaintext_packed(*input_param)) {
         NGRAPH_HE_LOG(1) << "Setting parameter " << input_param->get_name()
-                         << "  to packed";
+                         << " to packed";
         proto_he_tensor->set_packed(true);
       }
     }

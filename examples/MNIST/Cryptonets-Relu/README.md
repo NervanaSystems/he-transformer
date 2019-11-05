@@ -22,13 +22,13 @@ cd $HE_TRANSFORMER/examples/MNIST/Cryptonets-Relu
 ## CPU
 To test the network using the CPU backend, run
 ```bash
-python test.py --batch_size=1024 --backend=CPU
+python test.py --batch_size=512 --backend=CPU
 ```
 
 ## HE_SEAL plaintext
 To test the network using plaintext inputs (i.e. not encrypted), run
 ```bash
-python test.py --batch_size=1024 --backend=HE_SEAL
+python test.py --batch_size=512 --backend=HE_SEAL
 ```
 This should just be used for debugging, since the data is not encrypted
 
