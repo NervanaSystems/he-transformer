@@ -33,7 +33,8 @@ RUN apt-get update && apt-get install -y \
         software-properties-common \
         clang-3.9 clang-format-3.9 \
         git \
-        wget patch diffutils zlib1g-dev libtinfo-dev
+        wget patch diffutils zlib1g-dev libtinfo-dev \
+        autoconf
 
 # Install clang-6
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
