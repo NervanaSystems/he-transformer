@@ -16,6 +16,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+#include "seal/seal_util.hpp"
+
 #include <chrono>
 #include <limits>
 #include <utility>
@@ -24,7 +26,6 @@
 #include "ngraph/runtime/tensor.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_util.hpp"
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 
@@ -33,7 +34,7 @@ namespace he {
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,
-                                     seal::MemoryPoolHandle pool) {
+                                     const seal::MemoryPoolHandle& pool) {
   size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
   size_t chain_ind1 = he_seal_backend.get_chain_index(arg1);
 
@@ -119,7 +120,7 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
 
 void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
                             const HESealBackend& he_seal_backend,
-                            seal::MemoryPoolHandle pool) {
+                            const seal::MemoryPoolHandle& pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   if (!seal::is_metadata_valid_for(encrypted, context)) {
@@ -150,8 +151,8 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   }
 
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
-  // TODO: explore using different scales! Smaller scales might reduce # of
-  // rescalings
+  // TODO(fboemer): explore using different scales! Smaller scales might reduce
+  // # of rescalings
   double scale = encrypted.scale();
   encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
          plaintext_vals, he_seal_backend);
@@ -171,7 +172,7 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
-      if (coeff_modulus[j].value() < (1UL << 31)) {
+      if (coeff_modulus[j].value() < (1UL << 31U)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
         auto iter = barrett64_ratio_map.find(modulus_value);
         NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
@@ -198,11 +199,14 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
                                      const std::uint64_t modulus_value,
                                      const std::uint64_t const_ratio,
                                      uint64_t* result) {
+  // NOLINTNEXTLINE
   for (; coeff_count--; poly++, result++) {
     // Multiplication
+    // NOLINTNEXTLINE(google-runtime-int)
     unsigned long long z = *poly * scalar;
 
     // Barrett base 2^64 reduction
+    // NOLINTNEXTLINE(google-runtime-int)
     unsigned long long carry;
     // Carry will store the result modulo 2^64
     seal::util::multiply_uint64_hw64(z, const_ratio, &carry);
@@ -239,7 +243,7 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
   NGRAPH_HE_LOG(3) << "Matching to smallest chain index "
                    << smallest_chain_ind.second;
 
-  // TODO: loop over only ciphertext indices?
+  // TODO(fboemer): loop over only ciphertext indices?
   auto smallest_cipher = *he_types[smallest_chain_ind.first].get_ciphertext();
 #pragma omp parallel for
   for (size_t idx = 0; idx < num_elements; ++idx) {
@@ -262,7 +266,11 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
 void encode(double value, const ngraph::element::Type& element_type,
             double scale, seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
-            const HESealBackend& he_seal_backend, seal::MemoryPoolHandle pool) {
+            const HESealBackend& he_seal_backend,
+            const seal::MemoryPoolHandle& pool) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->get_context_data(parms_id);
@@ -313,7 +321,7 @@ void encode(double value, const ngraph::element::Type& element_type,
   double two_pow_64 = pow(2.0, 64);
 
   // Resize destination to appropriate size
-  // TODO: use reserve?
+  // TODO(fboemer): use reserve?
   destination.resize(coeff_mod_count);
 
   double coeffd = std::round(value);
@@ -322,7 +330,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 
   // Use faster decomposition methods when possible
   if (coeff_bit_count <= 64) {
-    uint64_t coeffu = static_cast<uint64_t>(fabs(coeffd));
+    auto coeffu = static_cast<uint64_t>(fabs(coeffd));
 
     if (is_negative) {
       for (size_t j = 0; j < coeff_mod_count; j++) {
@@ -353,41 +361,45 @@ void encode(double value, const ngraph::element::Type& element_type,
   } else {
     // From evaluator.h
     auto decompose_single_coeff =
-        [](const seal::SEALContext::ContextData& context_data_,
-           const std::uint64_t* value_, std::uint64_t* destination_,
-           seal::util::MemoryPool& pool_) {
-          auto& parms_ = context_data_.parms();
-          auto& coeff_modulus_ = parms_.coeff_modulus();
-          std::size_t coeff_mod_count_ = coeff_modulus_.size();
+        [](const seal::SEALContext::ContextData& local_context_data,
+           const std::uint64_t* local_value, std::uint64_t* local_destination,
+           seal::util::MemoryPool& local_pool) {
+          auto& local_parms = local_context_data.parms();
+          auto& local_coeff_modulus = local_parms.coeff_modulus();
+          std::size_t local_coeff_mod_count = local_coeff_modulus.size();
 #ifdef SEAL_DEBUG
-          if (value_ == nullptr) {
-            throw ngraph_error("value_ cannot be null");
+          if (local_value == nullptr) {
+            throw ngraph_error("local_value cannot be null");
           }
-          if (destination_ == nullptr) {
-            throw ngraph_error("destination_ cannot be null");
+          if (local_destination == nullptr) {
+            throw ngraph_error("local_destination cannot be null");
           }
-          if (destination_ == value_) {
-            throw ngraph_error("value_ cannot be the same as destination_");
+          if (local_destination == local_value) {
+            throw ngraph_error(
+                "local_value cannot be the same as local_destination");
           }
 #endif
-          if (coeff_mod_count_ == 1) {
-            seal::util::set_uint_uint(value_, coeff_mod_count_, destination_);
+          if (local_coeff_mod_count == 1) {
+            seal::util::set_uint_uint(local_value, local_coeff_mod_count,
+                                      local_destination);
             return;
           }
 
-          auto value_copy(seal::util::allocate_uint(coeff_mod_count_, pool_));
-          for (std::size_t j = 0; j < coeff_mod_count_; j++) {
+          auto value_copy(
+              seal::util::allocate_uint(local_coeff_mod_count, local_pool));
+          for (std::size_t j = 0; j < local_coeff_mod_count; j++) {
             // Manually inlined for efficiency
             // Make a fresh copy of value
-            seal::util::set_uint_uint(value_, coeff_mod_count_,
+            seal::util::set_uint_uint(local_value, local_coeff_mod_count,
                                       value_copy.get());
 
             // Starting from the top, reduce always 128-bit blocks
-            for (std::size_t k = coeff_mod_count_ - 1; k--;) {
+            // NOLINTNEXTLINE
+            for (std::size_t k = local_coeff_mod_count - 1; k--;) {
               value_copy[k] = seal::util::barrett_reduce_128(
-                  value_copy.get() + k, coeff_modulus_[j]);
+                  value_copy.get() + k, local_coeff_modulus[j]);
             }
-            destination_[j] = value_copy[0];
+            local_destination[j] = value_copy[0];
           }
         };
 
@@ -497,21 +509,6 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
     complex_vec_to_real_vec(output, complex_vals);
   } else {
     ckks_encoder.decode(input.plaintext(), output);
-  }
-}
-
-void write_plaintext(void* output, const HEPlaintext& input,
-                     const element::Type& element_type, size_t count) {
-  NGRAPH_CHECK(count != 0, "Decode called on 0 elements");
-  NGRAPH_CHECK(input.size() > 0, "Input has no values");
-
-  NGRAPH_CHECK(input.size() >= count, "Input size ", input.size(),
-               " too small for count ", count);
-  if (input.size() > count) {
-    std::vector<double> resized_values{input.begin(), input.begin() + count};
-    double_vec_to_type_vec(output, element_type, resized_values);
-  } else {
-    double_vec_to_type_vec(output, element_type, input);
   }
 }
 

@@ -35,10 +35,10 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
   if (arg.is_ciphertext() && out.is_ciphertext()) {
     out = arg;
   } else if (arg.is_ciphertext() && out.is_plaintext()) {
-    // TODO: decrypt instead?
+    // TODO(fboemer): decrypt instead?
     out.set_ciphertext(arg.get_ciphertext());
   } else if (arg.is_plaintext() && out.is_ciphertext()) {
-    // TODO: encrypt instead?
+    // TODO(fboemer): encrypt instead?
     out.set_plaintext(arg.get_plaintext());
 
   } else if (arg.is_plaintext() && out.is_plaintext()) {

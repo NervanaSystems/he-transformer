@@ -51,7 +51,7 @@ class HESealExecutable : public runtime::Executable {
  public:
   /// \brief Constructs an exectuable object
   /// \param[in] function Function in the executable
-  /// \param[in] enable_performance_collection Unused: TODO use
+  /// \param[in] enable_performance_collection Unused: TODO(fboemer) use
   /// \param[in] he_seal_backend Backend storing encryption context
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
@@ -80,12 +80,12 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Calls the executable on the given input tensors.
   /// If the client is enabled, the inputs are dummy values and ignored.
   /// Instead, the inputs will be provided by the client
-  /// \param[in] inputs Input tensor arguments to the function.
-  /// \param[out] outputs Output tensors storing the result of the
-  /// function
-  bool call(
-      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-      const std::vector<std::shared_ptr<runtime::Tensor>>& inputs) override;
+  /// \param[in] server_inputs Input tensor arguments to the function, provided
+  /// by the backend. \param[out] outputs Output tensors storing the result of
+  /// the function
+  bool call(const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+            const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
+      override;
 
   // TOOD
   std::vector<runtime::PerformanceCounter> get_performance_data()
@@ -94,7 +94,7 @@ class HESealExecutable : public runtime::Executable {
   // \brief Returns the port at which the server is expecting a connection
   size_t get_port() const { return m_port; }
 
-  // TODO: merge _done() methods
+  // TODO(fboemer): merge _done() methods
 
   /// \brief Returns whether or not the maxpool op has completed
   bool max_pool_done() const { return m_max_pool_done; }
@@ -135,21 +135,21 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Processes a client message with ciphertexts to call the appropriate
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_client_ciphers(const he_proto::TCPMessage& proto_msg);
+  void handle_client_ciphers(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a ReLU function
   /// \param[in] proto_msg Message to process
-  void handle_relu_result(const he_proto::TCPMessage& proto_msg);
+  void handle_relu_result(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a BoundedReLU
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_bounded_relu_result(const he_proto::TCPMessage& proto_msg);
+  void handle_bounded_relu_result(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a MaxPool
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_max_pool_result(const he_proto::TCPMessage& proto_msg);
+  void handle_max_pool_result(const proto::TCPMessage& proto_msg);
 
   /// \brief Sends results to the client
   void send_client_results();
@@ -159,11 +159,11 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Loads the public key from the message
   /// \param[in] proto_msg from which to load the public key
-  void load_public_key(const he_proto::TCPMessage& proto_msg);
+  void load_public_key(const proto::TCPMessage& proto_msg);
 
   /// \brief Loads the evaluation key from the message
   /// \param[in] proto_msg from which to load the evluation key
-  void load_eval_key(const he_proto::TCPMessage& proto_msg);
+  void load_eval_key(const proto::TCPMessage& proto_msg);
 
   /// \brief Processes the ReLU operation using a client
   /// \param[in] arg Tensor argument
@@ -238,15 +238,16 @@ class HESealExecutable : public runtime::Executable {
 
  private:
   HESealBackend& m_he_seal_backend;
-  bool m_is_compiled;
-  bool m_verbose_all_ops;
+  bool m_is_compiled{false};
+  bool m_verbose_all_ops{false};
   std::shared_ptr<Function> m_function;
 
   bool m_sent_inference_shape{false};
   bool m_client_public_key_set{false};
   bool m_client_eval_key_set{false};
 
-  bool m_server_setup;
+  bool m_enable_client;
+  bool m_server_setup{false};
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at
 
@@ -265,7 +266,6 @@ class HESealExecutable : public runtime::Executable {
 
   // (Encrypted) inputs to compiled function
   std::vector<std::shared_ptr<HETensor>> m_client_inputs;
-  std::vector<size_t> m_client_load_idx;
   // (Encrypted) outputs of compiled function
   std::vector<std::shared_ptr<HETensor>> m_client_outputs;
 
@@ -279,18 +279,18 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when relu is done
   std::mutex m_relu_mutex;
   std::condition_variable m_relu_cond;
-  size_t m_relu_done_count;
+  size_t m_relu_done_count{0};
   std::vector<size_t> m_unknown_relu_idx;
 
   // To trigger when max_pool is done
   std::mutex m_max_pool_mutex;
   std::condition_variable m_max_pool_cond;
-  bool m_max_pool_done;
+  bool m_max_pool_done{false};
 
   // To trigger when minimum is done
   std::mutex m_minimum_mutex;
   std::condition_variable m_minimum_cond;
-  bool m_minimum_done;
+  bool m_minimum_done{false};
 
   // To trigger when result message has been written
   std::mutex m_result_mutex;
@@ -299,16 +299,17 @@ class HESealExecutable : public runtime::Executable {
   // To trigger when session has started
   std::mutex m_session_mutex;
   std::condition_variable m_session_cond;
-  bool m_session_started;
+  bool m_session_started{false};
 
   // To trigger when client inputs have been received
   std::mutex m_client_inputs_mutex;
   std::condition_variable m_client_inputs_cond;
-  bool m_client_inputs_received;
+  bool m_client_inputs_received{false};
 
-  void generate_calls(const element::Type& type, const NodeWrapper& op,
-                      const std::vector<std::shared_ptr<HETensor>>& outputs,
-                      const std::vector<std::shared_ptr<HETensor>>& inputs);
+  void generate_calls(const element::Type& type,
+                      const NodeWrapper& node_wrapper,
+                      const std::vector<std::shared_ptr<HETensor>>& out,
+                      const std::vector<std::shared_ptr<HETensor>>& args);
 
   bool m_stop_const_fold{string_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };

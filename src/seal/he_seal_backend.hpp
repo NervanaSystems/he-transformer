@@ -61,28 +61,28 @@ class HESealBackend : public ngraph::runtime::Backend {
   HESealBackend();
   /// \brief Constructs a backend with the given encryption parameters
   /// \param[in] parms Encryption parameters
-  HESealBackend(const HESealEncryptionParameters& parms);
+  HESealBackend(HESealEncryptionParameters parms);
 
   /// \brief Prepares the backend with the encryption context, including
   /// generating encryption keys, encryptor, decryptor, evaluator, and encoder
   void generate_context();
 
   /// \brief Constructs an unpacked plaintext tensor
-  /// \param[in] element_type Datatype to store in the tensor
+  /// \param[in] type Datatype to store in the tensor
   /// \param[in] shape Shape of the tensor
-  std::shared_ptr<runtime::Tensor> create_tensor(
-      const element::Type& element_type, const Shape& shape) override;
+  std::shared_ptr<runtime::Tensor> create_tensor(const element::Type& type,
+                                                 const Shape& shape) override;
 
   /// \brief Unimplemented
   inline std::shared_ptr<runtime::Tensor> create_tensor(
-      const element::Type& element_type, const Shape& shape,
+      const element::Type& type, const Shape& shape,
       void* memory_pointer) override {
     throw ngraph_error("create_tensor unimplemented");
   }
 
   /// \brief Compiles a function
   /// \brief param[in] function Function to compile
-  /// \brief param[in] enable_performance_data TODO: unused
+  /// \brief param[in] enable_performance_data TODO(fboemer): unused
   /// \returns An executable object
   std::shared_ptr<ngraph::runtime::Executable> compile(
       std::shared_ptr<Function> function,
@@ -126,45 +126,46 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] type Datatype
   /// \returns True if datatype is supported, false otherwise
   inline bool is_supported_type(const ngraph::element::Type& type) const {
-    return m_supported_element_types.find(type.hash()) !=
-           m_supported_element_types.end();
+    return m_supported_types.find(type.hash()) != m_supported_types.end();
   }
 
   /// \brief Creates a cipher tensor using plaintext packing along the batch
   /// (i.e. first) axis
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
-      const element::Type& element_type, const Shape& shape) const;
+      const element::Type& type, const Shape& shape) const;
 
   /// \brief Creates a plaintext tensor using plaintext packing along the batch
   /// (i.e. first) axis
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
-      const element::Type& element_type, const Shape& shape) const;
+      const element::Type& type, const Shape& shape) const;
 
   /// \brief Creates a plaintext tensor
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
-  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] plaintext_packing Whether or not to use plaintext packing
   /// \param[in] name Name of the created tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_plain_tensor(
-      const element::Type& element_type, const Shape& shape,
-      const bool packed = false, const std::string& name = "external") const;
+      const element::Type& type, const Shape& shape,
+      const bool plaintext_packing = false,
+      const std::string& name = "external") const;
 
   /// \brief Creates a ciphertext tensor
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
-  /// \param[in] packed Whether or not to use plaintext packing
+  /// \param[in] plaintext_packing Whether or not to use plaintext packing
   /// \param[in] name Name of the created tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_cipher_tensor(
-      const element::Type& element_type, const Shape& shape,
-      const bool packed = false, const std::string& name = "external") const;
+      const element::Type& type, const Shape& shape,
+      const bool plaintext_packing = false,
+      const std::string& name = "external") const;
 
   /// \brief Creates empty ciphertext
   /// \returns Pointer to created ciphertext
@@ -190,16 +191,16 @@ class HESealBackend : public ngraph::runtime::Backend {
     return std::make_shared<SealCiphertextWrapper>(pool);
   }
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   void decode(void* output, const HEPlaintext& input, const element::Type& type,
               size_t count = 1) const;
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
-               const HEPlaintext& input, const element::Type& element_type,
+               const HEPlaintext& input, const element::Type& type,
                bool complex_packing = false) const;
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
                const bool complex_packing) const;
 
@@ -274,7 +275,7 @@ class HESealBackend : public ngraph::runtime::Backend {
     m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
   }
 
-  /// \brief TODO
+  /// \brief TODO(fboemer)
   const std::unordered_map<std::uint64_t, std::uint64_t>& barrett64_ratio_map()
       const {
     return m_barrett64_ratio_map;
@@ -403,7 +404,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   // Stores Barrett64 ratios for moduli under 30 bits
   std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;
 
-  std::unordered_set<size_t> m_supported_element_types{
+  std::unordered_set<size_t> m_supported_types{
       element::f32.hash(), element::i32.hash(), element::i64.hash(),
       element::f64.hash()};
 
@@ -460,7 +461,6 @@ class HESealBackend : public ngraph::runtime::Backend {
       "NotEqual",
       "OneHot",
       "Or",
-      "Power",
       "Product",
       "Quantize",
       "QuantizedAvgPool",

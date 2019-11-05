@@ -37,7 +37,7 @@ inline void sum_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   size_t batch_size = arg.size() > 0 ? arg[0].batch_size() : 1;
 
   for (const Coordinate& output_coord : output_transform) {
-    // TODO: batch size
+    // TODO(fboemer): batch size
     const auto out_coord_idx = output_transform.index(output_coord);
     out[out_coord_idx] = HEType(HEPlaintext(std::vector<double>(batch_size, 0)),
                                 complex_packing);

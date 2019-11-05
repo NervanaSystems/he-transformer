@@ -14,25 +14,24 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/exp_seal.hpp"
+
 #include <memory>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/exp_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {
 namespace he {
 
 void scalar_exp_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  std::vector<double> out_vals(arg.size());
-
+  HEPlaintext out_vals(arg.size());
   auto exp = [](double d) { return std::exp(d); };
   std::transform(arg.begin(), arg.end(), out_vals.begin(), exp);
-  out = HEPlaintext(std::vector<double>{out_vals});
+  out = std::move(out_vals);
 }
 
 void scalar_exp_seal(const HEType& arg, HEType& out,

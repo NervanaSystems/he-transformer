@@ -14,10 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "he_op_annotations.hpp"
+
 #include <functional>
 #include <memory>
-
-#include "he_op_annotations.hpp"
 
 namespace ngraph {
 namespace he {

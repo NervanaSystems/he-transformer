@@ -81,7 +81,7 @@ class SealCiphertextWrapper {
 
   /// \brief Writes the ciphertext to a protobuf object
   /// \param[out] he_type Protobuf object to write ciphertext to
-  inline void save(he_proto::HEType& he_type) const {
+  inline void save(proto::HEType& he_type) const {
     size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
     cipher_str.resize(cipher_size);
@@ -99,7 +99,7 @@ class SealCiphertextWrapper {
   /// \param[in] proto_he_type Protobuf object to load object from
   /// \param[in] context SEAL context to validate loaded ciphertext against
   static inline void load(SealCiphertextWrapper& dst,
-                          const he_proto::HEType& proto_he_type,
+                          const proto::HEType& proto_he_type,
                           std::shared_ptr<seal::SEALContext> context) {
     NGRAPH_CHECK(!proto_he_type.is_plaintext(),
                  "Cannot load ciphertext from plaintext HEType");

@@ -66,13 +66,13 @@ inline seal::sec_level_type seal_security_level(size_t bits) {
   return sec_level;
 }
 
-/// \brief Returns the smallest chain index of a vector of ciphertexts
-/// \param[in] ciphers Vector of ciphertexts
+/// \brief Returns the smallest chain index of a vector of HE data
+/// \param[in] he_types Vector of HE data
 /// \param[in] he_seal_backend Backend whose context is used to determine the
 /// chain index
-/// \returns The minimum chain index of the ciphertexts in ciphers
-/// TODO: move to he_seal_backend
-size_t match_to_smallest_chain_index(std::vector<HEType>& ciphers,
+/// \returns The minimum chain index of the HE data
+/// TODO(fboemer): move to he_seal_backend
+size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
                                      const HESealBackend& he_seal_backend);
 
 /// \brief Returns whether or not two cipher/plaintexts have a similar scale
@@ -114,7 +114,7 @@ inline void match_scale(S& arg0, const T& arg1) {
 void match_modulus_and_scale_inplace(
     SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
     const HESealBackend& he_seal_backend,
-    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Adds a ciphertext with a scalar in every slot
 /// \param[in,out] encrypted Ciphertext to add to.
@@ -144,7 +144,7 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
 /// \param[in] coeff_count Number of terms in the polynomial
 /// \param[in] scalar Value with which to multiply
 /// \param[in] modulus_value modulus with which to reduce each product
-/// \param[in] const_ratio TODO
+/// \param[in] const_ratio TODO(fboemer)
 /// \param[out] result Will store the result of the multiplication
 void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
                                      uint64_t scalar,
@@ -205,7 +205,7 @@ inline void add_poly_scalar_coeffmod(const std::uint64_t* poly,
 void multiply_plain_inplace(
     seal::Ciphertext& encrypted, double value,
     const HESealBackend& he_seal_backend,
-    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Multiplies a ciphertext with a scalar in every slot
 /// \param[in] encrypted Ciphertext to multply
@@ -217,24 +217,24 @@ void multiply_plain_inplace(
 inline void multiply_plain(
     const seal::Ciphertext& encrypted, double value,
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
-    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
   multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
 
 /// \brief Optimized encoding of single value into vector of coefficients
 /// \param[in] value Value to be encoded
-/// \param[in] element_type TODO: remove
+/// \param[in] element_type TODO(fboemer): remove
 /// \param[in] scale Scale at which to encode value
 /// \param[in] parms_id Seal parameter id to use in encoding
 /// \param[out] destination Encoded value in CRT form
 /// \param[in] he_seal_backend Backend whose context is used for encoding
 /// \param[in] pool Memory pool used for new memory allocation
-void encode(double value, const ngraph::element::Type& element_type,
-            double scale, seal::parms_id_type parms_id,
-            std::vector<std::uint64_t>& destination,
-            const HESealBackend& he_seal_backend,
-            seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool());
+void encode(
+    double value, const ngraph::element::Type& element_type, double scale,
+    seal::parms_id_type parms_id, std::vector<std::uint64_t>& destination,
+    const HESealBackend& he_seal_backend,
+    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
 /// \brief Encode value into each slot of a plaintext
 /// \param[out] destination Encoded value in CRT form
@@ -272,14 +272,6 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 /// \param[in] ckks_encoder Used for decoding
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder);
-
-/// \brief Writes plaintext to byte output
-/// \param[out] output Pointer to destination
-/// \param[out] input Plaintext to write
-/// \param[in] type Datatype to write
-/// \param[in] count Number of values to write
-void write_plaintext(void* output, const HEPlaintext& input,
-                     const element::Type& type, size_t count);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to

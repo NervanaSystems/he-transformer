@@ -14,6 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 #include "op/bounded_relu.hpp"
+
 #include "ngraph/util.hpp"
 
 namespace ngraph {

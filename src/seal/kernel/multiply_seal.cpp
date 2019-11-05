@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "seal/kernel/multiply_seal.hpp"
+
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
@@ -108,8 +109,8 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
 void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           HEType& out, HESealBackend& he_seal_backend,
                           const seal::MemoryPoolHandle& pool) {
-  // TODO: check multiplying by small numbers behavior more thoroughly
-  // TODO: check if abs(values) < scale?
+  // TODO(fboemer): check multiplying by small numbers behavior more thoroughly
+  // TODO(fboemer): check if abs(values) < scale?
   if (std::all_of(arg1.begin(), arg1.end(),
                   [](double f) { return std::abs(f) < 1e-5f; })) {
     HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
@@ -166,18 +167,19 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out) {
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
-    std::transform(
-        arg1.begin(), arg1.end(), std::back_inserter(out_vals),
-        std::bind(std::multiplies<double>(), std::placeholders::_1, arg0[0]));
+    out_vals.resize(arg1.size());
+    std::transform(arg1.begin(), arg1.end(), out_vals.begin(),
+                   [&](auto x) { return x * arg0[0]; });
   } else if (arg1.size() == 1) {
-    std::transform(
-        arg0.begin(), arg0.end(), std::back_inserter(out_vals),
-        std::bind(std::multiplies<double>(), std::placeholders::_1, arg1[0]));
+    out_vals.resize(arg0.size());
+    std::transform(arg0.begin(), arg0.end(), out_vals.begin(),
+                   [&](auto x) { return x * arg1[0]; });
   } else {
-    NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() ", arg0.size(),
-                 " != arg0.size() ", arg1.size(), " in plain-plain multiply");
-    std::transform(arg0.begin(), arg0.end(), arg1.begin(),
-                   std::back_inserter(out_vals), std::multiplies<double>());
+    size_t min_size = std::min(arg0.size(), arg1.size());
+    out_vals.resize(min_size);
+    for (size_t i = 0; i < min_size; ++i) {
+      out_vals[i] = arg0[i] * arg1[i];
+    }
   }
   out = std::move(out_vals);
 }

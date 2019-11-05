@@ -16,84 +16,60 @@
 
 include(ExternalProject)
 
-set(PROTOBUF_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf)
-set(PROTOBUF_SRC_DIR ${PROTOBUF_PREFIX}/src/ext_protobuf)
-set(
-  PROTOBUF_REPO_URL
-  https://github.com/protocolbuffers/protobuf/releases/download/v3.9.1/protobuf-cpp-3.9.1.tar.gz
-  )
-
-message(STATUS "Installing protobuf to ${EXTERNAL_INSTALL_DIR}")
+set(NGRAPH_HE_PROTOBUF_GIT_REPO_URL
+    "https://github.com/protocolbuffers/protobuf")
+set(NGRAPH_HE_PROTOBUF_GIT_TAG "v3.10.1")
 
 ExternalProject_Add(
   ext_protobuf
   PREFIX protobuf
-  URL ${PROTOBUF_REPO_URL}
-  URL_HASH
-    SHA256=29a1db3b9bebcf054c540f13400563120ff29fbdd849b2c7a097ffe9d3d508eb
-  CONFIGURE_COMMAND ${PROTOBUF_SRC_DIR}/configure
-                    --prefix=${EXTERNAL_INSTALL_DIR}
-  INSTALL_COMMAND make install
-                  # UPDATE_COMMAND ""
+  GIT_REPOSITORY ${NGRAPH_HE_PROTOBUF_GIT_REPO_URL}
+  GIT_TAG ${NGRAPH_HE_PROTOBUF_GIT_TAG}
+  UPDATE_COMMAND ""
+  PATCH_COMMAND ""
+  CONFIGURE_COMMAND ./autogen.sh
+  COMMAND ./configure
+          --prefix=${EXTERNAL_PROJECTS_ROOT}/protobuf
+          --disable-shared
+          CXX=${CMAKE_CXX_COMPILER}
+  BUILD_COMMAND $(MAKE) "CXXFLAGS=-std=c++${NGRAPH_HE_CXX_STANDARD} -fPIC"
+  TMP_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/tmp"
+  STAMP_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/stamp"
+  DOWNLOAD_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/download"
+  SOURCE_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/src"
+  BINARY_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/src"
+  INSTALL_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf"
   EXCLUDE_FROM_ALL TRUE)
 
-ExternalProject_Get_Property(ext_protobuf SOURCE_DIR)
-ExternalProject_Get_Property(ext_protobuf BINARY_DIR)
+set(Protobuf_INSTALL_PREFIX ${EXTERNAL_PROJECTS_ROOT}/protobuf)
+set(Protobuf_PROTOC_EXECUTABLE ${Protobuf_INSTALL_PREFIX}/bin/protoc)
+set(Protobuf_INCLUDE_DIR ${Protobuf_INSTALL_PREFIX}/include)
 
-message(STATUS "protoc SOURCE_DIR ${SOURCE_DIR}")
-message(STATUS "protoc BINARY_DIR ${BINARY_DIR}")
+set(Protobuf_LIBRARY ${Protobuf_INSTALL_PREFIX}/lib/libprotobuf.a)
+set(Protobuf_LIBRARIES ${Protobuf_LIBRARY})
 
-add_library(libprotobuf_orig SHARED IMPORTED)
-set_target_properties(libprotobuf_orig
-                      PROPERTIES IMPORTED_LOCATION
-                                 ${EXTERNAL_INSTALL_LIB_DIR}/libprotobuf.so)
-target_include_directories(libprotobuf_orig
-                           INTERFACE ${EXTERNAL_INSTALL_DIR}/include)
-add_dependencies(libprotobuf_orig ext_protobuf)
+if(NOT TARGET protobuf::libprotobuf)
+  add_library(protobuf::libprotobuf STATIC IMPORTED)
+  if(NOT EXISTS ${Protobuf_INCLUDE_DIR})
+    file(MAKE_DIRECTORY ${Protobuf_INCLUDE_DIR})
+  endif()
 
-add_executable(protoc IMPORTED)
-set_target_properties(protoc
-                      PROPERTIES IMPORTED_LOCATION ${BINARY_DIR}/src/protoc)
+  target_include_directories(protobuf::libprotobuf SYSTEM
+                             INTERFACE "${Protobuf_INCLUDE_DIR}")
+  set_target_properties(protobuf::libprotobuf
+                        PROPERTIES IMPORTED_LOCATION "${Protobuf_LIBRARY}")
+  add_dependencies(protobuf::libprotobuf ext_protobuf)
+endif()
 
-set(_PROTOBUF_PROTOC ${BINARY_DIR}/src/protoc)
+if(NOT TARGET protobuf::protoc)
+  add_executable(protobuf::protoc IMPORTED)
+  set_target_properties(protobuf::protoc
+                        PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                                   "${Protobuf_PROTOC_EXECUTABLE}"
+                                   IMPORTED_LOCATION
+                                   "${Protobuf_PROTOC_EXECUTABLE}")
+  add_dependencies(protobuf::protoc ext_protobuf)
+endif()
 
-# Generate protobuf headers for message
-get_filename_component(message_proto
-                       ${PROJECT_SOURCE_DIR}/src/protos/message.proto ABSOLUTE)
-get_filename_component(message_proto_path "${message_proto}" PATH)
-set(message_proto_srcs ${CMAKE_CURRENT_BINARY_DIR}/protos/message.pb.cc)
-set(message_proto_hdrs ${CMAKE_CURRENT_BINARY_DIR}/protos/message.pb.h)
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos)
-
-add_custom_command(OUTPUT ${message_proto_srcs} ${message_proto_hdrs}
-                   COMMAND ${_PROTOBUF_PROTOC}
-                           ARGS
-                           --cpp_out
-                           ${CMAKE_CURRENT_BINARY_DIR}/protos
-                           -I
-                           ${message_proto_path}
-                           ${message_proto}
-                   DEPENDS ${message_proto} libprotobuf_orig)
-
-add_custom_target(protobuf_files ALL
-                  DEPENDS ${message_proto_srcs} ${message_proto_hdrs})
-
-add_library(libprotobuf INTERFACE)
-# Include generated *.pb.h files
-target_include_directories(libprotobuf INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(libprotobuf INTERFACE libprotobuf_orig)
-add_dependencies(libprotobuf libprotobuf_orig protobuf_files)
-
-# Create symbolic links for protobuf to allow pyhe_client to find it
-add_custom_target(libprotobuf_soft_link ALL
-                  DEPENDS libprotobuf
-                  COMMAND ${CMAKE_COMMAND}
-                          -E
-                          make_directory
-                          ${NGRAPH_TF_LIB_DIR}
-                  COMMAND ${CMAKE_COMMAND}
-                          -E
-                          copy
-                          ${EXTERNAL_INSTALL_LIB_DIR}/libprotobuf.so*
-                          ${NGRAPH_TF_LIB_DIR})
+set(Protobuf_FOUND TRUE)
+set(PROTOBUF_FOUND TRUE)

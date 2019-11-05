@@ -23,51 +23,47 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
+static std::string s_manifest = "${MANIFEST}";
 
-static string s_manifest = "${MANIFEST}";
-
-auto reshape_test = [](const Shape& shape_a, const Shape& shape_r,
-                       const AxisVector& axis_vector,
-                       const vector<float>& input, const vector<float>& output,
+auto reshape_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_r,
+                       const ngraph::AxisVector& axis_vector,
+                       const std::vector<float>& input, const std::vector<float>& output,
                        const bool arg1_encrypted, const bool complex_packing,
                        const bool packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto t = make_shared<op::Reshape>(a, axis_vector, shape_r);
-  auto f = make_shared<Function>(t, ParameterVector{a});
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
+  auto t = std::make_shared<ngraph::op::Reshape>(a, axis_vector, shape_r);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
 
   auto t_a =
-      test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+      ngraph::test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
   auto t_result =
-      test::he::tensor_from_flags(*he_backend, shape_r, arg1_encrypted, packed);
+      ngraph::test::he::tensor_from_flags(*he_backend, shape_r, arg1_encrypted, packed);
 
   copy_data(t_a, input);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{2, 2, 3}, Shape{12}, AxisVector{0, 1, 2},
-                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
-                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{2, 2, 3}, ngraph::Shape{12}, ngraph::AxisVector{0, 1, 2},
+                     std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+                     std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
                      arg1_encrypted, complex_packing, packing);
       }
     }
@@ -75,11 +71,11 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{1, 1, 1}, Shape{}, AxisVector{0, 1, 2},
-                     vector<float>{6}, vector<float>{6}, arg1_encrypted,
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{1, 1, 1}, ngraph::Shape{}, ngraph::AxisVector{0, 1, 2},
+                     std::vector<float>{6}, std::vector<float>{6}, arg1_encrypted,
                      complex_packing, packing);
       }
     }
@@ -87,11 +83,11 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_012) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{1, 1, 1}, Shape{}, AxisVector{0, 1, 2},
-                     vector<float>{6}, vector<float>{6}, arg1_encrypted,
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{1, 1, 1}, ngraph::Shape{}, ngraph::AxisVector{0, 1, 2},
+                     std::vector<float>{6}, std::vector<float>{6}, arg1_encrypted,
                      complex_packing, packing);
       }
     }
@@ -99,11 +95,11 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_t2s_120) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{}, Shape{1, 1, 1, 1, 1, 1}, AxisVector{},
-                     vector<float>{42}, vector<float>{42}, arg1_encrypted,
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{}, ngraph::Shape{1, 1, 1, 1, 1, 1}, ngraph::AxisVector{},
+                     std::vector<float>{42}, std::vector<float>{42}, arg1_encrypted,
                      complex_packing, packing);
       }
     }
@@ -111,11 +107,11 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_s2t) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{3}, Shape{3, 1}, AxisVector{0},
-                     vector<float>{1, 2, 3}, vector<float>{1, 2, 3},
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{3}, ngraph::Shape{3, 1}, ngraph::AxisVector{0},
+                     std::vector<float>{1, 2, 3}, std::vector<float>{1, 2, 3},
                      arg1_encrypted, complex_packing, packing);
       }
     }
@@ -123,11 +119,11 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_col) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{3}, Shape{1, 3}, AxisVector{0},
-                     vector<float>{1, 2, 3}, vector<float>{1, 2, 3},
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{3}, ngraph::Shape{1, 3}, ngraph::AxisVector{0},
+                     std::vector<float>{1, 2, 3}, std::vector<float>{1, 2, 3},
                      arg1_encrypted, complex_packing, packing);
       }
     }
@@ -135,11 +131,11 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2m_row) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{3}, Shape{1, 3, 1}, AxisVector{0},
-                     vector<float>{1, 2, 3}, vector<float>{1, 2, 3},
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{3}, ngraph::Shape{1, 3, 1}, ngraph::AxisVector{0},
+                     std::vector<float>{1, 2, 3}, std::vector<float>{1, 2, 3},
                      arg1_encrypted, complex_packing, packing);
       }
     }
@@ -147,12 +143,12 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_v2t_middle) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{3, 3}, Shape{3, 3}, AxisVector{0, 1},
-                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9},
-                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}, arg1_encrypted,
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{3, 3}, ngraph::Shape{3, 3}, ngraph::AxisVector{0, 1},
+                     std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9},
+                     std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9}, arg1_encrypted,
                      complex_packing, packing);
       }
     }
@@ -160,12 +156,12 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_same) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{3, 3}, Shape{3, 3}, AxisVector{1, 0},
-                     vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9},
-                     vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}, arg1_encrypted,
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{3, 3}, ngraph::Shape{3, 3}, ngraph::AxisVector{1, 0},
+                     std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9},
+                     std::vector<float>{1, 4, 7, 2, 5, 8, 3, 6, 9}, arg1_encrypted,
                      complex_packing, packing);
       }
     }
@@ -173,12 +169,12 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_transpose) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
-        reshape_test(Shape{3, 2}, Shape{2, 3}, AxisVector{1, 0},
-                     vector<float>{1, 2, 3, 4, 5, 6},
-                     vector<float>{1, 3, 5, 2, 4, 6}, arg1_encrypted,
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
+        reshape_test(ngraph::Shape{3, 2}, ngraph::Shape{2, 3}, ngraph::AxisVector{1, 0},
+                     std::vector<float>{1, 2, 3, 4, 5, 6},
+                     std::vector<float>{1, 3, 5, 2, 4, 6}, arg1_encrypted,
                      complex_packing, packing);
       }
     }
@@ -226,18 +222,18 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_m2m_dim_change_transpose) {
 //         279.,  215.,  287.,  200.,  272.,  208.,  280.,  216.,  288.])
 //
 NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
-  vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
+  std::vector<float> a_data(2 * 2 * 3 * 3 * 2 * 4);
   for (int i = 0; i < 2 * 2 * 3 * 3 * 2 * 4; i++) {
     a_data[i] = float(i + 1);
   }
 
-  for (bool arg1_encrypted : vector<bool>{false, true}) {
-    for (bool complex_packing : vector<bool>{false, true}) {
-      for (bool packing : vector<bool>{false}) {
+  for (bool arg1_encrypted : std::vector<bool>{false, true}) {
+    for (bool complex_packing : std::vector<bool>{false, true}) {
+      for (bool packing : std::vector<bool>{false}) {
         reshape_test(
-            Shape{2, 2, 3, 3, 2, 4}, Shape{3, 2, 2, 4, 3, 2},
-            AxisVector{2, 4, 0, 5, 3, 1}, a_data,
-            vector<float>{
+            ngraph::Shape{2, 2, 3, 3, 2, 4}, ngraph::Shape{3, 2, 2, 4, 3, 2},
+            ngraph::AxisVector{2, 4, 0, 5, 3, 1}, a_data,
+            std::vector<float>{
                 1.,   73.,  9.,   81.,  17.,  89.,  2.,   74.,  10.,  82.,
                 18.,  90.,  3.,   75.,  11.,  83.,  19.,  91.,  4.,   76.,
                 12.,  84.,  20.,  92.,  145., 217., 153., 225., 161., 233.,

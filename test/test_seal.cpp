@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <memory>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "he_plaintext.hpp"
@@ -25,8 +26,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-
 TEST(seal_example, trivial) {
   int a = 1;
   int b = 2;
@@ -34,34 +33,32 @@ TEST(seal_example, trivial) {
 }
 
 TEST(seal_example, seal_ckks_basics) {
-  using namespace seal;
-
-  EncryptionParameters parms(scheme_type::CKKS);
+  seal::EncryptionParameters parms(seal::scheme_type::CKKS);
   size_t poly_modulus_degree = 8192;
   parms.set_poly_modulus_degree(poly_modulus_degree);
   parms.set_coeff_modulus(
-      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+      seal::CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
 
-  auto context = SEALContext::Create(parms);
+  auto context = seal::SEALContext::Create(parms);
   // print_parameters(context);
 
-  KeyGenerator keygen(context);
+  seal::KeyGenerator keygen(context);
   auto public_key = keygen.public_key();
   auto secret_key = keygen.secret_key();
   auto relin_keys = keygen.relin_keys();
 
-  Encryptor encryptor(context, public_key);
-  Evaluator evaluator(context);
-  Decryptor decryptor(context, secret_key);
-  CKKSEncoder encoder(context);
+  seal::Encryptor encryptor(context, public_key);
+  seal::Evaluator evaluator(context);
+  seal::Decryptor decryptor(context, secret_key);
+  seal::CKKSEncoder encoder(context);
 
-  vector<double> input{0.0, 1.1, 2.2, 3.3};
+  std::vector<double> input{0.0, 1.1, 2.2, 3.3};
 
-  Plaintext plain;
+  seal::Plaintext plain;
   double scale = pow(2.0, 40);
   encoder.encode(input, scale, plain);
 
-  Ciphertext encrypted;
+  seal::Ciphertext encrypted;
   encryptor.encrypt(plain, encrypted);
 
   evaluator.square_inplace(encrypted);
@@ -81,37 +78,35 @@ TEST(seal_example, seal_ckks_basics) {
 }
 
 TEST(seal_example, seal_ckks_complex_conjugate) {
-  using namespace seal;
-
-  EncryptionParameters parms(scheme_type::CKKS);
+  seal::EncryptionParameters parms(seal::scheme_type::CKKS);
   size_t poly_modulus_degree = 8192;
   parms.set_poly_modulus_degree(poly_modulus_degree);
   parms.set_coeff_modulus(
-      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+      seal::CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
 
-  auto context = SEALContext::Create(parms);
+  auto context = seal::SEALContext::Create(parms);
   // print_parameters(context);
 
-  KeyGenerator keygen(context);
+  seal::KeyGenerator keygen(context);
   auto public_key = keygen.public_key();
   auto secret_key = keygen.secret_key();
   auto relin_keys = keygen.relin_keys();
   auto galois_keys = keygen.galois_keys();
 
-  Encryptor encryptor(context, public_key);
-  Evaluator evaluator(context);
-  Decryptor decryptor(context, secret_key);
-  CKKSEncoder encoder(context);
+  seal::Encryptor encryptor(context, public_key);
+  seal::Evaluator evaluator(context);
+  seal::Decryptor decryptor(context, secret_key);
+  seal::CKKSEncoder encoder(context);
 
-  vector<complex<double>> input{{0.0, 1.1}, {2.2, 3.3}};
-  vector<complex<double>> exp_output{{0.0, -1.1}, {2.2, -3.3}};
-  vector<complex<double>> output;
+  std::vector<std::complex<double>> input{{0.0, 1.1}, {2.2, 3.3}};
+  std::vector<std::complex<double>> exp_output{{0.0, -1.1}, {2.2, -3.3}};
+  std::vector<std::complex<double>> output;
 
-  Plaintext plain;
+  seal::Plaintext plain;
   double scale = pow(2.0, 40);
   encoder.encode(input, scale, plain);
 
-  Ciphertext encrypted;
+  seal::Ciphertext encrypted;
   encryptor.encrypt(plain, encrypted);
   evaluator.complex_conjugate_inplace(encrypted, galois_keys);
 
@@ -123,51 +118,51 @@ TEST(seal_example, seal_ckks_complex_conjugate) {
 }
 
 TEST(seal_util, save) {
-  using namespace seal;
-
-  EncryptionParameters parms(scheme_type::CKKS);
+  seal::EncryptionParameters parms(seal::scheme_type::CKKS);
   size_t poly_modulus_degree = 8192;
   parms.set_poly_modulus_degree(poly_modulus_degree);
   parms.set_coeff_modulus(
-      CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
+      seal::CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
 
-  auto context = SEALContext::Create(parms);
+  auto context = seal::SEALContext::Create(parms);
 
-  KeyGenerator keygen(context);
+  seal::KeyGenerator keygen(context);
   auto public_key = keygen.public_key();
   auto secret_key = keygen.secret_key();
   auto relin_keys = keygen.relin_keys();
 
-  Encryptor encryptor(context, public_key);
-  Evaluator evaluator(context);
-  Decryptor decryptor(context, secret_key);
-  CKKSEncoder encoder(context);
+  seal::Encryptor encryptor(context, public_key);
+  seal::Evaluator evaluator(context);
+  seal::Decryptor decryptor(context, secret_key);
+  seal::CKKSEncoder encoder(context);
 
-  vector<double> input{0.0, 1.1, 2.2, 3.3};
+  std::vector<double> input{0.0, 1.1, 2.2, 3.3};
 
-  Plaintext plain;
+  seal::Plaintext plain;
   double scale = pow(2.0, 60);
   encoder.encode(input, scale, plain);
 
-  Ciphertext cipher;
+  seal::Ciphertext cipher;
   encryptor.encrypt(plain, cipher);
-  Ciphertext cipher_load;
+  seal::Ciphertext cipher_load;
 
-  std::byte* buffer = reinterpret_cast<std::byte*>(
+  auto* buffer = reinterpret_cast<std::byte*>(
       ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher)));
 
-  auto t1 = chrono::high_resolution_clock::now();
+  auto t1 = std::chrono::high_resolution_clock::now();
   auto save_size = ngraph::he::save(cipher, buffer);
-  auto t2 = chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::high_resolution_clock::now();
   ngraph::he::load(cipher_load, context, buffer, save_size);
-  auto t3 = chrono::high_resolution_clock::now();
+  auto t3 = std::chrono::high_resolution_clock::now();
 
-  NGRAPH_INFO << "save time "
-              << chrono::duration_cast<chrono::microseconds>(t2 - t1).count()
-              << "us";
-  NGRAPH_INFO << "load time "
-              << chrono::duration_cast<chrono::microseconds>(t3 - t2).count()
-              << "us";
+  NGRAPH_INFO
+      << "save time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+      << "us";
+  NGRAPH_INFO
+      << "load time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
+      << "us";
 
   EXPECT_EQ(cipher_load.parms_id(), cipher.parms_id());
   EXPECT_EQ(cipher_load.is_ntt_form(), cipher.is_ntt_form());

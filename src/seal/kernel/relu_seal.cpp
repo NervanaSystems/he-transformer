@@ -14,14 +14,14 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/relu_seal.hpp"
+
 #include <memory>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/relu_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {
@@ -29,7 +29,6 @@ namespace he {
 
 void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   out.resize(arg.size());
-
   auto relu = [](double d) { return d > 0 ? d : 0.; };
   std::transform(arg.begin(), arg.end(), out.begin(), relu);
 }

@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "aby/aby_client_executor.hpp"
+#include "he_tensor.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
@@ -83,35 +84,34 @@ class HESealClient {
 
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
-  void handle_encryption_parameters_response(
-      const he_proto::TCPMessage& message);
+  void handle_encryption_parameters_response(const proto::TCPMessage& message);
 
   /// \brief Processes a request to perform ReLU function
   /// \param[in] message Message to process
-  void handle_relu_request(he_proto::TCPMessage&& message);
+  void handle_relu_request(proto::TCPMessage&& message);
 
   /// \brief Processes a request to perform MaxPool function
   /// \param[in] message Message to process
-  void handle_max_pool_request(he_proto::TCPMessage&& message);
+  void handle_max_pool_request(proto::TCPMessage&& message);
 
   /// \brief Processes a request to perform BoundedReLU function
   /// \param[in] message Message to process
-  void handle_bounded_relu_request(he_proto::TCPMessage&& message);
+  void handle_bounded_relu_request(proto::TCPMessage&& message);
 
   /// \brief Processes a message containing the result from the server
   /// \param[in] message Message to process
-  void handle_result(const he_proto::TCPMessage& message);
+  void handle_result(const proto::TCPMessage& message);
 
   /// \brief Processes a message containing the inference shape
   /// \param[in] message Message to process
-  void handle_inference_request(const he_proto::TCPMessage& message);
+  void handle_inference_request(const proto::TCPMessage& message);
 
   /// \brief Sends the public key and relinearization keys to the server
   void send_public_and_relin_keys();
 
   /// \brief Writes a mesage to the server
   /// \param[in] message Message to write
-  inline void write_message(const ngraph::he::TCPMessage&& message) {
+  inline void write_message(ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
@@ -120,13 +120,7 @@ class HESealClient {
 
   /// \brief Returns decrypted results
   /// \warning Will lock until results are ready
-  inline std::vector<double> get_results() {
-    NGRAPH_INFO << "Client waiting for results";
-
-    std::unique_lock<std::mutex> mlock(m_is_done_mutex);
-    m_is_done_cond.wait(mlock, std::bind(&HESealClient::is_done, this));
-    return m_results;
-  }
+  std::vector<double> get_results();
 
   /// \brief Closes conection with the server
   void close_connection();
@@ -178,12 +172,16 @@ class HESealClient {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   size_t m_batch_size;
-  bool m_is_done;
+
+  bool m_is_done{false};
   std::condition_variable m_is_done_cond;
   std::mutex m_is_done_mutex;
 
+  std::shared_ptr<HETensor> m_loaded_function_tensor;
+
   // Function inputs and configuration
   HETensorConfigMap<double> m_input_config;
+  std::shared_ptr<HETensor> m_result_tensor;
   std::vector<double> m_results;  // Function outputs
 
 };  // namespace he

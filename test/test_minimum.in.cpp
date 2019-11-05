@@ -23,62 +23,67 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-
-static string s_manifest = "${MANIFEST}";
+static std::string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, minimum_plain) {
-  Shape shape{2, 2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>(make_shared<op::Minimum>(A, B),
-                                 ParameterVector{A, B});
+  ngraph::Shape shape{2, 2, 2};
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto f = std::make_shared<ngraph::Function>(
+      std::make_shared<ngraph::op::Minimum>(a, b),
+      ngraph::ParameterVector{a, b});
 
-  A->set_op_annotations(
-      HEOpAnnotations::server_plaintext_unpacked_annotation());
-  B->set_op_annotations(
-      HEOpAnnotations::server_plaintext_unpacked_annotation());
+  a->set_op_annotations(
+      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
+  b->set_op_annotations(
+      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
 
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   // Create some tensors for input/output
-  auto a = he_backend->create_plain_tensor(element::f32, shape);
-  copy_data(a, vector<float>{1, 8, -8, 17, -0.5, 0.5, 2, 1});
-  auto b = he_backend->create_plain_tensor(element::f32, shape);
-  copy_data(b, vector<float>{1, 2, 4, 8, 0, 0, 1, 1.5});
-  auto result = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_a = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  copy_data(t_a, std::vector<float>{1, 8, -8, 17, -0.5, 0.5, 2, 1});
+  auto t_b = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  copy_data(t_b, std::vector<float>{1, 2, 4, 8, 0, 0, 1, 1.5});
+  auto result = he_backend->create_plain_tensor(ngraph::element::f32, shape);
 
   auto handle = he_backend->compile(f);
-  handle->call_with_validate({result}, {a, b});
-  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -0.5, 0, 1, 1}),
-                                  read_vector<float>(result)));
+  handle->call_with_validate({result}, {t_a, t_b});
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      (std::vector<float>{1, 2, -8, 8, -0.5, 0, 1, 1}),
+      read_vector<float>(result)));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, minimum_plain_packed) {
-  Shape shape{2, 2, 2};
-  auto A = make_shared<op::Parameter>(element::f32, shape);
-  auto B = make_shared<op::Parameter>(element::f32, shape);
-  auto f = make_shared<Function>(make_shared<op::Minimum>(A, B),
-                                 ParameterVector{A, B});
+  ngraph::Shape shape{2, 2, 2};
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto f = std::make_shared<ngraph::Function>(
+      std::make_shared<ngraph::op::Minimum>(a, b),
+      ngraph::ParameterVector{a, b});
 
-  A->set_op_annotations(HEOpAnnotations::server_plaintext_packed_annotation());
-  B->set_op_annotations(HEOpAnnotations::server_plaintext_packed_annotation());
+  a->set_op_annotations(
+      ngraph::he::HEOpAnnotations::server_plaintext_packed_annotation());
+  b->set_op_annotations(
+      ngraph::he::HEOpAnnotations::server_plaintext_packed_annotation());
 
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   // Create some tensors for input/output
-  auto a = he_backend->create_packed_plain_tensor(element::f32, shape);
-  copy_data(a, vector<float>{1, 8, -8, 17, -0.5, 0.5, 2, 1});
-  auto b = he_backend->create_packed_plain_tensor(element::f32, shape);
-  copy_data(b, vector<float>{1, 2, 4, 8, 0, 0, 1, 1.5});
-  auto result = he_backend->create_packed_plain_tensor(element::f32, shape);
+  auto t_a =
+      he_backend->create_packed_plain_tensor(ngraph::element::f32, shape);
+  copy_data(t_a, std::vector<float>{1, 8, -8, 17, -0.5, 0.5, 2, 1});
+  auto t_b =
+      he_backend->create_packed_plain_tensor(ngraph::element::f32, shape);
+  copy_data(t_b, std::vector<float>{1, 2, 4, 8, 0, 0, 1, 1.5});
+  auto result =
+      he_backend->create_packed_plain_tensor(ngraph::element::f32, shape);
 
   auto handle = he_backend->compile(f);
-  handle->call_with_validate({result}, {a, b});
-  EXPECT_TRUE(test::he::all_close((vector<float>{1, 2, -8, 8, -0.5, 0, 1, 1}),
-                                  read_vector<float>(result)));
+  handle->call_with_validate({result}, {t_a, t_b});
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      (std::vector<float>{1, 2, -8, 8, -0.5, 0, 1, 1}),
+      read_vector<float>(result)));
 }

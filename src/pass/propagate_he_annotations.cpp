@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "pass/propagate_he_annotations.hpp"
+
 #include <exception>
 #include <sstream>
 #include <unordered_set>
@@ -29,7 +31,6 @@
 #include "ngraph/op/parameter.hpp"
 #include "ngraph/op/result.hpp"
 #include "ngraph/util.hpp"
-#include "pass/propagate_he_annotations.hpp"
 
 namespace ngraph {
 namespace he {
@@ -42,7 +43,7 @@ bool pass::PropagateHEAnnotations::run_on_function(
 
   // First, set all ops without annotations to have plaintext unpacked
   // annotation
-  for (auto node : nodes) {
+  for (const auto& node : nodes) {
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
       if (!ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {
@@ -65,7 +66,7 @@ bool pass::PropagateHEAnnotations::run_on_function(
                       "needed";
   // Node has encrypted output if any of its inputs is encrypted
   // Node has packed output if any of its inputs is packed
-  for (auto node : nodes) {
+  for (const auto& node : nodes) {
     auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
     if (op == nullptr) {
       NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not op";
@@ -114,7 +115,7 @@ bool pass::PropagateHEAnnotations::run_on_function(
 
   // For debugging, print out node info
   NGRAPH_HE_LOG(5) << "Final node annotations";
-  for (auto node : nodes) {
+  for (const auto& node : nodes) {
     if (node->is_op()) {
       auto op = std::dynamic_pointer_cast<ngraph::op::Op>(node);
       if (ngraph::he::HEOpAnnotations::has_he_annotation(*op)) {

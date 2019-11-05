@@ -14,12 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/pad_seal.hpp"
+
 #include <cmath>
 
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
-#include "seal/kernel/pad_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
@@ -30,8 +31,7 @@ void pad_seal(std::vector<HEType>& arg0,
               std::vector<HEType>& arg1,  // scalar
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& out_shape, const CoordinateDiff& padding_below,
-              const CoordinateDiff& padding_above, op::PadMode pad_mode,
-              size_t batch_size, const HESealBackend& he_seal_backend) {
+              const CoordinateDiff& padding_above, op::PadMode pad_mode) {
   if (arg1.size() != 1) {
     throw ngraph_error("Padding element must be scalar");
   }
@@ -147,7 +147,7 @@ void pad_seal(std::vector<HEType>& arg0,
         break;
       }
       case op::PadMode::SYMMETRIC: {
-        // TODO: Add support for Symmetric mode
+        // TODO(fboemer): Add support for Symmetric mode
         throw ngraph_error("Symmetric mode padding not supported");
       }
     }

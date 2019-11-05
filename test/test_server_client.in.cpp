@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <chrono>
+#include <cmath>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -32,287 +33,307 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
-
-static string s_manifest = "${MANIFEST}";
+static std::string s_manifest = "${MANIFEST}";
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  Shape shape_c{3, 1};
-  auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
-  auto b = make_shared<op::Parameter>(element::f32, shape);
+  ngraph::Shape shape{batch_size, 3};
+  ngraph::Shape shape_c{3, 1};
+  auto a = ngraph::op::Constant::create(ngraph::element::f32, shape,
+                                        {0.1, 0.2, 0.3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   b->set_op_annotations(
-      HEOpAnnotations::client_plaintext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_plaintext_unpacked_annotation());
 
-  auto c = make_shared<op::Parameter>(element::f32, shape_c);
-  auto d = make_shared<op::Reshape>(c, AxisVector{0, 1}, shape);
-  auto t = make_shared<op::Add>(a, b);
-  t = make_shared<op::Add>(t, d);
-  auto f = make_shared<Function>(t, ParameterVector{b, c});
+  auto c =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_c);
+  auto d =
+      std::make_shared<ngraph::op::Reshape>(c, ngraph::AxisVector{0, 1}, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  t = std::make_shared<ngraph::op::Add>(t, d);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
 
-  auto t_c = he_backend->create_plain_tensor(element::f32, shape_c);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape_c);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
-  copy_data(t_c, vector<float>{4, 5, 6});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
+  copy_data(t_c, std::vector<float>{4, 5, 6});
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{1, 2, 3};
-    auto he_client = HESealClient(
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{1, 2, 3};
+    auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        HETensorConfigMap<float>{{b->get_name(), make_pair("plain", inputs)}});
+        ngraph::he::HETensorConfigMap<float>{
+            {b->get_name(), make_pair("plain", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    NGRAPH_INFO << "Got client results";
+    results = std::vector<float>(double_results.begin(), double_results.end());
+    NGRAPH_INFO << "Set results vector";
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
+  NGRAPH_INFO << "call_with_validate";
   handle->call_with_validate({t_result}, {t_dummy, t_c});
+  NGRAPH_INFO << "Waiting on client thread";
   client_thread.join();
-  EXPECT_TRUE(
-      test::he::all_close(results, vector<float>{5.1, 7.2, 9.3}, 1e-3f));
+  NGRAPH_INFO << "client thread joined";
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{5.1, 7.2, 9.3}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  Shape shape_c{3, 1};
-  auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
-  auto b = make_shared<op::Parameter>(element::f32, shape);
+  ngraph::Shape shape{batch_size, 3};
+  ngraph::Shape shape_c{3, 1};
+  auto a = ngraph::op::Constant::create(ngraph::element::f32, shape,
+                                        {0.1, 0.2, 0.3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   b->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
-  auto c = make_shared<op::Parameter>(element::f32, shape_c);
-  auto d = make_shared<op::Reshape>(c, AxisVector{0, 1}, shape);
-  auto t = make_shared<op::Add>(a, b);
-  t = make_shared<op::Add>(t, d);
-  auto f = make_shared<Function>(t, ParameterVector{b, c});
+  auto c =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_c);
+  auto d =
+      std::make_shared<ngraph::op::Reshape>(c, ngraph::AxisVector{0, 1}, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  t = std::make_shared<ngraph::op::Add>(t, d);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
 
-  auto t_c = he_backend->create_plain_tensor(element::f32, shape_c);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape_c);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
-  copy_data(t_c, vector<float>{4, 5, 6});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
+  copy_data(t_c, std::vector<float>{4, 5, 6});
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{1, 2, 3};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {b->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{1, 2, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
   handle->call_with_validate({t_result}, {t_dummy, t_c});
   client_thread.join();
-  EXPECT_TRUE(
-      test::he::all_close(results, vector<float>{5.1, 7.2, 9.3}, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{5.1, 7.2, 9.3}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Add>(a, b);
-  auto f = make_shared<Function>(t, ParameterVector{b});
+  ngraph::Shape shape{batch_size, 3};
+  auto a = ngraph::op::Constant::create(ngraph::element::f32, shape,
+                                        {0.1, 0.2, 0.3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b});
 
   b->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{1, 2, 3};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {b->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{1, 2, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
   client_thread.join();
-  EXPECT_TRUE(
-      test::he::all_close(results, vector<float>{1.1, 2.2, 3.3}, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{1.1, 2.2, 3.3}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3});
-  auto b = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::Add>(a, b);
-  auto relu = make_shared<op::Relu>(t);
-  auto f = make_shared<Function>(relu, ParameterVector{b});
+  ngraph::Shape shape{batch_size, 3};
+  auto a = ngraph::op::Constant::create(ngraph::element::f32, shape,
+                                        {0.1, 0.2, 0.3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  auto relu = std::make_shared<ngraph::op::Relu>(t);
+  auto f = std::make_shared<ngraph::Function>(relu, ngraph::ParameterVector{b});
 
   b->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{-1, -0.2, 3};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {b->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{-1, -0.2, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(results, vector<float>{0, 0, 3.3}, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{0, 0, 3.3}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  auto a = op::Constant::create(element::f64, shape, {0.1, 0.2, 0.3});
-  auto b = make_shared<op::Parameter>(element::f64, shape);
-  auto t = make_shared<op::Add>(a, b);
-  auto relu = make_shared<op::Relu>(t);
-  auto f = make_shared<Function>(relu, ParameterVector{b});
+  ngraph::Shape shape{batch_size, 3};
+  auto a = ngraph::op::Constant::create(ngraph::element::f64, shape,
+                                        {0.1, 0.2, 0.3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f64, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  auto relu = std::make_shared<ngraph::op::Relu>(t);
+  auto f = std::make_shared<ngraph::Function>(relu, ngraph::ParameterVector{b});
 
   b->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f64, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f64, shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f64, shape);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f64, shape);
 
   // Used for dummy server inputs
-  double DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<double>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  double dummy_float = 99;
+  copy_data(t_dummy,
+            std::vector<double>{dummy_float, dummy_float, dummy_float});
 
-  vector<double> results;
-  auto client_thread = thread([&]() {
-    vector<double> inputs{-1, -0.2, 3};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<double>{
-                         {b->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<double> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<double> inputs{-1, -0.2, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<double>{
+            {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<double>(double_results.begin(), double_results.end());
+    results = std::vector<double>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(results, vector<double>{0, 0, 3.3}, 1e-3));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<double>{0, 0, 3.3}, 1e-3));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  auto a = op::Constant::create(element::i64, shape, {1, 2, 3});
-  auto b = make_shared<op::Parameter>(element::i64, shape);
-  auto t = make_shared<op::Add>(a, b);
-  auto relu = make_shared<op::Relu>(t);
-  auto f = make_shared<Function>(relu, ParameterVector{b});
+  ngraph::Shape shape{batch_size, 3};
+  auto a = ngraph::op::Constant::create(ngraph::element::i64, shape, {1, 2, 3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::i64, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  auto relu = std::make_shared<ngraph::op::Relu>(t);
+  auto f = std::make_shared<ngraph::Function>(relu, ngraph::ParameterVector{b});
 
   b->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::i64, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::i64, shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::i64, shape);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::i64, shape);
 
   // Used for dummy server inputs
-  double DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<double>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  double dummy_float = 99;
+  copy_data(t_dummy,
+            std::vector<double>{dummy_float, dummy_float, dummy_float});
 
-  vector<int64_t> results;
-  auto client_thread = thread([&]() {
-    vector<int64_t> inputs{-1, 0, 3};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<int64_t>{
-                         {b->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<int64_t> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<int64_t> inputs{-1, 0, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<int64_t>{
+            {b->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
     results.resize(double_results.size());
@@ -321,149 +342,162 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
     }
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(results, vector<int64_t>{0, 2, 6}, 0L));
+  EXPECT_TRUE(
+      ngraph::test::he::all_close(results, std::vector<int64_t>{0, 2, 6}, 0L));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_bounded_relu) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  Shape result_shape{batch_size, 5};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = op::Constant::create(element::f32, Shape{}, vector<float>({0}));
-  CoordinateDiff padding_below{0, 1};
-  CoordinateDiff padding_above{0, 1};
-  auto c = make_shared<op::Pad>(a, b, padding_below, padding_above);
-  auto relu = make_shared<op::BoundedRelu>(c, 6.0f);
-  auto f = make_shared<Function>(relu, ParameterVector{a});
+  ngraph::Shape shape{batch_size, 3};
+  ngraph::Shape result_shape{batch_size, 5};
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto b = ngraph::op::Constant::create(ngraph::element::f32, ngraph::Shape{},
+                                        std::vector<float>({0}));
+  ngraph::CoordinateDiff padding_below{0, 1};
+  ngraph::CoordinateDiff padding_above{0, 1};
+  auto c =
+      std::make_shared<ngraph::op::Pad>(a, b, padding_below, padding_above);
+  auto relu = std::make_shared<ngraph::op::BoundedRelu>(c, 6.0f);
+  auto f = std::make_shared<ngraph::Function>(relu, ngraph::ParameterVector{a});
 
   a->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, result_shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  auto t_result =
+      he_backend->create_cipher_tensor(ngraph::element::f32, result_shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{-1, 3, 7};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {a->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{-1, 3, 7};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(
-      test::he::all_close(results, vector<float>{0, 0, 3, 6, 0}, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{0, 0, 3, 6, 0}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_pad_relu) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   size_t batch_size = 1;
 
-  Shape shape{batch_size, 3};
-  Shape result_shape{batch_size, 5};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto b = op::Constant::create(element::f32, Shape{}, vector<float>({0}));
-  CoordinateDiff padding_below{0, 1};
-  CoordinateDiff padding_above{0, 1};
-  auto c = make_shared<op::Pad>(a, b, padding_below, padding_above);
-  auto relu = make_shared<op::Relu>(c);
-  auto f = make_shared<Function>(relu, ParameterVector{a});
+  ngraph::Shape shape{batch_size, 3};
+  ngraph::Shape result_shape{batch_size, 5};
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto b = ngraph::op::Constant::create(ngraph::element::f32, ngraph::Shape{},
+                                        std::vector<float>({0}));
+  ngraph::CoordinateDiff padding_below{0, 1};
+  ngraph::CoordinateDiff padding_above{0, 1};
+  auto c =
+      std::make_shared<ngraph::op::Pad>(a, b, padding_below, padding_above);
+  auto relu = std::make_shared<ngraph::op::Relu>(c);
+  auto f = std::make_shared<ngraph::Function>(relu, ngraph::ParameterVector{a});
 
   a->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, result_shape);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  auto t_result =
+      he_backend->create_cipher_tensor(ngraph::element::f32, result_shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>{DUMMY_FLOAT, DUMMY_FLOAT, DUMMY_FLOAT});
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{-1, -0.2, 3};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {a->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{-1, -0.2, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(
-      test::he::all_close(results, vector<float>{0, 0, 0, 3, 0}, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{0, 0, 0, 3, 0}, 1e-3f));
 }
 
 auto server_client_relu_packed_test = [](size_t element_count,
                                          size_t batch_size,
                                          bool complex_packing, bool bounded,
                                          double bound_value = 0.) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
   }
 
-  Shape shape{batch_size, element_count};
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  shared_ptr<Function> f;
+  ngraph::Shape shape{batch_size, element_count};
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  std::shared_ptr<ngraph::Function> f;
   if (bounded) {
-    auto bounded_relu_op = make_shared<op::BoundedRelu>(a, bound_value);
-    f = make_shared<Function>(bounded_relu_op, ParameterVector{a});
+    auto bounded_relu_op =
+        std::make_shared<ngraph::op::BoundedRelu>(a, bound_value);
+    f = std::make_shared<ngraph::Function>(bounded_relu_op,
+                                           ngraph::ParameterVector{a});
   } else {
-    auto relu_op = make_shared<op::Relu>(a);
-    f = make_shared<Function>(relu_op, ParameterVector{a});
+    auto relu_op = std::make_shared<ngraph::op::Relu>(a);
+    f = std::make_shared<ngraph::Function>(relu_op, ngraph::ParameterVector{a});
   }
 
   bool packed = batch_size > 1;
   if (packed) {
     a->set_op_annotations(
-        HEOpAnnotations::client_ciphertext_packed_annotation());
+        ngraph::he::HEOpAnnotations::client_ciphertext_packed_annotation());
   } else {
     a->set_op_annotations(
-        HEOpAnnotations::client_ciphertext_unpacked_annotation());
+        ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
   }
 
   auto relu = [](double d) { return d > 0 ? d : 0.; };
@@ -472,17 +506,23 @@ auto server_client_relu_packed_test = [](size_t element_count,
   };
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_packed_plain_tensor(element::f32, shape);
-  auto t_result = he_backend->create_packed_cipher_tensor(element::f32, shape);
+  auto t_dummy =
+      he_backend->create_packed_plain_tensor(ngraph::element::f32, shape);
+  auto t_result =
+      he_backend->create_packed_cipher_tensor(ngraph::element::f32, shape);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>(shape_size(shape), DUMMY_FLOAT));
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>(shape_size(shape), dummy_float));
 
-  vector<float> inputs(shape_size(shape));
-  vector<float> exp_results(shape_size(shape));
+  std::vector<float> inputs(shape_size(shape));
+  std::vector<float> exp_results(shape_size(shape));
   for (size_t i = 0; i < shape_size(shape); ++i) {
-    inputs[i] = static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
+    inputs[i] =
+        static_cast<float>(i) - static_cast<float>(shape_size(shape)) / 2.0;
+    if (inputs[i] > 1000) {
+      inputs[i] = fmod(inputs[i], 1000);
+    }
 
     if (bounded) {
       exp_results[i] = bounded_relu(inputs[i]);
@@ -491,23 +531,24 @@ auto server_client_relu_packed_test = [](size_t element_count,
     }
   }
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {a->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(results, exp_results));
+  EXPECT_TRUE(ngraph::test::he::all_close(results, exp_results));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1_complex) {
@@ -535,8 +576,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots_complex) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
@@ -545,8 +586,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots_complex) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_all_slots) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
@@ -580,8 +621,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_3) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_bounded_relu_packed_all_slots_complex) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
@@ -590,8 +631,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_all_slots) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
@@ -607,6 +648,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_1000) {
   server_client_relu_packed_test(1000, 1, true, false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_relu_packed_50000) {
+  server_client_relu_packed_test(50000, 1, true, false);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_845) {
   server_client_relu_packed_test(845, 1, true, true, 6.0);
 }
@@ -615,77 +660,87 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_1000) {
   server_client_relu_packed_test(1000, 1, true, true, 6.0);
 }
 
-auto server_client_maxpool_test = [](const Shape& shape,
-                                     const Shape& window_shape,
-                                     const vector<float>& input,
-                                     const vector<float>& output,
+NGRAPH_TEST(${BACKEND_NAME}, server_client_bounded_relu_packed_50000) {
+  server_client_relu_packed_test(50000, 1, true, true, 6.0);
+}
+
+auto server_client_maxpool_test = [](const ngraph::Shape& shape,
+                                     const ngraph::Shape& window_shape,
+                                     const std::vector<float>& input,
+                                     const std::vector<float>& output,
                                      const bool arg1_encrypted,
                                      const bool complex_packing,
                                      const bool packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
   }
 
-  auto a = make_shared<op::Parameter>(element::f32, shape);
-  auto t = make_shared<op::MaxPool>(a, window_shape);
-  auto f = make_shared<Function>(t, ParameterVector{a});
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto t = std::make_shared<ngraph::op::MaxPool>(a, window_shape);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(true, arg1_encrypted, packed));
+      ngraph::test::he::annotation_from_flags(true, arg1_encrypted, packed));
 
   // Server inputs which are not used
-  auto t_dummy =
-      test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
-  auto t_result = test::he::tensor_from_flags(*he_backend, t->get_shape(),
-                                              arg1_encrypted, packed);
-  size_t batch_size = static_pointer_cast<HETensor>(t_dummy)->get_batch_size();
+  auto t_dummy = ngraph::test::he::tensor_from_flags(*he_backend, shape,
+                                                     arg1_encrypted, packed);
+  auto t_result = ngraph::test::he::tensor_from_flags(
+      *he_backend, t->get_shape(), arg1_encrypted, packed);
+  size_t batch_size =
+      std::static_pointer_cast<ngraph::he::HETensor>(t_dummy)->get_batch_size();
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>(shape_size(shape), DUMMY_FLOAT));
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>(shape_size(shape), dummy_float));
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    auto he_client = HESealClient(
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    auto he_client = ngraph::he::HESealClient(
         "localhost", 34000, batch_size,
-        HETensorConfigMap<float>{{a->get_name(), make_pair("encrypt", input)}});
+        ngraph::he::HETensorConfigMap<float>{
+            {a->get_name(), make_pair("encrypt", input)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(results, output));
+  EXPECT_TRUE(ngraph::test::he::all_close(results, output));
 };
 
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_max_pool_1d_1channel_1image_encrypted_real_unpacked) {
   server_client_maxpool_test(
-      Shape{1, 1, 14}, Shape{3},
-      vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-      vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true, false, false);
+      ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+      std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+      std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true, false,
+      false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_max_pool_1d_1channel_2image_encrypted_real_packed) {
   server_client_maxpool_test(
-      Shape{2, 1, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      ngraph::test::NDArray<float, 3>(
+          {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+           {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
           .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
+      ngraph::test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
+                                       {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
           .get_vector(),
       true, false, true);
 }
@@ -693,16 +748,17 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_max_pool_1d_2channel_2image_encrypted_real_packed) {
   server_client_maxpool_test(
-      Shape{2, 2, 14}, Shape{3},
-      test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      ngraph::test::NDArray<float, 3>(
+          {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+            {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+           {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+            {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
           .get_vector(),
-      test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+      ngraph::test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
+                                        {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+                                       {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                        {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
           .get_vector(),
       true, false, true);
 }
@@ -710,99 +766,105 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_max_pool_2d_2channel_2image_encrypted_real_packed) {
   server_client_maxpool_test(
-      Shape{2, 2, 5, 5}, Shape{2, 3},
-      test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                 {0, 3, 2, 0, 0},
-                                 {2, 0, 0, 0, 1},
-                                 {2, 0, 1, 1, 2},
-                                 {0, 2, 1, 0, 0}},
-                                {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                 {0, 2, 3, 0, 1},
-                                 {2, 0, 1, 0, 2},
-                                 {3, 1, 0, 0, 0},
-                                 {2, 0, 0, 0, 0}}},
-                               {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                 {0, 0, 2, 0, 1},
-                                 {0, 0, 1, 2, 3},
-                                 {2, 0, 0, 3, 0},
-                                 {0, 0, 0, 0, 0}},
-                                {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                 {0, 2, 0, 0, 0},
-                                 {1, 1, 2, 0, 2},
-                                 {1, 1, 1, 0, 1},
-                                 {1, 0, 0, 0, 2}}}})
+      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
+                                         {0, 3, 2, 0, 0},
+                                         {2, 0, 0, 0, 1},
+                                         {2, 0, 1, 1, 2},
+                                         {0, 2, 1, 0, 0}},
+                                        {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                         {0, 2, 3, 0, 1},
+                                         {2, 0, 1, 0, 2},
+                                         {3, 1, 0, 0, 0},
+                                         {2, 0, 0, 0, 0}}},
+                                       {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                         {0, 0, 2, 0, 1},
+                                         {0, 0, 1, 2, 3},
+                                         {2, 0, 0, 3, 0},
+                                         {0, 0, 0, 0, 0}},
+                                        {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                         {0, 2, 0, 0, 0},
+                                         {1, 1, 2, 0, 2},
+                                         {1, 1, 1, 0, 1},
+                                         {1, 0, 0, 0, 2}}}})
           .get_vector(),
-      test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                 {3, 3, 2},
-                                 {2, 1, 2},
-                                 {2, 2, 2}},
-                                {{3, 3, 3},  // img 0 chan 1
-                                 {3, 3, 3},
-                                 {3, 1, 2},
-                                 {3, 1, 0}}},
-                               {{{2, 2, 2},  // img 1 chan 0
-                                 {2, 2, 3},
-                                 {2, 3, 3},
-                                 {2, 3, 3}},
-                                {{2, 2, 1},  // img 1 chan 1
-                                 {2, 2, 2},
-                                 {2, 2, 2},
-                                 {1, 1, 2}}}})
+      ngraph::test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
+                                         {3, 3, 2},
+                                         {2, 1, 2},
+                                         {2, 2, 2}},
+                                        {{3, 3, 3},  // img 0 chan 1
+                                         {3, 3, 3},
+                                         {3, 1, 2},
+                                         {3, 1, 0}}},
+                                       {{{2, 2, 2},  // img 1 chan 0
+                                         {2, 2, 3},
+                                         {2, 3, 3},
+                                         {2, 3, 3}},
+                                        {{2, 2, 1},  // img 1 chan 1
+                                         {2, 2, 2},
+                                         {2, 2, 2},
+                                         {1, 1, 2}}}})
           .get_vector(),
       true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             server_client_pad_max_pool_1d_1channel_1image_plain) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
   std::string error_str;
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"}}, error_str);
   size_t batch_size = 1;
 
-  Shape shape_a{1, 1, 12};
-  Shape window_shape{3};
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto b = op::Constant::create(element::f32, Shape{}, vector<float>({0}));
-  CoordinateDiff padding_below{0, 0, 1};
-  CoordinateDiff padding_above{0, 0, 1};
-  auto c = make_shared<op::Pad>(a, b, padding_below, padding_above);
-  Shape shape_r{1, 1, 12};
-  auto f = make_shared<Function>(make_shared<op::MaxPool>(c, window_shape),
-                                 ParameterVector{a});
+  ngraph::Shape shape_a{1, 1, 12};
+  ngraph::Shape window_shape{3};
+  auto a =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
+  auto b = ngraph::op::Constant::create(ngraph::element::f32, ngraph::Shape{},
+                                        std::vector<float>({0}));
+  ngraph::CoordinateDiff padding_below{0, 0, 1};
+  ngraph::CoordinateDiff padding_above{0, 0, 1};
+  auto c =
+      std::make_shared<ngraph::op::Pad>(a, b, padding_below, padding_above);
+  ngraph::Shape shape_r{1, 1, 12};
+  auto f = std::make_shared<ngraph::Function>(
+      std::make_shared<ngraph::op::MaxPool>(c, window_shape),
+      ngraph::ParameterVector{a});
 
   a->set_op_annotations(
-      HEOpAnnotations::client_ciphertext_unpacked_annotation());
+      ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation());
 
   // Server inputs which are not used
-  auto t_dummy = he_backend->create_plain_tensor(element::f32, shape_a);
-  auto t_result = he_backend->create_cipher_tensor(element::f32, shape_r);
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape_a);
+  auto t_result =
+      he_backend->create_cipher_tensor(ngraph::element::f32, shape_r);
 
   // Used for dummy server inputs
-  float DUMMY_FLOAT = 99;
-  copy_data(t_dummy, vector<float>(shape_size(shape_a), DUMMY_FLOAT));
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>(shape_size(shape_a), dummy_float));
 
-  vector<float> results;
-  auto client_thread = thread([&]() {
-    vector<float> inputs{-1, -1, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
-    auto he_client =
-        HESealClient("localhost", 34000, batch_size,
-                     HETensorConfigMap<float>{
-                         {a->get_name(), make_pair("encrypt", inputs)}});
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{-1, -1, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {a->get_name(), make_pair("encrypt", inputs)}});
 
     auto double_results = he_client.get_results();
-    results = vector<float>(double_results.begin(), double_results.end());
+    results = std::vector<float>(double_results.begin(), double_results.end());
   });
 
-  auto handle = static_pointer_cast<HESealExecutable>(he_backend->compile(f));
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
 
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(test::he::all_close(
+  EXPECT_TRUE(ngraph::test::he::all_close(
       results,
-      test::NDArray<float, 3>({{{0, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
+      ngraph::test::NDArray<float, 3>({{{0, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}}})
           .get_vector(),
       1e-3f));
 }

@@ -25,7 +25,6 @@
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
@@ -87,7 +86,6 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
     if (!out.is_ciphertext()) {
       out.set_ciphertext(HESealBackend::create_empty_ciphertext());
     }
-
     scalar_multiply_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
                          out.get_ciphertext(), arg0.complex_packing(),
                          he_seal_backend);
@@ -109,7 +107,6 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
     if (!out.is_plaintext()) {
       out.set_plaintext(HEPlaintext());
     }
-
     scalar_multiply_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                          out.get_plaintext());
   } else {

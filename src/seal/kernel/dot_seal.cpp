@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "seal/kernel/dot_seal.hpp"
+
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 
@@ -105,7 +106,7 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
     auto arg0_it = std::copy(arg0_projected_coord.begin(),
                              arg0_projected_coord.end(), arg0_coord.begin());
 
-    // TODO: better type which matches arguments?
+    // TODO(fboemer): better type which matches arguments?
     auto sum = HEType(HEPlaintext(), false);
     bool first_add = true;
 
@@ -123,7 +124,7 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
       // Multiply and add to the summands.
       auto mult_arg0 = arg0[arg0_transform.index(arg0_coord)];
       auto mult_arg1 = arg1[arg1_transform.index(arg1_coord)];
-      // TODO: better type which matches arguments?
+      // TODO(fboemer): better type which matches arguments?
       auto prod = HEType(HEPlaintext(), false);
       scalar_multiply_seal(mult_arg0, mult_arg1, prod, he_seal_backend);
       if (first_add) {
@@ -135,7 +136,7 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
     }
     // Write the sum back.
     if (first_add) {
-      // TODO: batch size number of zeros?
+      // TODO(fboemer): batch size number of zeros?
       HEPlaintext zero(std::vector<double>{0});
       out[out_index].set_plaintext(zero);
     } else {

@@ -25,7 +25,6 @@
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {

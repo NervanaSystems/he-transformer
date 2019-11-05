@@ -14,9 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <memory>
-
 #include "he_type.hpp"
+
+#include <memory>
 
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"
@@ -27,21 +27,20 @@
 namespace ngraph {
 namespace he {
 
-HEType HEType::load(const he_proto::HEType& proto_he_type,
+HEType HEType::load(const proto::HEType& proto_he_type,
                     std::shared_ptr<seal::SEALContext> context) {
   if (proto_he_type.is_plaintext()) {
-    // TODO: HEPlaintext::load function
+    // TODO(fboemer): HEPlaintext::load function
     HEPlaintext vals{proto_he_type.plain().begin(),
                      proto_he_type.plain().end()};
 
     return HEType(vals, proto_he_type.complex_packing());
-  } else {
-    auto cipher = HESealBackend::create_empty_ciphertext();
-    SealCiphertextWrapper::load(*cipher, proto_he_type, context);
-
-    return HEType(cipher, proto_he_type.complex_packing(),
-                  proto_he_type.batch_size());
   }
+  auto cipher = HESealBackend::create_empty_ciphertext();
+  SealCiphertextWrapper::load(*cipher, proto_he_type, std::move(context));
+
+  return HEType(cipher, proto_he_type.complex_packing(),
+                proto_he_type.batch_size());
 }
 
 }  // namespace he

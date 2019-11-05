@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "seal/kernel/subtract_seal.hpp"
+
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
@@ -38,10 +39,7 @@ void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           HESealBackend& he_seal_backend) {
   NGRAPH_INFO << "Cipher minus plain complex? " << complex_packing;
   HEPlaintext neg_arg1(arg1.size());
-  std::transform(arg1.cbegin(), arg1.cend(), neg_arg1.begin(),
-                 std::negate<double>());
-  NGRAPH_INFO << "arg1 " << arg1;
-  NGRAPH_INFO << "neg arg1 " << neg_arg1;
+  std::transform(arg1.cbegin(), arg1.cend(), neg_arg1.begin(), std::negate<>());
   scalar_add_seal(arg0, neg_arg1, out, complex_packing, he_seal_backend);
 }
 
@@ -56,9 +54,22 @@ void scalar_subtract_seal(const HEPlaintext& arg0, SealCiphertextWrapper& arg1,
 
 void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                           HEPlaintext& out) {
-  HEPlaintext out_vals(arg0.size());
-  std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
-                 std::minus<double>());
+  HEPlaintext out_vals;
+  if (arg0.size() == 1) {
+    out_vals.resize(arg1.size());
+    std::transform(arg1.begin(), arg1.end(), out_vals.begin(),
+                   [&](auto x) { return arg0[0] - x; });
+  } else if (arg1.size() == 1) {
+    out_vals.resize(arg0.size());
+    std::transform(arg0.begin(), arg0.end(), out_vals.begin(),
+                   [&](auto x) { return x - arg1[0]; });
+  } else {
+    size_t min_size = std::min(arg0.size(), arg1.size());
+    out_vals.resize(min_size);
+    for (size_t i = 0; i < min_size; ++i) {
+      out_vals[i] = arg0[i] - arg1[i];
+    }
+  }
   out = std::move(out_vals);
 }
 }  // namespace he

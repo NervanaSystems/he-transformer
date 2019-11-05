@@ -44,6 +44,7 @@ set(BACKEND_TEST_SRC
     test_max.in.cpp
     test_negate.in.cpp
     test_pad.in.cpp
+    test_power.in.cpp
     test_read_write.in.cpp
     test_relu.in.cpp
     test_reshape.in.cpp
@@ -73,11 +74,6 @@ add_executable(unit-test ${SRC})
 
 target_include_directories(unit-test PRIVATE ".")
 
-set(
-  CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\""
-  )
-
 # Add ngraph test utils library
 add_library(ngraph_test_util STATIC IMPORTED)
 set_target_properties(
@@ -98,9 +94,8 @@ target_include_directories(unit-test
 
 target_link_libraries(unit-test PRIVATE ngraph_test_util)
 target_link_libraries(unit-test PRIVATE ngraph libgtest)
-target_link_libraries(unit-test PRIVATE ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread)
-target_link_libraries(unit-test PRIVATE libprotobuf)
+target_link_libraries(unit-test PRIVATE he_seal_backend libseal)
+target_link_libraries(unit-test PRIVATE protobuf::libprotobuf)
 target_link_libraries(unit-test PRIVATE libaby)
 
 add_custom_target(check

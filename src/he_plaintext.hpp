@@ -16,25 +16,31 @@
 
 #pragma once
 
+#include <ostream>
 #include <vector>
 
-#include "protos/message.pb.h"
+#include "ngraph/type/element_type.hpp"
 
 namespace ngraph {
 namespace he {
 /// \brief Class representing a plaintext value
 class HEPlaintext : public std::vector<double> {
  public:
-  HEPlaintext() {}
+  HEPlaintext() = default;
+  ~HEPlaintext() = default;
   HEPlaintext(const std::initializer_list<double>& values)
       : std::vector<double>(values) {}
 
-  HEPlaintext(const HEPlaintext& plain) : std::vector<double>(plain) {}
+  HEPlaintext(const HEPlaintext& plain) = default;
+  HEPlaintext(HEPlaintext&& plain) = default;
 
-  HEPlaintext(const std::vector<double>& values)
+  explicit HEPlaintext(const std::vector<double>& values)
       : std::vector<double>(values) {}
 
-  HEPlaintext(size_t n, double initial_value = 0)
+  explicit HEPlaintext(std::vector<double>&& values)
+      : std::vector<double>(std::move(values)) {}
+
+  explicit HEPlaintext(size_t n, double initial_value = 0)
       : std::vector<double>(n, initial_value) {}
 
   template <class InputIterator>
@@ -46,19 +52,15 @@ class HEPlaintext : public std::vector<double> {
     return *this;
   }
 
-  HEPlaintext& operator=(HEPlaintext&& v) {
+  HEPlaintext& operator=(HEPlaintext&& v) noexcept {
     static_cast<std::vector<double>*>(this)->operator=(v);
     return *this;
   }
+
+  /// \brief Writes the plaintext to the target as a vector of type
+  void write(void* target, const element::Type& element_type);
 };
 
-inline std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
-  os << "HEPlaintext(";
-  for (const auto& value : plain) {
-    os << value << " ";
-  }
-  os << ")";
-  return os;
-}
+std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain);
 }  // namespace he
 }  // namespace ngraph

@@ -17,9 +17,9 @@
 #pragma once
 
 #include <memory>
-#include "he_type.hpp"
 
 #include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "protos/message.pb.h"
@@ -28,7 +28,6 @@
 
 namespace ngraph {
 namespace he {
-
 class HESealBackend;
 class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -43,16 +42,16 @@ class HETensor : public runtime::Tensor {
   /// complex packing
   /// \param[in] encrypted Whether or not tensor is initialized with ciphertexts
   /// \param[in] ckks_encoder CKKS encoder to associate with loaded tensor
-  /// \param[in] seal_context SEAL context to associate with loaded tensor
+  /// \param[in] context SEAL context to associate with loaded tensor
   /// \param[in] encryptor SEAL encryptor to associate with loaded tensor
   /// \param[in] decryptor SEAL decryptor to associate with loaded tensor
   /// \param[in] encryption_params Encryption parameters to associate with
   /// loaded tensor
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
-           const bool plaintext_packing, const bool complex_packing,
-           const bool encrypted, seal::CKKSEncoder& ckks_encoder,
-           std::shared_ptr<seal::SEALContext> seal_context,
+           bool plaintext_packing, bool complex_packing, bool encrypted,
+           seal::CKKSEncoder& ckks_encoder,
+           std::shared_ptr<seal::SEALContext> context,
            const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
            const ngraph::he::HESealEncryptionParameters& encryption_params,
            const std::string& name = "external");
@@ -68,11 +67,9 @@ class HETensor : public runtime::Tensor {
   /// \param[in] he_seal_backend Backend used for encryption and decryption
   /// \param[in] name Name of the tensor
   HETensor(const element::Type& element_type, const Shape& shape,
-           const bool plaintext_packing, const bool complex_packing,
-           const bool encrypted, const HESealBackend& he_seal_backend,
+           bool plaintext_packing, bool complex_packing, bool encrypted,
+           const HESealBackend& he_seal_backend,
            const std::string& name = "external");
-
-  virtual ~HETensor() override {}
 
   /// \brief Write bytes directly into the tensor
   /// \param[in] p Pointer to source of data
@@ -117,7 +114,7 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns the batch size of a given shape
   /// \param[in] shape Shape of the tensor
   /// \param[in] packed Whether or not batch-axis packing is used
-  static uint64_t batch_size(const Shape& shape, const bool packed);
+  static uint64_t batch_size(const Shape& shape, bool packed);
 
   /// \brief Returns the shape of the un-expanded (i.e. packed) tensor.
   const Shape& get_packed_shape() const { return m_packed_shape; }
@@ -142,46 +139,59 @@ class HETensor : public runtime::Tensor {
   /// Due to the 2GB limit on protobufs, large ciphertext tensors may not be
   /// able to store the entire tensor in one SealCipherTensor message.
   /// \param[out] proto_tensors
-  void write_to_protos(std::vector<he_proto::HETensor>& proto_tensors) const;
+  void write_to_protos(std::vector<proto::HETensor>& proto_tensors) const;
 
   /// \brief Loads a tensor from protobuf tensors
   /// \param[in] proto_tensors vector of protobuf tensors to load from
   /// \param[in] ckks_encoder CKKS encoder to associate with loaded tensor
-  /// \param[in] seal_context SEAL context to associate with loaded tensor
+  /// \param[in] context SEAL context to associate with loaded tensor
   /// \param[in] encryptor SEAL encryptor to associate with loaded tensor
   /// \param[in] decryptor SEAL decryptor to associate with loaded tensor
   /// \param[in] encryption_params Encryption parameters to associate with
   /// loaded tensor
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensors(
-      const std::vector<he_proto::HETensor>& proto_tensors,
+      const std::vector<proto::HETensor>& proto_tensors,
       seal::CKKSEncoder& ckks_encoder,
-      std::shared_ptr<seal::SEALContext> seal_context,
+      std::shared_ptr<seal::SEALContext> context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params);
 
   /// \brief Loads a tensor from protobuf tensor
   /// \param[in] proto_tensor protobuf tensor to load from
   /// \param[in] ckks_encoder CKKS encoder to associate with loaded tensor
-  /// \param[in] seal_context SEAL context to associate with loaded tensor
+  /// \param[in] context SEAL context to associate with loaded tensor
   /// \param[in] encryptor SEAL encryptor to associate with loaded tensor
   /// \param[in] decryptor SEAL decryptor to associate with loaded tensor
   /// \param[in] encryption_params Encryption parameters to associate with
   /// loaded tensor
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensor(
-      const he_proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
-      std::shared_ptr<seal::SEALContext> seal_context,
+      const proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
+      std::shared_ptr<seal::SEALContext> context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params) {
-    return load_from_proto_tensors({proto_tensor}, ckks_encoder, seal_context,
-                                   encryptor, decryptor, encryption_params);
+    return load_from_proto_tensors({proto_tensor}, ckks_encoder,
+                                   std::move(context), encryptor, decryptor,
+                                   encryption_params);
   }
+
+  /// \brief Loads a tensor from protobuf tensor to an he_tensor
+  /// \param[in] he_tensor Tensor to load to
+  /// \param[in] proto_tensor protobuf tensor to load from
+  /// \param[in] context SEAL context to associate with loaded tensor
+  static void load_from_proto_tensor(
+      std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
+      std::shared_ptr<seal::SEALContext> context);
+
+  bool done_loading() const { return m_write_count == m_data.size(); }
 
  private:
   bool m_packed;
   Shape m_packed_shape;
   std::vector<HEType> m_data;
+
+  size_t m_write_count{0};  // Number of elements written to the tensor
 
   seal::CKKSEncoder& m_ckks_encoder;
   std::shared_ptr<seal::SEALContext> m_context;
@@ -189,7 +199,7 @@ class HETensor : public runtime::Tensor {
   seal::Decryptor& m_decryptor;
   const ngraph::he::HESealEncryptionParameters& m_encryption_params;
 
-  void check_io_bounds(const void* p, size_t n) const;
+  void check_io_bounds(size_t n) const;
 };
 
 }  // namespace he

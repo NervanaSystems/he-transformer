@@ -24,18 +24,11 @@ ExternalProject_Add(pybind11
                     INSTALL_COMMAND ""
                     UPDATE_COMMAND "")
 
-message(STATUS "python CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR}")
-message(STATUS "python CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
-message(STATUS "python CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
-
 set(BUILD_SH_IN "${CMAKE_SOURCE_DIR}/python/build_wheel.sh.in")
 set(BUILD_SH "${CMAKE_BINARY_DIR}/python/build_wheel.sh")
 configure_file(${BUILD_SH_IN} ${BUILD_SH} @ONLY)
 
-message(STATUS "EXTERNAL_INSTALL_LIB_DIR ${EXTERNAL_INSTALL_LIB_DIR}")
-
 set(PYTHON_ARTIFACTS_DIR ${CMAKE_BINARY_DIR}/python/_install)
-message(STATUS "PYTHON_ARTIFACTS_DIR ${PYTHON_ARTIFACTS_DIR}")
 set(PYTHON_LIB_DIR ${PYTHON_ARTIFACTS_DIR}/lib)
 set(PYTHON_INCLUDE_DIR ${PYTHON_ARTIFACTS_DIR}/include)
 

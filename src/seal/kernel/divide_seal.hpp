@@ -23,11 +23,10 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 
 namespace ngraph {
 namespace he {
-void scalar_divide_seal(const HEPlaintext& arg, const HEPlaintext& arg1,
+void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out);
 
 void scalar_divide_seal(const HEType& arg0, const HEType& arg1, HEType& out,

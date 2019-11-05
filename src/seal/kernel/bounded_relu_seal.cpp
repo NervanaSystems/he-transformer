@@ -14,14 +14,14 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/bounded_relu_seal.hpp"
+
 #include <memory>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-#include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
 namespace ngraph {
@@ -29,13 +29,11 @@ namespace he {
 
 void scalar_bounded_relu_seal(const HEPlaintext& arg, HEPlaintext& out,
                               float alpha) {
-  std::vector<double> out_vals(arg.size());
-
+  out.resize(arg.size());
   auto bounded_relu = [alpha](double f) {
     return f > alpha ? alpha : (f > 0) ? f : 0.f;
   };
-  std::transform(arg.begin(), arg.end(), out_vals.begin(), bounded_relu);
-  out = HEPlaintext(std::vector<double>{out_vals});
+  std::transform(arg.begin(), arg.end(), out.begin(), bounded_relu);
 }
 
 void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
