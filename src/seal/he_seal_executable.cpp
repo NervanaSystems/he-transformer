@@ -495,8 +495,6 @@ void HESealExecutable::handle_client_ciphers(
                "Client only supports 1 client tensor");
   // TODO(fboemer): check for uniqueness of batch size if > 1 input tensor
 
-  NGRAPH_INFO << "proto_msg.he_tensors_size " << proto_msg.he_tensors_size();
-
   const ParameterVector& input_parameters = get_parameters();
 
   /// \brief Looks for a parameter which matches a given tensor name
@@ -544,9 +542,7 @@ void HESealExecutable::handle_client_ciphers(
         *m_he_seal_backend.get_decryptor(),
         m_he_seal_backend.get_encryption_parameters());
     m_client_inputs[param_idx] = he_tensor;
-    NGRAPH_INFO << "Loaded tensor from proto tensor";
   } else {
-    NGRAPH_INFO << "Updating tensor from proto tensor";
     HETensor::load_from_proto_tensor(m_client_inputs[param_idx], proto_tensor,
                                      m_he_seal_backend.get_context());
   }
@@ -910,9 +906,6 @@ void HESealExecutable::send_client_results() {
   std::vector<proto::HETensor> proto_tensors;
   m_client_outputs[0]->write_to_protos(proto_tensors);
 
-  NGRAPH_INFO << "proto_tensors.size() " << proto_tensors.size();
-
-  NGRAPH_INFO << "Protos size " << proto_tensors.size();
   for (const auto& proto_tensor : proto_tensors) {
     proto::TCPMessage result_msg;
     result_msg.set_type(proto::TCPMessage_Type_RESPONSE);

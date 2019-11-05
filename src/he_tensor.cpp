@@ -213,8 +213,6 @@ void HETensor::read(void* p, size_t n) const {
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());
 
-  NGRAPH_INFO << "Reading " << num_elements_to_read;
-
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
@@ -231,7 +229,6 @@ void HETensor::read(void* p, size_t n) const {
 #pragma omp parallel for
   // NOLINTNEXTLINE
   for (size_t i = 0; i < num_elements_to_read; ++i) {
-    // NGRAPH_INFO << "Reading element " << i;
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
       ngraph::he::decrypt(plain, *m_data[i].get_ciphertext(),
@@ -249,7 +246,6 @@ void HETensor::read(void* p, size_t n) const {
 
     ngraph::ngraph_free(dst);
   }
-  NGRAPH_INFO << "Done reading " << num_elements_to_read;
 }
 
 void HETensor::write_to_protos(
@@ -267,7 +263,6 @@ void HETensor::write_to_protos(
 
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
 
-  NGRAPH_INFO << "description_size " << description_size;
   if (!m_data.empty()) {
     proto::HEType tmp_type;
     m_data[0].save(tmp_type);
@@ -278,13 +273,10 @@ void HETensor::write_to_protos(
                    static_cast<float>(he_type_size)) -
         2;
 
-    NGRAPH_INFO << "max_num_data_per_tensor " << max_num_data_per_tensor;
-
     size_t num_tensors = m_data.size() / max_num_data_per_tensor;
     if (m_data.size() % max_num_data_per_tensor != 0) {
       num_tensors++;
     }
-    NGRAPH_INFO << "num_tensors " << num_tensors;
     proto_tensors.resize(num_tensors);
 
     size_t offset = 0;
@@ -337,9 +329,6 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
       false, ckks_encoder, context, encryptor, decryptor, encryption_params,
       proto_name);
 
-  NGRAPH_INFO << "Created tensor shape " << shape << " with " << result_count
-              << " inputs";
-  NGRAPH_INFO << "he_tensor->data.size " << he_tensor->data().size();
 #pragma omp parallel for
   // NOLINTNEXTLINE
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
@@ -347,10 +336,6 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
     he_tensor->data(result_idx) = loaded;
   }
   he_tensor->m_write_count += result_count;
-  NGRAPH_INFO << "Loaded tensor shape " << shape << " with " << result_count
-              << " inputs";
-  NGRAPH_INFO << "he_tensor->m_write_count " << he_tensor->m_write_count;
-  NGRAPH_INFO << "Tensor is done loading? " << he_tensor->done_loading();
 
   return he_tensor;
 }
@@ -364,11 +349,6 @@ void HETensor::load_from_proto_tensor(
   const auto& proto_offset = proto_tensor.offset();
   size_t result_count = proto_tensor.data_size();
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
-
-  NGRAPH_INFO << "load_from_proto_tensor shape " << shape;
-  NGRAPH_INFO << "proto_tensor.offset() " << proto_tensor.offset();
-  NGRAPH_INFO << "proto_tensor.data().size() " << proto_tensor.data().size();
-  NGRAPH_INFO << "he_tensor.data().size() " << he_tensor->data().size();
 
   NGRAPH_CHECK(he_tensor != nullptr, "HETensor is empty");
   NGRAPH_CHECK(he_tensor->get_shape() == shape, "HETensor has wrong shape ",
@@ -386,10 +366,6 @@ void HETensor::load_from_proto_tensor(
     he_tensor->data(proto_offset + result_idx) = loaded;
   }
   he_tensor->m_write_count += result_count;
-
-  NGRAPH_INFO << "Done load_from_proto_tensor shape " << shape;
-  NGRAPH_INFO << "he_tensor->m_write_count " << he_tensor->m_write_count;
-  NGRAPH_INFO << "Tensor is done loading? " << he_tensor->done_loading();
 }
 
 }  // namespace he

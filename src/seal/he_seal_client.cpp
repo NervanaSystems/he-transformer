@@ -203,7 +203,6 @@ void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
   std::vector<proto::HETensor> tensor_protos;
   NGRAPH_HE_LOG(3) << "Writing to protos";
   he_tensor.write_to_protos(tensor_protos);
-  NGRAPH_INFO << "Protos size " << tensor_protos.size();
   for (const auto& tensor_proto : tensor_protos) {
     proto::TCPMessage inputs_msg;
     inputs_msg.set_type(proto::TCPMessage_Type_REQUEST);
@@ -230,25 +229,16 @@ void HESealClient::handle_result(const proto::TCPMessage& message) {
     m_result_tensor = HETensor::load_from_proto_tensor(
         proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
         m_encryption_params);
-    NGRAPH_INFO << "done loading? " << m_result_tensor->done_loading();
   } else {
     HETensor::load_from_proto_tensor(m_result_tensor, proto_tensor, m_context);
-    NGRAPH_INFO << "done loading? " << m_result_tensor->done_loading();
   }
 
   if (m_result_tensor->done_loading()) {
     size_t data_size = m_result_tensor->data().size();
-    NGRAPH_INFO << "data_size " << data_size;
-    NGRAPH_INFO << "m_result_tensor->get_batch_size "
-                << m_result_tensor->get_batch_size();
     m_results.resize(data_size * m_result_tensor->get_batch_size());
     size_t num_bytes =
         m_results.size() * m_result_tensor->get_element_type().size();
-    NGRAPH_INFO << "m_result_tensor->get_element_type().size() "
-                << m_result_tensor->get_element_type().size();
     m_result_tensor->read(m_results.data(), num_bytes);
-    NGRAPH_INFO << "Done reading from result tesnsor";
-
     close_connection();
   }
 }
@@ -421,10 +411,6 @@ std::vector<double> HESealClient::get_results() {
 
   std::unique_lock<std::mutex> mlock(m_is_done_mutex);
   m_is_done_cond.wait(mlock, [this]() { return this->is_done(); });
-  NGRAPH_INFO << "Client done waiting";
-  for (auto& result : m_results) {
-    NGRAPH_INFO << result;
-  }
   return m_results;
 }
 
@@ -432,11 +418,8 @@ void HESealClient::close_connection() {
   NGRAPH_HE_LOG(5) << "Closing connection";
   m_tcp_client->close();
 
-  NGRAPH_INFO << "Getting m_is_done_mutex";
   std::lock_guard<std::mutex> guard(m_is_done_mutex);
-  NGRAPH_INFO << "Setting m_is_done = true";
   m_is_done = true;
-  NGRAPH_INFO << "Notifying m_is_done_cond";
   m_is_done_cond.notify_all();
 }
 
