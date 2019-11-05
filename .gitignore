@@ -1,6 +1,6 @@
 .vscode/
 build/
-build_python
+build_python/
 _out/
 .venv/
 .DS_Store
