@@ -253,8 +253,7 @@ bool HESealExecutable::server_setup() {
     TCPMessage parms_message(std::move(proto_msg));
     NGRAPH_HE_LOG(3) << "Server waiting until session started";
     std::unique_lock<std::mutex> mlock(m_session_mutex);
-    m_session_cond.wait(mlock,
-                        std::bind(&HESealExecutable::session_started, this));
+    m_session_cond.wait(mlock, [this]() { return this->session_started(); });
 
     NGRAPH_HE_LOG(3) << "Server writing parameters message";
     m_session->write_message(std::move(parms_message));
@@ -263,11 +262,7 @@ bool HESealExecutable::server_setup() {
     // Set client inputs to dummy values
     if (m_is_compiled) {
       m_client_inputs.clear();
-      m_client_load_idx.clear();
-
       m_client_inputs.resize(get_parameters().size());
-      m_client_load_idx = std::vector<size_t>(m_client_inputs.size(), 0);
-
     } else {
       NGRAPH_HE_LOG(1) << "Client already setup";
     }
@@ -278,7 +273,7 @@ bool HESealExecutable::server_setup() {
 void HESealExecutable::accept_connection() {
   NGRAPH_HE_LOG(1) << "Server accepting connections";
   auto server_callback =
-      bind(&HESealExecutable::handle_message, this, std::placeholders::_1);
+      std::bind(&HESealExecutable::handle_message, this, std::placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {
@@ -368,7 +363,7 @@ void HESealExecutable::send_inference_shape() {
 
       if (plaintext_packed(*input_param)) {
         NGRAPH_HE_LOG(1) << "Setting parameter " << input_param->get_name()
-                         << "  to packed";
+                         << " to packed";
         proto_he_tensor->set_packed(true);
       }
     }
@@ -403,7 +398,6 @@ void HESealExecutable::handle_relu_result(const proto::TCPMessage& proto_msg) {
       m_he_seal_backend.get_encryption_parameters());
 
   size_t result_count = proto_tensor.data_size();
-#pragma omp parallel for
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
     m_relu_data[m_unknown_relu_idx[result_idx + m_relu_done_count]] =
         he_tensor->data(result_idx);
@@ -501,6 +495,8 @@ void HESealExecutable::handle_client_ciphers(
                "Client only supports 1 client tensor");
   // TODO(fboemer): check for uniqueness of batch size if > 1 input tensor
 
+  NGRAPH_INFO << "proto_msg.he_tensors_size " << proto_msg.he_tensors_size();
+
   const ParameterVector& input_parameters = get_parameters();
 
   /// \brief Looks for a parameter which matches a given tensor name
@@ -537,25 +533,23 @@ void HESealExecutable::handle_client_ciphers(
   set_batch_size(HETensor::batch_size(shape, proto_tensor.packed()));
   NGRAPH_HE_LOG(5) << "Offset " << proto_tensor.offset();
 
-  auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
-      m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
-      *m_he_seal_backend.get_decryptor(),
-      m_he_seal_backend.get_encryption_parameters());
-
   size_t param_idx;
-  NGRAPH_CHECK(find_matching_parameter_index(he_tensor->get_name(), param_idx),
-               "Could not find matching parameter name ",
-               he_tensor->get_name());
+  NGRAPH_CHECK(find_matching_parameter_index(proto_tensor.name(), param_idx),
+               "Could not find matching parameter name ", proto_tensor.name());
 
   if (m_client_inputs[param_idx] == nullptr) {
+    auto he_tensor = HETensor::load_from_proto_tensor(
+        proto_tensor, *m_he_seal_backend.get_ckks_encoder(),
+        m_he_seal_backend.get_context(), *m_he_seal_backend.get_encryptor(),
+        *m_he_seal_backend.get_decryptor(),
+        m_he_seal_backend.get_encryption_parameters());
     m_client_inputs[param_idx] = he_tensor;
+    NGRAPH_INFO << "Loaded tensor from proto tensor";
   } else {
-    NGRAPH_CHECK(false,
-                 "Error loading client input; client input already exists");
+    NGRAPH_INFO << "Updating tensor from proto tensor";
+    HETensor::load_from_proto_tensor(m_client_inputs[param_idx], proto_tensor,
+                                     m_he_seal_backend.get_context());
   }
-
-  NGRAPH_HE_LOG(5) << "Done loading client inputs";
 
   auto done_loading = [&]() {
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
@@ -564,7 +558,8 @@ void HESealExecutable::handle_client_ciphers(
         NGRAPH_HE_LOG(5) << "From client param shape " << param->get_shape();
         NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
 
-        if (m_client_inputs[parm_idx] == nullptr) {
+        if (m_client_inputs[parm_idx] == nullptr ||
+            !m_client_inputs[parm_idx]->done_loading()) {
           return false;
         }
       }
@@ -912,21 +907,25 @@ void HESealExecutable::send_client_results() {
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 
-  proto::TCPMessage result_msg;
-  result_msg.set_type(proto::TCPMessage_Type_RESPONSE);
-
   std::vector<proto::HETensor> proto_tensors;
   m_client_outputs[0]->write_to_protos(proto_tensors);
 
-  NGRAPH_CHECK(proto_tensors.size() == 1,
-               "Support only results which fit in single tensor");
+  NGRAPH_INFO << "proto_tensors.size() " << proto_tensors.size();
 
-  *result_msg.add_he_tensors() = proto_tensors[0];
+  NGRAPH_INFO << "Protos size " << proto_tensors.size();
+  for (const auto& proto_tensor : proto_tensors) {
+    proto::TCPMessage result_msg;
+    result_msg.set_type(proto::TCPMessage_Type_RESPONSE);
+    *result_msg.add_he_tensors() = proto_tensor;
 
-  m_session->write_message(std::move(result_msg));
-  std::unique_lock<std::mutex> mlock(m_result_mutex);
+    auto result_shape = result_msg.he_tensors(0).shape();
+    NGRAPH_HE_LOG(3) << "Server sending result with shape "
+                     << Shape{result_shape.begin(), result_shape.end()};
+    m_session->write_message(std::move(result_msg));
+  }
 
   // Wait until message is written
+  std::unique_lock<std::mutex> mlock(m_result_mutex);
   std::condition_variable& writing_cond = m_session->is_writing_cond();
   writing_cond.wait(mlock, [this] { return !m_session->is_writing(); });
 }
@@ -1459,7 +1458,6 @@ void HESealExecutable::handle_server_relu_op(
     NGRAPH_HE_LOG(3) << "Matched moduli to chain ind " << smallest_ind;
   }
 
-  // TODO(fboemer): better initialization?
   m_relu_data.resize(element_count, HEType(HEPlaintext(), false));
 
   // TODO(fboemer): tune
@@ -1493,21 +1491,6 @@ void HESealExecutable::handle_server_relu_op(
                            << cipher_batch.size();
         }
 
-        proto::TCPMessage proto_msg;
-        proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
-
-        // TODO(fboemer): factor out serializing the function
-        json js = {{"function", node.description()}};
-        if (type_id == OP_TYPEID::BoundedRelu) {
-          const auto* bounded_relu = static_cast<const op::BoundedRelu*>(&node);
-          float alpha = bounded_relu->get_alpha();
-          js["bound"] = alpha;
-        }
-
-        proto::Function f;
-        f.set_function(js.dump());
-        *proto_msg.mutable_function() = f;
-
         // TODO(fboemer): set complex_packing to correct values?
         HETensor relu_tensor(
             arg->get_element_type(),
@@ -1517,15 +1500,29 @@ void HESealExecutable::handle_server_relu_op(
 
         std::vector<proto::HETensor> proto_tensors;
         relu_tensor.write_to_protos(proto_tensors);
+        for (const auto& proto_tensor : proto_tensors) {
+          proto::TCPMessage proto_msg;
+          proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
 
-        NGRAPH_CHECK(proto_tensors.size() == 1,
-                     "Only support ReLU with 1 proto tensor");
-        *proto_msg.add_he_tensors() = proto_tensors[0];
+          // TODO(fboemer): factor out serializing the function
+          json js = {{"function", node.description()}};
+          if (type_id == OP_TYPEID::BoundedRelu) {
+            const auto* bounded_relu =
+                static_cast<const op::BoundedRelu*>(&node);
+            float alpha = bounded_relu->get_alpha();
+            js["bound"] = alpha;
+          }
 
-        TCPMessage relu_message(std::move(proto_msg));
+          proto::Function f;
+          f.set_function(js.dump());
+          *proto_msg.mutable_function() = f;
 
-        NGRAPH_HE_LOG(5) << "Server writing relu request message";
-        m_session->write_message(std::move(relu_message));
+          *proto_msg.add_he_tensors() = proto_tensor;
+          TCPMessage relu_message(std::move(proto_msg));
+
+          NGRAPH_HE_LOG(5) << "Server writing relu request message";
+          m_session->write_message(std::move(relu_message));
+        }
       };
 
   // Process unknown values

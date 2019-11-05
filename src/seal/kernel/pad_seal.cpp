@@ -14,12 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/pad_seal.hpp"
+
 #include <cmath>
 
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/except.hpp"
-#include "seal/kernel/pad_seal.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 

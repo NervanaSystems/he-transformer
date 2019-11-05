@@ -1,0 +1,51 @@
+# Configure clang-tidy for this project.
+Checks: >
+  -*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-static-cast-downcast,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-interfaces-global-init,
+  google-*,
+  -google-runtime-references,
+  misc-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  portability-*,
+  readability-*,
+  readability-identifier-naming,
+
+HeaderFilterRegex: 'src/[^/]*\.(h|hpp|cpp)$'
+
+CheckOptions:
+# Variables, member variables, ...
+  - key:    readability-identifier-naming.ParameterCase
+    value:  lower_case
+  - key:    readability-identifier-naming.VariableCase
+    value:  lower_case
+  - key:    readability-identifier-naming.MemberCase
+    value:  lower_case
+  - key:    readability-identifier-naming.PublicMemberCase
+    value:  lower_case
+  - key:    readability-identifier-naming.ProtectedMemberCase
+    value:  lower_case
+  - key:    readability-identifier-naming.PrivateMemberCase
+    value:  lower_case
+  - key:    readability-identifier-naming.PrivateMemberPrefix
+    value:  m_
+  - key:    readability-identifier-naming.ProtectedMemberPrefix
+    value:  m_
+  - key:    readability-identifier-naming.PublicMemberPrefix
+    value:  m_
+  - key:    readability-identifier-naming.MemberPrefix
+    value:  m_
+
+
+# Turn all the warnings from the checks above into errors.
+WarningsAsErrors: "*"

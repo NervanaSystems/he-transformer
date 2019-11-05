@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "pass/he_liveness.hpp"
+
 #include <exception>
 #include <sstream>
 #include <unordered_set>
@@ -28,7 +30,6 @@
 #include "ngraph/op/parameter.hpp"
 #include "ngraph/op/result.hpp"
 #include "ngraph/util.hpp"
-#include "pass/he_liveness.hpp"
 
 namespace ngraph {
 namespace he {

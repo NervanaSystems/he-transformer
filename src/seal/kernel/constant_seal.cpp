@@ -14,10 +14,11 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/constant_seal.hpp"
+
 #include <memory>
 #include <vector>
 
-#include "seal/kernel/constant_seal.hpp"
 #include "seal/seal_util.hpp"
 #include "util.hpp"
 

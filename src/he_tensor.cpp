@@ -16,6 +16,8 @@
 
 #include "he_tensor.hpp"
 
+#include <limits>
+
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/tensor.hpp"
 #include "ngraph/util.hpp"
@@ -24,12 +26,10 @@
 
 namespace ngraph {
 namespace he {
-
 HETensor::HETensor(
     const element::Type& element_type, const Shape& shape,
-    const bool plaintext_packing, const bool complex_packing,
-    const bool encrypted, seal::CKKSEncoder& ckks_encoder,
-    std::shared_ptr<seal::SEALContext> context,
+    bool plaintext_packing, bool complex_packing, bool encrypted,
+    seal::CKKSEncoder& ckks_encoder, std::shared_ptr<seal::SEALContext> context,
     const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
     const ngraph::he::HESealEncryptionParameters& encryption_params,
     const std::string& name)
@@ -61,7 +61,6 @@ HETensor::HETensor(
       m_data[i] = HEType(HESealBackend::create_empty_ciphertext(),
                          complex_packing, get_batch_size());
     }
-
   } else {
     m_data.resize(num_elements,
                   HEType(HEPlaintext(get_batch_size()), complex_packing));
@@ -69,8 +68,8 @@ HETensor::HETensor(
 }
 
 HETensor::HETensor(const element::Type& element_type, const Shape& shape,
-                   const bool plaintext_packing, const bool complex_packing,
-                   const bool encrypted, const HESealBackend& he_seal_backend,
+                   bool plaintext_packing, bool complex_packing, bool encrypted,
+                   const HESealBackend& he_seal_backend,
                    const std::string& name)
     : HETensor(element_type, shape, plaintext_packing, complex_packing,
                encrypted, *he_seal_backend.get_ckks_encoder(),
@@ -147,7 +146,7 @@ void HETensor::unpack() {
   m_packed_shape = get_shape();
 }
 
-uint64_t HETensor::batch_size(const Shape& shape, const bool packed) {
+uint64_t HETensor::batch_size(const Shape& shape, bool packed) {
   if (!shape.empty() && packed) {
     return shape[0];
   }
@@ -181,16 +180,16 @@ void HETensor::write(const void* p, size_t n) {
   size_t num_elements_to_write = n / (element_type.size() * get_batch_size());
 
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t i = 0; i < num_elements_to_write; ++i) {
-    std::vector<double> values(get_batch_size());
+    HEPlaintext plain(get_batch_size());
     for (size_t j = 0; j < get_batch_size(); ++j) {
       const auto* src = static_cast<const void*>(
           static_cast<const char*>(p) +
           type_byte_size * (i + j * num_elements_to_write));
-      values[j] = type_to_double(src, element_type);
+      plain[j] = type_to_double(src, element_type);
     }
 
-    HEPlaintext plain({values});
     if (m_data[i].is_plaintext()) {
       m_data[i].set_plaintext(plain);
     } else if (m_data[i].is_ciphertext()) {
@@ -205,6 +204,7 @@ void HETensor::write(const void* p, size_t n) {
       NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
     }
   }
+  m_write_count += num_elements_to_write;
 }
 
 void HETensor::read(void* p, size_t n) const {
@@ -213,8 +213,11 @@ void HETensor::read(void* p, size_t n) const {
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());
 
+  NGRAPH_INFO << "Reading " << num_elements_to_read;
+
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     auto* src = static_cast<char*>(const_cast<void*>(type_values_src));
     for (size_t j = 0; j < get_batch_size(); ++j) {
       auto* dst_with_offset = static_cast<void*>(
@@ -226,7 +229,9 @@ void HETensor::read(void* p, size_t n) const {
   };
 
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t i = 0; i < num_elements_to_read; ++i) {
+    // NGRAPH_INFO << "Reading element " << i;
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
       ngraph::he::decrypt(plain, *m_data[i].get_ciphertext(),
@@ -237,27 +242,78 @@ void HETensor::read(void* p, size_t n) const {
     }
 
     void* dst = ngraph::ngraph_malloc(type_byte_size * get_batch_size());
-    ngraph::he::write_plaintext(dst, plain, element_type, get_batch_size());
+    plain.resize(get_batch_size());
+    plain.write(dst, element_type);
 
     copy_batch_values_to_src(i, p, dst);
+
     ngraph::ngraph_free(dst);
   }
+  NGRAPH_INFO << "Done reading " << num_elements_to_read;
 }
 
 void HETensor::write_to_protos(
     std::vector<proto::HETensor>& proto_tensors) const {
   // TODO(fboemer): support large shapes
+
+  // Populate attributes of tensor to estimate byte size
   proto_tensors.resize(1);
   proto_tensors[0].set_name(get_name());
   proto_tensors[0].set_packed(m_packed);
   proto_tensors[0].set_offset(0);
-
   std::vector<uint64_t> int_shape{get_shape()};
   *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+  size_t description_size = proto_tensors[0].ByteSize();
 
-  // TODO: parallelize?
-  for (const auto& he_type : m_data) {
-    he_type.save(*proto_tensors[0].add_data());
+  NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
+
+  NGRAPH_INFO << "description_size " << description_size;
+  if (!m_data.empty()) {
+    proto::HEType tmp_type;
+    m_data[0].save(tmp_type);
+
+    size_t he_type_size = tmp_type.ByteSize();
+    size_t max_num_data_per_tensor =
+        std::floor(std::numeric_limits<int32_t>::max() /
+                   static_cast<float>(he_type_size)) -
+        2;
+
+    NGRAPH_INFO << "max_num_data_per_tensor " << max_num_data_per_tensor;
+
+    size_t num_tensors = m_data.size() / max_num_data_per_tensor;
+    if (m_data.size() % max_num_data_per_tensor != 0) {
+      num_tensors++;
+    }
+    NGRAPH_INFO << "num_tensors " << num_tensors;
+    proto_tensors.resize(num_tensors);
+
+    size_t offset = 0;
+
+    for (size_t tensor_idx = 0; tensor_idx < num_tensors; ++tensor_idx) {
+      proto_tensors[tensor_idx].set_name(get_name());
+      proto_tensors[tensor_idx].set_packed(m_packed);
+      proto_tensors[tensor_idx].set_offset(offset);
+      *proto_tensors[tensor_idx].mutable_shape() = {int_shape.begin(),
+                                                    int_shape.end()};
+
+      auto* mutable_data = proto_tensors[tensor_idx].mutable_data();
+      size_t num_data_in_tensor = max_num_data_per_tensor;
+      if (tensor_idx == num_tensors - 1) {
+        num_data_in_tensor =
+            m_data.size() - tensor_idx * max_num_data_per_tensor;
+      }
+      for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
+        mutable_data->Add();
+      }
+
+#pragma omp parallel for
+      // NOLINTNEXTLINE
+      for (size_t data_idx = 0; data_idx < num_data_in_tensor; ++data_idx) {
+        size_t data_offset = offset + data_idx;
+        m_data[data_offset].save(*mutable_data->Mutable(data_idx));
+      }
+      offset += num_data_in_tensor;
+    }
   }
 }
 
@@ -275,20 +331,65 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
   const auto& proto_shape = proto_tensor.shape();
   size_t result_count = proto_tensor.data_size();
   ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
-  auto element_type = element::f64;
 
   auto he_tensor = std::make_shared<HETensor>(
-      element_type, shape, proto_packed, encryption_params.complex_packing(),
+      element::f64, shape, proto_packed, encryption_params.complex_packing(),
       false, ckks_encoder, context, encryptor, decryptor, encryption_params,
       proto_name);
 
+  NGRAPH_INFO << "Created tensor shape " << shape << " with " << result_count
+              << " inputs";
+  NGRAPH_INFO << "he_tensor->data.size " << he_tensor->data().size();
 #pragma omp parallel for
+  // NOLINTNEXTLINE
   for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-    auto loaded = HEType::load(proto_tensor.data(result_idx), context);
+    const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
     he_tensor->data(result_idx) = loaded;
   }
+  he_tensor->m_write_count += result_count;
+  NGRAPH_INFO << "Loaded tensor shape " << shape << " with " << result_count
+              << " inputs";
+  NGRAPH_INFO << "he_tensor->m_write_count " << he_tensor->m_write_count;
+  NGRAPH_INFO << "Tensor is done loading? " << he_tensor->done_loading();
 
   return he_tensor;
+}
+
+void HETensor::load_from_proto_tensor(
+    std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
+    std::shared_ptr<seal::SEALContext> context) {
+  const auto& proto_name = proto_tensor.name();
+  const auto& proto_packed = proto_tensor.packed();
+  const auto& proto_shape = proto_tensor.shape();
+  const auto& proto_offset = proto_tensor.offset();
+  size_t result_count = proto_tensor.data_size();
+  ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+
+  NGRAPH_INFO << "load_from_proto_tensor shape " << shape;
+  NGRAPH_INFO << "proto_tensor.offset() " << proto_tensor.offset();
+  NGRAPH_INFO << "proto_tensor.data().size() " << proto_tensor.data().size();
+  NGRAPH_INFO << "he_tensor.data().size() " << he_tensor->data().size();
+
+  NGRAPH_CHECK(he_tensor != nullptr, "HETensor is empty");
+  NGRAPH_CHECK(he_tensor->get_shape() == shape, "HETensor has wrong shape ",
+               he_tensor->get_shape(), ", expected ", shape);
+  NGRAPH_CHECK(he_tensor->get_name() == proto_name, "HETensor has wrong name ",
+               he_tensor->get_name(), ", expected ", proto_name);
+  NGRAPH_CHECK(he_tensor->is_packed() == proto_packed,
+               "HETensor has wrong packing ", he_tensor->is_packed(),
+               ", expected ", proto_packed);
+
+#pragma omp parallel for
+  // NOLINTNEXTLINE
+  for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
+    const auto& loaded = HEType::load(proto_tensor.data(result_idx), context);
+    he_tensor->data(proto_offset + result_idx) = loaded;
+  }
+  he_tensor->m_write_count += result_count;
+
+  NGRAPH_INFO << "Done load_from_proto_tensor shape " << shape;
+  NGRAPH_INFO << "he_tensor->m_write_count " << he_tensor->m_write_count;
+  NGRAPH_INFO << "Tensor is done loading? " << he_tensor->done_loading();
 }
 
 }  // namespace he

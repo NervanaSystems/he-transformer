@@ -23,207 +23,244 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
+static std::string s_manifest = "${MANIFEST}";
 
-static string s_manifest = "${MANIFEST}";
-
-auto broadcast_test = [](const Shape& shape_a, const Shape& shape_r,
-                         const AxisSet& axis_set, const vector<float>& input,
-                         const vector<float>& output, const bool arg1_encrypted,
-                         const bool complex_packing, const bool packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
+auto broadcast_test = [](const ngraph::Shape& shape_a,
+                         const ngraph::Shape& shape_r,
+                         const ngraph::AxisSet& axis_set,
+                         const std::vector<float>& input,
+                         const std::vector<float>& output,
+                         const bool arg1_encrypted, const bool complex_packing,
+                         const bool packed) {
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        he::HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
   }
 
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto t = make_shared<op::Broadcast>(a, shape_r, axis_set);
-  auto f = make_shared<Function>(t, ParameterVector{a});
+  auto a =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
+  auto t = std::make_shared<ngraph::op::Broadcast>(a, shape_r, axis_set);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
 
-  auto t_a =
-      test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
-  auto t_result =
-      test::he::tensor_from_flags(*he_backend, shape_r, arg1_encrypted, packed);
+  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
+                                                 arg1_encrypted, packed);
+  auto t_result = ngraph::test::he::tensor_from_flags(*he_backend, shape_r,
+                                                      arg1_encrypted, packed);
 
   copy_data(t_a, input);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(
+      ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_real_unpacked) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, false, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_real_packed) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, false, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_complex_unpacked) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, true, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_plain_complex_packed) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, true, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_real_unpacked) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, false, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_real_packed) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, false, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_complex_unpacked) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, true, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_vector_cipher_complex_packed) {
-  broadcast_test(Shape{}, Shape{4}, AxisSet{0}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, true, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{4}, ngraph::AxisSet{0},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_real_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, false, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_real_packed) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, false, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_complex_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, true, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_plain_complex_packed) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, false, true, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, false,
+                 true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_real_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, false, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_real_packed) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, false, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_complex_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, true, false);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_matrix_cipher_complex_packed) {
-  broadcast_test(Shape{}, Shape{2, 2}, AxisSet{0, 1}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6}, true, true, true);
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2}, ngraph::AxisSet{0, 1},
+                 std::vector<float>{6}, std::vector<float>{6, 6, 6, 6}, true,
+                 true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_packed) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_packed) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_packed) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_unpacked) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, false);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_packed) {
-  broadcast_test(Shape{}, Shape{2, 2, 2}, AxisSet{0, 1, 2}, vector<float>{6},
-                 vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, true);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial_plain_real_unpacked) {
-  broadcast_test(Shape{2, 2, 2}, Shape{2, 2, 2}, AxisSet{},
-                 vector<float>{2, 4, 6, 8, 16, 32, 64, 128},
-                 vector<float>{2, 4, 6, 8, 16, 32, 64, 128}, false, false,
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false,
                  false);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_real_packed) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, false,
+                 true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_unpacked) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true,
+                 false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_plain_complex_packed) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_unpacked) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false,
+                 false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_real_packed) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, false, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_unpacked) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_scalar_tensor_cipher_complex_packed) {
+  broadcast_test(ngraph::Shape{}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0, 1, 2}, std::vector<float>{6},
+                 std::vector<float>{6, 6, 6, 6, 6, 6, 6, 6}, true, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, broadcast_trivial_plain_real_unpacked) {
+  broadcast_test(
+      ngraph::Shape{2, 2, 2}, ngraph::Shape{2, 2, 2}, ngraph::AxisSet{},
+      std::vector<float>{2, 4, 6, 8, 16, 32, 64, 128},
+      std::vector<float>{2, 4, 6, 8, 16, 32, 64, 128}, false, false, false);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_colwise_plain_real_unpacked) {
-  broadcast_test(Shape{3}, Shape{3, 4}, AxisSet{1}, vector<float>{1, 2, 3},
-                 vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, false,
+  broadcast_test(ngraph::Shape{3}, ngraph::Shape{3, 4}, ngraph::AxisSet{1},
+                 std::vector<float>{1, 2, 3},
+                 std::vector<float>{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}, false,
                  false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_vector_rowwise_plain_real_unpacked) {
-  broadcast_test(Shape{4}, Shape{3, 4}, AxisSet{0}, vector<float>{1, 2, 3, 4},
-                 vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}, false,
+  broadcast_test(ngraph::Shape{4}, ngraph::Shape{3, 4}, ngraph::AxisSet{0},
+                 std::vector<float>{1, 2, 3, 4},
+                 std::vector<float>{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}, false,
                  false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_0_plain_real_unpacked) {
-  broadcast_test(Shape{2, 2}, Shape{2, 2, 2}, AxisSet{0},
-                 vector<float>{1, 2, 3, 4},
-                 vector<float>{1, 2, 3, 4, 1, 2, 3, 4}, false, false, false);
+  broadcast_test(ngraph::Shape{2, 2}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{0}, std::vector<float>{1, 2, 3, 4},
+                 std::vector<float>{1, 2, 3, 4, 1, 2, 3, 4}, false, false,
+                 false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_1_plain_real_unpacked) {
-  broadcast_test(Shape{2, 2}, Shape{2, 2, 2}, AxisSet{1},
-                 vector<float>{1, 2, 3, 4},
-                 vector<float>{1, 2, 1, 2, 3, 4, 3, 4}, false, false, false);
+  broadcast_test(ngraph::Shape{2, 2}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{1}, std::vector<float>{1, 2, 3, 4},
+                 std::vector<float>{1, 2, 1, 2, 3, 4, 3, 4}, false, false,
+                 false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_matrix_2_plain_real_unpacked) {
-  broadcast_test(Shape{2, 2}, Shape{2, 2, 2}, AxisSet{2},
-                 vector<float>{1, 2, 3, 4},
-                 vector<float>{1, 1, 2, 2, 3, 3, 4, 4}, false, false, false);
+  broadcast_test(ngraph::Shape{2, 2}, ngraph::Shape{2, 2, 2},
+                 ngraph::AxisSet{2}, std::vector<float>{1, 2, 3, 4},
+                 std::vector<float>{1, 1, 2, 2, 3, 3, 4, 4}, false, false,
+                 false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  Shape shape_a{};
-  auto A = make_shared<op::Parameter>(element::f32, shape_a);
-  Shape shape_r{4};
-  ASSERT_THROW(auto f = make_shared<Function>(
-                   make_shared<op::Broadcast>(A, shape_r, AxisSet{0, 1}),
-                   ParameterVector{A}),
-               ngraph_error);
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  ngraph::Shape shape_a{};
+  auto a =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
+  ngraph::Shape shape_r{4};
+  ASSERT_THROW(auto f = std::make_shared<ngraph::Function>(
+                   std::make_shared<ngraph::op::Broadcast>(
+                       a, shape_r, ngraph::AxisSet{0, 1}),
+                   ngraph::ParameterVector{a}),
+               ngraph::ngraph_error);
 }

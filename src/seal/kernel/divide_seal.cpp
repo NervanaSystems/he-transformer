@@ -14,12 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/kernel/divide_seal.hpp"
+
 #include <memory>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/divide_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
@@ -29,10 +30,9 @@ namespace he {
 
 void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out) {
-  std::vector<double> out_vals(arg0.size());
-  std::transform(arg0.begin(), arg0.end(), arg1.begin(), out_vals.begin(),
+  out.resize(arg0.size());
+  std::transform(arg0.begin(), arg0.end(), arg1.begin(), out.begin(),
                  std::divides<>());
-  out = HEPlaintext({out_vals});
 }
 
 void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,

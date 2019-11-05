@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "seal/he_seal_client.hpp"
+
 #include <algorithm>
 #include <boost/asio.hpp>
 #include <functional>
@@ -26,7 +28,6 @@
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
-#include "seal/he_seal_client.hpp"
 #include "seal/kernel/bounded_relu_seal.hpp"
 #include "seal/kernel/max_pool_seal.hpp"
 #include "seal/kernel/relu_seal.hpp"
@@ -44,7 +45,7 @@ namespace he {
 HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
                            const HETensorConfigMap<double>& inputs)
-    : m_batch_size{batch_size}, m_is_done{false}, m_input_config{inputs} {
+    : m_batch_size{batch_size}, m_input_config{inputs} {
   NGRAPH_HE_LOG(5) << "Creating HESealClient from config";
   NGRAPH_CHECK(m_input_config.size() == 1,
                "Client supports only one input parameter");
@@ -126,7 +127,8 @@ void HESealClient::handle_encryption_parameters_response(
       message.encryption_parameters().encryption_parameters();
   std::stringstream param_stream(enc_parms_str);
 
-  NGRAPH_HE_LOG(3) << "Client loading encryption parameters";
+  NGRAPH_HE_LOG(3) << "Client loading encryption parameters from stream size "
+                   << enc_parms_str.size();
   m_encryption_params = HESealEncryptionParameters::load(param_stream);
 
   set_seal_context();
@@ -195,10 +197,13 @@ void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
       m_context, *m_encryptor, *m_decryptor, m_encryption_params, proto_name);
 
   size_t num_bytes = parameter_size * sizeof(double) * m_batch_size;
+  NGRAPH_HE_LOG(3) << "Writing to tensor";
   he_tensor.write(input_data.data(), num_bytes);
 
   std::vector<proto::HETensor> tensor_protos;
+  NGRAPH_HE_LOG(3) << "Writing to protos";
   he_tensor.write_to_protos(tensor_protos);
+  NGRAPH_INFO << "Protos size " << tensor_protos.size();
   for (const auto& tensor_proto : tensor_protos) {
     proto::TCPMessage inputs_msg;
     inputs_msg.set_type(proto::TCPMessage_Type_REQUEST);
@@ -220,17 +225,32 @@ void HESealClient::handle_result(const proto::TCPMessage& message) {
                "Client supports only results with one tensor");
 
   const auto& proto_tensor = message.he_tensors(0);
-  auto he_tensor = HETensor::load_from_proto_tensor(
-      proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
-      m_encryption_params);
 
-  size_t result_count = proto_tensor.data_size();
-  m_results.resize(result_count * he_tensor->get_batch_size());
-  size_t num_bytes = result_count * he_tensor->get_element_type().size() *
-                     he_tensor->get_batch_size();
-  he_tensor->read(m_results.data(), num_bytes);
+  if (m_result_tensor == nullptr) {
+    m_result_tensor = HETensor::load_from_proto_tensor(
+        proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
+        m_encryption_params);
+    NGRAPH_INFO << "done loading? " << m_result_tensor->done_loading();
+  } else {
+    HETensor::load_from_proto_tensor(m_result_tensor, proto_tensor, m_context);
+    NGRAPH_INFO << "done loading? " << m_result_tensor->done_loading();
+  }
 
-  close_connection();
+  if (m_result_tensor->done_loading()) {
+    size_t data_size = m_result_tensor->data().size();
+    NGRAPH_INFO << "data_size " << data_size;
+    NGRAPH_INFO << "m_result_tensor->get_batch_size "
+                << m_result_tensor->get_batch_size();
+    m_results.resize(data_size * m_result_tensor->get_batch_size());
+    size_t num_bytes =
+        m_results.size() * m_result_tensor->get_element_type().size();
+    NGRAPH_INFO << "m_result_tensor->get_element_type().size() "
+                << m_result_tensor->get_element_type().size();
+    m_result_tensor->read(m_results.data(), num_bytes);
+    NGRAPH_INFO << "Done reading from result tesnsor";
+
+    close_connection();
+  }
 }
 
 void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
@@ -259,6 +279,7 @@ void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
 
   std::vector<proto::HETensor> proto_output_tensors;
   he_tensor->write_to_protos(proto_output_tensors);
+
   NGRAPH_CHECK(proto_output_tensors.size() == 1,
                "Only support single-output tensors");
   *proto_tensor = proto_output_tensors[0];
@@ -395,12 +416,27 @@ void HESealClient::handle_message(const TCPMessage& message) {
 #pragma clang diagnostic pop
 }
 
+std::vector<double> HESealClient::get_results() {
+  NGRAPH_INFO << "Client waiting for results";
+
+  std::unique_lock<std::mutex> mlock(m_is_done_mutex);
+  m_is_done_cond.wait(mlock, [this]() { return this->is_done(); });
+  NGRAPH_INFO << "Client done waiting";
+  for (auto& result : m_results) {
+    NGRAPH_INFO << result;
+  }
+  return m_results;
+}
+
 void HESealClient::close_connection() {
   NGRAPH_HE_LOG(5) << "Closing connection";
   m_tcp_client->close();
 
+  NGRAPH_INFO << "Getting m_is_done_mutex";
   std::lock_guard<std::mutex> guard(m_is_done_mutex);
+  NGRAPH_INFO << "Setting m_is_done = true";
   m_is_done = true;
+  NGRAPH_INFO << "Notifying m_is_done_cond";
   m_is_done_cond.notify_all();
 }
 

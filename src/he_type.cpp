@@ -14,9 +14,9 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <memory>
-
 #include "he_type.hpp"
+
+#include <memory>
 
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"

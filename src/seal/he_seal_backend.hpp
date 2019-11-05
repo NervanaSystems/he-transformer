@@ -123,21 +123,20 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \param[in] type Datatype
   /// \returns True if datatype is supported, false otherwise
   inline bool is_supported_type(const ngraph::element::Type& type) const {
-    return m_supported_element_types.find(type.hash()) !=
-           m_supported_element_types.end();
+    return m_supported_types.find(type.hash()) != m_supported_types.end();
   }
 
   /// \brief Creates a cipher tensor using plaintext packing along the batch
   /// (i.e. first) axis
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
-      const element::Type& element_type, const Shape& shape) const;
+      const element::Type& type, const Shape& shape) const;
 
   /// \brief Creates a plaintext tensor using plaintext packing along the batch
   /// (i.e. first) axis
-  /// \param[in] element_type Datatype stored in the tensor
+  /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
   std::shared_ptr<runtime::Tensor> create_packed_plain_tensor(
@@ -352,7 +351,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   // Stores Barrett64 ratios for moduli under 30 bits
   std::unordered_map<std::uint64_t, std::uint64_t> m_barrett64_ratio_map;
 
-  std::unordered_set<size_t> m_supported_element_types{
+  std::unordered_set<size_t> m_supported_types{
       element::f32.hash(), element::i32.hash(), element::i64.hash(),
       element::f64.hash()};
 

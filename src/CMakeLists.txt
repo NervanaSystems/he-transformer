@@ -14,6 +14,8 @@
 # the License.
 # *****************************************************************************
 
+add_subdirectory(protos)
+
 # HE transformer sources
 set(HE_SRC
     # main
@@ -21,6 +23,8 @@ set(HE_SRC
     he_tensor.cpp
     he_type.cpp
     node_wrapper.cpp
+    util.cpp
+    he_plaintext.cpp
     # pass
     pass/he_fusion.cpp
     pass/he_liveness.cpp
@@ -59,76 +63,52 @@ set_source_files_properties(${message_proto_srcs}
                             GENERATED
                             TRUE)
 
-# Target library
+# Create library and link to dependencies
 add_library(he_seal_backend SHARED ${HE_SRC})
-target_include_directories(he_seal_backend
-                           PUBLIC ${HE_TRANSFORMER_SOURCE_DIR}
-                                  ${EXTERNAL_INSTALL_INCLUDE_DIR}
-                                  ${NGRAPH_TF_INCLUDE_DIR})
-
+target_include_directories(he_seal_backend PUBLIC ${HE_TRANSFORMER_SOURCE_DIR})
 target_link_libraries(he_seal_backend
                       PUBLIC libjson
                              libboost
                              libseal
                              libngraph_tf
-                             libprotobuf
-                             libprotobuf_orig
+                             protobuf::libprotobuf
+                             generated_proto_files
                              ngraph)
 
-# SEAL uses zlib
-find_package(ZLIB 1.2.11 EXACT)
-if(ZLIB_FOUND)
-  message(STATUS "ZLIB_LIBRARIES ${ZLIB_LIBRARIES}")
-  target_link_libraries(he_seal_backend PUBLIC ZLIB::ZLIB)
-endif()
+foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
+  install(TARGETS he_seal_backend DESTINATION ${INSTALL_LIB_DIR})
 
-message("HE_TRANSFORMER_SOURCE_DIR ${HE_TRANSFORMER_SOURCE_DIR}")
-message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-# Get library names
-set(HE_SEAL_BACKEND_LIB_NAME "libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  message("Installing protobuf to ${INSTALL_LIB_DIR} ")
+  message("Protobuf_LIBRARIES ${Protobuf_LIBRARIES}")
+  add_custom_command(TARGET he_seal_backend POST_BUILD
+                     COMMAND ${CMAKE_COMMAND}
+                             -E
+                             copy
+                             ${Protobuf_LIBRARIES}
+                             ${INSTALL_LIB_DIR}
+                     DEPENDS protobuf::libprotobuf)
+endforeach()
 
-message("NGRAPH_TF_VENV_LIB_DIR ${NGRAPH_TF_VENV_LIB_DIR}")
-message("NGRAPH_TF_LIB_DIR ${NGRAPH_TF_LIB_DIR}")
+message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Install he-transformer (the HE libraries are installed separately) at `make
-# install`
-install(TARGETS he_seal_backend DESTINATION ${EXTERNAL_INSTALL_LIB_DIR})
+foreach(INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIRS})
+  message("Installing headers to ${INSTALL_INCLUDE_DIR}")
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+          DESTINATION ${INSTALL_INCLUDE_DIR}
+          FILES_MATCHING
+          PATTERN "*.hpp"
+          PATTERN "*.h")
+  install(DIRECTORY ${Protobuf_INCLUDE_DIR}/
+          DESTINATION ${INSTALL_INCLUDE_DIR}
+          FILES_MATCHING
+          PATTERN "*.h"
+          PATTERN "*.hpp"
+          PATTERN "*.inc") # For port_def.inc
+  message("Installing json_INCLUDE_DIR ${json_INCLUDE_DIR}")
+  install(DIRECTORY ${json_INCLUDE_DIR}/
+          DESTINATION ${INSTALL_INCLUDE_DIR}
+          FILES_MATCHING
+          PATTERN "*.h"
+          PATTERN "*.hpp")
 
-message(
-  "Copying CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} to ${EXTERNAL_INSTALL_INCLUDE_DIR}"
-  )
-message("PROJECT_ROOT_DIR ${PROJECT_ROOT_DIR}")
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-
-# Install protobuf files
-install(DIRECTORY ${CMAKE_BINARY_DIR}/protos
-        DESTINATION ${EXTERNAL_INSTALL_INCLUDE_DIR}
-        FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h")
-
-message(STATUS "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
-message(STATUS "CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}")
-
-# Create symbolic links for he_seal_backend, to allow ngraph and ngraph-tf to
-# recognize find it.
-add_custom_target(
-  he_seal_backend_soft_link ALL
-  DEPENDS he_seal_backend
-  COMMAND
-    ${CMAKE_COMMAND}
-    -E
-    create_symlink
-    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-    ${NGRAPH_TF_VENV_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-  COMMAND
-    ${CMAKE_COMMAND}
-    -E
-    create_symlink
-    ${EXTERNAL_INSTALL_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX}
-    ${NGRAPH_TF_LIB_DIR}/libhe_seal_backend${CMAKE_SHARED_LIBRARY_SUFFIX})
+endforeach()

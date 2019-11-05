@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "pass/he_fusion.hpp"
+
 #include <memory>
 
 #include "ngraph/builder/make_constant.hpp"
@@ -22,7 +24,6 @@
 #include "ngraph/pattern/matcher.hpp"
 #include "ngraph/pattern/op/label.hpp"
 #include "ngraph/runtime/cpu/op/bounded_relu.hpp"
-#include "pass/he_fusion.hpp"
 
 void ngraph::he::pass::HEFusion::construct_bounded_relu() {
   auto relu_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});

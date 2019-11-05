@@ -71,11 +71,6 @@ add_executable(unit-test ${SRC})
 
 target_include_directories(unit-test PRIVATE ".")
 
-set(
-  CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -DHE_SERIALIZED_ZOO=\\\"${CMAKE_CURRENT_SOURCE_DIR}/model\\\""
-  )
-
 # Add ngraph test utils library
 add_library(ngraph_test_util STATIC IMPORTED)
 set_target_properties(
@@ -96,9 +91,8 @@ target_include_directories(unit-test
 
 target_link_libraries(unit-test PRIVATE ngraph_test_util)
 target_link_libraries(unit-test PRIVATE ngraph libgtest)
-target_link_libraries(unit-test PRIVATE ${CMAKE_DL_LIBS})
-target_link_libraries(unit-test PRIVATE he_seal_backend libseal pthread)
-target_link_libraries(unit-test PRIVATE libprotobuf)
+target_link_libraries(unit-test PRIVATE he_seal_backend libseal)
+target_link_libraries(unit-test PRIVATE protobuf::libprotobuf)
 
 add_custom_target(check
                   COMMAND ${PROJECT_BINARY_DIR}/test/unit-test \${ARGS}

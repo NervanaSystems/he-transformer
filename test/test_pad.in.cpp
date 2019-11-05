@@ -24,45 +24,41 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-using namespace std;
-using namespace ngraph;
-using namespace ngraph::he;
+static std::string s_manifest = "${MANIFEST}";
 
-static string s_manifest = "${MANIFEST}";
-
-auto pad_test = [](const Shape& shape_a, const CoordinateDiff& padding_below,
-                   const CoordinateDiff& padding_above,
-                   const op::PadMode& pad_mode, const vector<float>& input_a,
-                   const vector<float>& input_b, const vector<float>& output,
+auto pad_test = [](const ngraph::Shape& shape_a, const ngraph::CoordinateDiff& padding_below,
+                   const ngraph::CoordinateDiff& padding_above,
+                   const ngraph::op::PadMode& pad_mode, const std::vector<float>& input_a,
+                   const std::vector<float>& input_b, const std::vector<float>& output,
                    const bool arg1_encrypted, const bool arg2_encrypted,
                    const bool complex_packing, const bool packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
   }
 
   NGRAPH_INFO << "padding_below " << padding_below;
   NGRAPH_INFO << "padding_above " << padding_above;
   NGRAPH_INFO << "shape_a " << shape_a;
 
-  auto a = make_shared<op::Parameter>(element::f32, shape_a);
-  auto b = make_shared<op::Parameter>(element::f32, Shape{});
-  auto t = make_shared<op::Pad>(a, b, padding_below, padding_above, pad_mode);
-  auto f = make_shared<Function>(t, ParameterVector{a, b});
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{});
+  auto t = std::make_shared<ngraph::op::Pad>(a, b, padding_below, padding_above, pad_mode);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
 
   a->set_op_annotations(
-      test::he::annotation_from_flags(false, arg1_encrypted, packed));
+      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
   b->set_op_annotations(
-      test::he::annotation_from_flags(false, arg2_encrypted, packed));
+      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
   auto t_a =
-      test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+      ngraph::test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
   auto t_b =
-      test::he::tensor_from_flags(*he_backend, Shape{}, arg2_encrypted, packed);
-  auto t_result = test::he::tensor_from_flags(
+      ngraph::test::he::tensor_from_flags(*he_backend, ngraph::Shape{}, arg2_encrypted, packed);
+  auto t_result = ngraph::test::he::tensor_from_flags(
       *he_backend, t->get_shape(), arg1_encrypted || arg2_encrypted, packed);
 
   copy_data(t_a, input_a);
@@ -70,79 +66,79 @@ auto pad_test = [](const Shape& shape_a, const CoordinateDiff& padding_below,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d_plain) {
-  pad_test(Shape{6}, CoordinateDiff{4}, CoordinateDiff{5},
-           op::PadMode::CONSTANT, vector<float>{{1, 2, 3, 4, 5, 6}},
-           vector<float>{2112},
-           vector<float>{2112, 2112, 2112, 2112, 1, 2, 3, 4, 5, 6, 2112, 2112,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{4}, ngraph::CoordinateDiff{5},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{{1, 2, 3, 4, 5, 6}},
+           std::vector<float>{2112},
+           std::vector<float>{2112, 2112, 2112, 2112, 1, 2, 3, 4, 5, 6, 2112, 2112,
                          2112, 2112, 2112},
            false, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_1d_cipher) {
-  pad_test(Shape{6}, CoordinateDiff{4}, CoordinateDiff{5},
-           op::PadMode::CONSTANT, vector<float>{{1, 2, 3, 4, 5, 6}},
-           vector<float>{2112},
-           vector<float>{2112, 2112, 2112, 2112, 1, 2, 3, 4, 5, 6, 2112, 2112,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{4}, ngraph::CoordinateDiff{5},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{{1, 2, 3, 4, 5, 6}},
+           std::vector<float>{2112},
+           std::vector<float>{2112, 2112, 2112, 2112, 1, 2, 3, 4, 5, 6, 2112, 2112,
                          2112, 2112, 2112},
            true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_1d) {
-  pad_test(Shape{6}, CoordinateDiff{4}, CoordinateDiff{-2},
-           op::PadMode::CONSTANT, vector<float>{{1, 2, 3, 4, 5, 6}},
-           vector<float>{2112},
-           vector<float>{2112, 2112, 2112, 2112, 1, 2, 3, 4}, true, true, false,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{4}, ngraph::CoordinateDiff{-2},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{{1, 2, 3, 4, 5, 6}},
+           std::vector<float>{2112},
+           std::vector<float>{2112, 2112, 2112, 2112, 1, 2, 3, 4}, true, true, false,
            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_1d_check_limits) {
-  pad_test(Shape{6}, CoordinateDiff{4}, CoordinateDiff{-7},
-           op::PadMode::CONSTANT, vector<float>{{1, 2, 3, 4, 5, 6}},
-           vector<float>{2112}, vector<float>{2112, 2112, 2112}, true, true,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{4}, ngraph::CoordinateDiff{-7},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{{1, 2, 3, 4, 5, 6}},
+           std::vector<float>{2112}, std::vector<float>{2112, 2112, 2112}, true, true,
            false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d) {
-  pad_test(Shape{6}, CoordinateDiff{2}, CoordinateDiff{3}, op::PadMode::EDGE,
-           vector<float>{1, 2, 3, 4, 5, 6}, vector<float>{2112},
-           vector<float>{1, 1, 1, 2, 3, 4, 5, 6, 6, 6, 6}, true, true, false,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{2}, ngraph::CoordinateDiff{3}, ngraph::op::PadMode::EDGE,
+           std::vector<float>{1, 2, 3, 4, 5, 6}, std::vector<float>{2112},
+           std::vector<float>{1, 1, 1, 2, 3, 4, 5, 6, 6, 6, 6}, true, true, false,
            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_top_neg) {
-  pad_test(Shape{6}, CoordinateDiff{2}, CoordinateDiff{-3}, op::PadMode::EDGE,
-           vector<float>{{1, 2, 3, 4, 5, 6}}, vector<float>{2112},
-           vector<float>{1, 1, 1, 2, 3}, true, true, false, false);
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{2}, ngraph::CoordinateDiff{-3}, ngraph::op::PadMode::EDGE,
+           std::vector<float>{{1, 2, 3, 4, 5, 6}}, std::vector<float>{2112},
+           std::vector<float>{1, 1, 1, 2, 3}, true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_top_neg_bigger_than_tensor) {
-  pad_test(Shape{6}, CoordinateDiff{2}, CoordinateDiff{-7}, op::PadMode::EDGE,
-           vector<float>{{1, 2, 3, 4, 5, 6}}, vector<float>{2112},
-           vector<float>{1}, true, true, false, false);
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{2}, ngraph::CoordinateDiff{-7}, ngraph::op::PadMode::EDGE,
+           std::vector<float>{{1, 2, 3, 4, 5, 6}}, std::vector<float>{2112},
+           std::vector<float>{1}, true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_bottom_neg) {
-  pad_test(Shape{6}, CoordinateDiff{-2}, CoordinateDiff{3}, op::PadMode::EDGE,
-           vector<float>{{1, 2, 3, 4, 5, 6}}, vector<float>{2112},
-           vector<float>{3, 4, 5, 6, 6, 6, 6}, true, true, false, false);
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{-2}, ngraph::CoordinateDiff{3}, ngraph::op::PadMode::EDGE,
+           std::vector<float>{{1, 2, 3, 4, 5, 6}}, std::vector<float>{2112},
+           std::vector<float>{3, 4, 5, 6, 6, 6, 6}, true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_1d_bottom_neg_bigger_than_tensor) {
-  pad_test(Shape{6}, CoordinateDiff{-7}, CoordinateDiff{3}, op::PadMode::EDGE,
-           vector<float>{{1, 2, 3, 4, 5, 6}}, vector<float>{2112},
-           vector<float>{6, 6}, true, true, false, false);
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{-7}, ngraph::CoordinateDiff{3}, ngraph::op::PadMode::EDGE,
+           std::vector<float>{{1, 2, 3, 4, 5, 6}}, std::vector<float>{2112},
+           std::vector<float>{6, 6}, true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_2d) {
-  pad_test(Shape{3, 4}, CoordinateDiff{2, 3}, CoordinateDiff{1, 2},
-           op::PadMode::EDGE,
-           vector<float>{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}},
-           vector<float>{2112},
-           test::NDArray<float, 2>({{1, 1, 1, 1, 2, 3, 4, 4, 4},
+  pad_test(ngraph::Shape{3, 4}, ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{1, 2},
+           ngraph::op::PadMode::EDGE,
+           std::vector<float>{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}},
+           std::vector<float>{2112},
+           ngraph::test::NDArray<float, 2>({{1, 1, 1, 1, 2, 3, 4, 4, 4},
                                     {1, 1, 1, 1, 2, 3, 4, 4, 4},
                                     {1, 1, 1, 1, 2, 3, 4, 4, 4},
                                     {5, 5, 5, 5, 6, 7, 8, 8, 8},
@@ -154,12 +150,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_2d) {
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_edge_2d_with_neg) {
   pad_test(
-      Shape{3, 4}, CoordinateDiff{2, -1}, CoordinateDiff{1, 2},
-      op::PadMode::EDGE,
-      test::NDArray<float, 2>({{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}})
+      ngraph::Shape{3, 4}, ngraph::CoordinateDiff{2, -1}, ngraph::CoordinateDiff{1, 2},
+      ngraph::op::PadMode::EDGE,
+      ngraph::test::NDArray<float, 2>({{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}})
           .get_vector(),
-      vector<float>{2112},
-      test::NDArray<float, 2>({{2, 3, 4, 4, 4},
+      std::vector<float>{2112},
+      ngraph::test::NDArray<float, 2>({{2, 3, 4, 4, 4},
                                {2, 3, 4, 4, 4},
                                {2, 3, 4, 4, 4},
                                {6, 7, 8, 8, 8},
@@ -171,46 +167,46 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_edge_2d_with_neg) {
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d) {
   pad_test(
-      Shape{6}, CoordinateDiff{2}, CoordinateDiff{3}, op::PadMode::REFLECT,
-      vector<float>{1, 2, 3, 4, 5, 6}, vector<float>{2112},
-      test::NDArray<float, 1>({3, 2, 1, 2, 3, 4, 5, 6, 5, 4, 3}).get_vector(),
+      ngraph::Shape{6}, ngraph::CoordinateDiff{2}, ngraph::CoordinateDiff{3}, ngraph::op::PadMode::REFLECT,
+      std::vector<float>{1, 2, 3, 4, 5, 6}, std::vector<float>{2112},
+      ngraph::test::NDArray<float, 1>({3, 2, 1, 2, 3, 4, 5, 6, 5, 4, 3}).get_vector(),
       true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_top_neg) {
-  pad_test(Shape{6}, CoordinateDiff{2}, CoordinateDiff{-3},
-           op::PadMode::REFLECT, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{2112},
-           test::NDArray<float, 1>({3, 2, 1, 2, 3}).get_vector(), true, true,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{2}, ngraph::CoordinateDiff{-3},
+           ngraph::op::PadMode::REFLECT, std::vector<float>{1, 2, 3, 4, 5, 6},
+           std::vector<float>{2112},
+           ngraph::test::NDArray<float, 1>({3, 2, 1, 2, 3}).get_vector(), true, true,
            false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_top_neg_bigger_than_tensor) {
-  pad_test(Shape{6}, CoordinateDiff{2}, CoordinateDiff{-7},
-           op::PadMode::REFLECT, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{2112}, test::NDArray<float, 1>({3}).get_vector(), true,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{2}, ngraph::CoordinateDiff{-7},
+           ngraph::op::PadMode::REFLECT, std::vector<float>{1, 2, 3, 4, 5, 6},
+           std::vector<float>{2112}, ngraph::test::NDArray<float, 1>({3}).get_vector(), true,
            true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_bottom_neg) {
-  pad_test(Shape{6}, CoordinateDiff{-2}, CoordinateDiff{3},
-           op::PadMode::REFLECT, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{2112},
-           test::NDArray<float, 1>({3, 4, 5, 6, 5, 4, 3}).get_vector(), true,
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{-2}, ngraph::CoordinateDiff{3},
+           ngraph::op::PadMode::REFLECT, std::vector<float>{1, 2, 3, 4, 5, 6},
+           std::vector<float>{2112},
+           ngraph::test::NDArray<float, 1>({3, 4, 5, 6, 5, 4, 3}).get_vector(), true,
            true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_bottom_neg_bigger_than_tensor) {
-  pad_test(Shape{6}, CoordinateDiff{-7}, CoordinateDiff{3},
-           op::PadMode::REFLECT, vector<float>{1, 2, 3, 4, 5, 6},
-           vector<float>{2112}, test::NDArray<float, 1>({4, 3}).get_vector(),
+  pad_test(ngraph::Shape{6}, ngraph::CoordinateDiff{-7}, ngraph::CoordinateDiff{3},
+           ngraph::op::PadMode::REFLECT, std::vector<float>{1, 2, 3, 4, 5, 6},
+           std::vector<float>{2112}, ngraph::test::NDArray<float, 1>({4, 3}).get_vector(),
            true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_multi_reflect) {
-  pad_test(Shape{3}, CoordinateDiff{10}, CoordinateDiff{9},
-           op::PadMode::REFLECT, vector<float>{1, 2, 3}, vector<float>{2112},
-           test::NDArray<float, 1>({3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1,
+  pad_test(ngraph::Shape{3}, ngraph::CoordinateDiff{10}, ngraph::CoordinateDiff{9},
+           ngraph::op::PadMode::REFLECT, std::vector<float>{1, 2, 3}, std::vector<float>{2112},
+           ngraph::test::NDArray<float, 1>({3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1,
                                     2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2})
                .get_vector(),
            true, true, false, false);
@@ -218,12 +214,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_1d_multi_reflect) {
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_2d) {
   pad_test(
-      Shape{3, 4}, CoordinateDiff{2, 3}, CoordinateDiff{1, 2},
-      op::PadMode::REFLECT,
-      test::NDArray<float, 2>({{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}})
+      ngraph::Shape{3, 4}, ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{1, 2},
+      ngraph::op::PadMode::REFLECT,
+      ngraph::test::NDArray<float, 2>({{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}})
           .get_vector(),
-      vector<float>{2112},
-      test::NDArray<float, 2>({{12, 11, 10, 9, 10, 11, 12, 11, 10},
+      std::vector<float>{2112},
+      ngraph::test::NDArray<float, 2>({{12, 11, 10, 9, 10, 11, 12, 11, 10},
                                {8, 7, 6, 5, 6, 7, 8, 7, 6},
                                {4, 3, 2, 1, 2, 3, 4, 3, 2},
                                {8, 7, 6, 5, 6, 7, 8, 7, 6},
@@ -235,12 +231,12 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_2d) {
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_2d_with_neg) {
   pad_test(
-      Shape{3, 4}, CoordinateDiff{2, -1}, CoordinateDiff{1, 2},
-      op::PadMode::REFLECT,
-      test::NDArray<float, 2>({{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}})
+      ngraph::Shape{3, 4}, ngraph::CoordinateDiff{2, -1}, ngraph::CoordinateDiff{1, 2},
+      ngraph::op::PadMode::REFLECT,
+      ngraph::test::NDArray<float, 2>({{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}})
           .get_vector(),
-      vector<float>{2112},
-      test::NDArray<float, 2>({{10, 11, 12, 11, 10},
+      std::vector<float>{2112},
+      ngraph::test::NDArray<float, 2>({{10, 11, 12, 11, 10},
                                {6, 7, 8, 7, 6},
                                {2, 3, 4, 3, 2},
                                {6, 7, 8, 7, 6},
@@ -251,28 +247,28 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_reflect_2d_with_neg) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_2d) {
-  pad_test(Shape{2, 3}, CoordinateDiff{1, -1}, CoordinateDiff{2, 0},
-           op::PadMode::CONSTANT,
-           test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(),
-           vector<float>{9},
-           test::NDArray<float, 2>({{9, 9}, {2, 3}, {5, 6}, {9, 9}, {9, 9}})
+  pad_test(ngraph::Shape{2, 3}, ngraph::CoordinateDiff{1, -1}, ngraph::CoordinateDiff{2, 0},
+           ngraph::op::PadMode::CONSTANT,
+           ngraph::test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(),
+           std::vector<float>{9},
+           ngraph::test::NDArray<float, 2>({{9, 9}, {2, 3}, {5, 6}, {9, 9}, {9, 9}})
                .get_vector(),
            true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_2d_all_negative) {
   pad_test(
-      Shape{3, 3}, CoordinateDiff{-1, -1}, CoordinateDiff{-1, -1},
-      op::PadMode::CONSTANT,
-      test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}).get_vector(),
-      vector<float>{9}, test::NDArray<float, 2>({{5}}).get_vector(), true, true,
+      ngraph::Shape{3, 3}, ngraph::CoordinateDiff{-1, -1}, ngraph::CoordinateDiff{-1, -1},
+      ngraph::op::PadMode::CONSTANT,
+      ngraph::test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}).get_vector(),
+      std::vector<float>{9}, ngraph::test::NDArray<float, 2>({{5}}).get_vector(), true, true,
       false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
-  pad_test(Shape{0, 0}, CoordinateDiff{2, 3}, CoordinateDiff{3, 2},
-           op::PadMode::CONSTANT, vector<float>{}, vector<float>{2112},
-           test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
+  pad_test(ngraph::Shape{0, 0}, ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{3, 2},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{}, std::vector<float>{2112},
+           ngraph::test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
@@ -282,9 +278,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
-  pad_test(Shape{0, 3}, CoordinateDiff{2, 1}, CoordinateDiff{3, 1},
-           op::PadMode::CONSTANT, vector<float>{}, vector<float>{2112},
-           test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
+  pad_test(ngraph::Shape{0, 3}, ngraph::CoordinateDiff{2, 1}, ngraph::CoordinateDiff{3, 1},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{}, std::vector<float>{2112},
+           ngraph::test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
@@ -294,9 +290,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_0x3) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
-  pad_test(Shape{3, 0}, CoordinateDiff{1, 3}, CoordinateDiff{1, 2},
-           op::PadMode::CONSTANT, vector<float>{}, vector<float>{2112},
-           test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
+  pad_test(ngraph::Shape{3, 0}, ngraph::CoordinateDiff{1, 3}, ngraph::CoordinateDiff{1, 2},
+           ngraph::op::PadMode::CONSTANT, std::vector<float>{}, std::vector<float>{2112},
+           ngraph::test::NDArray<float, 2>({{2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
                                     {2112, 2112, 2112, 2112, 2112},
@@ -306,13 +302,13 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_2d_3x0) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
-  pad_test(Shape{1, 2, 2, 2}, CoordinateDiff{0, 0, 1, 1},
-           CoordinateDiff{0, 0, 1, 1}, op::PadMode::CONSTANT,
-           test::NDArray<float, 4>(
+  pad_test(ngraph::Shape{1, 2, 2, 2}, ngraph::CoordinateDiff{0, 0, 1, 1},
+           ngraph::CoordinateDiff{0, 0, 1, 1}, ngraph::op::PadMode::CONSTANT,
+           ngraph::test::NDArray<float, 4>(
                {{{{0.0f, 0.0f}, {0.0f, 0.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}}}})
                .get_vector(),
-           vector<float>{42},
-           test::NDArray<float, 4>({{{{42.0f, 42.0f, 42.0f, 42.0f},
+           std::vector<float>{42},
+           ngraph::test::NDArray<float, 4>({{{{42.0f, 42.0f, 42.0f, 42.0f},
                                       {42.0f, 0.0f, 0.0f, 42.0f},
                                       {42.0f, 0.0f, 0.0f, 42.0f},
                                       {42.0f, 42.0f, 42.0f, 42.0f}},
@@ -325,14 +321,14 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_exterior_4d_1x2x2x2) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_4d) {
-  pad_test(Shape{1, 3, 2, 2}, CoordinateDiff{0, -1, 1, 1},
-           CoordinateDiff{0, -1, 1, 1}, op::PadMode::CONSTANT,
-           test::NDArray<float, 4>({{{{0.0f, 0.0f}, {0.0f, 0.0f}},
+  pad_test(ngraph::Shape{1, 3, 2, 2}, ngraph::CoordinateDiff{0, -1, 1, 1},
+           ngraph::CoordinateDiff{0, -1, 1, 1}, ngraph::op::PadMode::CONSTANT,
+           ngraph::test::NDArray<float, 4>({{{{0.0f, 0.0f}, {0.0f, 0.0f}},
                                      {{1.0f, 1.0f}, {1.0f, 1.0f}},
                                      {{2.0f, 2.0f}, {2.0f, 2.0f}}}})
                .get_vector(),
-           vector<float>{42},
-           test::NDArray<float, 4>({{{{42.0f, 42.0f, 42.0f, 42.0f},
+           std::vector<float>{42},
+           ngraph::test::NDArray<float, 4>({{{{42.0f, 42.0f, 42.0f, 42.0f},
                                       {42.0f, 1.0f, 1.0f, 42.0f},
                                       {42.0f, 1.0f, 1.0f, 42.0f},
                                       {42.0f, 42.0f, 42.0f, 42.0f}}}})
@@ -343,9 +339,9 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_negative_exterior_4d) {
 // This test covers the case with multiple image and with asymetric pad
 // bug has been found on nvGPU side now covered by this test
 NGRAPH_TEST(${BACKEND_NAME}, pad_2channel_2image_asym) {
-  pad_test(Shape{2, 2, 4, 4}, CoordinateDiff{0, 0, 0, 0},
-           CoordinateDiff{0, 0, 2, 2}, op::PadMode::CONSTANT,
-           test::NDArray<float, 4>({{{{0, 1, 0, 2},  // img 0 chan 0
+  pad_test(ngraph::Shape{2, 2, 4, 4}, ngraph::CoordinateDiff{0, 0, 0, 0},
+           ngraph::CoordinateDiff{0, 0, 2, 2}, ngraph::op::PadMode::CONSTANT,
+           ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2},  // img 0 chan 0
                                       {0, 3, 2, 0},
                                       {2, 0, 0, 0},
                                       {0, 2, 1, 0}},
@@ -365,8 +361,8 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_2channel_2image_asym) {
                                       {1, 1, 2, 0},
                                       {1, 0, 0, 0}}}})
                .get_vector(),
-           vector<float>{42},
-           test::NDArray<float, 4>({{{{0, 1, 0, 2, 42, 42},  // img 0 chan 0
+           std::vector<float>{42},
+           ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 42, 42},  // img 0 chan 0
                                       {0, 3, 2, 0, 42, 42},
                                       {2, 0, 0, 0, 42, 42},
                                       {0, 2, 1, 0, 42, 42},

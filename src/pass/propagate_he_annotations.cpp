@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "pass/propagate_he_annotations.hpp"
+
 #include <exception>
 #include <sstream>
 #include <unordered_set>
@@ -29,7 +31,6 @@
 #include "ngraph/op/parameter.hpp"
 #include "ngraph/op/result.hpp"
 #include "ngraph/util.hpp"
-#include "pass/propagate_he_annotations.hpp"
 
 namespace ngraph {
 namespace he {

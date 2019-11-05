@@ -78,7 +78,7 @@ class HEType {
   const HEPlaintext& get_plaintext() const { return m_plain; }
   HEPlaintext& get_plaintext() { return m_plain; }
 
-  void set_plaintext(const HEPlaintext plain) {
+  void set_plaintext(HEPlaintext plain) {
     m_plain = std::move(plain);
     m_is_plain = true;
     if (m_cipher != nullptr) {
@@ -99,6 +99,7 @@ class HEType {
 
  private:
   /// \brief Constructs an empty HEType object
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
   HEType(const bool complex_packing, const size_t batch_size)
       : m_complex_packing(complex_packing), m_batch_size(batch_size) {}
 

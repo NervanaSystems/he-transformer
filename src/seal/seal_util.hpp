@@ -273,14 +273,6 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder);
 
-/// \brief Writes plaintext to byte output
-/// \param[out] output Pointer to destination
-/// \param[out] input Plaintext to write
-/// \param[in] element_type Datatype to write
-/// \param[in] count Number of values to write
-void write_plaintext(void* output, const HEPlaintext& input,
-                     const element::Type& element_type, size_t count);
-
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to
 /// \param[in] input Ciphertext to decrypt

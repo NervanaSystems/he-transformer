@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "pass/supported_ops.hpp"
+
 #include "ngraph/check.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
