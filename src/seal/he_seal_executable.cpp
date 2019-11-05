@@ -253,8 +253,7 @@ bool HESealExecutable::server_setup() {
     TCPMessage parms_message(std::move(proto_msg));
     NGRAPH_HE_LOG(3) << "Server waiting until session started";
     std::unique_lock<std::mutex> mlock(m_session_mutex);
-    m_session_cond.wait(mlock,
-                        std::bind(&HESealExecutable::session_started, this));
+    m_session_cond.wait(mlock, [this]() { return this->session_started(); });
 
     NGRAPH_HE_LOG(3) << "Server writing parameters message";
     m_session->write_message(std::move(parms_message));
@@ -274,7 +273,7 @@ bool HESealExecutable::server_setup() {
 void HESealExecutable::accept_connection() {
   NGRAPH_HE_LOG(1) << "Server accepting connections";
   auto server_callback =
-      bind(&HESealExecutable::handle_message, this, std::placeholders::_1);
+      std::bind(&HESealExecutable::handle_message, this, std::placeholders::_1);
 
   m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
                                                    tcp::socket socket) {

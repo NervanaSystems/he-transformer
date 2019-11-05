@@ -99,6 +99,7 @@ class HEType {
 
  private:
   /// \brief Constructs an empty HEType object
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
   HEType(const bool complex_packing, const size_t batch_size)
       : m_complex_packing(complex_packing), m_batch_size(batch_size) {}
 

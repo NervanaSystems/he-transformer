@@ -65,11 +65,13 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                      HEPlaintext& out) {
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
-    std::transform(arg1.begin(), arg1.end(), std::back_inserter(out_vals),
-                   std::bind(std::plus<>(), std::placeholders::_1, arg0[0]));
+    out_vals.resize(arg1.size());
+    std::transform(arg1.begin(), arg1.end(), out_vals.begin(),
+                   [&](auto x) { return x + arg0[0]; });
   } else if (arg1.size() == 1) {
-    std::transform(arg0.begin(), arg0.end(), std::back_inserter(out_vals),
-                   std::bind(std::plus<>(), std::placeholders::_1, arg1[0]));
+    out_vals.resize(arg0.size());
+    std::transform(arg0.begin(), arg0.end(), out_vals.begin(),
+                   [&](auto x) { return x + arg1[0]; });
   } else {
     size_t min_size = std::min(arg0.size(), arg1.size());
     out_vals.resize(min_size);

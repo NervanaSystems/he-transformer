@@ -28,7 +28,6 @@
 
 namespace ngraph {
 namespace he {
-
 class HESealBackend;
 class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -71,8 +70,6 @@ class HETensor : public runtime::Tensor {
            bool plaintext_packing, bool complex_packing, bool encrypted,
            const HESealBackend& he_seal_backend,
            const std::string& name = "external");
-
-  ~HETensor() override = default;
 
   /// \brief Write bytes directly into the tensor
   /// \param[in] p Pointer to source of data

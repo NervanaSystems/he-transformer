@@ -27,13 +27,18 @@ namespace he {
 class HEPlaintext : public std::vector<double> {
  public:
   HEPlaintext() = default;
+  ~HEPlaintext() = default;
   HEPlaintext(const std::initializer_list<double>& values)
       : std::vector<double>(values) {}
 
   HEPlaintext(const HEPlaintext& plain) = default;
+  HEPlaintext(HEPlaintext&& plain) = default;
 
   explicit HEPlaintext(const std::vector<double>& values)
       : std::vector<double>(values) {}
+
+  explicit HEPlaintext(std::vector<double>&& values)
+      : std::vector<double>(std::move(values)) {}
 
   explicit HEPlaintext(size_t n, double initial_value = 0)
       : std::vector<double>(n, initial_value) {}

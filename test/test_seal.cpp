@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include <memory>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "he_plaintext.hpp"
@@ -32,7 +33,6 @@ TEST(seal_example, trivial) {
 }
 
 TEST(seal_example, seal_ckks_basics) {
-
   seal::EncryptionParameters parms(seal::scheme_type::CKKS);
   size_t poly_modulus_degree = 8192;
   parms.set_poly_modulus_degree(poly_modulus_degree);
@@ -78,7 +78,7 @@ TEST(seal_example, seal_ckks_basics) {
 }
 
 TEST(seal_example, seal_ckks_complex_conjugate) {
- seal::EncryptionParameters parms(seal::scheme_type::CKKS);
+  seal::EncryptionParameters parms(seal::scheme_type::CKKS);
   size_t poly_modulus_degree = 8192;
   parms.set_poly_modulus_degree(poly_modulus_degree);
   parms.set_coeff_modulus(
@@ -151,16 +151,18 @@ TEST(seal_util, save) {
 
   auto t1 = std::chrono::high_resolution_clock::now();
   auto save_size = ngraph::he::save(cipher, buffer);
-  auto t2 =  std::chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::high_resolution_clock::now();
   ngraph::he::load(cipher_load, context, buffer, save_size);
-  auto t3 =  std::chrono::high_resolution_clock::now();
+  auto t3 = std::chrono::high_resolution_clock::now();
 
-  NGRAPH_INFO << "save time "
-              <<  std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-              << "us";
-  NGRAPH_INFO << "load time "
-              <<  std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
-              << "us";
+  NGRAPH_INFO
+      << "save time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+      << "us";
+  NGRAPH_INFO
+      << "load time "
+      << std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count()
+      << "us";
 
   EXPECT_EQ(cipher_load.parms_id(), cipher.parms_id());
   EXPECT_EQ(cipher_load.is_ntt_form(), cipher.is_ntt_form());

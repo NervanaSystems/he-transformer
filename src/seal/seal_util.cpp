@@ -202,9 +202,11 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
   // NOLINTNEXTLINE
   for (; coeff_count--; poly++, result++) {
     // Multiplication
+    // NOLINTNEXTLINE(google-runtime-int)
     unsigned long long z = *poly * scalar;
 
     // Barrett base 2^64 reduction
+    // NOLINTNEXTLINE(google-runtime-int)
     unsigned long long carry;
     // Carry will store the result modulo 2^64
     seal::util::multiply_uint64_hw64(z, const_ratio, &carry);

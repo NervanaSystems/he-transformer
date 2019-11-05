@@ -26,7 +26,6 @@
 
 namespace ngraph {
 namespace he {
-
 HETensor::HETensor(
     const element::Type& element_type, const Shape& shape,
     bool plaintext_packing, bool complex_packing, bool encrypted,
@@ -62,7 +61,6 @@ HETensor::HETensor(
       m_data[i] = HEType(HESealBackend::create_empty_ciphertext(),
                          complex_packing, get_batch_size());
     }
-
   } else {
     m_data.resize(num_elements,
                   HEType(HEPlaintext(get_batch_size()), complex_packing));
@@ -219,6 +217,7 @@ void HETensor::read(void* p, size_t n) const {
 
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     auto* src = static_cast<char*>(const_cast<void*>(type_values_src));
     for (size_t j = 0; j < get_batch_size(); ++j) {
       auto* dst_with_offset = static_cast<void*>(

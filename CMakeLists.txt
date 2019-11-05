@@ -99,7 +99,7 @@ endif()
 
 option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 option(NGRAPH_HE_DOC_BUILD_ENABLE "Enable building of documentation" OFF)
-option(NGRAPH_HE_CLANG_TIDY "Enable clang-tidy checks" ON)
+option(NGRAPH_HE_CLANG_TIDY "Enable clang-tidy checks" OFF)
 
 # Print options
 message(STATUS "NGRAPH_HE_CXX_STANDARD:     ${NGRAPH_HE_CXX_STANDARD}")

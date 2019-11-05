@@ -420,7 +420,7 @@ std::vector<double> HESealClient::get_results() {
   NGRAPH_INFO << "Client waiting for results";
 
   std::unique_lock<std::mutex> mlock(m_is_done_mutex);
-  m_is_done_cond.wait(mlock, std::bind(&HESealClient::is_done, this));
+  m_is_done_cond.wait(mlock, [this]() { return this->is_done(); });
   NGRAPH_INFO << "Client done waiting";
   for (auto& result : m_results) {
     NGRAPH_INFO << result;

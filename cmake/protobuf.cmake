@@ -50,6 +50,10 @@ set(Protobuf_LIBRARIES ${Protobuf_LIBRARY})
 
 if(NOT TARGET protobuf::libprotobuf)
   add_library(protobuf::libprotobuf STATIC IMPORTED)
+  if(NOT EXISTS ${Protobuf_INCLUDE_DIR})
+    file(MAKE_DIRECTORY ${Protobuf_INCLUDE_DIR})
+  endif()
+
   target_include_directories(protobuf::libprotobuf SYSTEM
                              INTERFACE "${Protobuf_INCLUDE_DIR}")
   set_target_properties(protobuf::libprotobuf
