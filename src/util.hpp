@@ -134,7 +134,7 @@ double type_to_double(const void* src, const element::Type& element_type);
 bool param_originates_from_name(const ngraph::op::Parameter& param,
                                 const std::string& name);
 
-inline he_proto::Function node_to_proto_function(
+inline proto::Function node_to_proto_function(
     const NodeWrapper& node_wrapper,
     std::unordered_map<std::string, std::string> extra_configs = {}) {
   const Node& node = *node_wrapper.get_node();
@@ -152,7 +152,7 @@ inline he_proto::Function node_to_proto_function(
     js[key] = value;
   }
 
-  he_proto::Function f;
+  proto::Function f;
   f.set_function(js.dump());
   return f;
 }

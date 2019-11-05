@@ -20,33 +20,6 @@ cmake_minimum_required(VERSION 3.10)
 # Global project name
 project(he_transformer LANGUAGES CXX)
 
-<<<<<<< HEAD
-# set directory where the custom finders live
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_INSTALL_MESSAGE LAZY)
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -Wall -march=native -Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
-
-# This allows libhe_seal_backend.so to find libraries in the same directory
-set(CMAKE_INSTALL_RPATH "\$ORIGIN")
-
-# These variables are undocumented but useful.
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
-  message(STATUS "Setting clang flags...")
-  include(cmake/clang_flags.cmake)
-endif()
-
-=======
->>>>>>> 2210c4c5a140a15a24ecce59889cfa601888a6e3
 if(CMAKE_BUILD_TYPE)
   set(RELEASE_TYPES
       Debug

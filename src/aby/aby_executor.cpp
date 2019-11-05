@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "aby/aby_executor.hpp"
+
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_util.hpp"
 
@@ -57,13 +58,13 @@ ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
   m_ABYParty =
       new ABYParty(m_role, hostname, port, get_sec_lvl(m_security_level),
                    bit_length, m_num_threads, m_mt_gen_alg, reserve_num_gates);
-  // TODO: connect and base OTs?
+  // TODO(fboemer): connect and base OTs?
   //  m_ABYParty_server->ConnectAndBaseOTs();
   NGRAPH_HE_LOG(1) << "Started ABYParty with role " << role;
 }
 
 ABYExecutor::~ABYExecutor() {
-  // TODO: delete ABYParty
+  // TODO(fboemer): delete ABYParty
 }
 
 }  // namespace aby
