@@ -28,9 +28,10 @@ namespace ngraph {
 namespace he {
 
 void scalar_exp_seal(const HEPlaintext& arg, HEPlaintext& out) {
-  out.resize(arg.size());
+  HEPlaintext out_vals(arg.size());
   auto exp = [](double d) { return std::exp(d); };
-  std::transform(arg.begin(), arg.end(), out.begin(), exp);
+  std::transform(arg.begin(), arg.end(), out_vals.begin(), exp);
+  out = std::move(out_vals);
 }
 
 void scalar_exp_seal(const HEType& arg, HEType& out,

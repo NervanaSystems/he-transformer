@@ -171,6 +171,7 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
     std::transform(arg1.begin(), arg1.end(), out_vals.begin(),
                    [&](auto x) { return x * arg0[0]; });
   } else if (arg1.size() == 1) {
+    out_vals.resize(arg0.size());
     std::transform(arg0.begin(), arg0.end(), out_vals.begin(),
                    [&](auto x) { return x * arg1[0]; });
   } else {
