@@ -20,6 +20,9 @@ cmake_minimum_required(VERSION 3.10)
 # Global project name
 project(he_transformer LANGUAGES CXX)
 
+# set directory where the custom finders live
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 if(CMAKE_BUILD_TYPE)
   set(RELEASE_TYPES
       Debug

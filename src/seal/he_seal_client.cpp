@@ -261,11 +261,15 @@ void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
                "Client supports only relu requests with one tensor");
 
   message.set_type(proto::TCPMessage_Type_RESPONSE);
+  const std::string& function = proto_msg.function().function();
 
   proto::HETensor* proto_tensor = message.mutable_he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
+
+  bool enable_gc = string_to_bool(std::string(js.at("enable_gc")));
+  NGRAPH_INFO << "Client relu with gc? " << enable_gc;
 
   if (enable_gc) {
     NGRAPH_HE_LOG(3) << "Client relu with GC";

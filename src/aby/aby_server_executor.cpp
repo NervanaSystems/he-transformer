@@ -15,6 +15,7 @@
 //*****************************************************************************
 
 #include "aby/aby_server_executor.hpp"
+
 #include "aby/kernel/bounded_relu_aby.hpp"
 #include "aby/kernel/relu_aby.hpp"
 #include "nlohmann/json.hpp"
@@ -31,9 +32,9 @@ ABYServerExecutor::ABYServerExecutor(
     std::string hostname, std::size_t port, uint64_t security_level,
     uint32_t bit_length, uint32_t num_threads, std::string mg_algo_str,
     uint32_t reserve_num_gates, const std::string& circuit_directory)
-    : ABYExecutor("server", mpc_protocol, hostname, port, security_level,
-                  bit_length, num_threads, mg_algo_str, reserve_num_gates,
-                  circuit_directory),
+    : ABYExecutor("server", std::move(mpc_protocol), std::move(hostname), port,
+                  security_level, bit_length, num_threads,
+                  std::move(mg_algo_str), reserve_num_gates, circuit_directory),
       m_he_seal_executable{he_seal_executable} {
   m_lowest_coeff_modulus = m_he_seal_executable.he_seal_backend()
                                .get_encryption_parameters()
@@ -202,7 +203,7 @@ void ABYServerExecutor::run_aby_relu_circuit(
     std::vector<he::HEType>& cipher_batch) {
   NGRAPH_INFO << "run_aby_relu_circuit ";
 
-  // TODO: bounded relu?
+  // TODO(fboemer): bounded relu?
 
   uint32_t num_aby_vals = cipher_batch.size() * cipher_batch[0].batch_size();
   std::vector<uint64_t> zeros(num_aby_vals, 0);
@@ -251,7 +252,7 @@ void ABYServerExecutor::post_process_aby_relu_circuit(
         value = (value - m_lowest_coeff_modulus / 2.0) / scale;
       }
       NGRAPH_INFO << "Mask after " << mask;
-      // TODO: do subtraction mod p_0 instead of p_L
+      // TODO(fboemer): do subtraction mod p_0 instead of p_L
 
       m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 
@@ -391,7 +392,7 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
         value = (value - m_lowest_coeff_modulus / 2.0) / scale;
       }
       NGRAPH_INFO << "Mask after " << mask;
-      // TODO: do subtraction mod p_0 instead of p_L
+      // TODO(fboemer): do subtraction mod p_0 instead of p_L
 
       m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 

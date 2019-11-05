@@ -23,11 +23,10 @@ namespace ngraph {
 namespace aby {
 
 ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
-                         std::string hostname, std::size_t port,
+                         const std::string& hostname, std::size_t port,
                          uint64_t security_level, uint32_t bit_length,
                          uint32_t num_threads, std::string mg_algo_str,
-                         uint32_t reserve_num_gates,
-                         const std::string& circuit_directory)
+                         uint32_t reserve_num_gates)
     : m_num_threads{num_threads}, m_aby_bitlen{bit_length} {
   std::map<std::string, e_role> role_map{{"server", SERVER},
                                          {"client", CLIENT}};
@@ -63,9 +62,8 @@ ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
   NGRAPH_HE_LOG(1) << "Started ABYParty with role " << role;
 }
 
-ABYExecutor::~ABYExecutor() {
-  // TODO(fboemer): delete ABYParty
-}
+// TODO(fboemer): delete ABYParty
+ABYExecutor::~ABYExecutor() = default;
 
 }  // namespace aby
 }  // namespace ngraph

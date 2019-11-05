@@ -14,9 +14,10 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "aby/aby_client_executor.hpp"
+
 #include <chrono>
 
-#include "aby/aby_client_executor.hpp"
 #include "aby/kernel/bounded_relu_aby.hpp"
 #include "aby/kernel/relu_aby.hpp"
 #include "nlohmann/json.hpp"
@@ -33,9 +34,9 @@ ABYClientExecutor::ABYClientExecutor(
     std::string hostname, std::size_t port, uint64_t security_level,
     uint32_t bit_length, uint32_t num_threads, std::string mg_algo_str,
     uint32_t reserve_num_gates, const std::string& circuit_directory)
-    : ABYExecutor("client", mpc_protocol, hostname, port, security_level,
-                  bit_length, num_threads, mg_algo_str, reserve_num_gates,
-                  circuit_directory),
+    : ABYExecutor("client", std::move(mpc_protocol), std::move(hostname), port,
+                  security_level, bit_length, num_threads,
+                  std::move(mg_algo_str), reserve_num_gates, circuit_directory),
       m_he_seal_client(he_seal_client) {
   m_lowest_coeff_modulus = m_he_seal_client.encryption_paramters()
                                .seal_encryption_parameters()
@@ -64,11 +65,13 @@ void ABYClientExecutor::run_aby_circuit(const std::string& function,
 void ABYClientExecutor::run_aby_relu_circuit(
     const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
   NGRAPH_HE_LOG(3) << "run_aby_relu_circuit";
+  auto name = json::parse(function).at("function");
+  NGRAPH_CHECK(name == "Relu", "Function name ", name, " is not Relu");
 
   auto& tensor_data = tensor->data();
   size_t batch_size = tensor_data[0].batch_size();
 
-  uint64_t tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
+  auto tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
   NGRAPH_INFO << "Batch size " << batch_size;
   NGRAPH_INFO << "tensor_data.size() " << tensor_data.size();
   NGRAPH_INFO << "tensor_size " << tensor_size;
@@ -170,7 +173,7 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
   auto& tensor_data = tensor->data();
   size_t batch_size = tensor_data[0].batch_size();
 
-  uint64_t tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
+  auto tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
   NGRAPH_INFO << "Batch size " << batch_size;
   NGRAPH_INFO << "tensor_data.size() " << tensor_data.size();
   NGRAPH_INFO << "tensor_size " << tensor_size;

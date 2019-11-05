@@ -16,6 +16,9 @@
 
 include(ExternalProject)
 
+message("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
+
+
 set(ABY_REPO_URL https://github.com/encryptogroup/ABY.git)
 set(ABY_GIT_TAG public)
 set(ABY_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_aby)

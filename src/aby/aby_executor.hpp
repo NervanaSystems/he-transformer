@@ -32,10 +32,11 @@ namespace aby {
 
 class ABYExecutor {
  public:
-  ABYExecutor(std::string role, std::string mpc_protocol, std::string hostname,
-              std::size_t port, uint64_t security_level, uint32_t bit_length,
+  ABYExecutor(std::string role, std::string mpc_protocol,
+              const std::string& hostname, std::size_t port,
+              uint64_t security_level, uint32_t bit_length,
               uint32_t num_threads, std::string mg_algo_str,
-              uint32_t reserve_num_gates, const std::string& circuit_directory);
+              uint32_t reserve_num_gates);
 
   virtual ~ABYExecutor();
 
@@ -78,7 +79,7 @@ class ABYExecutor {
   uint64_t m_security_level;
   ABYParty* m_ABYParty;
 
-  size_t m_lowest_coeff_modulus;
+  size_t m_lowest_coeff_modulus{0};
 };
 
 }  // namespace aby

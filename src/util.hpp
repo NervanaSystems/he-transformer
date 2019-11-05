@@ -55,14 +55,15 @@ inline bool string_to_bool(const char* value, bool default_value = false) {
 
   if (on_map.find(value_str) != on_map.end()) {
     return true;
-  } else if (off_map.find(value_str) != off_map.end()) {
-    return false;
-  } else {
-    throw ngraph_error("Unknown flag value " + std::string(value));
   }
+  if (off_map.find(value_str) != off_map.end()) {
+    return false;
+  }
+  throw ngraph_error("Unknown flag value " + value_str);
 }
 
-inline bool string_to_bool(std::string value, bool default_value = false) {
+inline bool string_to_bool(const std::string& value,
+                           bool default_value = false) {
   return string_to_bool(value.c_str(), default_value);
 }
 
@@ -118,12 +119,6 @@ map_to_double_map(
   return outputs;
 }
 
-/// \brief Interprets a string as a boolean value
-/// \param[in] flag Flag value
-/// \param[in] default_value Value to return if flag is not able to be parsed
-/// \returns True if flag represents a True value, False otherwise
-bool flag_to_bool(const char* flag, bool default_value = false);
-
 /// \brief Converts a type to a double using static_cast
 /// Note, this means a reduction of range in int64 and uint64 values.
 /// \param[in] src Source from which to read
@@ -142,8 +137,7 @@ inline proto::Function node_to_proto_function(
 
   nlohmann::json js = {{"function", node.description()}};
   if (type_id == OP_TYPEID::BoundedRelu) {
-    const op::BoundedRelu* bounded_relu =
-        static_cast<const op::BoundedRelu*>(&node);
+    const auto* bounded_relu = static_cast<const op::BoundedRelu*>(&node);
     float alpha = bounded_relu->get_alpha();
     js["bound"] = alpha;
   }

@@ -246,7 +246,6 @@ class HESealExecutable : public runtime::Executable {
   bool m_client_public_key_set{false};
   bool m_client_eval_key_set{false};
 
-  bool m_enable_client;
   bool m_server_setup{false};
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at

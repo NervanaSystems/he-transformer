@@ -325,8 +325,8 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     }
   }
 
-  return std::make_shared<HESealExecutable>(
-      function, enable_performance_collection, *this);
+  return std::make_shared<HESealExecutable>(function, enable_performance_data,
+                                            *this);
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {

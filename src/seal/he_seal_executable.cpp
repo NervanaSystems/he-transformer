@@ -101,10 +101,7 @@ namespace he {
 HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
                                    bool enable_performance_collection,
                                    HESealBackend& he_seal_backend)
-    : m_he_seal_backend(he_seal_backend),
-      m_enable_client{enable_client},
-      m_batch_size{1},
-      m_port{34000} {
+    : m_he_seal_backend(he_seal_backend), m_batch_size{1}, m_port{34000} {
   // TODO(fboemer): Use
   (void)enable_performance_collection;  // Avoid unused parameter warning
 
@@ -1497,11 +1494,11 @@ void HESealExecutable::handle_server_relu_op(
                            << cipher_batch.size();
         }
 
-        he_proto::TCPMessage proto_msg;
-        proto_msg.set_type(he_proto::TCPMessage_Type_REQUEST);
+        proto::TCPMessage proto_msg;
+        proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
         *proto_msg.mutable_function() = node_to_proto_function(
             node_wrapper,
-            {{"enable_gc", he::bool_to_string(enable_garbled_circuits())}});
+            {{"enable_gc", bool_to_string(enable_garbled_circuits())}});
         std::string function_str = proto_msg.function().function();
 
         // TODO: set complex_packing to correct values?
@@ -1519,7 +1516,7 @@ void HESealExecutable::handle_server_relu_op(
         }
 
         std::vector<proto::HETensor> proto_tensors;
-        relu_tensor.write_to_protos(proto_tensors);
+        relu_tensor->write_to_protos(proto_tensors);
         for (const auto& proto_tensor : proto_tensors) {
           proto::TCPMessage proto_msg;
           proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
