@@ -21,7 +21,6 @@ set(JSON_SRC_DIR ${JSON_PREFIX}/src/ext_json)
 set(JSON_GIT_REPO_URL https://github.com/nlohmann/json)
 set(JSON_GIT_LABEL v3.5.0)
 
-message(STATUS "EXTERNAL_INSTALL_DIR ${EXTERNAL_INSTALL_DIR}")
 ExternalProject_Add(ext_json
                     PREFIX json
                     GIT_REPOSITORY ${JSON_GIT_REPO_URL}
