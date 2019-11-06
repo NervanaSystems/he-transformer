@@ -30,15 +30,17 @@ void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                        HEPlaintext& out) {
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
-    std::transform(arg1.begin(), arg1.end(),
-                   std::back_inserter(out_vals), [&](auto y) -> auto {
-                     return std::pow(arg0[0], y);
-                   });
+    std::transform(
+        arg1.begin(), arg1.end(),
+        std::back_inserter(out_vals), [&](auto y) -> auto {
+          return std::pow(arg0[0], y);
+        });
   } else if (arg1.size() == 1) {
-    std::transform(arg0.begin(), arg0.end(),
-                   std::back_inserter(out_vals), [&](auto x) -> auto {
-                     return std::pow(x, arg1[0]);
-                   });
+    std::transform(
+        arg0.begin(), arg0.end(),
+        std::back_inserter(out_vals), [&](auto x) -> auto {
+          return std::pow(x, arg1[0]);
+        });
   } else {
     size_t min_size = std::min(arg0.size(), arg1.size());
     out_vals.resize(min_size);
