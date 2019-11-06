@@ -319,7 +319,7 @@ void HESealExecutable::start_server() {
       m_io_context.run();
     } catch (std::exception& e) {
       NGRAPH_CHECK(false, "Server error hanndling thread: ", e.what());
-    };
+    }
   });
 }
 
