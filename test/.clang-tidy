@@ -1,3 +1,0 @@
-
-# Configure clang-tidy for unit-tests
-Checks: '-*,llvm-twine-local'
