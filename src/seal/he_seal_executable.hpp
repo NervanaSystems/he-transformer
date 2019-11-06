@@ -53,7 +53,7 @@ class HESealExecutable : public runtime::Executable {
                    HESealBackend& he_seal_backend, bool enable_client);
 
   /// \brief Shuts down the TCP session if client is enabled
-  ~HESealExecutable() override;
+  ~HESealExecutable() noexcept override;
 
   /// \brief Prepares for inference on the function using a server
   /// \returns True if setup was successful, false otherwise

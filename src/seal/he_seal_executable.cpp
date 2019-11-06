@@ -175,15 +175,25 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   update_he_op_annotations();
 }
 
-HESealExecutable::~HESealExecutable() {
+HESealExecutable::~HESealExecutable() noexcept {
   NGRAPH_HE_LOG(3) << "~HESealExecutable()";
   if (m_server_setup) {
-    NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
-    m_message_handling_thread.join();
-    NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
+    if (m_message_handling_thread.joinable()) {
+      NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
+      try {
+        m_message_handling_thread.join();
+      } catch (std::exception& e) {
+        NGRAPH_ERR << "Exception closing executable thread " << e.what();
+      }
+      NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
+    }
 
     // m_acceptor and m_io_context both free the socket? Avoid double-free
-    m_acceptor->close();
+    try {
+      m_acceptor->close();
+    } catch (std::exception& e) {
+      NGRAPH_ERR << "Exception closing m_acceptor " << e.what();
+    }
     m_acceptor = nullptr;
     m_session = nullptr;
   }
