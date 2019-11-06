@@ -248,8 +248,6 @@ void HETensor::read(void* p, size_t n) const {
 }
 
 void HETensor::write_to_protos(std::vector<pb::HETensor>& proto_tensors) const {
-  // TODO(fboemer): support large shapes
-
   // Populate attributes of tensor to estimate byte size
   proto_tensors.resize(1);
   proto_tensors[0].set_name(get_name());
