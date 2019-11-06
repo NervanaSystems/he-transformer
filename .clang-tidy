@@ -51,36 +51,30 @@ CheckOptions:
     value:  m_
   - key:    readability-identifier-naming.MemberPrefix
     value:  m_
-
-  # Cases
-  ## Class casess
-  - key:     readability-identifier-naming.ClassCase
-    value:   CamelCase
-  - key:     readability-identifier-naming.AbstractClassCase
-    value:   CamelCase
-
-  ## Function cases
-  - key:     readability-identifier-namingClassMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingFunctionCase
-    value:   lower_case
-  - key:     readability-identifier-namingPrivateMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingPrivateMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingProtectedMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingPublicMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingVirtualMethodCase
-    value:   lower_case
-  - key:     readability-identifier-namingNamespaceCase
-    value:   lower_case
-
-
-
+  - key:    readability-identifier-naming.ClassCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.AbstractClassCase
+    value:  CamelCase
+  - key:    readability-identifier-naming.ClassMethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.StaticConstantCase
+    value:  lower_case
+  - key:    readability-identifier-naming.MethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.FunctionCase
+    value:  lower_case
+  - key:    readability-identifier-naming.PrivateMethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.PrivateMethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.ProtectedMethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.PublicMethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.VirtualMethodCase
+    value:  lower_case
+  - key:    readability-identifier-naming.NamespaceCase
+    value:  lower_case
 
 # Turn all the warnings from the checks above into errors.
 WarningsAsErrors: "*"

@@ -79,7 +79,7 @@ class SealCiphertextWrapper {
   /// \brief Returns scale of the ciphertext
   double scale() const { return m_ciphertext.scale(); }
 
-  double TEST_FUN() const { return 72.0; }
+  static double TEST_FUN() { return 72.0; }
 
   /// \brief Writes the ciphertext to a protobuf object
   /// \param[out] he_type Protobuf object to write ciphertext to
@@ -116,3 +116,9 @@ class SealCiphertextWrapper {
 };
 
 }  // namespace ngraph::he
+
+namespace BADNAME {
+extern int x;
+
+class BadclasSName;
+}  // namespace BADNAME
