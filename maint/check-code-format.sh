@@ -25,7 +25,7 @@ set -u
 # For this reason, this script specifies the exact version of clang-format to be used.
 
 declare CLANG_FORMAT_BASENAME="clang-format"
-declare REQUIRED_CLANG_FORMAT_VERSION=8.0.1
+declare REQUIRED_CLANG_FORMAT_VERSION=9.0.1
 
 declare THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
