@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
         autoconf libtool \
         doxygen graphviz
 
-# Install clang-8
+# Install clang-9
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 RUN apt-add-repository "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
 RUN apt-get update
@@ -67,7 +67,7 @@ RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
-RUN clang++-8 --version
+RUN clang++-9 --version
 RUN python3 --version
 RUN virtualenv --version
 
