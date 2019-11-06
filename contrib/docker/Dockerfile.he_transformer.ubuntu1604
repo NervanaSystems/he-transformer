@@ -67,7 +67,7 @@ RUN cmake --version
 RUN make --version
 RUN gcc --version
 RUN c++ --version
-RUN clang++-8.0 --version
+RUN clang++-8 --version
 RUN python3 --version
 RUN virtualenv --version
 
