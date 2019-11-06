@@ -25,11 +25,10 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 inline void scalar_result_seal(const HEType& arg, HEType& out,
-                               HESealBackend& he_seal_backend) {
+                               HESealBackend& /*he_seal_backend*/) {
   out.complex_packing() = arg.complex_packing();
 
   if (arg.is_ciphertext() && out.is_ciphertext()) {
@@ -62,5 +61,4 @@ inline void result_seal(const std::vector<HEType>& arg,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -22,11 +22,9 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void constant_seal(std::vector<HEType>& out, const element::Type& element_type,
                    const void* data_ptr, const HESealBackend& he_seal_backend,
                    size_t count);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -17,6 +17,7 @@
 #include "seal/he_seal_backend.hpp"
 
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <memory>
 
@@ -47,8 +48,7 @@ get_backend_constructor_pointer() {
   return s_backend_constructor.get();
 }
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 HESealBackend::HESealBackend()
     : HESealBackend(HESealEncryptionParameters::parse_config_or_use_default(
@@ -86,10 +86,10 @@ void HESealBackend::generate_context() {
   for (const seal::SmallModulus& modulus : coeff_moduli) {
     const std::uint64_t modulus_value = modulus.value();
     if (modulus_value < (1UL << 31U)) {
-      std::uint64_t numerator[3]{0, 1};
-      std::uint64_t quotient[3]{0, 0};
-      seal::util::divide_uint128_uint64_inplace(numerator, modulus_value,
-                                                quotient);
+      std::array<std::uint64_t, 2> numerator = {0, 1};
+      std::array<std::uint64_t, 2> quotient = {0, 0};
+      seal::util::divide_uint128_uint64_inplace(numerator.data(), modulus_value,
+                                                quotient.data());
       std::uint64_t const_ratio = quotient[0];
 
       NGRAPH_CHECK(quotient[1] == 0, "Quotient[1] != 0 for modulus");
@@ -298,8 +298,9 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     }
   }
 
-  return std::make_shared<HESealExecutable>(function, enable_performance_data,
-                                            *this, m_enable_client);
+  return std::dynamic_pointer_cast<runtime::Executable>(
+      std::make_shared<HESealExecutable>(function, enable_performance_data,
+                                         *this, m_enable_client));
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {
@@ -324,5 +325,4 @@ void HESealBackend::decrypt(HEPlaintext& output,
                       *m_ckks_encoder);
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

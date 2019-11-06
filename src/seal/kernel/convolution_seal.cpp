@@ -21,8 +21,7 @@
 
 #include "logging/ngraph_he_log.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void convolution_seal(
     const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
@@ -226,11 +225,12 @@ void convolution_seal(
       out[out_coord_idx] = sum;
     }
 
-    if (verbose && out_coord_idx % 1000 == 0 && out_coord_idx != 0) {
+    static const size_t conv_verbosity_idx = 1000;
+    if (verbose && out_coord_idx % conv_verbosity_idx == 0 &&
+        out_coord_idx != 0) {
       NGRAPH_HE_LOG(3) << "Finished out coord " << out_coord_idx;
     }
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

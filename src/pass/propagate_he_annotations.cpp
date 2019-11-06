@@ -17,6 +17,7 @@
 #include "pass/propagate_he_annotations.hpp"
 
 #include <exception>
+#include <list>
 #include <sstream>
 #include <unordered_set>
 
@@ -32,8 +33,7 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 bool pass::PropagateHEAnnotations::run_on_function(
     std::shared_ptr<ngraph::Function> function) {
@@ -131,5 +131,4 @@ bool pass::PropagateHEAnnotations::run_on_function(
   return false;
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

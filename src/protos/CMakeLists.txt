@@ -14,8 +14,6 @@
 # the License.
 # ******************************************************************************
 
-message("PROJECT_SOURCE_DIR ${PROJECT_SOURCE_DIR}")
-
 if(NOT Protobuf_FOUND)
   message(FATAL_ERROR "Cannot find Protobuf")
 endif()
@@ -50,15 +48,9 @@ add_dependencies(generated_proto_files generated_proto_files_target)
 # Use include protos/*.pb.h
 target_include_directories(generated_proto_files
                            INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/../)
-message("CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
-
-message(STATUS "EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-message("INSTALL_INCLUDE_DIRS ${INSTALL_INCLUDE_DIRS}")
-message("PB CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}")
 
 # Install generated protobuf files
 foreach(INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIRS})
-  message("Installing proto headers to ${INSTALL_INCLUDE_DIR}")
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../
           DESTINATION ${INSTALL_INCLUDE_DIR}
           FILES_MATCHING

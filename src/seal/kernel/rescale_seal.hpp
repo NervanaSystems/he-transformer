@@ -21,11 +21,10 @@
 #include "he_type.hpp"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
-namespace ngraph {
-namespace he {
+
+namespace ngraph::he {
 
 void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
                   const bool verbose = false);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

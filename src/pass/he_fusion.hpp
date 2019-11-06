@@ -18,9 +18,7 @@
 
 #include "ngraph/pass/graph_rewrite.hpp"
 
-namespace ngraph {
-namespace he {
-namespace pass {
+namespace ngraph::he::pass {
 
 /// \brief performs HE-friendly fusion operations
 class HEFusion : public ngraph::pass::GraphRewrite {
@@ -30,6 +28,4 @@ class HEFusion : public ngraph::pass::GraphRewrite {
   /// \brief Fuses Min(Relu, Constant) op into BoundedRelu(Constant) op
   void construct_bounded_relu();
 };
-}  // namespace pass
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he::pass

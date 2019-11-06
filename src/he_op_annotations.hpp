@@ -17,13 +17,13 @@
 #pragma once
 
 #include <functional>
+#include <iostream>
 #include <memory>
 
 #include "ngraph/op/op.hpp"
 #include "ngraph/op/util/op_annotations.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Annotations added to graph ops by HE backend passes
 class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
  public:
@@ -34,63 +34,69 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   /// encrypted
   /// \param[in] packed Whether or not the output of the operation is stored
   /// using plaintext packing
-  HEOpAnnotations(bool from_client, bool encrypted, bool packed);
+  HEOpAnnotations(bool from_client, bool encrypted, bool packed)
+      : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
 
-  bool from_client() const;
-  void set_from_client(bool val);
+  bool from_client() const { return m_from_client; }
+  void set_from_client(bool val) { m_from_client = val; }
 
-  bool encrypted() const;
-  void set_encrypted(bool val);
+  bool encrypted() const { return m_encrypted; }
+  void set_encrypted(bool val) { m_encrypted = val; }
 
-  bool packed() const;
-  void set_packed(bool val);
+  bool packed() const { return m_packed; }
+  void set_packed(bool val) { m_packed = val; }
 
   /// \brief Returns whether or not Op has HEOPAnnotations
   /// \param[in] op Operation to check for annotation
-  static bool has_he_annotation(const ngraph::op::Op& op);
+  static bool has_he_annotation(const ngraph::op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    return std::dynamic_pointer_cast<HEOpAnnotations>(annotation) != nullptr;
+  }
 
   /// \brief Returns HEOpAnnotations from Op
   /// \param[in] op Operation to retrieve annotations from
   /// \throws ngraph_error if op doesn't have HEOpAnnotation
   static std::shared_ptr<HEOpAnnotations> he_op_annotation(
-      const ngraph::op::Op& op);
+      const ngraph::op::Op& op) {
+    NGRAPH_CHECK(HEOpAnnotations::has_he_annotation(op), "op ", op.get_name(),
+                 " has no HEOpAnnotation");
+    return std::static_pointer_cast<HEOpAnnotations>(op.get_op_annotations());
+  }
 
-  static inline std::shared_ptr<HEOpAnnotations>
+  static std::shared_ptr<HEOpAnnotations>
   server_plaintext_unpacked_annotation() {
     return std::make_shared<HEOpAnnotations>(false, false, false);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
-  server_plaintext_packed_annotation() {
+  static std::shared_ptr<HEOpAnnotations> server_plaintext_packed_annotation() {
     return std::make_shared<HEOpAnnotations>(false, false, true);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
+  static std::shared_ptr<HEOpAnnotations>
   server_ciphertext_unpacked_annotation() {
     return std::make_shared<HEOpAnnotations>(false, true, false);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
+  static std::shared_ptr<HEOpAnnotations>
   server_ciphertext_packed_annotation() {
     return std::make_shared<HEOpAnnotations>(false, true, true);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
+  static std::shared_ptr<HEOpAnnotations>
   client_plaintext_unpacked_annotation() {
     return std::make_shared<HEOpAnnotations>(true, false, false);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
-  client_plaintext_packed_annotation() {
+  static std::shared_ptr<HEOpAnnotations> client_plaintext_packed_annotation() {
     return std::make_shared<HEOpAnnotations>(true, false, true);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
+  static std::shared_ptr<HEOpAnnotations>
   client_ciphertext_unpacked_annotation() {
     return std::make_shared<HEOpAnnotations>(true, true, false);
   }
 
-  static inline std::shared_ptr<HEOpAnnotations>
+  static std::shared_ptr<HEOpAnnotations>
   client_ciphertext_packed_annotation() {
     return std::make_shared<HEOpAnnotations>(true, true, true);
   }
@@ -110,5 +116,4 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

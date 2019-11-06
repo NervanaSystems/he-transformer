@@ -96,8 +96,7 @@
 using json = nlohmann::json;
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
                                    bool enable_performance_collection,
                                    HESealBackend& he_seal_backend,
@@ -176,15 +175,25 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   update_he_op_annotations();
 }
 
-HESealExecutable::~HESealExecutable() {
+HESealExecutable::~HESealExecutable() noexcept {
   NGRAPH_HE_LOG(3) << "~HESealExecutable()";
   if (m_server_setup) {
-    NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
-    m_message_handling_thread.join();
-    NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
+    if (m_message_handling_thread.joinable()) {
+      NGRAPH_HE_LOG(5) << "Waiting for m_message_handling_thread to join";
+      try {
+        m_message_handling_thread.join();
+      } catch (std::exception& e) {
+        NGRAPH_ERR << "Exception closing executable thread " << e.what();
+      }
+      NGRAPH_HE_LOG(5) << "m_message_handling_thread joined";
+    }
 
     // m_acceptor and m_io_context both free the socket? Avoid double-free
-    m_acceptor->close();
+    try {
+      m_acceptor->close();
+    } catch (std::exception& e) {
+      NGRAPH_ERR << "Exception closing m_acceptor " << e.what();
+    }
     m_acceptor = nullptr;
     m_session = nullptr;
   }
@@ -243,12 +252,12 @@ bool HESealExecutable::server_setup() {
     std::stringstream param_stream;
     m_he_seal_backend.get_encryption_parameters().save(param_stream);
 
-    proto::EncryptionParameters proto_parms;
+    pb::EncryptionParameters proto_parms;
     *proto_parms.mutable_encryption_parameters() = param_stream.str();
 
-    proto::TCPMessage proto_msg;
+    pb::TCPMessage proto_msg;
     *proto_msg.mutable_encryption_parameters() = proto_parms;
-    proto_msg.set_type(proto::TCPMessage_Type_RESPONSE);
+    proto_msg.set_type(pb::TCPMessage_Type_RESPONSE);
 
     TCPMessage parms_message(std::move(proto_msg));
     NGRAPH_HE_LOG(3) << "Server waiting until session started";
@@ -275,29 +284,32 @@ void HESealExecutable::accept_connection() {
   auto server_callback =
       std::bind(&HESealExecutable::handle_message, this, std::placeholders::_1);
 
-  m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
-                                                   tcp::socket socket) {
-    if (!ec) {
-      NGRAPH_HE_LOG(1) << "Connection accepted";
-      m_session =
-          std::make_shared<TCPSession>(std::move(socket), server_callback);
-      m_session->start();
-      NGRAPH_HE_LOG(1) << "Session started";
+  m_acceptor->async_accept(
+      [this, server_callback](boost::system::error_code ec,
+                              boost::asio::ip::tcp::socket socket) {
+        if (!ec) {
+          NGRAPH_HE_LOG(1) << "Connection accepted";
+          m_session =
+              std::make_shared<TCPSession>(std::move(socket), server_callback);
+          m_session->start();
+          NGRAPH_HE_LOG(1) << "Session started";
 
-      std::lock_guard<std::mutex> guard(m_session_mutex);
-      m_session_started = true;
-      m_session_cond.notify_one();
-    } else {
-      NGRAPH_ERR << "error accepting connection " << ec.message();
-      accept_connection();
-    }
-  });
+          std::lock_guard<std::mutex> guard(m_session_mutex);
+          m_session_started = true;
+          m_session_cond.notify_one();
+        } else {
+          NGRAPH_ERR << "error accepting connection " << ec.message();
+          accept_connection();
+        }
+      });
 }
 
 void HESealExecutable::start_server() {
-  tcp::resolver resolver(m_io_context);
-  tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  m_acceptor = std::make_unique<tcp::acceptor>(m_io_context, server_endpoints);
+  boost::asio::ip::tcp::resolver resolver(m_io_context);
+  boost::asio::ip::tcp::endpoint server_endpoints(boost::asio::ip::tcp::v4(),
+                                                  m_port);
+  m_acceptor = std::make_unique<boost::asio::ip::tcp::acceptor>(
+      m_io_context, server_endpoints);
   boost::asio::socket_base::reuse_address option(true);
   m_acceptor->set_option(option);
 
@@ -307,11 +319,11 @@ void HESealExecutable::start_server() {
       m_io_context.run();
     } catch (std::exception& e) {
       NGRAPH_CHECK(false, "Server error hanndling thread: ", e.what());
-    };
+    }
   });
 }
 
-void HESealExecutable::load_public_key(const proto::TCPMessage& proto_msg) {
+void HESealExecutable::load_public_key(const pb::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_public_key(), "proto_msg doesn't have public key");
 
   seal::PublicKey key;
@@ -323,7 +335,7 @@ void HESealExecutable::load_public_key(const proto::TCPMessage& proto_msg) {
   m_client_public_key_set = true;
 }
 
-void HESealExecutable::load_eval_key(const proto::TCPMessage& proto_msg) {
+void HESealExecutable::load_eval_key(const pb::TCPMessage& proto_msg) {
   NGRAPH_CHECK(proto_msg.has_eval_key(), "proto_msg doesn't have eval key");
 
   seal::RelinKeys keys;
@@ -340,12 +352,12 @@ void HESealExecutable::send_inference_shape() {
 
   const ParameterVector& input_parameters = get_parameters();
 
-  proto::TCPMessage proto_msg;
-  proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
+  pb::TCPMessage proto_msg;
+  proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
 
   for (const auto& input_param : input_parameters) {
     if (from_client(*input_param)) {
-      proto::HETensor* proto_he_tensor = proto_msg.add_he_tensors();
+      pb::HETensor* proto_he_tensor = proto_msg.add_he_tensors();
 
       std::vector<uint64_t> shape{input_param->get_shape()};
       *proto_he_tensor->mutable_shape() = {shape.begin(), shape.end()};
@@ -373,7 +385,7 @@ void HESealExecutable::send_inference_shape() {
                    << proto_msg.he_tensors_size() << " parameters";
 
   json js = {{"function", "Parameter"}};
-  proto::Function f;
+  pb::Function f;
   f.set_function(js.dump());
   NGRAPH_HE_LOG(3) << "js " << js.dump();
   *proto_msg.mutable_function() = f;
@@ -382,7 +394,7 @@ void HESealExecutable::send_inference_shape() {
   m_session->write_message(std::move(execute_msg));
 }
 
-void HESealExecutable::handle_relu_result(const proto::TCPMessage& proto_msg) {
+void HESealExecutable::handle_relu_result(const pb::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Server handling relu result";
   std::lock_guard<std::mutex> guard(m_relu_mutex);
 
@@ -407,12 +419,11 @@ void HESealExecutable::handle_relu_result(const proto::TCPMessage& proto_msg) {
 }
 
 void HESealExecutable::handle_bounded_relu_result(
-    const proto::TCPMessage& proto_msg) {
+    const pb::TCPMessage& proto_msg) {
   handle_relu_result(proto_msg);
 }
 
-void HESealExecutable::handle_max_pool_result(
-    const proto::TCPMessage& proto_msg) {
+void HESealExecutable::handle_max_pool_result(const pb::TCPMessage& proto_msg) {
   std::lock_guard<std::mutex> guard(m_max_pool_mutex);
 
   NGRAPH_CHECK(proto_msg.he_tensors_size() == 1,
@@ -438,12 +449,12 @@ void HESealExecutable::handle_max_pool_result(
 
 void HESealExecutable::handle_message(const TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Server handling message";
-  std::shared_ptr<proto::TCPMessage> proto_msg = message.proto_message();
+  std::shared_ptr<pb::TCPMessage> proto_msg = message.proto_message();
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
   switch (proto_msg->type()) {
-    case proto::TCPMessage_Type_RESPONSE: {
+    case pb::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_public_key()) {
         load_public_key(*proto_msg);
       }
@@ -472,21 +483,20 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
       }
       break;
     }
-    case proto::TCPMessage_Type_REQUEST: {
+    case pb::TCPMessage_Type_REQUEST: {
       if (proto_msg->he_tensors_size() > 0) {
         handle_client_ciphers(*proto_msg);
       }
       break;
     }
-    case proto::TCPMessage_Type_UNKNOWN:
+    case pb::TCPMessage_Type_UNKNOWN:
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }
 #pragma clang diagnostic pop
 }
 
-void HESealExecutable::handle_client_ciphers(
-    const proto::TCPMessage& proto_msg) {
+void HESealExecutable::handle_client_ciphers(const pb::TCPMessage& proto_msg) {
   NGRAPH_HE_LOG(3) << "Handling client tensors";
 
   NGRAPH_CHECK(proto_msg.he_tensors_size() > 0,
@@ -815,16 +825,16 @@ bool HESealExecutable::call(
           NGRAPH_WARN
               << "Node " << op->get_name()
               << " is not op, using default encrypted / packing behavior";
-          encrypted_out =
-              std::any_of(op_inputs.begin(), op_inputs.end(),
-                          [](std::shared_ptr<ngraph::he::HETensor> op_input) {
-                            return op_input->any_encrypted_data();
-                          });
-          packed_out =
-              std::any_of(op_inputs.begin(), op_inputs.end(),
-                          [](std::shared_ptr<ngraph::he::HETensor> he_tensor) {
-                            return he_tensor->is_packed();
-                          });
+          encrypted_out = std::any_of(
+              op_inputs.begin(), op_inputs.end(),
+              [](const std::shared_ptr<ngraph::he::HETensor>& op_input) {
+                return op_input->any_encrypted_data();
+              });
+          packed_out = std::any_of(
+              op_inputs.begin(), op_inputs.end(),
+              [](const std::shared_ptr<ngraph::he::HETensor>& he_tensor) {
+                return he_tensor->is_packed();
+              });
         }
         NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
         NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
@@ -903,18 +913,18 @@ void HESealExecutable::send_client_results() {
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 
-  std::vector<proto::HETensor> proto_tensors;
+  std::vector<pb::HETensor> proto_tensors;
   m_client_outputs[0]->write_to_protos(proto_tensors);
 
   for (const auto& proto_tensor : proto_tensors) {
-    proto::TCPMessage result_msg;
-    result_msg.set_type(proto::TCPMessage_Type_RESPONSE);
+    pb::TCPMessage result_msg;
+    result_msg.set_type(pb::TCPMessage_Type_RESPONSE);
     *result_msg.add_he_tensors() = proto_tensor;
 
     auto result_shape = result_msg.he_tensors(0).shape();
     NGRAPH_HE_LOG(3) << "Server sending result with shape "
                      << Shape{result_shape.begin(), result_shape.end()};
-    m_session->write_message(std::move(result_msg));
+    m_session->write_message(TCPMessage(std::move(result_msg)));
   }
 
   // Wait until message is written
@@ -1381,11 +1391,11 @@ void HESealExecutable::handle_server_max_pool_op(
   m_max_pool_data.clear();
 
   for (const auto& maximize_list : maximize_lists) {
-    proto::TCPMessage proto_msg;
-    proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
+    pb::TCPMessage proto_msg;
+    proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
 
     json js = {{"function", node.description()}};
-    proto::Function f;
+    pb::Function f;
     f.set_function(js.dump());
     *proto_msg.mutable_function() = f;
 
@@ -1403,7 +1413,7 @@ void HESealExecutable::handle_server_max_pool_op(
         cipher_batch[0].plaintext_packing(), cipher_batch[0].complex_packing(),
         true, m_he_seal_backend);
     max_pool_tensor.data() = cipher_batch;
-    std::vector<proto::HETensor> proto_tensors;
+    std::vector<pb::HETensor> proto_tensors;
     max_pool_tensor.write_to_protos(proto_tensors);
     NGRAPH_CHECK(proto_tensors.size() == 1,
                  "Only support MaxPool with 1 proto tensor");
@@ -1491,11 +1501,11 @@ void HESealExecutable::handle_server_relu_op(
             arg->is_packed(), false, true, m_he_seal_backend);
         relu_tensor.data() = cipher_batch;
 
-        std::vector<proto::HETensor> proto_tensors;
+        std::vector<pb::HETensor> proto_tensors;
         relu_tensor.write_to_protos(proto_tensors);
         for (const auto& proto_tensor : proto_tensors) {
-          proto::TCPMessage proto_msg;
-          proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
+          pb::TCPMessage proto_msg;
+          proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
 
           // TODO(fboemer): factor out serializing the function
           json js = {{"function", node.description()}};
@@ -1506,7 +1516,7 @@ void HESealExecutable::handle_server_relu_op(
             js["bound"] = alpha;
           }
 
-          proto::Function f;
+          pb::Function f;
           f.set_function(js.dump());
           *proto_msg.mutable_function() = f;
 
@@ -1544,5 +1554,4 @@ void HESealExecutable::handle_server_relu_op(
 
   out->data() = m_relu_data;
 }
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

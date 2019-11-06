@@ -27,10 +27,7 @@
 #include "logging/ngraph_he_log.hpp"
 #include "tcp/tcp_message.hpp"
 
-using boost::asio::ip::tcp;
-
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Class representing a Client over a TCP connection
 class TCPClient {
  public:
@@ -42,7 +39,7 @@ class TCPClient {
   /// \param[in] endpoints Socket to connect to
   /// \param[in] message_handler Function to handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
-            const tcp::resolver::results_type& endpoints,
+            const boost::asio::ip::tcp::resolver::results_type& endpoints,
             std::function<void(const TCPMessage&)> message_handler)
       : m_io_context(io_context),
         m_socket(io_context),
@@ -69,12 +66,12 @@ class TCPClient {
   }
 
  private:
-  void do_connect(const tcp::resolver::results_type& endpoints,
+  void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,
                   size_t delay_ms = 10) {
     boost::asio::async_connect(
         m_socket, endpoints,
         [this, delay_ms, &endpoints](boost::system::error_code ec,
-                                     tcp::endpoint) {
+                                     boost::asio::ip::tcp::endpoint) {
           if (!ec) {
             NGRAPH_HE_LOG(1) << "Connected to server";
             do_read_header();
@@ -151,7 +148,7 @@ class TCPClient {
   }
 
   boost::asio::io_context& m_io_context;
-  tcp::socket m_socket;
+  boost::asio::ip::tcp::socket m_socket;
 
   data_buffer m_read_buffer;
   data_buffer m_write_buffer;
@@ -163,5 +160,4 @@ class TCPClient {
   bool m_first_connect;
   std::function<void(const TCPMessage&)> m_message_callback;
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

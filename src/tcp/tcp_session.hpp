@@ -17,6 +17,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -24,10 +25,7 @@
 #include "logging/ngraph_he_log.hpp"
 #include "tcp/tcp_message.hpp"
 
-using boost::asio::ip::tcp;
-
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Class representing a session over TCP
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
   using data_buffer = TCPMessage::data_buffer;
@@ -35,7 +33,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
  public:
   /// \brief Constructs a session with a given message handler
-  TCPSession(tcp::socket socket,
+  TCPSession(boost::asio::ip::tcp::socket socket,
              std::function<void(const TCPMessage&)> message_handler)
       : m_socket(std::move(socket)),
         m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
@@ -133,7 +131,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   data_buffer m_read_buffer;
   data_buffer m_write_buffer;
-  tcp::socket m_socket;
+  boost::asio::ip::tcp::socket m_socket;
   std::condition_variable m_is_writing;
   std::mutex m_write_mtx;
 
@@ -141,5 +139,4 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   std::function<void(const TCPMessage&)> m_message_callback;
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he
