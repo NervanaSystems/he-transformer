@@ -104,41 +104,41 @@ class HESealEncryptionParameters {
   static HESealEncryptionParameters load(std::istream& stream);
 
   /// \brief Returns SEAL encryption parameters
-  inline seal::EncryptionParameters& seal_encryption_parameters() {
+  seal::EncryptionParameters& seal_encryption_parameters() {
     return m_seal_encryption_parameters;
   }
 
   /// \brief Returns SEAL encryption parameters
-  inline const seal::EncryptionParameters& seal_encryption_parameters() const {
+  const seal::EncryptionParameters& seal_encryption_parameters() const {
     return m_seal_encryption_parameters;
   }
 
   /// \brief Returns the scheme name
-  inline const std::string& scheme_name() const { return m_scheme_name; }
+  const std::string& scheme_name() const { return m_scheme_name; }
 
   /// \brief Returns the polynomial modulus degree
-  inline std::uint64_t poly_modulus_degree() const {
+  std::uint64_t poly_modulus_degree() const {
     return m_seal_encryption_parameters.poly_modulus_degree();
   }
 
   /// \brief Returns the scale
-  inline double scale() const { return m_scale; }
+  double scale() const { return m_scale; }
 
   /// \brief Returns the scale
   /// TODO(fboemer): verify scale is valid
-  inline double& scale() { return m_scale; }
+  double& scale() { return m_scale; }
 
   /// \brief Returns the security level
-  inline std::uint64_t security_level() const { return m_security_level; }
+  std::uint64_t security_level() const { return m_security_level; }
 
   /// \brief Returns the security level
-  inline std::uint64_t& security_level() { return m_security_level; }
+  std::uint64_t& security_level() { return m_security_level; }
 
   /// \brief Return whether or not complex packing is enabled
-  inline bool complex_packing() const { return m_complex_packing; }
+  bool complex_packing() const { return m_complex_packing; }
 
   /// \brief Return whether or not complex packing is enabled
-  inline bool& complex_packing() { return m_complex_packing; }
+  bool& complex_packing() { return m_complex_packing; }
 
  private:
   std::string m_scheme_name;

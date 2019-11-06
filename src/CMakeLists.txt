@@ -19,7 +19,6 @@ add_subdirectory(protos)
 # HE transformer sources
 set(HE_SRC
     # main
-    he_op_annotations.cpp
     he_tensor.cpp
     he_type.cpp
     node_wrapper.cpp

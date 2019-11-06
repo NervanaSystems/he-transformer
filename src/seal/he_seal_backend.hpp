@@ -74,7 +74,7 @@ class HESealBackend : public ngraph::runtime::Backend {
                                                  const Shape& shape) override;
 
   /// \brief Unimplemented
-  inline std::shared_ptr<runtime::Tensor> create_tensor(
+  std::shared_ptr<runtime::Tensor> create_tensor(
       const element::Type& type, const Shape& shape,
       void* memory_pointer) override {
     throw ngraph_error("create_tensor unimplemented");
@@ -122,7 +122,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns whether or not a given datatype is supported
   /// \param[in] type Datatype
   /// \returns True if datatype is supported, false otherwise
-  inline bool is_supported_type(const ngraph::element::Type& type) const {
+  bool is_supported_type(const ngraph::element::Type& type) const {
     return m_supported_types.find(type.hash()) != m_supported_types.end();
   }
 
@@ -166,15 +166,14 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   /// \brief Creates empty ciphertext
   /// \returns Pointer to created ciphertext
-  static inline std::shared_ptr<SealCiphertextWrapper>
-  create_empty_ciphertext() {
+  static std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext() {
     return std::make_shared<SealCiphertextWrapper>();
   }
 
   /// \brief Creates empty ciphertext at given parameter choice
   /// \param[in] parms_id Seal encryption parameter id
   /// \returns Pointer to created ciphertext
-  inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
+  std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
       seal::parms_id_type parms_id) const {
     return std::make_shared<SealCiphertextWrapper>(
         seal::Ciphertext(m_context, parms_id));
@@ -183,7 +182,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Creates empty ciphertext at given parameter choice
   /// \param[in] pool Memory pool used for new memory allocation
   /// \returns Pointer to created ciphertext
-  inline std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
+  std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
       const seal::MemoryPoolHandle& pool) const {
     return std::make_shared<SealCiphertextWrapper>(pool);
   }
@@ -202,42 +201,42 @@ class HESealBackend : public ngraph::runtime::Backend {
                const bool complex_packing) const;
 
   /// \brief Returns pointer to SEAL context
-  const inline std::shared_ptr<seal::SEALContext> get_context() const {
+  const std::shared_ptr<seal::SEALContext> get_context() const {
     return m_context;
   }
 
   /// \brief Returns pointer to secret key
-  const inline std::shared_ptr<seal::SecretKey> get_secret_key() const {
+  const std::shared_ptr<seal::SecretKey> get_secret_key() const {
     return m_secret_key;
   }
 
   /// \brief Returns pointer to public key
-  const inline std::shared_ptr<seal::PublicKey> get_public_key() const {
+  const std::shared_ptr<seal::PublicKey> get_public_key() const {
     return m_public_key;
   }
 
   /// \brief Returns pointer to relinearization keys
-  const inline std::shared_ptr<seal::RelinKeys> get_relin_keys() const {
+  const std::shared_ptr<seal::RelinKeys> get_relin_keys() const {
     return m_relin_keys;
   }
 
   /// \brief Returns pointer to Galois keys
-  const inline std::shared_ptr<seal::GaloisKeys> get_galois_keys() const {
+  const std::shared_ptr<seal::GaloisKeys> get_galois_keys() const {
     return m_galois_keys;
   }
 
   /// \brief Returns pointer to encryptor
-  const inline std::shared_ptr<seal::Encryptor> get_encryptor() const {
+  const std::shared_ptr<seal::Encryptor> get_encryptor() const {
     return m_encryptor;
   }
 
   /// \brief Returns pointer to decryptor
-  const inline std::shared_ptr<seal::Decryptor> get_decryptor() const {
+  const std::shared_ptr<seal::Decryptor> get_decryptor() const {
     return m_decryptor;
   }
 
   /// \brief Retursn a pointer to evaluator
-  const inline std::shared_ptr<seal::Evaluator> get_evaluator() const {
+  const std::shared_ptr<seal::Evaluator> get_evaluator() const {
     return m_evaluator;
   }
 
@@ -279,7 +278,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   }
 
   /// \brief Returns the top-level scale used for encoding
-  inline double get_scale() const { return m_encryption_params.scale(); }
+  double get_scale() const { return m_encryption_params.scale(); }
 
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
@@ -299,7 +298,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns the chain index, also known as level, of the ciphertext
   /// \param[in] cipher Ciphertext whose chain index to return
   /// \returns The chain index of the ciphertext.
-  inline size_t get_chain_index(const SealCiphertextWrapper& cipher) const {
+  size_t get_chain_index(const SealCiphertextWrapper& cipher) const {
     return m_context->get_context_data(cipher.ciphertext().parms_id())
         ->chain_index();
   }
@@ -307,28 +306,28 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns the chain index, also known as level, of the plaintext
   /// \param[in] plain Plaintext whose chain index to return
   /// \returns The chain index of the ciphertext.
-  inline size_t get_chain_index(const SealPlaintextWrapper& plain) const {
+  size_t get_chain_index(const SealPlaintextWrapper& plain) const {
     return m_context->get_context_data(plain.plaintext().parms_id())
         ->chain_index();
   }
 
   /// \brief Returns set of tensors to be provided by the client
-  inline std::unordered_set<std::string> get_client_tensor_names() const {
+  std::unordered_set<std::string> get_client_tensor_names() const {
     return m_client_tensor_names;
   }
 
   /// \brief Returns set of parameter tensors to be encrypted
-  inline std::unordered_set<std::string> get_encrypted_tensor_names() const {
+  std::unordered_set<std::string> get_encrypted_tensor_names() const {
     return m_encrypted_tensor_names;
   }
 
   /// \brief Returns set of parameter tensors to remain plaintext.
-  inline std::unordered_set<std::string> get_plaintext_tensor_names() const {
+  std::unordered_set<std::string> get_plaintext_tensor_names() const {
     return m_plaintext_tensor_names;
   }
 
   /// \brief Returns set of parameter tensors to be packed.
-  inline std::unordered_set<std::string> get_packed_tensor_names() const {
+  std::unordered_set<std::string> get_packed_tensor_names() const {
     return m_packed_tensor_names;
   }
 

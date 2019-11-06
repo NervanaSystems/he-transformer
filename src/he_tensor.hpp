@@ -123,17 +123,15 @@ class HETensor : public runtime::Tensor {
   const Shape& get_expanded_shape() const { return get_shape(); }
 
   /// \brief Returns plaintext packing factor used in the tensor
-  inline size_t get_batch_size() const {
-    return batch_size(get_shape(), m_packed);
-  }
+  size_t get_batch_size() const { return batch_size(get_shape(), m_packed); }
 
   /// \brief Returns number of ciphertext / plaintext objects in the tensor
-  inline size_t get_batched_element_count() const {
+  size_t get_batched_element_count() const {
     return get_element_count() / get_batch_size();
   }
 
   /// \brief Returns whether or not the tensor is packed
-  inline bool is_packed() const { return m_packed; }
+  bool is_packed() const { return m_packed; }
 
   /// \brief Writes the tensor to a vector of proto tensors.
   /// Due to the 2GB limit on protobufs, large ciphertext tensors may not be

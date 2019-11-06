@@ -65,23 +65,23 @@ class SealCiphertextWrapper {
       : m_ciphertext(std::move(cipher)) {}
 
   /// \brief Returns the ciphertext
-  inline seal::Ciphertext& ciphertext() { return m_ciphertext; }
+  seal::Ciphertext& ciphertext() { return m_ciphertext; }
 
   /// \brief Returns the ciphertext
-  inline const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
+  const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
   /// \brief Returns the size of the ciphertext
-  inline size_t size() const { return m_ciphertext.size(); }
+  size_t size() const { return m_ciphertext.size(); }
 
   /// \brief Returns scale of the ciphertext
-  inline double& scale() { return m_ciphertext.scale(); }
+  double& scale() { return m_ciphertext.scale(); }
 
   /// \brief Returns scale of the ciphertext
-  inline double scale() const { return m_ciphertext.scale(); }
+  double scale() const { return m_ciphertext.scale(); }
 
   /// \brief Writes the ciphertext to a protobuf object
   /// \param[out] he_type Protobuf object to write ciphertext to
-  inline void save(proto::HEType& he_type) const {
+  void save(proto::HEType& he_type) const {
     size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
     cipher_str.resize(cipher_size);
@@ -98,9 +98,9 @@ class SealCiphertextWrapper {
   /// \param[out] dst Destination to load ciphertext to
   /// \param[in] proto_he_type Protobuf object to load object from
   /// \param[in] context SEAL context to validate loaded ciphertext against
-  static inline void load(SealCiphertextWrapper& dst,
-                          const proto::HEType& proto_he_type,
-                          std::shared_ptr<seal::SEALContext> context) {
+  static void load(SealCiphertextWrapper& dst,
+                   const proto::HEType& proto_he_type,
+                   std::shared_ptr<seal::SEALContext> context) {
     NGRAPH_CHECK(!proto_he_type.is_plaintext(),
                  "Cannot load ciphertext from plaintext HEType");
 

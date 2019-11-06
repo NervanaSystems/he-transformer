@@ -107,12 +107,12 @@ class HESealClient {
 
   /// \brief Writes a mesage to the server
   /// \param[in] message Message to write
-  inline void write_message(ngraph::he::TCPMessage&& message) {
+  void write_message(ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
   /// \brief Returns whether or not the function is done evaluating
-  inline bool is_done() { return m_is_done; }
+  bool is_done() { return m_is_done; }
 
   /// \brief Returns decrypted results
   /// \warning Will lock until results are ready
@@ -123,12 +123,10 @@ class HESealClient {
 
   /// \brief Returns whether or not the encryption parameters use complex
   /// packing
-  inline bool complex_packing() const {
-    return m_encryption_params.complex_packing();
-  }
+  bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
   /// \brief Returns the scale of the encryption parameters
-  inline double scale() const { return m_encryption_params.scale(); }
+  double scale() const { return m_encryption_params.scale(); }
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;

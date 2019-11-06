@@ -259,7 +259,6 @@ void HETensor::write_to_protos(
   proto_tensors[0].set_offset(0);
   std::vector<uint64_t> int_shape{get_shape()};
   *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
-  size_t description_size = proto_tensors[0].ByteSize();
 
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
 

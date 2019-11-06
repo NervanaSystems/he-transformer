@@ -101,7 +101,7 @@ class HESealExecutable : public runtime::Executable {
   void accept_connection();
 
   /// \brief Returns whether or not encryption parameters use complex packing
-  inline bool complex_packing() const {
+  bool complex_packing() const {
     return m_he_seal_backend.get_encryption_parameters().complex_packing();
   }
 
@@ -168,7 +168,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
-  inline bool verbose_op(const ngraph::Node& op) {
+  bool verbose_op(const ngraph::Node& op) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
@@ -176,14 +176,14 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node dessccription verbosity is on or off
   /// \param[in] description Node description determine verbosity of
-  inline bool verbose_op(const std::string& description) {
+  bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(description)) !=
                m_verbose_ops.end();
   }
 
   /// \brief Returns the batch size
-  inline size_t batch_size() const { return m_batch_size; }
+  size_t batch_size() const { return m_batch_size; }
 
   /// \brief Returns the batch size
   void set_batch_size(size_t batch_size);
@@ -191,7 +191,7 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns whether or not operation node should be received from
   /// client. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation, should be Constant or Parameter node
-  inline bool from_client(const ngraph::op::Op& op) {
+  bool from_client(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
@@ -205,14 +205,14 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] node_wrapper Wrapper of graph operation
-  inline bool plaintext_packed(const NodeWrapper& node_wrapper) {
+  bool plaintext_packed(const NodeWrapper& node_wrapper) {
     return plaintext_packed(*node_wrapper.get_op());
   }
 
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation
-  inline bool plaintext_packed(const ngraph::op::Op& op) {
+  bool plaintext_packed(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
