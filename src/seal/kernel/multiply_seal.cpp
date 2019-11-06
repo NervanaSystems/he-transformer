@@ -20,8 +20,7 @@
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void scalar_multiply_seal(SealCiphertextWrapper& arg0,
                           SealCiphertextWrapper& arg1,
@@ -42,14 +41,18 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
 
     seal::Ciphertext& c0 = arg0.ciphertext();
     seal::Ciphertext& c1 = arg1.ciphertext();
-    seal::Ciphertext c0_conj, c1_conj;
+    seal::Ciphertext c0_conj;
+    seal::Ciphertext c1_conj;
 
     he_seal_backend.get_evaluator()->complex_conjugate(
         c0, *he_seal_backend.get_galois_keys(), c0_conj);
     he_seal_backend.get_evaluator()->complex_conjugate(
         c1, *he_seal_backend.get_galois_keys(), c1_conj);
 
-    seal::Ciphertext c0_re, c0_im, c1_re, c1_im;
+    seal::Ciphertext c0_re;
+    seal::Ciphertext c0_im;
+    seal::Ciphertext c1_re;
+    seal::Ciphertext c1_im;
 
     he_seal_backend.get_evaluator()->add(c0, c0_conj, c0_re);
     he_seal_backend.get_evaluator()->sub(c0, c0_conj, c0_im);
@@ -62,7 +65,8 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
     c0_im.scale() *= 2;
     c1_im.scale() *= 2;
 
-    seal::Ciphertext prod_re, prod_im;
+    seal::Ciphertext prod_re;
+    seal::Ciphertext prod_im;
 
     he_seal_backend.get_evaluator()->multiply(c0_re, c1_re, prod_re);
     he_seal_backend.get_evaluator()->multiply(c0_im, c1_im, prod_im);
@@ -143,7 +147,7 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
            arg0.ciphertext().scale(), false);
 
     size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
-    size_t chain_ind1 = he_seal_backend.get_chain_index(p.plaintext());
+    size_t chain_ind1 = he_seal_backend.get_chain_index(p);
 
     NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain_ind0 ", chain_ind0,
                  " != chain_ind1 ", chain_ind1);
@@ -184,5 +188,4 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   out = std::move(out_vals);
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -23,13 +23,11 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
               HESealBackend& he_seal_backend);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

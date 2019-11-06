@@ -33,7 +33,8 @@ auto sub_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
   }
 
   auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
@@ -46,10 +47,10 @@ auto sub_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   b->set_op_annotations(
       ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
-  auto t_a =
-      ngraph::test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
-  auto t_b =
-      ngraph::test::he::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
+                                                 arg1_encrypted, packed);
+  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
+                                                 arg2_encrypted, packed);
   auto t_result = ngraph::test::he::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
 
@@ -73,8 +74,8 @@ auto sub_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
 
-  EXPECT_TRUE(
-      ngraph::test::he::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
+                                          exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, sub_2_3_plain_plain_real_unpacked) {

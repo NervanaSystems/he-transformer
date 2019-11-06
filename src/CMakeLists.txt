@@ -19,7 +19,6 @@ add_subdirectory(protos)
 # HE transformer sources
 set(HE_SRC
     # main
-    he_op_annotations.cpp
     he_tensor.cpp
     he_type.cpp
     node_wrapper.cpp
@@ -77,9 +76,6 @@ target_link_libraries(he_seal_backend
 
 foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
   install(TARGETS he_seal_backend DESTINATION ${INSTALL_LIB_DIR})
-
-  message("Installing protobuf to ${INSTALL_LIB_DIR} ")
-  message("Protobuf_LIBRARIES ${Protobuf_LIBRARIES}")
   add_custom_command(TARGET he_seal_backend POST_BUILD
                      COMMAND ${CMAKE_COMMAND}
                              -E
@@ -89,10 +85,7 @@ foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
                      DEPENDS protobuf::libprotobuf)
 endforeach()
 
-message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
-
 foreach(INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIRS})
-  message("Installing headers to ${INSTALL_INCLUDE_DIR}")
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
           DESTINATION ${INSTALL_INCLUDE_DIR}
           FILES_MATCHING
@@ -104,7 +97,6 @@ foreach(INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIRS})
           PATTERN "*.h"
           PATTERN "*.hpp"
           PATTERN "*.inc") # For port_def.inc
-  message("Installing json_INCLUDE_DIR ${json_INCLUDE_DIR}")
   install(DIRECTORY ${json_INCLUDE_DIR}/
           DESTINATION ${INSTALL_INCLUDE_DIR}
           FILES_MATCHING

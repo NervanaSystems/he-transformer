@@ -31,8 +31,7 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 bool ngraph::he::pass::HELiveness::run_on_function(
     std::shared_ptr<Function> function) {
   std::list<std::shared_ptr<Node>> ops = function->get_ordered_ops();
@@ -102,5 +101,4 @@ bool ngraph::he::pass::HELiveness::run_on_function(
   return false;
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

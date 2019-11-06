@@ -25,8 +25,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 class SealCiphertextWrapper;
 class SealPlaintextWrapper;
 class HESealBackend;
@@ -217,7 +216,7 @@ void multiply_plain_inplace(
 inline void multiply_plain(
     const seal::Ciphertext& encrypted, double value,
     seal::Ciphertext& destination, const HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
+    seal::MemoryPoolHandle pool = seal::MemoryManager::GetPool()) {
   destination = encrypted;
   multiply_plain_inplace(destination, value, he_seal_backend, std::move(pool));
 }
@@ -284,5 +283,4 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              const bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

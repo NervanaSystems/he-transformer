@@ -101,7 +101,7 @@ TEST(he_tensor, save) {
   copy_data(tensor, tensor_data);
   auto he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(tensor);
 
-  std::vector<ngraph::he::proto::HETensor> protos;
+  std::vector<ngraph::he::pb::HETensor> protos;
   he_tensor->write_to_protos(protos);
 
   EXPECT_EQ(protos.size(), 1);

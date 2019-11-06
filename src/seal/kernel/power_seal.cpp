@@ -24,24 +24,21 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                        HEPlaintext& out) {
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
-    std::transform(
-        arg1.begin(), arg1.end(),
-        std::back_inserter(out_vals), [&](auto y) -> auto {
-          return std::pow(arg0[0], y);
-        });
+    std::transform(arg1.begin(), arg1.end(),
+                   std::back_inserter(out_vals), [&](auto y) -> auto {
+                     return std::pow(arg0[0], y);
+                   });
   } else if (arg1.size() == 1) {
-    std::transform(
-        arg0.begin(), arg0.end(),
-        std::back_inserter(out_vals), [&](auto x) -> auto {
-          return std::pow(x, arg1[0]);
-        });
+    std::transform(arg0.begin(), arg0.end(),
+                   std::back_inserter(out_vals), [&](auto x) -> auto {
+                     return std::pow(x, arg1[0]);
+                   });
   } else {
     size_t min_size = std::min(arg0.size(), arg1.size());
     out_vals.resize(min_size);
@@ -61,7 +58,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
 
-    HEPlaintext plain_arg0, plain_arg1;
+    HEPlaintext plain_arg0;
+    HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
                             arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
@@ -113,5 +111,4 @@ void power_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

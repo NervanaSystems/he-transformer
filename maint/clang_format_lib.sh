@@ -32,10 +32,10 @@ clang_format_lib_verify_version() {
     fi
 
     local PROGNAME="${1}"
-    local REQUIRED_VERSION_X_Y="${2}"
+    local REQUIRED_VERSION_X_Y_Z="${2}"
 
-    if ! [[ "${REQUIRED_VERSION_X_Y}" =~ ^[0-9]+.[0-9]+$ ]]; then
-        bash_lib_print_error "${FUNCNAME[0]}: required-version-number must have the form (number).(number)."
+    if ! [[ "${REQUIRED_VERSION_X_Y_Z}" =~ ^[0-9]+.[0-9]+.[0-9]+$ ]]; then
+        bash_lib_print_error "${FUNCNAME[0]}: required-version-number must have the form (number).(number).(number)"
         return 1
     fi
 
@@ -57,17 +57,17 @@ clang_format_lib_verify_version() {
         SED_FLAGS='-rn'
     fi
 
-    local VERSION_X_Y
-    if ! VERSION_X_Y=$(echo "${VERSION_LINE}" | sed ${SED_FLAGS} 's/^clang-format version ([0-9]+.[0-9]+).*$/\1/p')
+    local VERSION_X_Y_Z
+    if ! VERSION_X_Y_Z=$(echo "${VERSION_LINE}" | sed ${SED_FLAGS} 's/^clang-format version ([0-9]+.[0-9]+.[0-9]+).*$/\1/p')
     then
         bash_lib_print_error "Failed invocation of sed."
         return 1
     fi
 
-    if [[ "${REQUIRED_VERSION_X_Y}" != "${VERSION_X_Y}" ]]; then
+    if [[ "${REQUIRED_VERSION_X_Y_Z}" != "${VERSION_X_Y_Z}" ]]; then
         bash_lib_print_error \
-            "Program '${PROGNAME}' reports version number '${VERSION_X_Y}'" \
-            "but we require '${REQUIRED_VERSION_X_Y}'"
+            "Program '${PROGNAME}' reports version number '${VERSION_X_Y_Z}'" \
+            "but we require '${REQUIRED_VERSION_X_Y_Z}'"
         return 1
     fi
 }

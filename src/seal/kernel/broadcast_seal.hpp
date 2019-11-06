@@ -23,11 +23,11 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 
-namespace ngraph {
-namespace he {
-void broadcast_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
-                    const Shape& in_shape, const Shape& out_shape,
-                    const AxisSet& broadcast_axes) {
+namespace ngraph::he {
+inline void broadcast_seal(const std::vector<HEType>& arg,
+                           std::vector<HEType>& out, const Shape& in_shape,
+                           const Shape& out_shape,
+                           const AxisSet& broadcast_axes) {
   CoordinateTransform input_transform(in_shape);
   CoordinateTransform output_transform(out_shape);
   for (const Coordinate& output_coord : output_transform) {
@@ -37,5 +37,4 @@ void broadcast_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
         arg[input_transform.index(input_coord)];
   }
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

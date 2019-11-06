@@ -97,19 +97,19 @@ if(NOT DEFINED PYTHON_VENV_VERSION)
       "python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 endif()
 
-option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 option(NGRAPH_HE_DOC_BUILD_ENABLE "Enable building of documentation" OFF)
 option(NGRAPH_HE_CLANG_TIDY "Enable clang-tidy checks" OFF)
+option(NGRAPH_HE_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
 
 # Print options
 message(STATUS "NGRAPH_HE_CXX_STANDARD:     ${NGRAPH_HE_CXX_STANDARD}")
 message(STATUS "NGRAPH_HE_DOC_BUILD_ENABLE: ${NGRAPH_HE_DOC_BUILD_ENABLE}")
 message(STATUS "NGRAPH_HE_CLANG_TIDY:       ${NGRAPH_HE_CLANG_TIDY}")
+message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS  ${NGRAPH_HE_SANITIZE_ADDRESS}")
 message(STATUS "PYTHON_VENV_VERSION:        ${PYTHON_VENV_VERSION}")
 message(STATUS "PYTHON_VERSION_STRING:      ${PYTHON_VERSION_STRING}")
 
 if(NGRAPH_HE_SANITIZE_ADDRESS)
-  message(STATUS "NGRAPH_HE_SANITIZE_ADDRESS")
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -g -fsanitize=address -fno-omit-frame-pointer")
 endif()

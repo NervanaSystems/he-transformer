@@ -20,15 +20,15 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph {
-namespace he {
-/// \brief Represents a message. A wrapper around proto::TCPMessage
+namespace ngraph::he {
+/// \brief Represents a message. A wrapper around pb::TCPMessage
 class TCPMessage {
  public:
   enum { header_length = sizeof(size_t) };
@@ -37,26 +37,24 @@ class TCPMessage {
   /// \brief Creates empty message
   TCPMessage() = default;
 
-  /// \brief Creates message from given protobuf message
-  /// \param[in] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(proto::TCPMessage& proto_message) = delete;
+  TCPMessage(pb::TCPMessage& proto_message) = delete;
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(proto::TCPMessage&& proto_message)
+  explicit TCPMessage(pb::TCPMessage&& proto_message)
       : m_proto_message(
-            std::make_shared<proto::TCPMessage>(std::move(proto_message))) {}
+            std::make_shared<pb::TCPMessage>(std::move(proto_message))) {}
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(std::shared_ptr<proto::TCPMessage> proto_message)
-      : m_proto_message(proto_message) {}
+  explicit TCPMessage(std::shared_ptr<pb::TCPMessage> proto_message)
+      : m_proto_message(std::move(proto_message)) {}
 
   /// \brief Returns pointer to udnerlying protobuf message
-  std::shared_ptr<proto::TCPMessage> proto_message() { return m_proto_message; }
+  std::shared_ptr<pb::TCPMessage> proto_message() { return m_proto_message; }
 
   /// \brief Returns pointer to udnerlying protobuf message
-  std::shared_ptr<proto::TCPMessage> proto_message() const {
+  std::shared_ptr<pb::TCPMessage> proto_message() const {
     return m_proto_message;
   }
 
@@ -97,14 +95,13 @@ class TCPMessage {
   /// \returns Whether or not the operation was successful
   bool unpack(const data_buffer& buffer) {
     if (!m_proto_message) {
-      m_proto_message = std::make_shared<proto::TCPMessage>();
+      m_proto_message = std::make_shared<pb::TCPMessage>();
     }
     return m_proto_message->ParseFromArray(&buffer[header_length],
                                            buffer.size() - header_length);
   }
 
  private:
-  std::shared_ptr<proto::TCPMessage> m_proto_message;
+  std::shared_ptr<pb::TCPMessage> m_proto_message;
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

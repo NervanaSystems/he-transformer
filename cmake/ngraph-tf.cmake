@@ -84,8 +84,6 @@ set_target_properties(ngraph
                       PROPERTIES IMPORTED_LOCATION
                                  ${NGRAPH_TF_LIB_DIR}/libngraph.so)
 
-message("NGRAPH_TF_INCLUDE_DIR ${NGRAPH_TF_INCLUDE_DIR}")
-
 if(NOT EXISTS ${NGRAPH_TF_INCLUDE_DIR})
   file(MAKE_DIRECTORY ${NGRAPH_TF_INCLUDE_DIR})
 endif()

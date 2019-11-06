@@ -22,8 +22,7 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 inline void concat_seal(const std::vector<std::vector<HEType>>& args,
                         std::vector<HEType>& out,
                         const std::vector<Shape>& in_shapes,
@@ -73,5 +72,4 @@ inline void concat_seal(const std::vector<std::vector<HEType>>& args,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

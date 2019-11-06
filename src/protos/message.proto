@@ -1,7 +1,7 @@
 
 syntax = "proto3";
 
-package ngraph.he.proto;
+package ngraph.he.pb;
 
 /// \brief Represents a message between the server and client.
 message TCPMessage {
