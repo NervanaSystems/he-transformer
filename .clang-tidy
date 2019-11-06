@@ -18,8 +18,7 @@ Checks: >
   -modernize-use-trailing-return-type,
   performance-*,
   portability-*,
-  readability-*,
-  readability-identifier-naming,
+  readability-*
 
 HeaderFilterRegex: 'src/[^/]*\.(h|hpp|cpp)$'
 
@@ -45,6 +44,36 @@ CheckOptions:
     value:  m_
   - key:    readability-identifier-naming.MemberPrefix
     value:  m_
+
+  # Cases
+  ## Class casess
+  - key:     ClassCase
+    value:   CamelCase
+  - key:     AbstractClassCase
+    value:   CamelCase
+
+  ## Function cases
+  - key:     ClassMethodCase
+    value:   lower_case
+  - key:     MethodCase
+    value:   lower_case
+  - key:     FunctionCase
+    value:   lower_case
+  - key:     PrivateMethodCase
+    value:   lower_case
+  - key:     PrivateMethodCase
+    value:   lower_case
+  - key:     ProtectedMethodCase
+    value:   lower_case
+  - key:     PublicMethodCase
+    value:   lower_case
+  - key:     VirtualMethodCase
+    value:   lower_case
+
+  - key:     NamespaceCase
+    value:   lower_case
+
+
 
 
 # Turn all the warnings from the checks above into errors.
