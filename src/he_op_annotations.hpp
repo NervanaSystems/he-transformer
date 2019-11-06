@@ -23,8 +23,7 @@
 #include "ngraph/op/op.hpp"
 #include "ngraph/op/util/op_annotations.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Annotations added to graph ops by HE backend passes
 class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
  public:
@@ -117,5 +116,4 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

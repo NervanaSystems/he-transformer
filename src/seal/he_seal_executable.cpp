@@ -275,29 +275,32 @@ void HESealExecutable::accept_connection() {
   auto server_callback =
       std::bind(&HESealExecutable::handle_message, this, std::placeholders::_1);
 
-  m_acceptor->async_accept([this, server_callback](boost::system::error_code ec,
-                                                   tcp::socket socket) {
-    if (!ec) {
-      NGRAPH_HE_LOG(1) << "Connection accepted";
-      m_session =
-          std::make_shared<TCPSession>(std::move(socket), server_callback);
-      m_session->start();
-      NGRAPH_HE_LOG(1) << "Session started";
+  m_acceptor->async_accept(
+      [this, server_callback](boost::system::error_code ec,
+                              boost::asio::ip::tcp::socket socket) {
+        if (!ec) {
+          NGRAPH_HE_LOG(1) << "Connection accepted";
+          m_session =
+              std::make_shared<TCPSession>(std::move(socket), server_callback);
+          m_session->start();
+          NGRAPH_HE_LOG(1) << "Session started";
 
-      std::lock_guard<std::mutex> guard(m_session_mutex);
-      m_session_started = true;
-      m_session_cond.notify_one();
-    } else {
-      NGRAPH_ERR << "error accepting connection " << ec.message();
-      accept_connection();
-    }
-  });
+          std::lock_guard<std::mutex> guard(m_session_mutex);
+          m_session_started = true;
+          m_session_cond.notify_one();
+        } else {
+          NGRAPH_ERR << "error accepting connection " << ec.message();
+          accept_connection();
+        }
+      });
 }
 
 void HESealExecutable::start_server() {
-  tcp::resolver resolver(m_io_context);
-  tcp::endpoint server_endpoints(tcp::v4(), m_port);
-  m_acceptor = std::make_unique<tcp::acceptor>(m_io_context, server_endpoints);
+  boost::asio::ip::tcp::resolver resolver(m_io_context);
+  boost::asio::ip::tcp::endpoint server_endpoints(boost::asio::ip::tcp::v4(),
+                                                  m_port);
+  m_acceptor = std::make_unique<boost::asio::ip::tcp::acceptor>(
+      m_io_context, server_endpoints);
   boost::asio::socket_base::reuse_address option(true);
   m_acceptor->set_option(option);
 

@@ -21,8 +21,7 @@
 
 #include "ngraph/type/element_type.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Class representing a plaintext value
 class HEPlaintext : public std::vector<double> {
  public:
@@ -62,5 +61,4 @@ class HEPlaintext : public std::vector<double> {
 };
 
 std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain);
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

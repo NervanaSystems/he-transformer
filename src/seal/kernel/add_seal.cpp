@@ -19,8 +19,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void scalar_add_seal(SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
                      std::shared_ptr<SealCiphertextWrapper>& out,
@@ -51,7 +50,7 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
              arg0.ciphertext().parms_id(), element::f32,
              arg0.ciphertext().scale(), complex_packing);
       size_t chain_ind0 = he_seal_backend.get_chain_index(arg0);
-      size_t chain_ind1 = he_seal_backend.get_chain_index(p.plaintext());
+      size_t chain_ind1 = he_seal_backend.get_chain_index(p);
       NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain inds ", chain_ind0, ",  ",
                    chain_ind1, " don't match");
 
@@ -81,5 +80,4 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   }
   out = std::move(out_vals);
 }
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

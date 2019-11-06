@@ -28,6 +28,7 @@
 
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
@@ -36,8 +37,6 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
-
-using boost::asio::ip::tcp;
 
 namespace ngraph {
 namespace he {
@@ -70,10 +69,12 @@ class HESealExecutable : public runtime::Executable {
   /// If the client is enabled, the inputs are dummy values and ignored.
   /// Instead, the inputs will be provided by the client
   /// \param[in] server_inputs Input tensor arguments to the function, provided
-  /// by the backend. \param[out] outputs Output tensors storing the result of
+  /// by the backend.
+  /// \param[out] outputs Output tensors storing the result of
   /// the function
-  bool call(const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-            const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
+  virtual bool call(
+      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+      const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
       override;
 
   // TOOD
@@ -239,7 +240,7 @@ class HESealExecutable : public runtime::Executable {
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
-  std::unique_ptr<tcp::acceptor> m_acceptor;
+  std::unique_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 
   // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;

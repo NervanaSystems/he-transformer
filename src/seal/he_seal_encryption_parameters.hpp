@@ -22,8 +22,7 @@
 
 #include "seal/seal.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Class representing CKKS encryption parameters
 class HESealEncryptionParameters {
  public:
@@ -155,5 +154,4 @@ class HESealEncryptionParameters {
 void print_encryption_parameters(const HESealEncryptionParameters& params,
                                  const seal::SEALContext& context);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

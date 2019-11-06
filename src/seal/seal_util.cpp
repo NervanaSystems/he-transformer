@@ -29,8 +29,7 @@
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,
@@ -520,5 +519,4 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
   decode(output, plaintext_wrapper, ckks_encoder);
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -19,8 +19,7 @@
 #include <memory>
 #include <vector>
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
                   const bool verbose) {
@@ -87,5 +86,4 @@ void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

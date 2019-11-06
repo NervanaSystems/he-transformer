@@ -30,8 +30,7 @@
 #include "seal/kernel/sum_seal.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void softmax_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                   const Shape& shape, const AxisSet& axes,
@@ -78,5 +77,4 @@ void softmax_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

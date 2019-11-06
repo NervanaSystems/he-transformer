@@ -26,8 +26,7 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 class HESealBackend;
 class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -151,7 +150,7 @@ class HETensor : public runtime::Tensor {
   static std::shared_ptr<HETensor> load_from_proto_tensors(
       const std::vector<proto::HETensor>& proto_tensors,
       seal::CKKSEncoder& ckks_encoder,
-      std::shared_ptr<seal::SEALContext> context,
+      const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params);
 
@@ -166,12 +165,11 @@ class HETensor : public runtime::Tensor {
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensor(
       const proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
-      std::shared_ptr<seal::SEALContext> context,
+      const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params) {
-    return load_from_proto_tensors({proto_tensor}, ckks_encoder,
-                                   std::move(context), encryptor, decryptor,
-                                   encryption_params);
+    return load_from_proto_tensors({proto_tensor}, ckks_encoder, context,
+                                   encryptor, decryptor, encryption_params);
   }
 
   /// \brief Loads a tensor from protobuf tensor to an he_tensor
@@ -180,7 +178,7 @@ class HETensor : public runtime::Tensor {
   /// \param[in] context SEAL context to associate with loaded tensor
   static void load_from_proto_tensor(
       std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
-      std::shared_ptr<seal::SEALContext> context);
+      const std::shared_ptr<seal::SEALContext>& context);
 
   bool done_loading() const { return m_write_count == m_data.size(); }
 
@@ -200,5 +198,4 @@ class HETensor : public runtime::Tensor {
   void check_io_bounds(size_t n) const;
 };
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -25,8 +25,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void scalar_exp_seal(const HEPlaintext& arg, HEPlaintext& out);
 
 void scalar_exp_seal(const HEType& arg, HEType& out,
@@ -40,5 +39,4 @@ void scalar_exp_seal(const HEType& arg, HEType& out,
 void exp_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
               size_t count, const HESealBackend& he_seal_backend);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

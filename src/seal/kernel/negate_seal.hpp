@@ -23,8 +23,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void scalar_negate_seal(const SealCiphertextWrapper& arg,
                         std::shared_ptr<SealCiphertextWrapper>& out,
                         const HESealBackend& he_seal_backend);
@@ -66,5 +65,4 @@ inline void negate_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

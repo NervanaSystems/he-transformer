@@ -47,8 +47,7 @@ get_backend_constructor_pointer() {
   return s_backend_constructor.get();
 }
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 HESealBackend::HESealBackend()
     : HESealBackend(HESealEncryptionParameters::parse_config_or_use_default(
@@ -298,8 +297,9 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     }
   }
 
-  return std::make_shared<HESealExecutable>(function, enable_performance_data,
-                                            *this, m_enable_client);
+  return std::dynamic_pointer_cast<runtime::Executable>(
+      std::make_shared<HESealExecutable>(function, enable_performance_data,
+                                         *this, m_enable_client));
 }
 
 bool HESealBackend::is_supported(const ngraph::Node& node) const {
@@ -324,5 +324,4 @@ void HESealBackend::decrypt(HEPlaintext& output,
                       *m_ckks_encoder);
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

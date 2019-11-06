@@ -24,8 +24,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 class HESealBackend;
 
 /// \brief Class representing an HE datatype, either a plaintext or a ciphertext
@@ -54,7 +53,7 @@ class HEType {
     if (is_plaintext()) {
       // TODO(fboemer): more efficient
       for (auto& elem : get_plaintext()) {
-        proto_he_type.add_plain(elem);
+        proto_he_type.add_plain(static_cast<float>(elem));
       }
     } else {
       get_ciphertext()->save(proto_he_type);
@@ -110,5 +109,4 @@ class HEType {
   std::shared_ptr<SealCiphertextWrapper> m_cipher;
 };
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -18,6 +18,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <utility>
 
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
@@ -50,18 +51,18 @@ inline std::size_t save(const seal::Ciphertext& cipher,
 inline void load(seal::Ciphertext& cipher,
                  std::shared_ptr<seal::SEALContext> context,
                  const std::byte* src, const std::size_t size) {
-  cipher.load(context, src, size);
+  cipher.load(std::move(context), src, size);
 }
 
 /// \brief Class representing a lightweight wrapper around a SEAL ciphertext.
 class SealCiphertextWrapper {
  public:
   /// \brief Create an empty ciphertext
-  SealCiphertextWrapper() {}
+  SealCiphertextWrapper() = default;
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
-  SealCiphertextWrapper(seal::Ciphertext cipher)
+  explicit SealCiphertextWrapper(seal::Ciphertext cipher)
       : m_ciphertext(std::move(cipher)) {}
 
   /// \brief Returns the ciphertext
@@ -78,6 +79,8 @@ class SealCiphertextWrapper {
 
   /// \brief Returns scale of the ciphertext
   double scale() const { return m_ciphertext.scale(); }
+
+  double TEST_FUN() const { return 72.0; }
 
   /// \brief Writes the ciphertext to a protobuf object
   /// \param[out] he_type Protobuf object to write ciphertext to

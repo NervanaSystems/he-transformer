@@ -27,8 +27,7 @@
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 /// \brief Unpacks complex values to real values
 /// (a+bi, c+di) => (a,b,c,d)
@@ -100,5 +99,4 @@ double type_to_double(const void* src, const element::Type& element_type);
 bool param_originates_from_name(const ngraph::op::Parameter& param,
                                 const std::string& name);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

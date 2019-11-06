@@ -39,8 +39,7 @@
 
 using json = nlohmann::json;
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
@@ -55,7 +54,7 @@ HESealClient::HESealClient(const std::string& hostname, const size_t port,
   }
 
   boost::asio::io_context io_context;
-  tcp::resolver resolver(io_context);
+  boost::asio::ip::tcp::resolver resolver(io_context);
   auto endpoints = resolver.resolve(hostname, std::to_string(port));
   auto client_callback = [this](const TCPMessage& message) {
     return handle_message(message);
@@ -423,5 +422,4 @@ void HESealClient::close_connection() {
   m_is_done_cond.notify_all();
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

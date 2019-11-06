@@ -61,7 +61,7 @@ class HESealBackend : public ngraph::runtime::Backend {
   HESealBackend();
   /// \brief Constructs a backend with the given encryption parameters
   /// \param[in] parms Encryption parameters
-  HESealBackend(HESealEncryptionParameters parms);
+  explicit HESealBackend(HESealEncryptionParameters parms);
 
   /// \brief Prepares the backend with the encryption context, including
   /// generating encryption keys, encryptor, decryptor, evaluator, and encoder
@@ -75,8 +75,8 @@ class HESealBackend : public ngraph::runtime::Backend {
 
   /// \brief Unimplemented
   std::shared_ptr<runtime::Tensor> create_tensor(
-      const element::Type& type, const Shape& shape,
-      void* memory_pointer) override {
+      const element::Type& /*type*/, const Shape& /*shape*/,
+      void* /*memory_pointer*/) override {
     throw ngraph_error("create_tensor unimplemented");
   }
 

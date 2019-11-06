@@ -20,14 +20,14 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "ngraph/check.hpp"
 #include "ngraph/log.hpp"
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Represents a message. A wrapper around proto::TCPMessage
 class TCPMessage {
  public:
@@ -43,14 +43,14 @@ class TCPMessage {
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(proto::TCPMessage&& proto_message)
+  explicit TCPMessage(proto::TCPMessage&& proto_message)
       : m_proto_message(
             std::make_shared<proto::TCPMessage>(std::move(proto_message))) {}
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  TCPMessage(std::shared_ptr<proto::TCPMessage> proto_message)
-      : m_proto_message(proto_message) {}
+  explicit TCPMessage(std::shared_ptr<proto::TCPMessage> proto_message)
+      : m_proto_message(std::move(proto_message)) {}
 
   /// \brief Returns pointer to udnerlying protobuf message
   std::shared_ptr<proto::TCPMessage> proto_message() { return m_proto_message; }
@@ -106,5 +106,4 @@ class TCPMessage {
  private:
   std::shared_ptr<proto::TCPMessage> m_proto_message;
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

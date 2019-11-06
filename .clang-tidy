@@ -2,6 +2,7 @@
 Checks: >
   -*,
   bugprone-*,
+  -bugprone-narrowing-conversions,
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-type-static-cast-downcast,
@@ -11,11 +12,14 @@ Checks: >
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-interfaces-global-init,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-narrowing-conversions,
   google-*,
   -google-runtime-references,
   misc-*,
   modernize-*,
   -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
   performance-*,
   portability-*,
   readability-*
@@ -47,30 +51,29 @@ CheckOptions:
 
   # Cases
   ## Class casess
-  - key:     ClassCase
+  - key:     readability-identifier-naming.ClassCase
     value:   CamelCase
-  - key:     AbstractClassCase
+  - key:     readability-identifier-naming.AbstractClassCase
     value:   CamelCase
 
   ## Function cases
-  - key:     ClassMethodCase
+  - key:     readability-identifier-namingClassMethodCase
     value:   lower_case
-  - key:     MethodCase
+  - key:     readability-identifier-namingMethodCase
     value:   lower_case
-  - key:     FunctionCase
+  - key:     readability-identifier-namingFunctionCase
     value:   lower_case
-  - key:     PrivateMethodCase
+  - key:     readability-identifier-namingPrivateMethodCase
     value:   lower_case
-  - key:     PrivateMethodCase
+  - key:     readability-identifier-namingPrivateMethodCase
     value:   lower_case
-  - key:     ProtectedMethodCase
+  - key:     readability-identifier-namingProtectedMethodCase
     value:   lower_case
-  - key:     PublicMethodCase
+  - key:     readability-identifier-namingPublicMethodCase
     value:   lower_case
-  - key:     VirtualMethodCase
+  - key:     readability-identifier-namingVirtualMethodCase
     value:   lower_case
-
-  - key:     NamespaceCase
+  - key:     readability-identifier-namingNamespaceCase
     value:   lower_case
 
 

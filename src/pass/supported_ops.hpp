@@ -18,18 +18,15 @@
 
 #include <functional>
 #include <memory>
-#include <string>
 
 #include "ngraph/pass/graph_rewrite.hpp"
 
-namespace ngraph {
-namespace he {
-namespace pass {
+namespace ngraph::he::pass {
 /// \brief Checks whether the graph contains any ops that are not supported
 class SupportedOps : public ngraph::pass::FunctionPass {
  public:
-  /// \param[in] is_supported Function which returns whether or not a given Node
-  /// is supported
+  /// \param[in] is_supported Function which returns whether or not a given
+  /// Node is supported
   SupportedOps(std::function<bool(const ngraph::Node&)> is_supported)
       : m_is_supported(is_supported) {}
 
@@ -48,6 +45,4 @@ class SupportedOps : public ngraph::pass::FunctionPass {
  private:
   std::function<bool(const ngraph::Node&)> m_is_supported;
 };
-}  // namespace pass
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he::pass

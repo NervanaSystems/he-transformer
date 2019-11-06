@@ -24,8 +24,7 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void pad_seal(std::vector<HEType>& arg0,
               std::vector<HEType>& arg1,  // scalar
@@ -157,5 +156,4 @@ void pad_seal(std::vector<HEType>& arg0,
     ++output_it;
   }
 }
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

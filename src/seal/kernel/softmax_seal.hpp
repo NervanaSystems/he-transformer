@@ -23,12 +23,10 @@
 #include "ngraph/shape_util.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void softmax_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                   const Shape& shape, const AxisSet& axes,
                   const element::Type& element_type,
                   HESealBackend& he_seal_backend);
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he
