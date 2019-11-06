@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y \
         git \
         wget patch diffutils zlib1g-dev libtinfo-dev \
         autoconf libtool \
-        clang-tidy doxygen graphviz dot
+        clang-tidy doxygen graphviz
 
 # Install clang-6
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
