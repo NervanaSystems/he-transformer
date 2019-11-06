@@ -26,7 +26,7 @@
 
 namespace ngraph::he {
 
-HEType HEType::load(const proto::HEType& proto_he_type,
+HEType HEType::load(const pb::HEType& proto_he_type,
                     std::shared_ptr<seal::SEALContext> context) {
   if (proto_he_type.is_plaintext()) {
     // TODO(fboemer): HEPlaintext::load function

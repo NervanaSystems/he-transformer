@@ -45,7 +45,7 @@ class HEType {
     m_cipher = cipher;
   }
 
-  void save(proto::HEType& proto_he_type) const {
+  void save(pb::HEType& proto_he_type) const {
     proto_he_type.set_is_plaintext(is_plaintext());
     proto_he_type.set_complex_packing(complex_packing());
     proto_he_type.set_batch_size(batch_size());
@@ -60,7 +60,7 @@ class HEType {
     }
   }
 
-  static HEType load(const proto::HEType& proto_he_type,
+  static HEType load(const pb::HEType& proto_he_type,
                      std::shared_ptr<seal::SEALContext> context);
 
   bool is_plaintext() const { return m_is_plain; }

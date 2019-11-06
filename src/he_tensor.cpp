@@ -248,7 +248,7 @@ void HETensor::read(void* p, size_t n) const {
 }
 
 void HETensor::write_to_protos(
-    std::vector<proto::HETensor>& proto_tensors) const {
+    std::vector<pb::HETensor>& proto_tensors) const {
   // TODO(fboemer): support large shapes
 
   // Populate attributes of tensor to estimate byte size
@@ -262,7 +262,7 @@ void HETensor::write_to_protos(
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
 
   if (!m_data.empty()) {
-    proto::HEType tmp_type;
+    pb::HEType tmp_type;
     m_data[0].save(tmp_type);
 
     size_t he_type_size = tmp_type.ByteSize();
@@ -308,7 +308,7 @@ void HETensor::write_to_protos(
 }
 
 std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
-    const std::vector<proto::HETensor>& proto_tensors,
+    const std::vector<pb::HETensor>& proto_tensors,
     seal::CKKSEncoder& ckks_encoder,
     const std::shared_ptr<seal::SEALContext>& context,
     const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
@@ -340,7 +340,7 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
 }
 
 void HETensor::load_from_proto_tensor(
-    std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
+    std::shared_ptr<HETensor>& he_tensor, const pb::HETensor& proto_tensor,
     const std::shared_ptr<seal::SEALContext>& context) {
   const auto& proto_name = proto_tensor.name();
   const auto& proto_packed = proto_tensor.packed();

@@ -22,9 +22,7 @@
 
 #include "ngraph/pass/graph_rewrite.hpp"
 
-namespace ngraph {
-namespace he {
-namespace pass {
+namespace ngraph::he::pass {
 /// \brief Propagates HE op annotations from parameters / constants to entire
 /// function
 class PropagateHEAnnotations : public ngraph::pass::FunctionPass {
@@ -34,6 +32,4 @@ class PropagateHEAnnotations : public ngraph::pass::FunctionPass {
   /// \returns whether or not the function has been modified
   bool run_on_function(std::shared_ptr<ngraph::Function> function) override;
 };
-}  // namespace pass
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he::pass

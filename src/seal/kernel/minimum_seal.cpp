@@ -36,7 +36,9 @@ void scalar_minimum_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
 
 void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,
                          const HESealBackend& he_seal_backend) {
-  HEPlaintext arg0_plain, arg1_plain;
+  HEPlaintext arg0_plain;
+  HEPlaintext arg1_plain;
+
   if (arg0.is_ciphertext()) {
     he_seal_backend.decrypt(arg0_plain, *arg0.get_ciphertext(),
                             arg0.complex_packing());

@@ -30,16 +30,16 @@
 TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
 
 TEST(protobuf, serialize_cipher) {
-  ngraph::he::proto::TCPMessage message;
+  ngraph::he::pb::TCPMessage message;
 
-  ngraph::he::proto::Function f;
+  ngraph::he::pb::Function f;
   f.set_function("123");
   *message.mutable_function() = f;
 
   std::stringstream s;
   message.SerializeToOstream(&s);
 
-  ngraph::he::proto::TCPMessage deserialize;
+  ngraph::he::pb::TCPMessage deserialize;
   deserialize.ParseFromIstream(&s);
 
   EXPECT_TRUE(
@@ -47,13 +47,13 @@ TEST(protobuf, serialize_cipher) {
 }
 
 TEST(tcp_message, create) {
-  ngraph::he::proto::TCPMessage proto_msg;
-  ngraph::he::proto::Function f;
+  ngraph::he::pb::TCPMessage proto_msg;
+  ngraph::he::pb::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::proto::TCPMessage tcp_message(std::move(proto_msg));
+  ngraph::he::pb::TCPMessage tcp_message(std::move(proto_msg));
   EXPECT_EQ(1, 1);
 }
 
@@ -71,8 +71,8 @@ TEST(tcp_message, encode_decode) {
 TEST(tcp_message, pack_unpack) {
   using data_buffer = std::vector<char>;
 
-  ngraph::he::proto::TCPMessage proto_msg;
-  ngraph::he::proto::Function f;
+  ngraph::he::pb::TCPMessage proto_msg;
+  ngraph::he::pb::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   std::stringstream s;

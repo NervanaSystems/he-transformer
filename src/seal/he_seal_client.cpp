@@ -97,28 +97,28 @@ void HESealClient::set_seal_context() {
 }
 
 void HESealClient::send_public_and_relin_keys() {
-  proto::TCPMessage message;
-  message.set_type(proto::TCPMessage_Type_RESPONSE);
+  pb::TCPMessage message;
+  message.set_type(pb::TCPMessage_Type_RESPONSE);
 
   // Set public key
   std::stringstream pk_stream;
   m_public_key->save(pk_stream);
-  proto::PublicKey public_key;
+  pb::PublicKey public_key;
   public_key.set_public_key(pk_stream.str());
   *message.mutable_public_key() = public_key;
 
   // Set relinearization keys
   std::stringstream evk_stream;
   m_relin_keys->save(evk_stream);
-  proto::EvaluationKey eval_key;
+  pb::EvaluationKey eval_key;
   eval_key.set_eval_key(evk_stream.str());
   *message.mutable_eval_key() = eval_key;
 
-  write_message(std::move(message));
+  write_message(TCPMessage(std::move(message)));
 }
 
 void HESealClient::handle_encryption_parameters_response(
-    const proto::TCPMessage& message) {
+    const pb::TCPMessage& message) {
   NGRAPH_CHECK(message.has_encryption_parameters(),
                "message does not have encryption_parameters");
 
@@ -134,7 +134,7 @@ void HESealClient::handle_encryption_parameters_response(
   send_public_and_relin_keys();
 }
 
-void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
+void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Client handling inference request";
 
   // Note: the message tensors are used to store the inference shapes.
@@ -199,22 +199,22 @@ void HESealClient::handle_inference_request(const proto::TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Writing to tensor";
   he_tensor.write(input_data.data(), num_bytes);
 
-  std::vector<proto::HETensor> tensor_protos;
+  std::vector<pb::HETensor> tensor_protos;
   NGRAPH_HE_LOG(3) << "Writing to protos";
   he_tensor.write_to_protos(tensor_protos);
   for (const auto& tensor_proto : tensor_protos) {
-    proto::TCPMessage inputs_msg;
-    inputs_msg.set_type(proto::TCPMessage_Type_REQUEST);
+    pb::TCPMessage inputs_msg;
+    inputs_msg.set_type(pb::TCPMessage_Type_REQUEST);
     *inputs_msg.add_he_tensors() = tensor_proto;
 
     auto param_shape = inputs_msg.he_tensors(0).shape();
     NGRAPH_HE_LOG(3) << "Client sending encrypted input with shape "
                      << Shape{param_shape.begin(), param_shape.end()};
-    write_message(std::move(inputs_msg));
+    write_message(TCPMessage(std::move(inputs_msg)));
   }
 }
 
-void HESealClient::handle_result(const proto::TCPMessage& message) {
+void HESealClient::handle_result(const pb::TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Client handling result";
 
   NGRAPH_CHECK(message.he_tensors_size() > 0,
@@ -242,7 +242,7 @@ void HESealClient::handle_result(const proto::TCPMessage& message) {
   }
 }
 
-void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
+void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
   NGRAPH_HE_LOG(3) << "Client handling relu request";
 
   NGRAPH_CHECK(message.has_function(), "Proto message doesn't have function");
@@ -251,9 +251,9 @@ void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
   NGRAPH_CHECK(message.he_tensors_size() == 1,
                "Client supports only relu requests with one tensor");
 
-  message.set_type(proto::TCPMessage_Type_RESPONSE);
+  message.set_type(pb::TCPMessage_Type_RESPONSE);
 
-  proto::HETensor* proto_tensor = message.mutable_he_tensors(0);
+  pb::HETensor* proto_tensor = message.mutable_he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
@@ -266,17 +266,17 @@ void HESealClient::handle_relu_request(proto::TCPMessage&& message) {
                      *m_encryptor, *m_decryptor);
   }
 
-  std::vector<proto::HETensor> proto_output_tensors;
+  std::vector<pb::HETensor> proto_output_tensors;
   he_tensor->write_to_protos(proto_output_tensors);
 
   NGRAPH_CHECK(proto_output_tensors.size() == 1,
                "Only support single-output tensors");
   *proto_tensor = proto_output_tensors[0];
 
-  write_message(std::move(message));
+  write_message(TCPMessage(std::move(message)));
 }
 
-void HESealClient::handle_bounded_relu_request(proto::TCPMessage&& message) {
+void HESealClient::handle_bounded_relu_request(pb::TCPMessage&& message) {
   NGRAPH_HE_LOG(3) << "Client handling bounded relu request";
 
   NGRAPH_CHECK(message.has_function(), "Proto message doesn't have function");
@@ -289,9 +289,9 @@ void HESealClient::handle_bounded_relu_request(proto::TCPMessage&& message) {
   json js = json::parse(function);
   double bound = js.at("bound");
 
-  message.set_type(proto::TCPMessage_Type_RESPONSE);
+  message.set_type(pb::TCPMessage_Type_RESPONSE);
 
-  proto::HETensor* proto_tensor = message.mutable_he_tensors(0);
+  pb::HETensor* proto_tensor = message.mutable_he_tensors(0);
   auto he_tensor = HETensor::load_from_proto_tensor(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
@@ -304,16 +304,16 @@ void HESealClient::handle_bounded_relu_request(proto::TCPMessage&& message) {
                              m_context->first_parms_id(), scale(),
                              *m_ckks_encoder, *m_encryptor, *m_decryptor);
   }
-  std::vector<proto::HETensor> proto_output_tensors;
+  std::vector<pb::HETensor> proto_output_tensors;
   he_tensor->write_to_protos(proto_output_tensors);
   NGRAPH_CHECK(proto_output_tensors.size() == 1,
                "Only support single-output tensors");
   *proto_tensor = proto_output_tensors[0];
 
-  write_message(std::move(message));
+  write_message(TCPMessage(std::move(message)));
 }
 
-void HESealClient::handle_max_pool_request(proto::TCPMessage&& message) {
+void HESealClient::handle_max_pool_request(pb::TCPMessage&& message) {
   NGRAPH_HE_LOG(3) << "Client handling maxpool request";
 
   NGRAPH_CHECK(message.has_function(), "Proto message doesn't have function ");
@@ -322,7 +322,7 @@ void HESealClient::handle_max_pool_request(proto::TCPMessage&& message) {
   NGRAPH_CHECK(message.he_tensors_size() == 1,
                "Client supports only max pool requests with one tensor");
 
-  proto::HETensor* proto_tensor = message.mutable_he_tensors(0);
+  pb::HETensor* proto_tensor = message.mutable_he_tensors(0);
   size_t cipher_count = proto_tensor->data_size();
 
   std::vector<HEType> max_pool_ciphers(
@@ -345,10 +345,10 @@ void HESealClient::handle_max_pool_request(proto::TCPMessage&& message) {
                 Strides{1}, Shape{0}, Shape{0}, m_context->first_parms_id(),
                 scale(), *m_ckks_encoder, *m_encryptor, *m_decryptor);
 
-  message.set_type(proto::TCPMessage_Type_RESPONSE);
+  message.set_type(pb::TCPMessage_Type_RESPONSE);
   message.clear_he_tensors();
 
-  std::vector<proto::HETensor> proto_output_tensors;
+  std::vector<pb::HETensor> proto_output_tensors;
   post_max_he_tensor.write_to_protos(proto_output_tensors);
   NGRAPH_CHECK(proto_output_tensors.size() == 1,
                "Only support single-output tensors");
@@ -361,12 +361,12 @@ void HESealClient::handle_max_pool_request(proto::TCPMessage&& message) {
 void HESealClient::handle_message(const TCPMessage& message) {
   NGRAPH_HE_LOG(3) << "Client handling message";
 
-  std::shared_ptr<proto::TCPMessage> proto_msg = message.proto_message();
+  std::shared_ptr<pb::TCPMessage> proto_msg = message.proto_message();
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
   switch (proto_msg->type()) {
-    case proto::TCPMessage_Type_RESPONSE: {
+    case pb::TCPMessage_Type_RESPONSE: {
       if (proto_msg->has_encryption_parameters()) {
         handle_encryption_parameters_response(*proto_msg);
       } else if (proto_msg->he_tensors_size() > 0) {
@@ -376,7 +376,7 @@ void HESealClient::handle_message(const TCPMessage& message) {
       }
       break;
     }
-    case proto::TCPMessage_Type_REQUEST: {
+    case pb::TCPMessage_Type_REQUEST: {
       if (proto_msg->has_function()) {
         const std::string& function = proto_msg->function().function();
         json js = json::parse(function);
@@ -398,7 +398,7 @@ void HESealClient::handle_message(const TCPMessage& message) {
       }
       break;
     }
-    case proto::TCPMessage_Type_UNKNOWN:
+    case pb::TCPMessage_Type_UNKNOWN:
     default:
       NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
   }

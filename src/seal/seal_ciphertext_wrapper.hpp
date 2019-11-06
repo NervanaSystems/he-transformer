@@ -25,8 +25,7 @@
 #include "protos/message.pb.h"
 #include "seal/seal.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Returns the size in bytes required to serialize a ciphertext
 /// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
@@ -84,7 +83,7 @@ class SealCiphertextWrapper {
 
   /// \brief Writes the ciphertext to a protobuf object
   /// \param[out] he_type Protobuf object to write ciphertext to
-  void save(proto::HEType& he_type) const {
+  void save(pb::HEType& he_type) const {
     size_t cipher_size = ciphertext_size(m_ciphertext);
     std::string cipher_str;
     cipher_str.resize(cipher_size);
@@ -101,14 +100,13 @@ class SealCiphertextWrapper {
   /// \param[out] dst Destination to load ciphertext to
   /// \param[in] proto_he_type Protobuf object to load object from
   /// \param[in] context SEAL context to validate loaded ciphertext against
-  static void load(SealCiphertextWrapper& dst,
-                   const proto::HEType& proto_he_type,
+  static void load(SealCiphertextWrapper& dst, const pb::HEType& proto_he_type,
                    std::shared_ptr<seal::SEALContext> context) {
     NGRAPH_CHECK(!proto_he_type.is_plaintext(),
                  "Cannot load ciphertext from plaintext HEType");
 
     const std::string& cipher_str = proto_he_type.ciphertext();
-    ngraph::he::load(dst.ciphertext(), context,
+    ngraph::he::load(dst.ciphertext(), std::move(context),
                      reinterpret_cast<const std::byte*>(cipher_str.data()),
                      cipher_str.size());
   }
@@ -117,5 +115,4 @@ class SealCiphertextWrapper {
   seal::Ciphertext m_ciphertext;
 };
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

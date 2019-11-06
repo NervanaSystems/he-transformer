@@ -14,15 +14,18 @@ Checks: >
   -cppcoreguidelines-interfaces-global-init,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-narrowing-conversions,
+  -cppcoreguidelines-avoid-magic-numbers,
   google-*,
   -google-runtime-references,
+  -google-default-arguments,
   misc-*,
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   performance-*,
   portability-*,
-  readability-*
+  readability-*,
+  -readability-magic-numbers,
 
 HeaderFilterRegex: 'src/[^/]*\.(h|hpp|cpp)$'
 

@@ -342,6 +342,7 @@ void encode(double value, const ngraph::element::Type& element_type,
       }
     }
   } else if (coeff_bit_count <= 128) {
+    // NOLINTNEXTLINE
     uint64_t coeffu[2]{static_cast<uint64_t>(fmod(coeffd, two_pow_64)),
                        static_cast<uint64_t>(coeffd / two_pow_64)};
 

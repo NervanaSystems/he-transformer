@@ -60,7 +60,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
                  "Complex packing types don't match");
 
-    HEPlaintext plain_arg0, plain_arg1;
+    HEPlaintext plain_arg0;
+    HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
                             arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),

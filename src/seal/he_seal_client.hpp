@@ -30,8 +30,7 @@
 #include "tcp/tcp_message.hpp"
 #include "util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 /// (tensor_name : (configuration, data)
 template <class T>
@@ -80,27 +79,27 @@ class HESealClient {
 
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
-  void handle_encryption_parameters_response(const proto::TCPMessage& message);
+  void handle_encryption_parameters_response(const pb::TCPMessage& message);
 
   /// \brief Processes a request to perform ReLU function
   /// \param[in] message Message to process
-  void handle_relu_request(proto::TCPMessage&& message);
+  void handle_relu_request(pb::TCPMessage&& message);
 
   /// \brief Processes a request to perform MaxPool function
   /// \param[in] message Message to process
-  void handle_max_pool_request(proto::TCPMessage&& message);
+  void handle_max_pool_request(pb::TCPMessage&& message);
 
   /// \brief Processes a request to perform BoundedReLU function
   /// \param[in] message Message to process
-  void handle_bounded_relu_request(proto::TCPMessage&& message);
+  void handle_bounded_relu_request(pb::TCPMessage&& message);
 
   /// \brief Processes a message containing the result from the server
   /// \param[in] message Message to process
-  void handle_result(const proto::TCPMessage& message);
+  void handle_result(const pb::TCPMessage& message);
 
   /// \brief Processes a message containing the inference shape
   /// \param[in] message Message to process
-  void handle_inference_request(const proto::TCPMessage& message);
+  void handle_inference_request(const pb::TCPMessage& message);
 
   /// \brief Sends the public key and relinearization keys to the server
   void send_public_and_relin_keys();
@@ -152,7 +151,5 @@ class HESealClient {
   HETensorConfigMap<double> m_input_config;
   std::shared_ptr<HETensor> m_result_tensor;
   std::vector<double> m_results;  // Function outputs
-
-};  // namespace he
-}  // namespace he
-}  // namespace ngraph
+};
+}  // namespace ngraph::he
