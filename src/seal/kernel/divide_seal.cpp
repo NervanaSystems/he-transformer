@@ -16,7 +16,8 @@
 
 #include "seal/kernel/divide_seal.hpp"
 
-#include <memory>
+#include <algorithm>
+#include <functional>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"

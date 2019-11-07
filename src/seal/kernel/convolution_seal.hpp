@@ -16,16 +16,11 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "logging/ngraph_he_log.hpp"
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
-#include "seal/kernel/add_seal.hpp"
-#include "seal/kernel/multiply_seal.hpp"
-#include "seal/seal_ciphertext_wrapper.hpp"
 
 namespace ngraph::he {
 

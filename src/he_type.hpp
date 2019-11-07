@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
 #include "he_plaintext.hpp"
 #include "ngraph/type/element_type.hpp"

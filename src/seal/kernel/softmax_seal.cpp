@@ -16,6 +16,7 @@
 
 #include "seal/kernel/softmax_seal.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 

@@ -16,6 +16,7 @@
 
 #include "seal/kernel/rescale_seal.hpp"
 
+#include <limits>
 #include <memory>
 #include <vector>
 

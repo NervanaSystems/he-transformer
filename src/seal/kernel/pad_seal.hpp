@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
 #include "ngraph/axis_vector.hpp"

@@ -16,6 +16,8 @@
 
 #include "seal/kernel/minimum_seal.hpp"
 
+#include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "ngraph/type/element_type.hpp"
@@ -27,11 +29,11 @@ namespace ngraph::he {
 
 void scalar_minimum_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                          HEPlaintext& out) {
-  std::vector<double> out_vals(std::min(arg0.size(), arg1.size()));
+  HEPlaintext out_vals(std::min(arg0.size(), arg1.size()));
   for (size_t i = 0; i < out_vals.size(); ++i) {
     out_vals[i] = std::min(arg0[i], arg1[i]);
   }
-  out = HEPlaintext(std::vector<double>{out_vals});
+  out = std::move(out_vals);
 }
 
 void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,

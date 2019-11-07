@@ -16,6 +16,7 @@
 
 #include "seal/kernel/relu_seal.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 

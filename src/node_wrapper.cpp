@@ -16,6 +16,10 @@
 
 #include "node_wrapper.hpp"
 
+#include <string>
+#include <unordered_map>
+#include <utility>
+
 #include "ngraph/op/abs.hpp"
 #include "ngraph/op/acos.hpp"
 #include "ngraph/op/add.hpp"

@@ -16,6 +16,10 @@
 
 #include "seal/kernel/negate_seal.hpp"
 
+#include <algorithm>
+#include <functional>
+#include <utility>
+
 namespace ngraph::he {
 
 void scalar_negate_seal(const SealCiphertextWrapper& arg,
