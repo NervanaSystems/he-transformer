@@ -17,6 +17,7 @@
 #include "he_tensor.hpp"
 
 #include <limits>
+#include <utility>
 
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/tensor.hpp"

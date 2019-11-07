@@ -16,8 +16,8 @@
 
 #include "seal/kernel/exp_seal.hpp"
 
-#include <memory>
-#include <vector>
+#include <algorithm>
+#include <utility>
 
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"

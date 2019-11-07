@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
-#include <memory>
+#include <utility>
 
 #include "he_op_annotations.hpp"
 #include "logging/ngraph_he_log.hpp"

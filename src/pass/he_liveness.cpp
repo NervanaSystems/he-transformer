@@ -17,6 +17,7 @@
 #include "pass/he_liveness.hpp"
 
 #include <exception>
+#include <list>
 #include <sstream>
 #include <unordered_set>
 

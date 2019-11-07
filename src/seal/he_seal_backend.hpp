@@ -17,8 +17,9 @@
 #pragma once
 
 #include <functional>
+#include <map>
 #include <memory>
-#include <unordered_map>
+#include <string>
 #include <vector>
 
 #include "he_plaintext.hpp"

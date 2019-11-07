@@ -17,15 +17,17 @@
 #pragma once
 
 #include <atomic>
-#include <boost/asio.hpp>
 #include <chrono>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <set>
+#include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
+#include "boost/asio.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "logging/ngraph_he_log.hpp"

@@ -16,6 +16,9 @@
 
 #include "seal/kernel/multiply_seal.hpp"
 
+#include <algorithm>
+#include <utility>
+
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
