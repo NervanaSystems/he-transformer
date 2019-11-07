@@ -16,7 +16,6 @@ make install
 
 source external/venv-tf-py3/bin/activate
 make python_client
-pip install
 pip install python/dist/pyhe_client-*.whl
 
 # Don't validate output; just check it runs
@@ -39,7 +38,6 @@ make install
 
 source external/venv-tf-py3/bin/activate
 make python_client
-pip install
 pip install python/dist/pyhe_client-*.whl
 
 # Don't validate output; just check it runs
@@ -69,7 +67,6 @@ make install
 
 source external/venv-tf-py3/bin/activate
 make python_client
-pip install
 pip install python/dist/pyhe_client-*.whl
 
 # Don't validate output; just check it runs
