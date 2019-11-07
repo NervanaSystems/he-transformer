@@ -65,6 +65,9 @@ foreach(TEST_SRC ${BACKEND_TEST_SRC})
   set(SRC ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME} ${SRC})
 endforeach()
 
+# Copy clang-tidy file to build directory
+configure_file(.clang-tidy ${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy COPYONLY)
+
 message(STATUS "Adding unit test for backend ${BACKEND_NAME}")
 
 add_executable(unit-test ${SRC})
