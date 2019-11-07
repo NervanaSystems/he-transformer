@@ -51,7 +51,7 @@ python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
 export $HE_TRANSFORMER=$(pwd)
 mkdir build
 cd build
-cmake .. -DCMAKE_CXX_COMPILER=clang-9 -DCMAKE_C_COMPILER=clang++-9 -DNGRAPH_HE_DOC_BUILD_ENABLE=ON -DNGRAPH_HE_CLANG_TIDY=ON
+cmake .. -DCMAKE_CXX_COMPILER=clang++-9 -DCMAKE_C_COMPILER=clang-9 -DNGRAPH_HE_DOC_BUILD_ENABLE=ON -DNGRAPH_HE_CLANG_TIDY=ON
 
 # No incorrectly-formatted files
 make style-check
