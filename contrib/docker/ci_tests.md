@@ -30,7 +30,7 @@ python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
 export $HE_TRANSFORMER=$(pwd)
 mkdir build
 cd build
-cmake .. -DCMAKE_CXX_COMPILER=g++7
+cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
 make install
 
 # No failures
