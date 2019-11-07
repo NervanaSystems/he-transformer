@@ -97,9 +97,9 @@ Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build
 ```bash
 cd $HE_TRANSFORMER/examples
 # Run with CPU
-python ax.py
+python ax.py --backend=CPU
 # To run CKKS unit-test
-NGRAPH_TF_BACKEND=HE_SEAL python ax.py
+python ax.py --backend=HE_SEAL
 ```
 
 For a deep learning example, see [examples/MNIST/Cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/MNIST/Cryptonets).
