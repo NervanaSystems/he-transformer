@@ -20,6 +20,9 @@ set(NGRAPH_HE_PROTOBUF_GIT_REPO_URL
     "https://github.com/protocolbuffers/protobuf")
 set(NGRAPH_HE_PROTOBUF_GIT_TAG "v3.10.1")
 
+message("MAKE $(MAKE)")
+message("NGRAPH_HE_CXX_STANDARD ${NGRAPH_HE_CXX_STANDARD}")
+
 ExternalProject_Add(
   ext_protobuf
   PREFIX protobuf
@@ -27,11 +30,7 @@ ExternalProject_Add(
   GIT_TAG ${NGRAPH_HE_PROTOBUF_GIT_TAG}
   UPDATE_COMMAND ""
   PATCH_COMMAND ""
-  CONFIGURE_COMMAND ./autogen.sh
-  COMMAND ./configure
-          --prefix=${EXTERNAL_PROJECTS_ROOT}/protobuf
-          --disable-shared
-          CXX=${CMAKE_CXX_COMPILER}
+  CONFIGURE_COMMAND ./autogen.sh COMMAND ./configure --prefix=${EXTERNAL_PROJECTS_ROOT}/protobuf --disable-shared CXX=${CMAKE_CXX_COMPILER}
   BUILD_COMMAND $(MAKE) "CXXFLAGS=-std=c++${NGRAPH_HE_CXX_STANDARD} -fPIC"
   TMP_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/tmp"
   STAMP_DIR "${EXTERNAL_PROJECTS_ROOT}/protobuf/stamp"
