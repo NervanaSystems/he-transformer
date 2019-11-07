@@ -23,7 +23,7 @@ include(ExternalProject)
 
 set(GTEST_GIT_REPO_URL https://github.com/google/googletest.git)
 set(GTEST_GIT_LABEL release-1.8.1)
-set(GTEST_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+set(GTEST_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 ExternalProject_Add(
   ext_gtest
@@ -52,6 +52,7 @@ ExternalProject_Get_Property(ext_gtest SOURCE_DIR BINARY_DIR)
 
 add_library(libgtest INTERFACE)
 add_dependencies(libgtest ext_gtest)
+
 target_include_directories(libgtest SYSTEM
                            INTERFACE ${SOURCE_DIR}/googletest/include)
 target_link_libraries(libgtest

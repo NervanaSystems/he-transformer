@@ -8,7 +8,7 @@
 export $HE_TRANSFORMER=$(pwd)
 mkdir build
 cd build
-cmake .. -DCMAKE_CXX_COMPILER=clang++-6.0
+cmake .. -DCMAKE_CXX_COMPILER=clang++-6.0 -DCMAKE_C_COMPILER=clang-6.0
 make install
 
 # No failures
