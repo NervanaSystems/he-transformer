@@ -942,12 +942,12 @@ void HESealExecutable::generate_calls(
   std::string node_op = node.description();
 
 // We want to check that every OP_TYPEID enumeration is included in the
-// list. These GCC flags enable compile-time checking so that if an
+// list. These clang flags enable compile-time checking so that if an
 //      enumeration
 // is not in the list an error is generated.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wswitch"
+#pragma clang diagnostic error "-Wswitch-enum"
   switch (node_wrapper.get_typeid()) {
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
@@ -1364,7 +1364,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Xor:
     default:
       throw unsupported_op("Unsupported op '" + node.description() + "'");
-#pragma GCC diagnostic pop
+#pragma clang diagnostic pop
   }
 }
 

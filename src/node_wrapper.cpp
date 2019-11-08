@@ -142,9 +142,9 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
   if (!get_node()->is_op()) {
     throw ngraph_error("node is not an op");
   }
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wswitch"
+#pragma clang diagnostic error "-Wswitch-enum"
   switch (m_typeid) {
     case OP_TYPEID::Abs: {
       return std::static_pointer_cast<const op::Abs>(m_node);
@@ -490,7 +490,7 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
       return std::static_pointer_cast<const op::Xor>(m_node);
     }
   }
-#pragma GCC diagnostic push
+#pragma clang diagnostic push
 }
 
 }  // namespace ngraph::he

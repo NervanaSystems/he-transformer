@@ -20,9 +20,7 @@ set(SRC
     test_he_op_annotations.cpp
     test_he_plaintext.cpp
     test_he_tensor.cpp
-    # logging
     test_he_type.cpp
-    #test_node_wrapper.cpp
     test_he_fusion.cpp
     test_seal.cpp
     test_encryption_parameters.cpp
