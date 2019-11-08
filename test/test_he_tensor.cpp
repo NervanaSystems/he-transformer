@@ -25,6 +25,34 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
+TEST(he_tensor, empty_plain_tensor) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_plain_tensor(ngraph ::element::f32,
+                                      ngraph::Shape{1, 2, 3}, false));
+
+  EXPECT_EQ(t_a->data().size(), 6);
+  for (const auto& elem : t_a->data()) {
+    EXPECT_TRUE(elem.is_plaintext());
+  }
+}
+
+TEST(he_tensor, empty_cipher_tensor) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_cipher_tensor(ngraph ::element::f32,
+                                       ngraph::Shape{1, 2, 3}, false));
+
+  EXPECT_EQ(t_a->data().size(), 6);
+  for (const auto& elem : t_a->data()) {
+    EXPECT_TRUE(elem.is_ciphertext());
+  }
+}
+
 TEST(he_tensor, pack_non_zero_axis) {
   EXPECT_ANY_THROW(ngraph::he::HETensor::pack_shape(ngraph::Shape{2, 1}, 1));
   EXPECT_ANY_THROW(
