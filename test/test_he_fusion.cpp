@@ -26,8 +26,6 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-static std::string s_manifest = "${MANIFEST}";
-
 static void check_bounded_relu(const ngraph::Shape& param_shape,
                                float constant_val) {
   auto make_function = [](ngraph::Shape input_shape, float alpha_val) {
@@ -53,7 +51,7 @@ static void check_bounded_relu(const ngraph::Shape& param_shape,
     args.push_back(tensor_val);
   }
 
-  auto he_backend_orig = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend_orig = ngraph::runtime::Backend::create("HE_SEAL");
   auto he_backend =
       static_cast<ngraph::he::HESealBackend*>(he_backend_orig.get());
   auto he_handle = he_backend->compile(he_f);
@@ -78,7 +76,7 @@ static void check_bounded_relu(const ngraph::Shape& param_shape,
       read_vector<float>(he_result), read_vector<float>(int_result), 1e-3f));
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, bounded_relu_fusion) {
+TEST(he_fusion, bounded_relu_fusion) {
   check_bounded_relu(ngraph::Shape{4, 3, 2, 2}, 8.0f);
   check_bounded_relu(ngraph::Shape{4, 3}, 4.0f);
   check_bounded_relu(ngraph::Shape{4, 3, 2}, 2.0f);

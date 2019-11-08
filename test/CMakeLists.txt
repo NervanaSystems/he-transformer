@@ -16,12 +16,17 @@
 
 set(SRC
     main.cpp
+    # One for each src/ file
+    test_he_op_annotations.cpp
+    test_he_plaintext.cpp
+    test_he_tensor.cpp
+    #test_he_type.cpp
+    #test_node_wrapper.cpp
+    test_he_fusion.cpp
     test_seal.cpp
     test_encryption_parameters.cpp
-    test_he_op_annotations.cpp
     test_perf_micro.cpp
-    test_protobuf.cpp
-    test_tensor.cpp)
+    test_protobuf.cpp)
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp
@@ -35,7 +40,6 @@ set(BACKEND_TEST_SRC
     test_divide.in.cpp
     test_exp.in.cpp
     test_dot.in.cpp
-    test_he_fusion.in.cpp
     test_layers.in.cpp
     test_maxpool.in.cpp
     test_minimum.in.cpp
