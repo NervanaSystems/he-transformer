@@ -45,20 +45,7 @@ class HEType {
     m_cipher = cipher;
   }
 
-  void save(pb::HEType& proto_he_type) const {
-    proto_he_type.set_is_plaintext(is_plaintext());
-    proto_he_type.set_complex_packing(complex_packing());
-    proto_he_type.set_batch_size(batch_size());
-
-    if (is_plaintext()) {
-      // TODO(fboemer): more efficient
-      for (auto& elem : get_plaintext()) {
-        proto_he_type.add_plain(static_cast<float>(elem));
-      }
-    } else {
-      get_ciphertext()->save(proto_he_type);
-    }
-  }
+  void save(pb::HEType& proto_he_type) const;
 
   static HEType load(const pb::HEType& proto_he_type,
                      std::shared_ptr<seal::SEALContext> context);

@@ -27,8 +27,6 @@
 #include "tcp/tcp_message.hpp"
 #include "util/test_tools.hpp"
 
-TEST(protobuf, trivial) { EXPECT_EQ(1, 1); }
-
 TEST(protobuf, serialize_cipher) {
   ngraph::he::pb::TCPMessage message;
 

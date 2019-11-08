@@ -35,11 +35,27 @@ HEType HEType::load(const pb::HEType& proto_he_type,
 
     return HEType(vals, proto_he_type.complex_packing());
   }
+
   auto cipher = HESealBackend::create_empty_ciphertext();
   SealCiphertextWrapper::load(*cipher, proto_he_type, std::move(context));
-
   return HEType(cipher, proto_he_type.complex_packing(),
                 proto_he_type.batch_size());
+}
+
+void HEType::save(pb::HEType& proto_he_type) const {
+  proto_he_type.set_is_plaintext(is_plaintext());
+  proto_he_type.set_plaintext_packing(plaintext_packing());
+  proto_he_type.set_complex_packing(complex_packing());
+  proto_he_type.set_batch_size(batch_size());
+
+  if (is_plaintext()) {
+    // TODO(fboemer): more efficient
+    for (auto& elem : get_plaintext()) {
+      proto_he_type.add_plain(static_cast<float>(elem));
+    }
+  } else {
+    get_ciphertext()->save(proto_he_type);
+  }
 }
 
 }  // namespace ngraph::he
