@@ -99,4 +99,8 @@ double type_to_double(const void* src, const element::Type& element_type);
 bool param_originates_from_name(const ngraph::op::Parameter& param,
                                 const std::string& name);
 
+pb::HETensor_ElementType type_to_pb_type(const element::Type& element_type);
+
+element::Type pb_type_to_type(pb::HETensor_ElementType pb_type);
+
 }  // namespace ngraph::he

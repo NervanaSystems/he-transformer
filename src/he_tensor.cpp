@@ -25,15 +25,15 @@
 #include "seal/seal_util.hpp"
 
 namespace ngraph::he {
-HETensor::HETensor(
-    const element::Type& element_type, const Shape& shape,
-    bool plaintext_packing, bool complex_packing, bool encrypted,
-    seal::CKKSEncoder& ckks_encoder, std::shared_ptr<seal::SEALContext> context,
-    const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-    const ngraph::he::HESealEncryptionParameters& encryption_params,
-    const std::string& name)
-    : ngraph::runtime::Tensor(std::make_shared<ngraph::descriptor::Tensor>(
-          element_type, shape, name)),
+HETensor::HETensor(const element::Type& element_type, const Shape& shape,
+                   bool plaintext_packing, bool complex_packing, bool encrypted,
+                   seal::CKKSEncoder& ckks_encoder,
+                   std::shared_ptr<seal::SEALContext> context,
+                   const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
+                   const HESealEncryptionParameters& encryption_params,
+                   const std::string& name)
+    : runtime::Tensor(
+          std::make_shared<descriptor::Tensor>(element_type, shape, name)),
       m_packed(plaintext_packing),
       m_ckks_encoder(ckks_encoder),
       m_context(std::move(context)),
@@ -41,8 +41,7 @@ HETensor::HETensor(
       m_decryptor(decryptor),
       m_encryption_params(encryption_params) {
   m_descriptor->set_tensor_layout(
-      std::make_shared<ngraph::descriptor::layout::DenseTensorLayout>(
-          *m_descriptor));
+      std::make_shared<descriptor::layout::DenseTensorLayout>(*m_descriptor));
 
   if (plaintext_packing) {
     m_packed_shape = pack_shape(shape, 0);
@@ -76,26 +75,28 @@ HETensor::HETensor(const element::Type& element_type, const Shape& shape,
                *he_seal_backend.get_decryptor(),
                he_seal_backend.get_encryption_parameters(), name) {}
 
-ngraph::Shape HETensor::pack_shape(const ngraph::Shape& shape,
-                                   size_t pack_axis) {
+Shape HETensor::pack_shape(const Shape& shape, size_t pack_axis) {
   if (pack_axis != 0) {
-    throw ngraph::ngraph_error("Packing only supported along axis 0");
+    throw ngraph_error("Packing only supported along axis 0");
   }
-  ngraph::Shape packed_shape(shape);
+  Shape packed_shape(shape);
   if (!shape.empty() && shape[0] != 0) {
     packed_shape[0] = 1;
   }
   return packed_shape;
 }
 
-void HETensor::unpack_shape(ngraph::Shape& shape, size_t pack_size,
-                            size_t pack_axis) {
+Shape HETensor::unpack_shape(const Shape& shape, size_t pack_size,
+                             size_t pack_axis) {
+  Shape unpacked_shape(shape);
+
   if (pack_axis != 0) {
-    throw ngraph::ngraph_error("Unpacking only supported along axis 0");
+    throw ngraph_error("Unpacking only supported along axis 0");
   }
   if (!shape.empty() && shape[0] != 0) {
-    shape[0] = pack_size;
+    unpacked_shape[0] = pack_size;
   }
+  return unpacked_shape;
 }
 
 void HETensor::pack(size_t pack_axis) {
@@ -121,7 +122,7 @@ void HETensor::pack(size_t pack_axis) {
 
   m_data = std::move(new_data);
   m_packed = true;
-  m_packed_shape = ngraph::he::HETensor::pack_shape(get_shape());
+  m_packed_shape = HETensor::pack_shape(get_shape());
 }
 
 void HETensor::unpack() {
@@ -164,7 +165,7 @@ void HETensor::check_io_bounds(size_t n) const {
 
   // Memory must be byte-aligned to type_byte_size
   if (n % type_byte_size != 0) {
-    throw ngraph::ngraph_error("n must be divisible by type_byte_size.");
+    throw ngraph_error("n must be divisible by type_byte_size.");
   }
   // Check out-of-range
   if (n / type_byte_size > get_element_count()) {
@@ -194,10 +195,9 @@ void HETensor::write(const void* p, size_t n) {
     } else if (m_data[i].is_ciphertext()) {
       auto cipher = HESealBackend::create_empty_ciphertext();
 
-      ngraph::he::encrypt(cipher, plain, m_context->first_parms_id(),
-                          element_type, m_encryption_params.scale(),
-                          m_ckks_encoder, m_encryptor,
-                          m_data[i].complex_packing());
+      encrypt(cipher, plain, m_context->first_parms_id(), element_type,
+              m_encryption_params.scale(), m_ckks_encoder, m_encryptor,
+              m_data[i].complex_packing());
       m_data[i].set_ciphertext(cipher);
     } else {
       NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
@@ -230,20 +230,19 @@ void HETensor::read(void* p, size_t n) const {
   for (size_t i = 0; i < num_elements_to_read; ++i) {
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
-      ngraph::he::decrypt(plain, *m_data[i].get_ciphertext(),
-                          m_data[i].complex_packing(), m_decryptor,
-                          m_ckks_encoder);
+      decrypt(plain, *m_data[i].get_ciphertext(), m_data[i].complex_packing(),
+              m_decryptor, m_ckks_encoder);
     } else {
       plain = m_data[i].get_plaintext();
     }
 
-    void* dst = ngraph::ngraph_malloc(type_byte_size * get_batch_size());
+    void* dst = ngraph_malloc(type_byte_size * get_batch_size());
     plain.resize(get_batch_size());
     plain.write(dst, element_type);
 
     copy_batch_values_to_src(i, p, dst);
 
-    ngraph::ngraph_free(dst);
+    ngraph_free(dst);
   }
 }
 
@@ -251,12 +250,14 @@ void HETensor::write_to_protos(std::vector<pb::HETensor>& proto_tensors) const {
   // Populate attributes of tensor to estimate byte size
   proto_tensors.resize(1);
   proto_tensors[0].set_name(get_name());
-  proto_tensors[0].set_packed(m_packed);
-  proto_tensors[0].set_offset(0);
   std::vector<uint64_t> int_shape{get_shape()};
   *proto_tensors[0].mutable_shape() = {int_shape.begin(), int_shape.end()};
+  proto_tensors[0].set_type(type_to_pb_type(get_element_type()));
+  proto_tensors[0].set_packed(m_packed);
+  proto_tensors[0].set_offset(0);
 
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
+  NGRAPH_INFO << "Type " << proto_tensors[0].type();
 
   if (!m_data.empty()) {
     pb::HEType tmp_type;
@@ -278,10 +279,11 @@ void HETensor::write_to_protos(std::vector<pb::HETensor>& proto_tensors) const {
 
     for (size_t tensor_idx = 0; tensor_idx < num_tensors; ++tensor_idx) {
       proto_tensors[tensor_idx].set_name(get_name());
-      proto_tensors[tensor_idx].set_packed(m_packed);
-      proto_tensors[tensor_idx].set_offset(offset);
       *proto_tensors[tensor_idx].mutable_shape() = {int_shape.begin(),
                                                     int_shape.end()};
+      proto_tensors[tensor_idx].set_type(type_to_pb_type(get_element_type()));
+      proto_tensors[tensor_idx].set_packed(m_packed);
+      proto_tensors[tensor_idx].set_offset(offset);
 
       auto* mutable_data = proto_tensors[tensor_idx].mutable_data();
       size_t num_data_in_tensor = max_num_data_per_tensor;
@@ -309,19 +311,20 @@ std::shared_ptr<HETensor> HETensor::load_from_proto_tensors(
     seal::CKKSEncoder& ckks_encoder,
     const std::shared_ptr<seal::SEALContext>& context,
     const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-    const ngraph::he::HESealEncryptionParameters& encryption_params) {
+    const HESealEncryptionParameters& encryption_params) {
   NGRAPH_CHECK(proto_tensors.size() == 1,
                "Load from protos only supports 1 proto");
 
   const auto& proto_tensor = proto_tensors[0];
   const auto& proto_name = proto_tensor.name();
-  const auto& proto_packed = proto_tensor.packed();
   const auto& proto_shape = proto_tensor.shape();
+  const auto& element_type = pb_type_to_type(proto_tensor.type());
+  const auto& proto_packed = proto_tensor.packed();
   size_t result_count = proto_tensor.data_size();
-  ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+  Shape shape{proto_shape.begin(), proto_shape.end()};
 
   auto he_tensor = std::make_shared<HETensor>(
-      element::f64, shape, proto_packed, encryption_params.complex_packing(),
+      element_type, shape, proto_packed, encryption_params.complex_packing(),
       false, ckks_encoder, context, encryptor, decryptor, encryption_params,
       proto_name);
 
@@ -344,7 +347,7 @@ void HETensor::load_from_proto_tensor(
   const auto& proto_shape = proto_tensor.shape();
   const auto& proto_offset = proto_tensor.offset();
   size_t result_count = proto_tensor.data_size();
-  ngraph::Shape shape{proto_shape.begin(), proto_shape.end()};
+  Shape shape{proto_shape.begin(), proto_shape.end()};
 
   NGRAPH_CHECK(he_tensor != nullptr, "HETensor is empty");
   NGRAPH_CHECK(he_tensor->get_shape() == shape, "HETensor has wrong shape ",

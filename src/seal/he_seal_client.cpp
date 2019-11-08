@@ -187,7 +187,7 @@ void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
                      << ") * m_batch_size (" << m_batch_size << ")";
   }
 
-  HETensor::unpack_shape(shape, m_batch_size);
+  shape = HETensor::unpack_shape(shape, m_batch_size);
   auto element_type = element::f64;
 
   auto he_tensor = HETensor(

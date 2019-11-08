@@ -25,6 +25,12 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
+TEST(he_tensor, pack_non_zero_axis) {
+  EXPECT_ANY_THROW(ngraph::he::HETensor::pack_shape(ngraph::Shape{2, 1}, 1));
+  EXPECT_ANY_THROW(
+      ngraph::he::HETensor::unpack_shape(ngraph::Shape{1, 1}, 2, 1));
+}
+
 TEST(he_tensor, pack) {
   auto backend = ngraph::runtime::Backend::create("HE_SEAL");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -104,6 +110,7 @@ TEST(he_tensor, save) {
   std::vector<ngraph::he::pb::HETensor> protos;
   he_tensor->write_to_protos(protos);
 
+  // Validate saved protos
   EXPECT_EQ(protos.size(), 1);
   const auto& proto = protos[0];
   EXPECT_EQ(proto.name(), he_tensor->get_name());
@@ -124,4 +131,89 @@ TEST(he_tensor, save) {
     EXPECT_EQ(plain.size(), 1);
     EXPECT_FLOAT_EQ(plain[0], tensor_data[i]);
   }
+}
+
+TEST(he_tensor, load) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto parms =
+      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  he_backend->update_encryption_parameters(parms);
+
+  ngraph::Shape shape{2};
+  auto tensor = he_backend->create_plain_tensor(ngraph::element::f32, shape,
+                                                "tensor_name");
+  std::vector<float> tensor_data({5, 6});
+
+  copy_data(tensor, tensor_data);
+  auto saved_he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(tensor);
+
+  std::vector<ngraph::he::pb::HETensor> protos;
+  saved_he_tensor->write_to_protos(protos);
+
+  auto loaded_he_tensor = ngraph::he::HETensor::load_from_proto_tensors(
+      protos, *he_backend->get_ckks_encoder(), he_backend->get_context(),
+      *he_backend->get_encryptor(), *he_backend->get_decryptor(),
+      he_backend->get_encryption_parameters());
+
+  EXPECT_EQ(loaded_he_tensor->get_name(), saved_he_tensor->get_name());
+  EXPECT_EQ(loaded_he_tensor->is_packed(), saved_he_tensor->is_packed());
+  EXPECT_EQ(loaded_he_tensor->data().size(), saved_he_tensor->data().size());
+  EXPECT_EQ(loaded_he_tensor->get_shape().size(),
+            saved_he_tensor->get_shape().size());
+  for (size_t shape_idx = 0; shape_idx < saved_he_tensor->get_shape().size();
+       ++shape_idx) {
+    EXPECT_EQ(loaded_he_tensor->get_shape()[shape_idx],
+              saved_he_tensor->get_shape()[shape_idx]);
+  }
+
+  NGRAPH_INFO << "saved_he_tensor " << saved_he_tensor->get_element_type();
+  NGRAPH_INFO << "loaded_he_tensor " << loaded_he_tensor->get_element_type();
+
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(loaded_he_tensor),
+                                          read_vector<float>(saved_he_tensor)));
+}
+
+TEST(he_tensor, load_from_context) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto parms =
+      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  he_backend->update_encryption_parameters(parms);
+
+  ngraph::Shape shape{2};
+  auto tensor = he_backend->create_plain_tensor(ngraph::element::f32, shape,
+                                                false, "tensor_name");
+  std::vector<float> tensor_data({5, 6});
+
+  copy_data(tensor, tensor_data);
+  auto saved_he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(tensor);
+
+  auto loaded_he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_plain_tensor(
+          saved_he_tensor->get_element_type(), saved_he_tensor->get_shape(),
+          saved_he_tensor->is_packed(), saved_he_tensor->get_name()));
+
+  std::vector<ngraph::he::pb::HETensor> protos;
+  saved_he_tensor->write_to_protos(protos);
+
+  ngraph::he::HETensor::load_from_proto_tensor(loaded_he_tensor, protos[0],
+                                               he_backend->get_context());
+
+  EXPECT_EQ(loaded_he_tensor->get_name(), saved_he_tensor->get_name());
+  EXPECT_EQ(loaded_he_tensor->is_packed(), saved_he_tensor->is_packed());
+  EXPECT_EQ(loaded_he_tensor->data().size(), saved_he_tensor->data().size());
+  EXPECT_EQ(loaded_he_tensor->get_shape().size(),
+            saved_he_tensor->get_shape().size());
+  for (size_t shape_idx = 0; shape_idx < saved_he_tensor->get_shape().size();
+       ++shape_idx) {
+    EXPECT_EQ(loaded_he_tensor->get_shape()[shape_idx],
+              saved_he_tensor->get_shape()[shape_idx]);
+  }
+
+  NGRAPH_INFO << "saved_he_tensor " << saved_he_tensor->get_element_type();
+  NGRAPH_INFO << "loaded_he_tensor " << loaded_he_tensor->get_element_type();
+
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(loaded_he_tensor),
+                                          read_vector<float>(saved_he_tensor)));
 }

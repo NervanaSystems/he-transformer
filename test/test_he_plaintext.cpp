@@ -24,6 +24,14 @@
 
 TEST(he_plaintext, initialize) {
   {
+    std::initializer_list<double> data{1, 2, 3};
+    ngraph::he::HEPlaintext plain(std::move(data));
+    EXPECT_EQ(plain.size(), 3);
+    EXPECT_DOUBLE_EQ(plain[0], 1.0);
+    EXPECT_DOUBLE_EQ(plain[1], 2.0);
+    EXPECT_DOUBLE_EQ(plain[2], 3.0);
+  }
+  {
     std::vector<double> data{1, 2, 3};
     ngraph::he::HEPlaintext plain(std::move(data));
     EXPECT_EQ(plain.size(), 3);
@@ -95,4 +103,24 @@ TEST(he_plaintext, write) {
     EXPECT_TRUE(ngraph::test::he::all_close(dest, plain));
     ngraph::ngraph_free(src);
   }
+
+  // Unsupported types
+  auto src = static_cast<char*>(ngraph::ngraph_malloc(plain.size()));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::bf16));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::f16));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::i8));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::i16));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::u8));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::u16));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::u32));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::u64));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::dynamic));
+  EXPECT_ANY_THROW(plain.write(src, ngraph::element::boolean));
+  ngraph::ngraph_free(src);
+}
+
+TEST(he_plaintext, ostream) {
+  std::stringstream ss;
+  ngraph::he::HEPlaintext plain{1, 2, 3};
+  EXPECT_NO_THROW(ss << plain);
 }

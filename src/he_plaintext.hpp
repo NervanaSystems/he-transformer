@@ -27,6 +27,7 @@ class HEPlaintext : public std::vector<double> {
  public:
   HEPlaintext() = default;
   ~HEPlaintext() = default;
+
   HEPlaintext(const std::initializer_list<double>& values)
       : std::vector<double>(values) {}
 

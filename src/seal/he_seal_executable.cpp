@@ -839,7 +839,7 @@ bool HESealExecutable::call(
         NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
         NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
         if (packed_out) {
-          HETensor::unpack_shape(shape, m_batch_size);
+          shape = HETensor::unpack_shape(shape, m_batch_size);
         }
         NGRAPH_HE_LOG(5) << "Creating output tensor with shape " << shape;
 
