@@ -14,11 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include <sstream>
-
 #include "gtest/gtest.h"
 #include "he_op_annotations.hpp"
-#include "seal/seal.h"
 
 TEST(he_op_annotations, defaults) {
   {
