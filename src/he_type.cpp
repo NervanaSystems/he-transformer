@@ -24,10 +24,9 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
-HEType HEType::load(const proto::HEType& proto_he_type,
+HEType HEType::load(const pb::HEType& proto_he_type,
                     std::shared_ptr<seal::SEALContext> context) {
   if (proto_he_type.is_plaintext()) {
     // TODO(fboemer): HEPlaintext::load function
@@ -43,5 +42,4 @@ HEType HEType::load(const proto::HEType& proto_he_type,
                 proto_he_type.batch_size());
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

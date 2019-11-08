@@ -29,6 +29,7 @@
 #include "aby/aby_server_executor.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
+#include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/backend.hpp"
 #include "ngraph/util.hpp"
 #include "node_wrapper.hpp"
@@ -38,14 +39,11 @@
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
 
-using boost::asio::ip::tcp;
-
-namespace ngraph {
-namespace aby {
+namespace ngraph::aby {
 class ABYServerExecutor;
 }
-namespace he {
 
+namespace ngraph::he {
 /// \brief Class representing a function to execute
 class HESealExecutable : public runtime::Executable {
  public:
@@ -58,7 +56,7 @@ class HESealExecutable : public runtime::Executable {
                    HESealBackend& he_seal_backend);
 
   /// \brief Shuts down the TCP session if client is enabled
-  ~HESealExecutable() override;
+  ~HESealExecutable() noexcept override;
 
   /// \brief Prepares for inference on the function using a server
   /// \returns True if setup was successful, false otherwise
@@ -81,10 +79,12 @@ class HESealExecutable : public runtime::Executable {
   /// If the client is enabled, the inputs are dummy values and ignored.
   /// Instead, the inputs will be provided by the client
   /// \param[in] server_inputs Input tensor arguments to the function, provided
-  /// by the backend. \param[out] outputs Output tensors storing the result of
+  /// by the backend.
+  /// \param[out] outputs Output tensors storing the result of
   /// the function
-  bool call(const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
-            const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
+  virtual bool call(
+      const std::vector<std::shared_ptr<runtime::Tensor>>& outputs,
+      const std::vector<std::shared_ptr<runtime::Tensor>>& server_inputs)
       override;
 
   // TOOD
@@ -112,7 +112,7 @@ class HESealExecutable : public runtime::Executable {
   void accept_connection();
 
   /// \brief Returns whether or not encryption parameters use complex packing
-  inline bool complex_packing() const {
+  bool complex_packing() const {
     return m_he_seal_backend.get_encryption_parameters().complex_packing();
   }
 
@@ -135,21 +135,21 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Processes a client message with ciphertexts to call the appropriate
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_client_ciphers(const proto::TCPMessage& proto_msg);
+  void handle_client_ciphers(const pb::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a ReLU function
   /// \param[in] proto_msg Message to process
-  void handle_relu_result(const proto::TCPMessage& proto_msg);
+  void handle_relu_result(const pb::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a BoundedReLU
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_bounded_relu_result(const proto::TCPMessage& proto_msg);
+  void handle_bounded_relu_result(const pb::TCPMessage& proto_msg);
 
   /// \brief Processes a client message with ciphertextss after a MaxPool
   /// function
   /// \param[in] proto_msg Message to process
-  void handle_max_pool_result(const proto::TCPMessage& proto_msg);
+  void handle_max_pool_result(const pb::TCPMessage& proto_msg);
 
   /// \brief Sends results to the client
   void send_client_results();
@@ -159,11 +159,11 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Loads the public key from the message
   /// \param[in] proto_msg from which to load the public key
-  void load_public_key(const proto::TCPMessage& proto_msg);
+  void load_public_key(const pb::TCPMessage& proto_msg);
 
   /// \brief Loads the evaluation key from the message
   /// \param[in] proto_msg from which to load the evluation key
-  void load_eval_key(const proto::TCPMessage& proto_msg);
+  void load_eval_key(const pb::TCPMessage& proto_msg);
 
   /// \brief Processes the ReLU operation using a client
   /// \param[in] arg Tensor argument
@@ -183,7 +183,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
-  inline bool verbose_op(const ngraph::Node& op) {
+  bool verbose_op(const ngraph::Node& op) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(op.description())) !=
                m_verbose_ops.end();
@@ -191,14 +191,14 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node dessccription verbosity is on or off
   /// \param[in] description Node description determine verbosity of
-  inline bool verbose_op(const std::string& description) {
+  bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(ngraph::to_lower(description)) !=
                m_verbose_ops.end();
   }
 
   /// \brief Returns the batch size
-  inline size_t batch_size() const { return m_batch_size; }
+  size_t batch_size() const { return m_batch_size; }
 
   /// \brief Returns the batch size
   void set_batch_size(size_t batch_size);
@@ -206,7 +206,7 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns whether or not operation node should be received from
   /// client. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation, should be Constant or Parameter node
-  inline bool from_client(const ngraph::op::Op& op) {
+  bool from_client(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
@@ -220,14 +220,14 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] node_wrapper Wrapper of graph operation
-  inline bool plaintext_packed(const NodeWrapper& node_wrapper) {
+  bool plaintext_packed(const NodeWrapper& node_wrapper) {
     return plaintext_packed(*node_wrapper.get_op());
   }
 
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation
-  inline bool plaintext_packed(const ngraph::op::Op& op) {
+  bool plaintext_packed(const ngraph::op::Op& op) {
     auto annotation = op.get_op_annotations();
     if (auto he_annotation =
             std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
@@ -256,7 +256,7 @@ class HESealExecutable : public runtime::Executable {
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;
 
-  std::unique_ptr<tcp::acceptor> m_acceptor;
+  std::unique_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 
   // Must be shared, since TCPSession uses enable_shared_from_this()
   std::shared_ptr<TCPSession> m_session;
@@ -312,5 +312,4 @@ class HESealExecutable : public runtime::Executable {
 
   bool m_stop_const_fold{string_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

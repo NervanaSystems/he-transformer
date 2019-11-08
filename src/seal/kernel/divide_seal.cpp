@@ -25,8 +25,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out) {
@@ -45,7 +44,8 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
 
     // TODO(fboemer): enable with client?
     // TODO(fboemer): complex packing?
-    HEPlaintext plain_arg0, plain_arg1;
+    HEPlaintext plain_arg0;
+    HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
                             arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
@@ -99,5 +99,4 @@ void divide_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

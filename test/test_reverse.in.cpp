@@ -25,8 +25,10 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto reverse_test = [](const ngraph::Shape& shape_a, const ngraph::AxisSet& axis_set,
-                       const std::vector<float>& input, const std::vector<float>& output,
+auto reverse_test = [](const ngraph::Shape& shape_a,
+                       const ngraph::AxisSet& axis_set,
+                       const std::vector<float>& input,
+                       const std::vector<float>& output,
                        const bool arg1_encrypted, const bool complex_packing,
                        const bool packed) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
@@ -34,34 +36,38 @@ auto reverse_test = [](const ngraph::Shape& shape_a, const ngraph::AxisSet& axis
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::default_complex_packing_parms());
+        ngraph::he::HESealEncryptionParameters::
+            default_complex_packing_parms());
   }
 
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
+  auto a =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
   auto t = std::make_shared<ngraph::op::Reverse>(a, axis_set);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
 
   a->set_op_annotations(
       ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
 
-  auto t_a =
-      ngraph::test::he::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(*he_backend, t->get_shape(),
-                                              arg1_encrypted, packed);
+  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
+                                                 arg1_encrypted, packed);
+  auto t_result = ngraph::test::he::tensor_from_flags(
+      *he_backend, t->get_shape(), arg1_encrypted, packed);
 
   copy_data(t_a, input);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(
+      ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, reverse_0d) {
   for (bool arg1_encrypted : std::vector<bool>{false, true}) {
     for (bool complex_packing : std::vector<bool>{false, true}) {
       for (bool packing : std::vector<bool>{false}) {
-        reverse_test(ngraph::Shape{}, ngraph::AxisSet{}, std::vector<float>{6}, std::vector<float>{6},
-                     arg1_encrypted, complex_packing, packing);
+        reverse_test(ngraph::Shape{}, ngraph::AxisSet{}, std::vector<float>{6},
+                     std::vector<float>{6}, arg1_encrypted, complex_packing,
+                     packing);
       }
     }
   }
@@ -71,7 +77,8 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_1d_nochange) {
   for (bool arg1_encrypted : std::vector<bool>{false, true}) {
     for (bool complex_packing : std::vector<bool>{false, true}) {
       for (bool packing : std::vector<bool>{false}) {
-        reverse_test(ngraph::Shape{8}, ngraph::AxisSet{}, std::vector<float>{0, 1, 2, 3, 4, 5, 6, 7},
+        reverse_test(ngraph::Shape{8}, ngraph::AxisSet{},
+                     std::vector<float>{0, 1, 2, 3, 4, 5, 6, 7},
                      std::vector<float>{0, 1, 2, 3, 4, 5, 6, 7}, arg1_encrypted,
                      complex_packing, packing);
       }

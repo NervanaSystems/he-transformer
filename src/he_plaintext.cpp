@@ -22,8 +22,7 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void HEPlaintext::write(void* target, const element::Type& element_type) {
   NGRAPH_CHECK(!empty(), "Input has no values");
   size_t count = this->size();
@@ -83,5 +82,4 @@ std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
   os << ")";
   return os;
 }
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

@@ -29,8 +29,7 @@
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,
@@ -343,6 +342,7 @@ void encode(double value, const ngraph::element::Type& element_type,
       }
     }
   } else if (coeff_bit_count <= 128) {
+    // NOLINTNEXTLINE
     uint64_t coeffu[2]{static_cast<uint64_t>(fmod(coeffd, two_pow_64)),
                        static_cast<uint64_t>(coeffd / two_pow_64)};
 
@@ -520,5 +520,4 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
   decode(output, plaintext_wrapper, ckks_encoder);
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

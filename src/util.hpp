@@ -31,8 +31,7 @@
 #include "op/bounded_relu.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 inline std::string bool_to_string(const bool b) {
   std::ostringstream ss;
@@ -151,5 +150,4 @@ inline proto::Function node_to_proto_function(
   return f;
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

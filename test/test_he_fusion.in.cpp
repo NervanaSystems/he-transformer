@@ -28,15 +28,17 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-static void check_bounded_relu(const ngraph::Shape& param_shape, float constant_val) {
+static void check_bounded_relu(const ngraph::Shape& param_shape,
+                               float constant_val) {
   auto make_function = [](ngraph::Shape input_shape, float alpha_val) {
-    auto relu_input = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, input_shape);
+    auto relu_input = std::make_shared<ngraph::op::Parameter>(
+        ngraph::element::f32, input_shape);
     auto relu = std::make_shared<ngraph::op::Relu>(relu_input);
-    auto alpha = ngraph::op::Constant::create<float>(ngraph::element::f32, input_shape,
-                                             std::vector<float>(1.0f, alpha_val));
+    auto alpha = ngraph::op::Constant::create<float>(
+        ngraph::element::f32, input_shape, std::vector<float>(1.0f, alpha_val));
     auto min = std::make_shared<ngraph::op::Minimum>(relu, alpha);
-    auto f =
-        std::make_shared<ngraph::Function>(ngraph::NodeVector{min}, ngraph::ParameterVector{relu_input});
+    auto f = std::make_shared<ngraph::Function>(
+        ngraph::NodeVector{min}, ngraph::ParameterVector{relu_input});
     return f;
   };
 
@@ -57,20 +59,23 @@ static void check_bounded_relu(const ngraph::Shape& param_shape, float constant_
   auto he_handle = he_backend->compile(he_f);
   EXPECT_EQ(1, count_ops_of_type<ngraph::op::BoundedRelu>(he_f));
 
-  auto he_a = he_backend->create_plain_tensor(ngraph::element::f32, param_shape);
-  auto he_result = he_backend->create_plain_tensor(ngraph::element::f32, param_shape);
+  auto he_a =
+      he_backend->create_plain_tensor(ngraph::element::f32, param_shape);
+  auto he_result =
+      he_backend->create_plain_tensor(ngraph::element::f32, param_shape);
   copy_data(he_a, args[0]);
   he_handle->call_with_validate({he_result}, {he_a});
 
   auto int_backend = ngraph::runtime::Backend::create("INTERPRETER");
   auto int_handle = int_backend->compile(int_f);
   auto int_a = int_backend->create_tensor(ngraph::element::f32, param_shape);
-  auto int_result = int_backend->create_tensor(ngraph::element::f32, param_shape);
+  auto int_result =
+      int_backend->create_tensor(ngraph::element::f32, param_shape);
   copy_data(int_a, args[0]);
   int_handle->call_with_validate({int_result}, {int_a});
 
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(he_result),
-                                  read_vector<float>(int_result), 1e-3f));
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      read_vector<float>(he_result), read_vector<float>(int_result), 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, bounded_relu_fusion) {

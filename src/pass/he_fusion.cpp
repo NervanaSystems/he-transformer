@@ -25,12 +25,14 @@
 #include "ngraph/pattern/op/label.hpp"
 #include "ngraph/runtime/cpu/op/bounded_relu.hpp"
 
-void ngraph::he::pass::HEFusion::construct_bounded_relu() {
+namespace ngraph::he::pass {
+
+void HEFusion::construct_bounded_relu() {
   auto relu_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});
   auto relu = std::make_shared<ngraph::op::Relu>(relu_input);
   auto iconst1 = ngraph::op::Constant::create(element::f32, Shape{}, {1});
   auto alpha = std::make_shared<pattern::op::Label>(iconst1);
-  auto broadcast_pred = [](std::shared_ptr<Node> n) {
+  auto broadcast_pred = [](const std::shared_ptr<Node>& n) {
     return (std::dynamic_pointer_cast<ngraph::op::Broadcast>(n) != nullptr);
   };
   auto skip_broadcast =
@@ -81,3 +83,5 @@ void ngraph::he::pass::HEFusion::construct_bounded_relu() {
   auto m = std::make_shared<pattern::Matcher>(min, "BoundedRelu");
   this->add_matcher(m, callback);
 }
+
+}  // namespace ngraph::he::pass

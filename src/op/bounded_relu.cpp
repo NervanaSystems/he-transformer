@@ -15,10 +15,11 @@
 //*****************************************************************************
 #include "op/bounded_relu.hpp"
 
+#include <string>
+
 #include "ngraph/util.hpp"
 
-namespace ngraph {
-namespace op {
+namespace ngraph::op {
 
 const std::string BoundedRelu::type_name{"BoundedRelu"};
 
@@ -36,5 +37,4 @@ std::shared_ptr<Node> BoundedRelu::copy_with_new_args(
   return std::make_shared<BoundedRelu>(new_args.at(0), m_alpha);
 }
 
-}  // namespace op
-}  // namespace ngraph
+}  // namespace ngraph::op

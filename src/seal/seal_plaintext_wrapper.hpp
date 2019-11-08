@@ -17,11 +17,11 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
 #include "seal/seal.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Wrapper around Seal::Plaintext with complex packing information
 class SealPlaintextWrapper {
  public:
@@ -30,15 +30,15 @@ class SealPlaintextWrapper {
   /// \param[in] plain Plaintext value
   /// \param[in] complex_packing Whether or not the plaintext uses complex
   /// packing
-  SealPlaintextWrapper(const seal::Plaintext& plain,
-                       bool complex_packing = false)
-      : m_plaintext(plain), m_complex_packing(complex_packing) {}
+  explicit SealPlaintextWrapper(seal::Plaintext plain,
+                                bool complex_packing = false)
+      : m_plaintext(std::move(plain)), m_complex_packing(complex_packing) {}
 
   /// \brief Constructs an empty plaintext wrapper using complex packing
   /// argument
   /// \param[in] complex_packing Whether or not the plaintext uses complex
   /// packing
-  SealPlaintextWrapper(bool complex_packing = false)
+  explicit SealPlaintextWrapper(bool complex_packing = false)
       : m_complex_packing(complex_packing) {}
 
   /// \brief Returns whether or not underlying plaintext uses complex packing
@@ -63,5 +63,4 @@ class SealPlaintextWrapper {
   seal::Plaintext m_plaintext;
   bool m_complex_packing;
 };
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

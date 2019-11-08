@@ -20,8 +20,7 @@
 #include "seal/kernel/negate_seal.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 void scalar_subtract_seal(SealCiphertextWrapper& arg0,
                           SealCiphertextWrapper& arg1,
@@ -72,5 +71,4 @@ void scalar_subtract_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   }
   out = std::move(out_vals);
 }
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

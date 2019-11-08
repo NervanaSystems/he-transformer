@@ -27,8 +27,7 @@
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 bool flag_to_bool(const char* flag, bool default_value) {
   if (flag == nullptr) {
@@ -90,5 +89,4 @@ bool param_originates_from_name(const ngraph::op::Parameter& param,
                      [&](const std::string& tag) { return tag == name; });
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

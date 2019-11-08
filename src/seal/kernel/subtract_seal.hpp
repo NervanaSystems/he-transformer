@@ -26,8 +26,7 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 /// \brief Subtracts two ciphertexts
 /// \param[in,out] arg0 Ciphertext argument to subtract from. May be rescaled
 /// \param[in,out] arg1 Ciphertext argument to subtract. May be rescaled
@@ -124,5 +123,4 @@ inline void subtract_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

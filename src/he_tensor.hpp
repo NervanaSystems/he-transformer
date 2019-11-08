@@ -26,8 +26,7 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 class HESealBackend;
 class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -123,23 +122,21 @@ class HETensor : public runtime::Tensor {
   const Shape& get_expanded_shape() const { return get_shape(); }
 
   /// \brief Returns plaintext packing factor used in the tensor
-  inline size_t get_batch_size() const {
-    return batch_size(get_shape(), m_packed);
-  }
+  size_t get_batch_size() const { return batch_size(get_shape(), m_packed); }
 
   /// \brief Returns number of ciphertext / plaintext objects in the tensor
-  inline size_t get_batched_element_count() const {
+  size_t get_batched_element_count() const {
     return get_element_count() / get_batch_size();
   }
 
   /// \brief Returns whether or not the tensor is packed
-  inline bool is_packed() const { return m_packed; }
+  bool is_packed() const { return m_packed; }
 
   /// \brief Writes the tensor to a vector of proto tensors.
   /// Due to the 2GB limit on protobufs, large ciphertext tensors may not be
   /// able to store the entire tensor in one SealCipherTensor message.
   /// \param[out] proto_tensors
-  void write_to_protos(std::vector<proto::HETensor>& proto_tensors) const;
+  void write_to_protos(std::vector<pb::HETensor>& proto_tensors) const;
 
   /// \brief Loads a tensor from protobuf tensors
   /// \param[in] proto_tensors vector of protobuf tensors to load from
@@ -151,9 +148,9 @@ class HETensor : public runtime::Tensor {
   /// loaded tensor
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensors(
-      const std::vector<proto::HETensor>& proto_tensors,
+      const std::vector<pb::HETensor>& proto_tensors,
       seal::CKKSEncoder& ckks_encoder,
-      std::shared_ptr<seal::SEALContext> context,
+      const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params);
 
@@ -167,13 +164,12 @@ class HETensor : public runtime::Tensor {
   /// loaded tensor
   /// \returns Pointer to loaded tensor
   static std::shared_ptr<HETensor> load_from_proto_tensor(
-      const proto::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
-      std::shared_ptr<seal::SEALContext> context,
+      const pb::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
+      const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
       const ngraph::he::HESealEncryptionParameters& encryption_params) {
-    return load_from_proto_tensors({proto_tensor}, ckks_encoder,
-                                   std::move(context), encryptor, decryptor,
-                                   encryption_params);
+    return load_from_proto_tensors({proto_tensor}, ckks_encoder, context,
+                                   encryptor, decryptor, encryption_params);
   }
 
   /// \brief Loads a tensor from protobuf tensor to an he_tensor
@@ -181,8 +177,8 @@ class HETensor : public runtime::Tensor {
   /// \param[in] proto_tensor protobuf tensor to load from
   /// \param[in] context SEAL context to associate with loaded tensor
   static void load_from_proto_tensor(
-      std::shared_ptr<HETensor>& he_tensor, const proto::HETensor& proto_tensor,
-      std::shared_ptr<seal::SEALContext> context);
+      std::shared_ptr<HETensor>& he_tensor, const pb::HETensor& proto_tensor,
+      const std::shared_ptr<seal::SEALContext>& context);
 
   bool done_loading() const { return m_write_count == m_data.size(); }
 
@@ -202,5 +198,4 @@ class HETensor : public runtime::Tensor {
   void check_io_bounds(size_t n) const;
 };
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

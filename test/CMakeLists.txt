@@ -20,6 +20,7 @@ set(SRC
     test_debug.cpp
     test_seal.cpp
     test_encryption_parameters.cpp
+    test_he_op_annotations.cpp
     test_perf_micro.cpp
     test_protobuf.cpp
     test_tensor.cpp)

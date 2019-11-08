@@ -27,8 +27,7 @@
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                           const Shape& arg_shape, const Shape& out_shape,
                           const Shape& window_shape,
@@ -166,5 +165,4 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

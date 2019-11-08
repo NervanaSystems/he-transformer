@@ -16,7 +16,7 @@
 
 #include "seal/he_seal_encryption_parameters.hpp"
 
-#include <stdexcept>
+#include <exception>
 #include <unordered_set>
 
 #include "logging/ngraph_he_log.hpp"
@@ -26,8 +26,7 @@
 #include "nlohmann/json.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 HESealEncryptionParameters::HESealEncryptionParameters() {
   auto default_parms = default_real_packing_parms();
 
@@ -245,5 +244,4 @@ void print_encryption_parameters(const HESealEncryptionParameters& params,
   NGRAPH_HE_LOG(1) << param_ss.str();
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

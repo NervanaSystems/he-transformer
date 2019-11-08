@@ -16,14 +16,15 @@
 
 #include "pass/supported_ops.hpp"
 
+#include <list>
+
 #include "ngraph/check.hpp"
 #include "ngraph/function.hpp"
 #include "ngraph/graph_util.hpp"
 #include "ngraph/node.hpp"
 #include "ngraph/util.hpp"
 
-namespace ngraph {
-namespace he {
+namespace ngraph::he {
 
 bool pass::SupportedOps::run_on_function(
     std::shared_ptr<ngraph::Function> function) {
@@ -36,5 +37,4 @@ bool pass::SupportedOps::run_on_function(
   return true;
 }
 
-}  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::he

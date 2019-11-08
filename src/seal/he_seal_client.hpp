@@ -31,12 +31,11 @@
 #include "tcp/tcp_message.hpp"
 #include "util.hpp"
 
-namespace ngraph {
-namespace aby {
+namespace ngraph::aby {
 class ABYClientExecutor;
 }
-namespace he {
 
+namespace ngraph::he {
 /// (tensor_name : (configuration, data)
 template <class T>
 using HETensorConfigMap =
@@ -84,39 +83,39 @@ class HESealClient {
 
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
-  void handle_encryption_parameters_response(const proto::TCPMessage& message);
+  void handle_encryption_parameters_response(const pb::TCPMessage& message);
 
   /// \brief Processes a request to perform ReLU function
   /// \param[in] message Message to process
-  void handle_relu_request(proto::TCPMessage&& message);
+  void handle_relu_request(pb::TCPMessage&& message);
 
   /// \brief Processes a request to perform MaxPool function
   /// \param[in] message Message to process
-  void handle_max_pool_request(proto::TCPMessage&& message);
+  void handle_max_pool_request(pb::TCPMessage&& message);
 
   /// \brief Processes a request to perform BoundedReLU function
   /// \param[in] message Message to process
-  void handle_bounded_relu_request(proto::TCPMessage&& message);
+  void handle_bounded_relu_request(pb::TCPMessage&& message);
 
   /// \brief Processes a message containing the result from the server
   /// \param[in] message Message to process
-  void handle_result(const proto::TCPMessage& message);
+  void handle_result(const pb::TCPMessage& message);
 
   /// \brief Processes a message containing the inference shape
   /// \param[in] message Message to process
-  void handle_inference_request(const proto::TCPMessage& message);
+  void handle_inference_request(const pb::TCPMessage& message);
 
   /// \brief Sends the public key and relinearization keys to the server
   void send_public_and_relin_keys();
 
   /// \brief Writes a mesage to the server
   /// \param[in] message Message to write
-  inline void write_message(ngraph::he::TCPMessage&& message) {
+  void write_message(ngraph::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
   /// \brief Returns whether or not the function is done evaluating
-  inline bool is_done() { return m_is_done; }
+  bool is_done() { return m_is_done; }
 
   /// \brief Returns decrypted results
   /// \warning Will lock until results are ready
@@ -127,14 +126,12 @@ class HESealClient {
 
   /// \brief Returns whether or not the encryption parameters use complex
   /// packing
-  inline bool complex_packing() const {
-    return m_encryption_params.complex_packing();
-  }
+  bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
   void init_aby_executor();
 
   /// \brief Returns the scale of the encryption parameters
-  inline double scale() const { return m_encryption_params.scale(); }
+  double scale() const { return m_encryption_params.scale(); }
 
   inline const ngraph::he::HESealEncryptionParameters& encryption_paramters()
       const {
@@ -183,7 +180,5 @@ class HESealClient {
   HETensorConfigMap<double> m_input_config;
   std::shared_ptr<HETensor> m_result_tensor;
   std::vector<double> m_results;  // Function outputs
-
-};  // namespace he
-}  // namespace he
-}  // namespace ngraph
+};
+}  // namespace ngraph::he
