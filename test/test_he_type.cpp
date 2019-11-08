@@ -96,25 +96,50 @@ TEST(he_type, cipher) {
 }
 
 TEST(he_type, save_load) {
-  ngraph::he::HEPlaintext plain{1, 2, 3};
-  bool complex_packing = false;
-  auto he_type = ngraph::he::HEType(plain, complex_packing);
+  {
+    ngraph::he::HEPlaintext plain{1, 2, 3};
+    bool complex_packing = false;
+    auto he_type = ngraph::he::HEType(plain, complex_packing);
 
-  ngraph::he::pb::HEType proto_type;
+    ngraph::he::pb::HEType proto_type;
 
-  he_type.save(proto_type);
+    he_type.save(proto_type);
 
-  EXPECT_EQ(proto_type.is_plaintext(), he_type.is_plaintext());
-  EXPECT_EQ(proto_type.plaintext_packing(), he_type.plaintext_packing());
-  EXPECT_EQ(proto_type.complex_packing(), he_type.complex_packing());
-  EXPECT_EQ(proto_type.batch_size(), he_type.batch_size());
+    EXPECT_EQ(proto_type.is_plaintext(), he_type.is_plaintext());
+    EXPECT_EQ(proto_type.plaintext_packing(), he_type.plaintext_packing());
+    EXPECT_EQ(proto_type.complex_packing(), he_type.complex_packing());
+    EXPECT_EQ(proto_type.batch_size(), he_type.batch_size());
 
-  auto loaded_he_type = ngraph::he::HEType::load(proto_type, nullptr);
-  EXPECT_EQ(loaded_he_type.is_plaintext(), he_type.is_plaintext());
-  EXPECT_EQ(loaded_he_type.plaintext_packing(), he_type.plaintext_packing());
-  EXPECT_EQ(loaded_he_type.complex_packing(), he_type.complex_packing());
-  EXPECT_EQ(loaded_he_type.batch_size(), he_type.batch_size());
+    auto loaded_he_type = ngraph::he::HEType::load(proto_type, nullptr);
+    EXPECT_EQ(loaded_he_type.is_plaintext(), he_type.is_plaintext());
+    EXPECT_EQ(loaded_he_type.plaintext_packing(), he_type.plaintext_packing());
+    EXPECT_EQ(loaded_he_type.complex_packing(), he_type.complex_packing());
+    EXPECT_EQ(loaded_he_type.batch_size(), he_type.batch_size());
 
-  EXPECT_TRUE(ngraph::test::he::all_close(loaded_he_type.get_plaintext(),
-                                          he_type.get_plaintext()));
+    EXPECT_TRUE(ngraph::test::he::all_close(loaded_he_type.get_plaintext(),
+                                            he_type.get_plaintext()));
+  }
+  {
+    ngraph::he::HEPlaintext plain{7};
+    bool complex_packing = true;
+    auto he_type = ngraph::he::HEType(plain, complex_packing);
+
+    ngraph::he::pb::HEType proto_type;
+
+    he_type.save(proto_type);
+
+    EXPECT_EQ(proto_type.is_plaintext(), he_type.is_plaintext());
+    EXPECT_EQ(proto_type.plaintext_packing(), he_type.plaintext_packing());
+    EXPECT_EQ(proto_type.complex_packing(), he_type.complex_packing());
+    EXPECT_EQ(proto_type.batch_size(), he_type.batch_size());
+
+    auto loaded_he_type = ngraph::he::HEType::load(proto_type, nullptr);
+    EXPECT_EQ(loaded_he_type.is_plaintext(), he_type.is_plaintext());
+    EXPECT_EQ(loaded_he_type.plaintext_packing(), he_type.plaintext_packing());
+    EXPECT_EQ(loaded_he_type.complex_packing(), he_type.complex_packing());
+    EXPECT_EQ(loaded_he_type.batch_size(), he_type.batch_size());
+
+    EXPECT_TRUE(ngraph::test::he::all_close(loaded_he_type.get_plaintext(),
+                                            he_type.get_plaintext()));
+  }
 }
