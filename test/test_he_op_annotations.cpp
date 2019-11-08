@@ -86,3 +86,28 @@ TEST(he_op_annotations, defaults) {
     EXPECT_TRUE(ann8->packed());
   }
 }
+
+TEST(he_op_annotations, set_get) {
+  auto ann = ngraph::he::HEOpAnnotations(false, false, false);
+  EXPECT_FALSE(ann.from_client());
+  EXPECT_FALSE(ann.encrypted());
+  EXPECT_FALSE(ann.packed());
+
+  ann.set_from_client(true);
+  EXPECT_TRUE(ann.from_client());
+
+  ann.set_from_client(false);
+  EXPECT_FALSE(ann.from_client());
+
+  ann.set_encrypted(true);
+  EXPECT_TRUE(ann.encrypted());
+
+  ann.set_encrypted(false);
+  EXPECT_FALSE(ann.encrypted());
+
+  ann.set_packed(true);
+  EXPECT_TRUE(ann.packed());
+
+  ann.set_packed(false);
+  EXPECT_FALSE(ann.packed());
+}
