@@ -76,13 +76,6 @@ target_link_libraries(he_seal_backend
 
 foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
   install(TARGETS he_seal_backend DESTINATION ${INSTALL_LIB_DIR})
-  add_custom_command(TARGET he_seal_backend POST_BUILD
-                     COMMAND ${CMAKE_COMMAND}
-                             -E
-                             copy
-                             ${Protobuf_LIBRARIES}
-                             ${INSTALL_LIB_DIR}
-                     DEPENDS protobuf::libprotobuf)
 endforeach()
 
 foreach(INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIRS})
