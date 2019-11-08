@@ -80,6 +80,11 @@ class HETensor : public runtime::Tensor {
   /// \param[in] n Number of bytes to read, must be integral number of elements.
   void read(void* p, size_t n) const override;
 
+  /// \param[out] p Pointer to destination for data
+  /// \param[in] n Number of bytes to read, must be integral number of elements.
+  /// \param[in] element_type Datatype of data to write to
+  void read_as_type(void* p, size_t n, const element::Type& element_type) const;
+
   /// \brief Reduces shape along pack axis
   /// \param[in] shape Input shape to pack
   /// \param[in] pack_axis Axis along which to pack

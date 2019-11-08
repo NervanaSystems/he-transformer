@@ -530,6 +530,9 @@ auto server_client_relu_packed_test = [](size_t element_count,
       exp_results[i] = relu(inputs[i]);
     }
   }
+  for (const auto input : inputs) {
+    NGRAPH_INFO << "input " << input;
+  }
 
   std::vector<float> results;
   auto client_thread = std::thread([&]() {

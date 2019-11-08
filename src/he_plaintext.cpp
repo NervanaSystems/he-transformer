@@ -28,6 +28,8 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
   size_t count = this->size();
   size_t type_byte_size = element_type.size();
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       std::vector<float> float_values{begin(), end()};
@@ -72,6 +74,7 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
       break;
   }
+#pragma clang diagnostic pop
 }
 
 std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {

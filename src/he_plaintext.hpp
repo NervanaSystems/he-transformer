@@ -59,6 +59,9 @@ class HEPlaintext : public std::vector<double> {
 
   /// \brief Writes the plaintext to the target as a vector of type
   void write(void* target, const element::Type& element_type);
+
+  /// \brief Reads plaintext to the target as a vector of type
+  void read(void* source, size_t num_bytes, const element::Type& element_type);
 };
 
 std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain);

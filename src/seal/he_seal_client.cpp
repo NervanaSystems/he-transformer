@@ -233,11 +233,28 @@ void HESealClient::handle_result(const pb::TCPMessage& message) {
   }
 
   if (m_result_tensor->done_loading()) {
-    size_t data_size = m_result_tensor->data().size();
-    m_results.resize(data_size * m_result_tensor->get_batch_size());
-    size_t num_bytes =
-        m_results.size() * m_result_tensor->get_element_type().size();
-    m_result_tensor->read(m_results.data(), num_bytes);
+    size_t data_size =
+        m_result_tensor->data().size() * m_result_tensor->get_batch_size();
+    m_results.resize(data_size);
+    NGRAPH_INFO << "m_result_tensor->get_element_type() "
+                << m_result_tensor->get_element_type();
+
+    size_t num_bytes = data_size * m_result_tensor->get_element_type().size();
+    auto bytes = ngraph_malloc(num_bytes);
+    m_result_tensor->read(bytes, num_bytes);
+
+    for (size_t i = 0; i < data_size; ++i) {
+      void* addr =
+          static_cast<void*>(static_cast<char*>(bytes) +
+                             i * m_result_tensor->get_element_type().size());
+      m_results[i] = static_cast<double>(*addr;
+    }
+
+    for (const auto& elem : m_results) {
+      NGRAPH_INFO << "elem " << elem;
+    }
+
+    ngraph_free(bytes);
     close_connection();
   }
 }
