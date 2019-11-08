@@ -16,17 +16,21 @@
 
 set(SRC
     main.cpp
-    # One for each src/ file
+    # src/
     test_he_op_annotations.cpp
     test_he_plaintext.cpp
     test_he_tensor.cpp
     test_he_type.cpp
     test_he_util.cpp
-    # pass
+    # src/pass
     test_he_fusion.cpp
-    test_seal.cpp
+    test_he_supported_ops.cpp
+    test_propagate_he_annotations.cpp
+    # src/seal files
     test_encryption_parameters.cpp
+
     test_perf_micro.cpp
+    test_seal.cpp
     test_protobuf.cpp)
 
 set(BACKEND_TEST_SRC

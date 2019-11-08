@@ -28,13 +28,6 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-NGRAPH_TEST(${BACKEND_NAME}, trivial) {
-  int x = 1;
-  int y = 2;
-  int z = x + y;
-  EXPECT_EQ(z, 3);
-}
-
 NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   EXPECT_EQ(1, 1);
@@ -192,40 +185,4 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
       backend->compile(f));
 
   EXPECT_THROW({ handle->set_batch_size(10000); }, ngraph::CheckFailure);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, unsupported_op) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-
-  ngraph::Shape shape{11};
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto f = std::make_shared<ngraph::Function>(
-      std::make_shared<ngraph::op::Cos>(a), ngraph::ParameterVector{a});
-
-  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
-}
-
-NGRAPH_TEST(${BACKEND_NAME}, unsupported_op_type) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-
-  ngraph::Shape shape{11};
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::i8, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::i8, shape);
-  {
-    auto f = std::make_shared<ngraph::Function>(
-        std::make_shared<ngraph::op::Add>(a, b), ngraph::ParameterVector{a, b});
-    EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
-  }
-  {
-    auto f = std::make_shared<ngraph::Function>(
-        std::make_shared<ngraph::op::Multiply>(a, b),
-        ngraph::ParameterVector{a, b});
-    EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
-  }
-  {
-    auto f = std::make_shared<ngraph::Function>(
-        std::make_shared<ngraph::op::Subtract>(a, b),
-        ngraph::ParameterVector{a, b});
-    EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
-  }
 }
