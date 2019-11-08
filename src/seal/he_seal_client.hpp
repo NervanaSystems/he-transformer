@@ -24,11 +24,11 @@
 #include <vector>
 
 #include "he_tensor.hpp"
+#include "he_util.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
-#include "util.hpp"
 
 namespace ngraph::he {
 

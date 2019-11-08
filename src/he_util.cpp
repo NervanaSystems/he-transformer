@@ -14,7 +14,7 @@
 // limitations under the License.
 //*****************************************************************************
 
-#include "util.hpp"
+#include "he_util.hpp"
 
 #include <complex>
 #include <string>
@@ -48,6 +48,9 @@ bool flag_to_bool(const char* flag, bool default_value) {
 }
 
 double type_to_double(const void* src, const element::Type& element_type) {
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wswitch"
+#pragma clang diagnostic error "-Wswitch-enum"
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       return static_cast<double>(*static_cast<const float*>(src));
@@ -75,8 +78,7 @@ double type_to_double(const void* src, const element::Type& element_type) {
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
       break;
   }
-  NGRAPH_CHECK(false, "Unsupported element type ", element_type);
-  return 0.0;
+#pragma clang diagnostic pop
 }
 
 bool param_originates_from_name(const op::Parameter& param,

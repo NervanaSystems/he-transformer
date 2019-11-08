@@ -21,6 +21,8 @@ set(SRC
     test_he_plaintext.cpp
     test_he_tensor.cpp
     test_he_type.cpp
+    test_he_util.cpp
+    # pass
     test_he_fusion.cpp
     test_seal.cpp
     test_encryption_parameters.cpp

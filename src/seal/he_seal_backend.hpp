@@ -24,6 +24,7 @@
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
 #include "he_type.hpp"
+#include "he_util.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/function.hpp"
@@ -44,7 +45,6 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
-#include "util.hpp"
 
 namespace ngraph {
 namespace runtime {

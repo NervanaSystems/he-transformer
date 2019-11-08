@@ -19,8 +19,8 @@
 #include <memory>
 #include <vector>
 
+#include "he_util.hpp"
 #include "seal/seal_util.hpp"
-#include "util.hpp"
 
 namespace ngraph::he {
 
