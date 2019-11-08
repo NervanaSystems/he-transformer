@@ -70,9 +70,6 @@ class SealCiphertextWrapper {
   /// \brief Returns the ciphertext
   const seal::Ciphertext& ciphertext() const { return m_ciphertext; }
 
-  /// \brief Returns the size of the ciphertext
-  size_t size() const { return m_ciphertext.size(); }
-
   /// \brief Returns scale of the ciphertext
   double& scale() { return m_ciphertext.scale(); }
 

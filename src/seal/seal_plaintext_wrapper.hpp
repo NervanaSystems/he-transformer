@@ -53,12 +53,6 @@ class SealPlaintextWrapper {
   /// \brief Returns reference to underlying plaintext
   const seal::Plaintext& plaintext() const { return m_plaintext; }
 
-  /// \brief Returns reference to scale of underlying plaintext
-  double& scale() { return m_plaintext.scale(); }
-
-  /// \brief Returns scale of underlying plaintext
-  double scale() const { return m_plaintext.scale(); }
-
  private:
   seal::Plaintext m_plaintext;
   bool m_complex_packing;
