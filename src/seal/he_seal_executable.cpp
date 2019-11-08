@@ -129,7 +129,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
 
   if (std::getenv("NGRAPH_VOPS") != nullptr) {
     std::string verbose_ops_str(std::getenv("NGRAPH_VOPS"));
-    verbose_ops_str = ngraph::to_lower(verbose_ops_str);
+    verbose_ops_str = to_lower(verbose_ops_str);
     if (verbose_ops_str == "all") {
       m_verbose_all_ops = true;
     }
@@ -165,9 +165,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   pass_manager_he.register_pass<pass::HEFusion>();
   pass_manager_he.register_pass<pass::HELiveness>();
   pass_manager_he.register_pass<pass::SupportedOps>(
-      [this](const ngraph::Node& op) {
-        return m_he_seal_backend.is_supported(op);
-      });
+      [this](const Node& op) { return m_he_seal_backend.is_supported(op); });
 
   NGRAPH_HE_LOG(4) << "Running HE passes";
   pass_manager_he.run_passes(m_function);
@@ -585,7 +583,7 @@ void HESealExecutable::handle_client_ciphers(const pb::TCPMessage& proto_msg) {
   }
 }
 
-std::vector<ngraph::runtime::PerformanceCounter>
+std::vector<runtime::PerformanceCounter>
 HESealExecutable::get_performance_data() const {
   std::vector<runtime::PerformanceCounter> rc;
   for (const auto& [node, stop_watch] : m_timer_map) {
@@ -719,8 +717,7 @@ bool HESealExecutable::call(
   NGRAPH_HE_LOG(3) << "Mapping function parameters to HETensor";
   NGRAPH_CHECK(he_inputs.size() >= parameters.size(),
                "Not enough inputs in input map");
-  std::unordered_map<ngraph::descriptor::Tensor*, std::shared_ptr<HETensor>>
-      tensor_map;
+  std::unordered_map<descriptor::Tensor*, std::shared_ptr<HETensor>> tensor_map;
   size_t input_count = 0;
   for (const auto& param : parameters) {
     for (size_t param_out_idx = 0; param_out_idx < param->get_output_size();
@@ -773,8 +770,7 @@ bool HESealExecutable::call(
 
     if (type_id == OP_TYPEID::Parameter) {
       if (verbose) {
-        const auto param_op =
-            std::static_pointer_cast<const ngraph::op::Parameter>(op);
+        const auto param_op = std::static_pointer_cast<const op::Parameter>(op);
         if (HEOpAnnotations::has_he_annotation(*param_op)) {
           std::string from_client_str = from_client(*param_op) ? "" : " not";
           NGRAPH_HE_LOG(3) << "Parameter shape " << param_op->get_shape()
@@ -818,23 +814,23 @@ bool HESealExecutable::call(
         if (op->is_op()) {
           std::shared_ptr<HEOpAnnotations> he_op_annotation =
               HEOpAnnotations::he_op_annotation(
-                  *std::static_pointer_cast<const ngraph::op::Op>(op));
+                  *std::static_pointer_cast<const op::Op>(op));
           encrypted_out = he_op_annotation->encrypted();
           packed_out = he_op_annotation->packed();
         } else {
           NGRAPH_WARN
               << "Node " << op->get_name()
               << " is not op, using default encrypted / packing behavior";
-          encrypted_out = std::any_of(
-              op_inputs.begin(), op_inputs.end(),
-              [](const std::shared_ptr<ngraph::he::HETensor>& op_input) {
-                return op_input->any_encrypted_data();
-              });
-          packed_out = std::any_of(
-              op_inputs.begin(), op_inputs.end(),
-              [](const std::shared_ptr<ngraph::he::HETensor>& he_tensor) {
-                return he_tensor->is_packed();
-              });
+          encrypted_out =
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](const std::shared_ptr<HETensor>& op_input) {
+                            return op_input->any_encrypted_data();
+                          });
+          packed_out =
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](const std::shared_ptr<HETensor>& he_tensor) {
+                            return he_tensor->is_packed();
+                          });
         }
         NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
         NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
@@ -973,7 +969,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::BatchNormInference: {
-      const auto bn = static_cast<const ngraph::op::BatchNormInference*>(&node);
+      const auto bn = static_cast<const op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
       NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ", args.size(),
                    "arguments (expected 5).");

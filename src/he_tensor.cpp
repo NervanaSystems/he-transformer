@@ -257,7 +257,6 @@ void HETensor::write_to_protos(std::vector<pb::HETensor>& proto_tensors) const {
   proto_tensors[0].set_offset(0);
 
   NGRAPH_HE_LOG(5) << "Writing tensor shape " << get_shape();
-  NGRAPH_INFO << "Type " << proto_tensors[0].type();
 
   if (!m_data.empty()) {
     pb::HEType tmp_type;

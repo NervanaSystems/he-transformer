@@ -30,15 +30,17 @@ void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                        HEPlaintext& out) {
   HEPlaintext out_vals;
   if (arg0.size() == 1) {
-    std::transform(arg1.begin(), arg1.end(),
-                   std::back_inserter(out_vals), [&](auto y) -> auto {
-                     return std::pow(arg0[0], y);
-                   });
+    std::transform(
+        arg1.begin(), arg1.end(),
+        std::back_inserter(out_vals), [&](auto y) -> auto {
+          return std::pow(arg0[0], y);
+        });
   } else if (arg1.size() == 1) {
-    std::transform(arg0.begin(), arg0.end(),
-                   std::back_inserter(out_vals), [&](auto x) -> auto {
-                     return std::pow(x, arg1[0]);
-                   });
+    std::transform(
+        arg0.begin(), arg0.end(),
+        std::back_inserter(out_vals), [&](auto x) -> auto {
+          return std::pow(x, arg1[0]);
+        });
   } else {
     size_t min_size = std::min(arg0.size(), arg1.size());
     out_vals.resize(min_size);
@@ -68,8 +70,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     plain_arg1.resize(arg1.batch_size());
     scalar_power_seal(plain_arg0, plain_arg1, plain_arg1);
 
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
     HEPlaintext plain_arg0;
@@ -77,8 +79,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
                             arg0.complex_packing());
     plain_arg0.resize(arg0.batch_size());
     scalar_power_seal(plain_arg0, arg1.get_plaintext(), plain_arg0);
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
     HEPlaintext plain_arg1;
@@ -86,8 +88,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
                             arg1.complex_packing());
     plain_arg1.resize(arg0.batch_size());
     scalar_power_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     out.set_plaintext(arg0.get_plaintext());

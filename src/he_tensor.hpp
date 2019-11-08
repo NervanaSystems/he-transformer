@@ -52,7 +52,7 @@ class HETensor : public runtime::Tensor {
            seal::CKKSEncoder& ckks_encoder,
            std::shared_ptr<seal::SEALContext> context,
            const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-           const ngraph::he::HESealEncryptionParameters& encryption_params,
+           const HESealEncryptionParameters& encryption_params,
            const std::string& name = "external");
 
   /// \brief Constructs a generic HETensor
@@ -153,7 +153,7 @@ class HETensor : public runtime::Tensor {
       seal::CKKSEncoder& ckks_encoder,
       const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-      const ngraph::he::HESealEncryptionParameters& encryption_params);
+      const HESealEncryptionParameters& encryption_params);
 
   /// \brief Loads a tensor from protobuf tensor
   /// \param[in] proto_tensor protobuf tensor to load from
@@ -168,7 +168,7 @@ class HETensor : public runtime::Tensor {
       const pb::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
       const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-      const ngraph::he::HESealEncryptionParameters& encryption_params) {
+      const HESealEncryptionParameters& encryption_params) {
     return load_from_proto_tensors({proto_tensor}, ckks_encoder, context,
                                    encryptor, decryptor, encryption_params);
   }
@@ -194,7 +194,7 @@ class HETensor : public runtime::Tensor {
   std::shared_ptr<seal::SEALContext> m_context;
   const seal::Encryptor& m_encryptor;
   seal::Decryptor& m_decryptor;
-  const ngraph::he::HESealEncryptionParameters& m_encryption_params;
+  const HESealEncryptionParameters& m_encryption_params;
 
   void check_io_bounds(size_t n) const;
 };

@@ -36,7 +36,7 @@ bool flag_to_bool(const char* flag, bool default_value) {
   static std::unordered_set<std::string> on_map{"1", "on", "y", "yes", "true"};
   static std::unordered_set<std::string> off_map{"0", "off", "n", "no",
                                                  "false"};
-  std::string flag_str = ngraph::to_lower(std::string(flag));
+  std::string flag_str = to_lower(std::string(flag));
 
   if (on_map.find(flag_str) != on_map.end()) {
     return true;
@@ -79,7 +79,7 @@ double type_to_double(const void* src, const element::Type& element_type) {
   return 0.0;
 }
 
-bool param_originates_from_name(const ngraph::op::Parameter& param,
+bool param_originates_from_name(const op::Parameter& param,
                                 const std::string& name) {
   if (param.get_name() == name) {
     return true;

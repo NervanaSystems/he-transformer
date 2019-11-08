@@ -99,8 +99,8 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   double scale = encrypted.scale();
-  encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
-         plaintext_vals, he_seal_backend);
+  encode(value, element::f32, scale, encrypted.parms_id(), plaintext_vals,
+         he_seal_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
     // Add poly scalar instead of poly poly
@@ -153,8 +153,8 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   // TODO(fboemer): explore using different scales! Smaller scales might reduce
   // # of rescalings
   double scale = encrypted.scale();
-  encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
-         plaintext_vals, he_seal_backend);
+  encode(value, element::f32, scale, encrypted.parms_id(), plaintext_vals,
+         he_seal_backend);
   double new_scale = scale * scale;
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
@@ -262,8 +262,8 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
   return smallest_chain_ind.second;
 }
 
-void encode(double value, const ngraph::element::Type& element_type,
-            double scale, seal::parms_id_type parms_id,
+void encode(double value, const element::Type& element_type, double scale,
+            seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
             const HESealBackend& he_seal_backend,
             const seal::MemoryPoolHandle& pool) {
@@ -435,7 +435,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 
 void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
             seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
-            const ngraph::element::Type& element_type, double scale,
+            const element::Type& element_type, double scale,
             bool complex_packing) {
   const size_t slot_count = ckks_encoder.slot_count();
 
@@ -492,7 +492,7 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
 
 void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
              const HEPlaintext& input, seal::parms_id_type parms_id,
-             const ngraph::element::Type& element_type, double scale,
+             const element::Type& element_type, double scale,
              seal::CKKSEncoder& ckks_encoder, const seal::Encryptor& encryptor,
              bool complex_packing) {
   auto plaintext = SealPlaintextWrapper(complex_packing);

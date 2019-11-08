@@ -42,15 +42,15 @@ enum class ngraph::he::OP_TYPEID {
 namespace ngraph::he {
 class NodeWrapper {
  public:
-  explicit NodeWrapper(std::shared_ptr<const ngraph::Node> node);
+  explicit NodeWrapper(std::shared_ptr<const Node> node);
 
   std::shared_ptr<const Node> get_node() const { return m_node; }
   ngraph::he::OP_TYPEID get_typeid() const { return m_typeid; }
 
-  std::shared_ptr<const ngraph::op::Op> get_op() const;
+  std::shared_ptr<const op::Op> get_op() const;
 
  private:
-  std::shared_ptr<const ngraph::Node> m_node;
+  std::shared_ptr<const Node> m_node;
   OP_TYPEID m_typeid;
 };
 }  // namespace ngraph::he

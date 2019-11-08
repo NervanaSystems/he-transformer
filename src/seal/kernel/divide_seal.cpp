@@ -52,8 +52,8 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
                             arg1.complex_packing());
     scalar_divide_seal(plain_arg0, plain_arg1, plain_arg1);
 
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
     HEType arg1_inv = arg1;
@@ -74,8 +74,8 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
                             arg1.complex_packing());
     scalar_divide_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     out.set_plaintext(arg0.get_plaintext());

@@ -32,8 +32,7 @@
 #include "ngraph/util.hpp"
 
 namespace ngraph::he {
-bool ngraph::he::pass::HELiveness::run_on_function(
-    std::shared_ptr<Function> function) {
+bool pass::HELiveness::run_on_function(std::shared_ptr<Function> function) {
   std::list<std::shared_ptr<Node>> ops = function->get_ordered_ops();
 
   std::unordered_set<descriptor::Tensor*> persistent_tensors;

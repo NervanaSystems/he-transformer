@@ -168,8 +168,8 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
   }
 
   std::string json_config_str = config;
-  if (ngraph::file_util::exists(config)) {
-    json_config_str = ngraph::file_util::read_file_to_string(config);
+  if (file_util::exists(config)) {
+    json_config_str = file_util::read_file_to_string(config);
   }
 
   try {
@@ -208,7 +208,7 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
     std::stringstream ss;
     ss << "Error creating encryption parameter from string " << json_config_str
        << ": " << e.what();
-    throw ngraph::ngraph_error(ss.str());
+    throw ngraph_error(ss.str());
   }
 }
 

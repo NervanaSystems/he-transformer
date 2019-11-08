@@ -25,7 +25,7 @@
 
 namespace ngraph::he {
 /// \brief Annotations added to graph ops by HE backend passes
-class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
+class HEOpAnnotations : public op::util::OpAnnotations {
  public:
   /// \brief Constructs an HE annotation.
   /// \param[in] from_client Whether or not operation should be provided by a
@@ -48,7 +48,7 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
 
   /// \brief Returns whether or not Op has HEOPAnnotations
   /// \param[in] op Operation to check for annotation
-  static bool has_he_annotation(const ngraph::op::Op& op) {
+  static bool has_he_annotation(const op::Op& op) {
     auto annotation = op.get_op_annotations();
     return std::dynamic_pointer_cast<HEOpAnnotations>(annotation) != nullptr;
   }
@@ -56,8 +56,7 @@ class HEOpAnnotations : public ngraph::op::util::OpAnnotations {
   /// \brief Returns HEOpAnnotations from Op
   /// \param[in] op Operation to retrieve annotations from
   /// \throws ngraph_error if op doesn't have HEOpAnnotation
-  static std::shared_ptr<HEOpAnnotations> he_op_annotation(
-      const ngraph::op::Op& op) {
+  static std::shared_ptr<HEOpAnnotations> he_op_annotation(const op::Op& op) {
     NGRAPH_CHECK(HEOpAnnotations::has_he_annotation(op), "op ", op.get_name(),
                  " has no HEOpAnnotation");
     return std::static_pointer_cast<HEOpAnnotations>(op.get_op_annotations());

@@ -30,6 +30,6 @@ class PropagateHEAnnotations : public ngraph::pass::FunctionPass {
   /// \brief Runs pass on function
   /// \param[in,out] function Function which to run pass on
   /// \returns whether or not the function has been modified
-  bool run_on_function(std::shared_ptr<ngraph::Function> function) override;
+  bool run_on_function(std::shared_ptr<Function> function) override;
 };
 }  // namespace ngraph::he::pass

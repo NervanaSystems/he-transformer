@@ -26,9 +26,8 @@
 
 namespace ngraph::he {
 
-bool pass::SupportedOps::run_on_function(
-    std::shared_ptr<ngraph::Function> function) {
-  std::list<std::shared_ptr<ngraph::Node>> ops = function->get_ordered_ops();
+bool pass::SupportedOps::run_on_function(std::shared_ptr<Function> function) {
+  std::list<std::shared_ptr<Node>> ops = function->get_ordered_ops();
 
   for (const auto& op : ops) {
     NGRAPH_CHECK(is_supported(*op), "Unsupported op ", op->description(),

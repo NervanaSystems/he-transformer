@@ -44,7 +44,7 @@ void scalar_relu_seal(const HEType& arg, HEType& out,
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
             ckks_encoder);
     scalar_relu_seal(plain, plain);
-    encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
+    encrypt(out.get_ciphertext(), plain, parms_id, element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());
     out.set_ciphertext(out.get_ciphertext());
   }

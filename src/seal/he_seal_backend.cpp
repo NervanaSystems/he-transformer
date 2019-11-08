@@ -103,9 +103,8 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
   (void)error;  // Avoid unused parameter warning
   NGRAPH_HE_LOG(3) << "Setting config";
   for (const auto& [option, setting] : config) {
-    std::string lower_option = ngraph::to_lower(option);
-    std::vector<std::string> lower_settings =
-        ngraph::split(ngraph::to_lower(setting), ',');
+    std::string lower_option = to_lower(option);
+    std::vector<std::string> lower_settings = split(to_lower(setting), ',');
     // Strip attributes, i.e. "tensor_name:0 => tensor_name"
     std::string tensor_name = option.substr(0, option.find(':', 0));
 
@@ -161,45 +160,43 @@ void HESealBackend::update_encryption_parameters(
   }
 }
 
-std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_tensor(
+std::shared_ptr<runtime::Tensor> HESealBackend::create_tensor(
     const element::Type& type, const Shape& shape) {
   return create_plain_tensor(type, shape, false);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_plain_tensor(
+std::shared_ptr<runtime::Tensor> HESealBackend::create_plain_tensor(
     const element::Type& type, const Shape& shape, const bool plaintext_packing,
     const std::string& name) const {
   auto tensor = std::make_shared<HETensor>(
       type, shape, plaintext_packing, complex_packing(), false, *this, name);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_cipher_tensor(
+std::shared_ptr<runtime::Tensor> HESealBackend::create_cipher_tensor(
     const element::Type& type, const Shape& shape, const bool plaintext_packing,
     const std::string& name) const {
   auto tensor = std::make_shared<HETensor>(
       type, shape, plaintext_packing, complex_packing(), true, *this, name);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor>
-HESealBackend::create_packed_cipher_tensor(const element::Type& type,
-                                           const Shape& shape) const {
+std::shared_ptr<runtime::Tensor> HESealBackend::create_packed_cipher_tensor(
+    const element::Type& type, const Shape& shape) const {
   auto tensor = std::make_shared<HETensor>(type, shape, true, complex_packing(),
                                            true, *this);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor>
-HESealBackend::create_packed_plain_tensor(const element::Type& type,
-                                          const Shape& shape) const {
+std::shared_ptr<runtime::Tensor> HESealBackend::create_packed_plain_tensor(
+    const element::Type& type, const Shape& shape) const {
   auto tensor = std::make_shared<HETensor>(type, shape, true, complex_packing(),
                                            false, *this);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
 // NOLINTNEXTLINE
-std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
+std::shared_ptr<runtime::Executable> HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_data) {
   auto from_client_annotation =
       std::make_shared<HEOpAnnotations>(true, false, false);
@@ -303,7 +300,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
                                          *this, m_enable_client));
 }
 
-bool HESealBackend::is_supported(const ngraph::Node& node) const {
+bool HESealBackend::is_supported(const Node& node) const {
   return m_unsupported_op_name_list.find(node.description()) ==
              m_unsupported_op_name_list.end() &&
          is_supported_type(node.get_element_type());

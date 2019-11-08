@@ -230,7 +230,7 @@ inline void multiply_plain(
 /// \param[in] he_seal_backend Backend whose context is used for encoding
 /// \param[in] pool Memory pool used for new memory allocation
 void encode(
-    double value, const ngraph::element::Type& element_type, double scale,
+    double value, const element::Type& element_type, double scale,
     seal::parms_id_type parms_id, std::vector<std::uint64_t>& destination,
     const HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
@@ -246,7 +246,7 @@ void encode(
 /// encoding
 void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
             seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
-            const ngraph::element::Type& element_type, double scale,
+            const element::Type& element_type, double scale,
             bool complex_packing);
 
 /// \brief Encrypt plaintext into ciphertext
@@ -261,7 +261,7 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
 /// encoding
 void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
              const HEPlaintext& input, seal::parms_id_type parms_id,
-             const ngraph::element::Type& element_type, double scale,
+             const element::Type& element_type, double scale,
              seal::CKKSEncoder& ckks_encoder, const seal::Encryptor& encryptor,
              bool complex_packing);
 

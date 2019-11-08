@@ -178,7 +178,7 @@ void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
     NGRAPH_HE_LOG(5) << "Client complex packing";
   }
 
-  size_t parameter_size = ngraph::shape_size(HETensor::pack_shape(shape));
+  size_t parameter_size = shape_size(HETensor::pack_shape(shape));
   NGRAPH_HE_LOG(5) << "Client parameter_size " << parameter_size;
 
   if (input_data.size() > parameter_size * m_batch_size) {

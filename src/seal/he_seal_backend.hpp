@@ -55,7 +55,7 @@ class HEType;
 class SealCiphertextWrapper;
 /// \brief Class representing a backend using the CKKS homomorphic encryption
 /// scheme.
-class HESealBackend : public ngraph::runtime::Backend {
+class HESealBackend : public runtime::Backend {
  public:
   /// \brief Constructs a backend with default parameter choice
   HESealBackend();

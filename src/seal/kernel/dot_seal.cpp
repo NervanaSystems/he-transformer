@@ -60,12 +60,12 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
 
   // Get arg0_projected_size and arg1_projected_size for parallelization
   // and pre-compute coordinates
-  std::vector<ngraph::Coordinate> arg0_projected_coords;
+  std::vector<Coordinate> arg0_projected_coords;
   for (const Coordinate& coord : arg0_projected_transform) {
     arg0_projected_coords.emplace_back(coord);
   }
 
-  std::vector<ngraph::Coordinate> arg1_projected_coords;
+  std::vector<Coordinate> arg1_projected_coords;
   for (const Coordinate& coord : arg1_projected_transform) {
     arg1_projected_coords.emplace_back(coord);
   }

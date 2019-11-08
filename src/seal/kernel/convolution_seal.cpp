@@ -49,7 +49,7 @@ void convolution_seal(
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
-  std::vector<ngraph::Coordinate> out_coords;
+  std::vector<Coordinate> out_coords;
   for (const Coordinate& out_coord : output_transform) {
     out_coords.emplace_back(out_coord);
   }

@@ -45,7 +45,7 @@ void scalar_exp_seal(const HEType& arg, HEType& out,
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
             ckks_encoder);
     scalar_exp_seal(plain, plain);
-    encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
+    encrypt(out.get_ciphertext(), plain, parms_id, element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());
   }
 }

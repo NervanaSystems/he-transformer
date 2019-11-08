@@ -38,7 +38,7 @@ inline void batch_norm_inference_seal(
   CoordinateTransform input_transform(input_shape);
 
   // Store input coordinates for parallelization
-  std::vector<ngraph::Coordinate> input_coords;
+  std::vector<Coordinate> input_coords;
   for (const Coordinate& in_coord : input_transform) {
     input_coords.emplace_back(in_coord);
   }
