@@ -316,7 +316,7 @@ void HESealExecutable::start_server() {
     try {
       m_io_context.run();
     } catch (std::exception& e) {
-      NGRAPH_CHECK(false, "Server error hanndling thread: ", e.what());
+      NGRAPH_CHECK(false, "Server error handling thread: ", e.what());
     }
   });
 }

@@ -33,11 +33,19 @@ NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
   EXPECT_EQ(1, 1);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
+NGRAPH_TEST(${BACKEND_NAME}, create_tensor_memory_ptr) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
   ngraph::Shape shape{2, 2};
   backend->create_tensor(ngraph::element::f32, shape);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+
+  ngraph::Shape shape{2, 2};
+  void* src;
+  EXPECT_ANY_THROW(backend->create_tensor(ngraph::element::f32, shape, src));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, create_cipher_tensor) {

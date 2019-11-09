@@ -82,6 +82,7 @@ bool pass::PropagateHEAnnotations::run_on_function(
         auto target_op = dynamic_cast<op::Op*>(target_node);
         NGRAPH_CHECK(target_op != nullptr, "Target is not an op");
 
+        // Should never trigger, but add this just in case
         if (!HEOpAnnotations::has_he_annotation(*target_op)) {
           target_op->set_op_annotations(
               HEOpAnnotations::server_plaintext_unpacked_annotation());

@@ -30,9 +30,6 @@ void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   out.resize(arg.size());
   auto relu = [](double d) { return d > 0 ? d : 0.; };
   std::transform(arg.begin(), arg.end(), out.begin(), relu);
-
-  NGRAPH_INFO << "relu( " << arg << " )";
-  NGRAPH_INFO << "=> " << out;
 }
 
 void scalar_relu_seal(const HEType& arg, HEType& out,
