@@ -65,6 +65,8 @@ set_source_files_properties(${message_proto_srcs}
 # Create library and link to dependencies
 add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend PUBLIC ${HE_TRANSFORMER_SOURCE_DIR})
+
+find_package(Threads)
 target_link_libraries(he_seal_backend
                       PUBLIC libjson
                              libboost
@@ -73,6 +75,12 @@ target_link_libraries(he_seal_backend
                              protobuf::libprotobuf
                              generated_proto_files
                              ngraph)
+
+# TODO: better condition if we don't link with OpenMP
+if (NGRAPH_HE_CODE_COVERAGE)
+        find_package(Threads)
+        target_link_libraries(he_seal_backend PUBLIC  ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
   install(TARGETS he_seal_backend DESTINATION ${INSTALL_LIB_DIR})

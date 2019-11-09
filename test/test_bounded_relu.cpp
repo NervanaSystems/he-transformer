@@ -44,5 +44,5 @@ TEST(bounded_relu, copy) {
 
   auto new_bounded_relu =
       std::static_pointer_cast<ngraph::op::BoundedRelu>(new_node);
-  EXPECT_TRUE(new_bounded_relu->get_alpha() == node->get_alpha());
+  EXPECT_FLOAT_EQ(new_bounded_relu->get_alpha(), node->get_alpha());
 }

@@ -118,7 +118,7 @@ endif()
 
 if (NGRAPH_HE_CODE_COVERAGE)
   set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-instr-generate -fcoverage-mapping")
+      "${CMAKE_CXX_FLAGS} -g -fprofile-instr-generate -fcoverage-mapping")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 endif()
 
@@ -237,7 +237,13 @@ set(INSTALL_INCLUDE_DIRS ${EXTERNAL_INSTALL_INCLUDE_DIR}
 
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
+
+# Exclude openmp for code coverage, since regions will trigger false negatives
+if (NOT NGRAPH_HE_CODE_COVERAGE)
 include(cmake/openmp.cmake)
+add_compile_options(-Wno-source-uses-openmp)
+
+endif()
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
 include(cmake/protobuf.cmake)
