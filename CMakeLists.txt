@@ -239,10 +239,10 @@ include(cmake/gtest.cmake)
 include(cmake/json.cmake)
 
 # Exclude openmp for code coverage, since regions will trigger false negatives
-if (NOT NGRAPH_HE_CODE_COVERAGE)
-include(cmake/openmp.cmake)
-add_compile_options(-Wno-source-uses-openmp)
-
+if (NGRAPH_HE_CODE_COVERAGE)
+  add_compile_options(-Wno-source-uses-openmp)
+else()
+  include(cmake/openmp.cmake)
 endif()
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)

@@ -38,7 +38,7 @@ void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const element::Type& element_type, size_t batch_size,
     HESealBackend& he_seal_backend, bool verbose = true);
 
 }  // namespace ngraph::he

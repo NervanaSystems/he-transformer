@@ -1049,8 +1049,8 @@ void HESealExecutable::generate_calls(
                        in_shape0, in_shape1, out[0]->get_packed_shape(),
                        window_movement_strides, window_dilation_strides,
                        padding_below, padding_above, data_dilation_strides, 0,
-                       1, 1, 0, 0, 1, false, type, m_batch_size,
-                       m_he_seal_backend, verbose);
+                       1, 1, 0, 0, 1, type, m_batch_size, m_he_seal_backend,
+                       verbose);
 
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
 

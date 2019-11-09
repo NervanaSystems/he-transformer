@@ -32,7 +32,7 @@ void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const element::Type& element_type, size_t batch_size,
     HESealBackend& he_seal_backend, bool verbose) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
@@ -187,16 +187,6 @@ void convolution_seal(
     while (input_it != input_end && filter_it != filter_end) {
       const Coordinate& input_batch_coord = *input_it;
       Coordinate filter_coord = *filter_it;
-
-      if (rotate_filter) {
-        Shape target_shape = filter_transform.get_target_shape();
-
-        // Note that we only reverse the spatial dimensions here (loop
-        // starts at 2)
-        for (size_t i = 2; i < filter_coord.size(); i++) {
-          filter_coord[i] = target_shape[i] - filter_coord[i] - 1;
-        }
-      }
 
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
