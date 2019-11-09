@@ -52,19 +52,6 @@ void scalar_multiply_seal(
     HESealBackend& he_seal_backend,
     const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool());
 
-/// \brief Multiplies a plaintext with a ciphertext
-/// \param[in] arg0 Plaintext argument to multiply
-/// \param[in,out] arg1 Ciphertext argument to multiply. May be rescaled
-/// \param[out] out Stores the encrypted sum
-/// \param[in] he_seal_backend Backend used to perform multiplyition
-/// \param[in] pool Memory pool used for new memory allocation
-inline void scalar_multiply_seal(
-    const HEPlaintext& arg0, SealCiphertextWrapper& arg1, HEType& out,
-    HESealBackend& he_seal_backend,
-    const seal::MemoryPoolHandle& pool = seal::MemoryManager::GetPool()) {
-  scalar_multiply_seal(arg1, arg0, out, he_seal_backend, pool);
-}
-
 /// \brief Multiplies two plaintexts
 /// \param[in] arg0 Plaintext argument to multiply
 /// \param[in] arg1 Plaintext argument to multiply

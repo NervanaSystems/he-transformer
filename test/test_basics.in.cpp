@@ -44,7 +44,7 @@ NGRAPH_TEST(${BACKEND_NAME}, create_tensor) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
   ngraph::Shape shape{2, 2};
-  void* src;
+  void* src = nullptr;
   EXPECT_ANY_THROW(backend->create_tensor(ngraph::element::f32, shape, src));
 }
 
