@@ -22,7 +22,7 @@ set(HE_SRC
     he_tensor.cpp
     he_type.cpp
     node_wrapper.cpp
-    util.cpp
+    he_util.cpp
     he_plaintext.cpp
     # pass
     pass/he_fusion.cpp
