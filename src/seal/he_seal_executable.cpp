@@ -877,8 +877,8 @@ bool HESealExecutable::call(
         }
       }
       if (!erased) {
-        NGRAPH_DEBUG << "Failed to erase " << t->get_name()
-                     << " from tensor map";
+        NGRAPH_HE_LOG(5) << "Failed to erase " << t->get_name()
+                         << " from tensor map";
       }
     }
     if (verbose) {

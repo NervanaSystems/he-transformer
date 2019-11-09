@@ -8,7 +8,9 @@ cmake .. -DCMAKE_CXX_COMPILER=clang++-9 -DCMAKE_INSTALL_PREFIX=~/mylibs -DCMAKE_
 
 
 # Create raw coverage file
-LLVM_PROFILE_FILE="unit_test.profraw"  ./test/unit-test --gtest_filter="*:-HE_SEAL.server_client_*relu_packed_50000"
+# Use all logs to increase coverage
+# Exclude slow tests
+LLVM_PROFILE_FILE="unit_test.profraw" NGRAPH_HE_LOG_LEVEL=5 NGRAPH_VOPS=all ./test/unit-test --gtest_filter="*:-HE_SEAL.server_client_*relu_packed_50000"
 
 # Convert to format llvm-cov wants
 llvm-profdata-9 merge -o testcov.profdata unit_test.profraw
