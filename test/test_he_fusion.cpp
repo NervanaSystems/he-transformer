@@ -81,3 +81,27 @@ TEST(he_fusion, bounded_relu_fusion) {
   check_bounded_relu(ngraph::Shape{4, 3}, 4.0f);
   check_bounded_relu(ngraph::Shape{4, 3, 2}, 2.0f);
 }
+
+TEST(he_fusion, no_fusion) {
+  auto make_wrong_type_function = [](ngraph::Shape input_shape,
+                                     auto alpha_val) {
+    auto relu_input = std::make_shared<ngraph::op::Parameter>(
+        ngraph::element::f64, input_shape);
+    auto relu = std::make_shared<ngraph::op::Relu>(relu_input);
+    auto alpha = ngraph::op::Constant::create<double>(
+        ngraph::element::f64, input_shape, std::vector<double>(1.0, alpha_val));
+    auto min = std::make_shared<ngraph::op::Minimum>(relu, alpha);
+    auto f = std::make_shared<ngraph::Function>(
+        ngraph::NodeVector{min}, ngraph::ParameterVector{relu_input});
+    return f;
+  };
+
+  {
+    auto he_f = make_wrong_type_function(ngraph::Shape{4, 3}, 7.2);
+    auto he_backend_orig = ngraph::runtime::Backend::create("HE_SEAL");
+    auto he_backend =
+        static_cast<ngraph::he::HESealBackend*>(he_backend_orig.get());
+    auto he_handle = he_backend->compile(he_f);
+    EXPECT_EQ(0, count_ops_of_type<ngraph::op::BoundedRelu>(he_f));
+  }
+}

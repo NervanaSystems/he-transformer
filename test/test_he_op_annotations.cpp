@@ -16,7 +16,6 @@
 
 #include "gtest/gtest.h"
 #include "he_op_annotations.hpp"
-#include "seal/he_seal_backend.hpp"
 
 TEST(he_op_annotations, defaults) {
   {

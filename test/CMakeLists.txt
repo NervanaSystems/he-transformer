@@ -22,6 +22,7 @@ set(SRC
     test_he_tensor.cpp
     test_he_type.cpp
     test_he_util.cpp
+    test_node_wrapper.cpp
     # src/pass
     test_he_fusion.cpp
     test_he_supported_ops.cpp
