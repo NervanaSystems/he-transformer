@@ -139,9 +139,6 @@ NodeWrapper::NodeWrapper(std::shared_ptr<const ngraph::Node> node)
 }
 
 std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
-  if (!get_node()->is_op()) {
-    throw ngraph_error("node is not an op");
-  }
 #pragma clang diagnostic push
 #pragma clang diagnostic error "-Wswitch"
 #pragma clang diagnostic error "-Wswitch-enum"

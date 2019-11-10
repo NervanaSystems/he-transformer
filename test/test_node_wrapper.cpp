@@ -52,6 +52,17 @@ bool check_unary() {
 }
 
 template <typename OP>
+void check_unsupported_unary() {
+  ngraph::Shape shape{1};
+  auto param =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto node = std::make_shared<OP>(param);
+  ngraph::he::NodeWrapper node_wrapper(node);
+
+  EXPECT_ANY_THROW({ node_wrapper.get_op(); });
+}
+
+template <typename OP>
 bool check_binary() {
   ngraph::Shape shape{1};
   auto param =
@@ -71,6 +82,10 @@ TEST(node_wrapper, acos) { ASSERT_TRUE(check_unary<ngraph::op::Acos>()); }
 TEST(node_wrapper, add) { ASSERT_TRUE(check_binary<ngraph::op::Add>()); }
 
 TEST(node_wrapper, all) { ASSERT_TRUE(check_nullary<ngraph::op::All>()); }
+
+TEST(node_wrapper, allreduce) {
+  check_unsupported_unary<ngraph::op::AllReduce>();
+}
 
 TEST(node_wrapper, argmax) { ASSERT_TRUE(check_nullary<ngraph::op::ArgMax>()); }
 
@@ -231,6 +246,8 @@ TEST(node_wrapper, negative) {
   ASSERT_TRUE(check_unary<ngraph::op::Negative>());
 }
 
+TEST(node_wrapper, not) { ASSERT_TRUE(check_unary<ngraph::op::Not>()); }
+
 TEST(node_wrapper, not_equal) {
   ASSERT_TRUE(check_binary<ngraph::op::NotEqual>());
 }
@@ -264,6 +281,12 @@ TEST(node_wrapper, parameter) {
 }
 
 TEST(node_wrapper, power) { ASSERT_TRUE(check_binary<ngraph::op::Power>()); }
+
+TEST(node_wrapper, product) {
+  ASSERT_TRUE(check_binary<ngraph::op::Product>());
+}
+
+TEST(node_wrapper, relu) { ASSERT_TRUE(check_unary<ngraph::op::Relu>()); }
 
 TEST(node_wrapper, reshape) {
   ASSERT_TRUE(check_nullary<ngraph::op::Reshape>());
