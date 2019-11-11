@@ -30,6 +30,36 @@
 #include "seal/util/uintarith.h"
 
 namespace ngraph::he {
+
+double choose_scale(const std::vector<seal::SmallModulus>& coeff_moduli) {
+  if (coeff_moduli.size() > 2) {
+    return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
+  } else if (coeff_moduli.size() > 1) {
+    return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
+  } else {
+    // Enable a single multiply
+    return sqrt(static_cast<double>(coeff_moduli.back().value() / 256.0));
+  }
+}
+
+seal::sec_level_type seal_security_level(size_t bits) {
+  if (bits == 0) {
+    NGRAPH_WARN
+        << "Parameter selection does not enforce minimum security level";
+    return seal::sec_level_type::none;
+  }
+  if (bits == 128) {
+    return seal::sec_level_type::tc128;
+  }
+  if (bits == 192) {
+    return seal::sec_level_type::tc192;
+  }
+  if (bits == 256) {
+    return seal::sec_level_type::tc256;
+  }
+  throw ngraph_error("Invalid security level " + std::to_string(bits));
+}
+
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,

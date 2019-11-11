@@ -33,37 +33,13 @@ class HESealBackend;
 /// \brief Chooses a default scale for the given list of coefficient moduli
 /// \param[in] coeff_moduli List of coefficient moduli
 /// \returns Chosen scale
-inline double choose_scale(
-    const std::vector<seal::SmallModulus>& coeff_moduli) {
-  if (coeff_moduli.size() > 2) {
-    return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
-  } else if (coeff_moduli.size() > 1) {
-    return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
-  } else {
-    // Enable a single multiply
-    return sqrt(static_cast<double>(coeff_moduli.back().value() / 256.0));
-  }
-}
+double choose_scale(const std::vector<seal::SmallModulus>& coeff_moduli);
 
 /// \brief Returns SEAL's security level type from the number of bits of
 /// security
 /// \param[in] bits Bits of security
-inline seal::sec_level_type seal_security_level(size_t bits) {
-  auto sec_level = seal::sec_level_type::none;
-  if (bits == 128) {
-    sec_level = seal::sec_level_type::tc128;
-  } else if (bits == 192) {
-    sec_level = seal::sec_level_type::tc192;
-  } else if (bits == 256) {
-    sec_level = seal::sec_level_type::tc256;
-  } else if (bits == 0) {
-    NGRAPH_WARN
-        << "Parameter selection does not enforce minimum security level";
-  } else {
-    throw ngraph_error("Invalid security level " + std::to_string(bits));
-  }
-  return sec_level;
-}
+/// \throws ngraph_error if security level is invalid number of bits
+seal::sec_level_type seal_security_level(size_t bits);
 
 /// \brief Returns the smallest chain index of a vector of HE data
 /// \param[in] he_types Vector of HE data
