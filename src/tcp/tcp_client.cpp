@@ -65,7 +65,7 @@ void TCPClient::do_connect(
       [this, delay_ms, &endpoints](boost::system::error_code ec,
                                    boost::asio::ip::tcp::endpoint) {
         if (!ec) {
-          m_connected NGRAPH_HE_LOG(1) << "Connected to server";
+          NGRAPH_HE_LOG(1) << "Connected to server";
           do_read_header();
         } else {
           NGRAPH_INFO << "error connecting to server: " << ec.message();
@@ -81,7 +81,6 @@ void TCPClient::do_connect(
 }
 
 void TCPClient::do_read_header() {
-  NGRAPH_INFO << "TCPClient::do_read_header";
   if (m_read_buffer.size() < header_length) {
     m_read_buffer.resize(header_length);
   }
@@ -98,7 +97,6 @@ void TCPClient::do_read_header() {
 }
 
 void TCPClient::do_read_body(size_t body_length) {
-  NGRAPH_INFO << "TCPClient::do_read_body";
   m_read_buffer.resize(header_length + body_length);
   boost::asio::async_read(
       m_socket, boost::asio::buffer(&m_read_buffer[header_length], body_length),
@@ -114,7 +112,6 @@ void TCPClient::do_read_body(size_t body_length) {
 }
 
 void TCPClient::do_write() {
-  NGRAPH_INFO << "TCPClient::do_write";
   auto message = m_message_queue.front();
   message.pack(m_write_buffer);
   NGRAPH_HE_LOG(4) << "Client writing message size " << m_write_buffer.size()
@@ -126,7 +123,6 @@ void TCPClient::do_write() {
         if (!ec) {
           m_message_queue.pop_front();
           if (!m_message_queue.empty()) {
-            NGRAPH_INFO << "Message queue non-empty";
             do_write();
           }
         } else {

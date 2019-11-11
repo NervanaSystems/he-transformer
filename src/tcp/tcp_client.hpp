@@ -67,7 +67,5 @@ class TCPClient {
   inline static std::string s_expected_teardown_message{"End of file"};
 
   std::function<void(const TCPMessage&)> m_message_callback;
-
-  std::atomic<bool> m_connected{false};
 };
 }  // namespace ngraph::he

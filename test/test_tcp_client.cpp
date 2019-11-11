@@ -47,15 +47,12 @@ class MockServer {
     boost::asio::ip::tcp::resolver resolver(m_io_context);
     boost::asio::ip::tcp::endpoint server_endpoints(boost::asio::ip::tcp::v4(),
                                                     port);
-    NGRAPH_HE_LOG(1) << "Server creating acceptor";
     m_acceptor = std::make_unique<boost::asio::ip::tcp::acceptor>(
         m_io_context, server_endpoints);
     boost::asio::socket_base::reuse_address option(true);
     m_acceptor->set_option(option);
 
     auto server_callback = [](const ngraph::he::TCPMessage& message) {
-      NGRAPH_INFO << "server_callback";
-
       return;
     };
 
@@ -64,25 +61,19 @@ class MockServer {
         [this, server_callback](boost::system::error_code ec,
                                 boost::asio::ip::tcp::socket socket) {
           if (!ec) {
-            NGRAPH_HE_LOG(1) << "Connection accepted";
             m_session = std::make_shared<ngraph::he::TCPSession>(
                 std::move(socket), server_callback);
             m_session->start();
-            NGRAPH_HE_LOG(1) << "Session started";
 
             std::lock_guard<std::mutex> guard(m_session_mutex);
-            NGRAPH_HE_LOG(1) << "Server got mutex";
             m_session_started = true;
-            NGRAPH_HE_LOG(1) << "Server notify_one";
             m_session_cond.notify_one();
 
           } else {
-            NGRAPH_HE_LOG(1) << "error accepting connection";
             NGRAPH_ERR << "error accepting connection " << ec.message();
           }
         });
 
-    NGRAPH_HE_LOG(3) << "Server starting message handling thread";
     m_message_handling_thread = std::thread([this]() {
       try {
         m_io_context.run();
@@ -91,15 +82,10 @@ class MockServer {
       }
     });
 
-    NGRAPH_HE_LOG(3) << "Server waiting until session started";
     std::unique_lock<std::mutex> mlock(m_session_mutex);
     NGRAPH_HE_LOG(3) << "waiting thread got mutex";
-    m_session_cond.wait(mlock, [this]() {
-      NGRAPH_INFO << "Lambda m_session_started? " << m_session_started;
-      return m_session_started;
-    });
+    m_session_cond.wait(mlock, [this]() { return m_session_started; });
 
-    NGRAPH_HE_LOG(1) << "Writing dummy messages";
     for (size_t i = 0; i < message_cnt; ++i) {
       m_session->write_message(dummy_tcp_message());
     }
@@ -146,24 +132,19 @@ class MockClient {
     auto endpoints = resolver.resolve(hostname, std::to_string(port));
     auto client_callback = [this](const ngraph::he::TCPMessage& message) {
       m_message_count++;
-      NGRAPH_INFO << "client_callback";
-
-      ngraph::he::TCPMessage return_message(message);
-      NGRAPH_INFO << "m_message_count " << m_message_count;
 
       if (m_message_count < m_max_message_count) {
-        m_tcp_client->write_message(std::move(return_message));
-
+        for (size_t i = 0; i < m_max_message_count; ++i) {
+          ngraph::he::TCPMessage return_message(message);
+          m_tcp_client->write_message(std::move(return_message));
+        }
       } else {
         m_tcp_client->close();
       }
     };
     m_tcp_client = std::make_unique<ngraph::he::TCPClient>(
         io_context, endpoints, client_callback);
-    NGRAPH_INFO << "Client running io_context";
     io_context.run();
-
-    NGRAPH_INFO << "Client done";
   }
 
  private:
@@ -173,7 +154,7 @@ class MockClient {
   size_t m_max_message_count;
 };
 
-TEST(tcp_client, fast_connect) {
+TEST(tcp_client, connect_before_server_started) {
   size_t port{34000};
   std::string hostname{"localhost"};
   size_t message_count{1};
@@ -181,6 +162,7 @@ TEST(tcp_client, fast_connect) {
   auto client_thread = std::thread(
       [&]() { auto client = MockClient(hostname, port, message_count); });
 
+  // TODO(fboemer): Better way of guaranteeing client has started
   // Delay to check what happends when server starts after client
   std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
@@ -188,7 +170,8 @@ TEST(tcp_client, fast_connect) {
   client_thread.join();
 }
 
-TEST(tcp_session, session_non_empty_message_queue) {
+// TOD(fboemer): Better way to check message queue is non-empty?
+TEST(tcp_client, non_empty_message_queue) {
   size_t port{34000};
   std::string hostname{"localhost"};
 
@@ -198,10 +181,5 @@ TEST(tcp_session, session_non_empty_message_queue) {
       [&]() { auto client = MockClient(hostname, port, message_count); });
 
   auto server = MockServer(port, message_count);
-
-  NGRAPH_INFO << "Waiting for client to finish";
-
   client_thread.join();
-
-  NGRAPH_INFO << "End of test";
 }

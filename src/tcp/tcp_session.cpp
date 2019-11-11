@@ -33,7 +33,6 @@ TCPSession::TCPSession(boost::asio::ip::tcp::socket socket,
       m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
 void TCPSession::do_read_header() {
-  NGRAPH_INFO << "TCPSession::do_read_header";
   if (m_read_buffer.size() < header_length) {
     m_read_buffer.resize(header_length);
   }
@@ -51,7 +50,6 @@ void TCPSession::do_read_header() {
 }
 
 void TCPSession::do_read_body(size_t body_length) {
-  NGRAPH_INFO << "TCPSession::do_read_body length " << body_length;
   m_read_buffer.resize(header_length + body_length);
 
   auto self(shared_from_this());
@@ -69,7 +67,6 @@ void TCPSession::do_read_body(size_t body_length) {
 }
 
 void TCPSession::write_message(TCPMessage&& message) {
-  NGRAPH_INFO << "TCPSession::write_message";
   bool write_in_progress = is_writing();
   m_message_queue.emplace_back(std::move(message));
   if (!write_in_progress) {
@@ -78,8 +75,6 @@ void TCPSession::write_message(TCPMessage&& message) {
 }
 
 void TCPSession::do_write() {
-  NGRAPH_INFO << "TCPSession::do_write";
-
   std::lock_guard<std::mutex> lock(m_write_mtx);
   m_is_writing.notify_all();
   auto self(shared_from_this());
@@ -94,7 +89,6 @@ void TCPSession::do_write() {
         NGRAPH_CHECK(!ec, "Server error writing message: ", ec.message());
         m_message_queue.pop_front();
         if (!m_message_queue.empty()) {
-          NGRAPH_INFO << "Message queue non-empty";
           do_write();
         } else {
           m_is_writing.notify_all();
