@@ -27,14 +27,16 @@ set(SRC
     test_he_fusion.cpp
     test_he_supported_ops.cpp
     test_propagate_he_annotations.cpp
-    # src/seal files
+    # src/seal
     test_encryption_parameters.cpp
     test_he_seal_executable.cpp
     test_bounded_relu.cpp
     test_perf_micro.cpp
     test_seal.cpp
     test_protobuf.cpp
-    test_tcp_message.cpp)
+    # src/tcp
+    test_tcp_message.cpp
+    test_tcp_client.cpp)
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp

@@ -34,63 +34,21 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
   /// \brief Constructs a session with a given message handler
   TCPSession(boost::asio::ip::tcp::socket socket,
-             std::function<void(const TCPMessage&)> message_handler)
-      : m_socket(std::move(socket)),
-        m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
+             std::function<void(const TCPMessage&)> message_handler);
 
   /// \brief Start the session
   void start() { do_read_header(); }
 
   /// \brief Reads a header
-  void do_read_header() {
-    if (m_read_buffer.size() < header_length) {
-      m_read_buffer.resize(header_length);
-    }
-    auto self(shared_from_this());
-    boost::asio::async_read(
-        m_socket, boost::asio::buffer(&m_read_buffer[0], header_length),
-        [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            size_t msg_len = m_read_message.decode_header(m_read_buffer);
-            do_read_body(msg_len);
-          } else {
-            if (ec.message() != s_expected_teardown_message.c_str()) {
-              NGRAPH_ERR << "Server error reading body: " << ec.message();
-            }
-          }
-        });
-  }
+  void do_read_header();
 
   /// \brief Reads message body of specified length
   /// \param[in] body_length Number of bytes to read
-  void do_read_body(size_t body_length) {
-    m_read_buffer.resize(header_length + body_length);
-
-    auto self(shared_from_this());
-    boost::asio::async_read(
-        m_socket,
-        boost::asio::buffer(&m_read_buffer[header_length], body_length),
-        [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            m_read_message.unpack(m_read_buffer);
-            m_message_callback(m_read_message);
-            do_read_header();
-          } else {
-            NGRAPH_ERR << "Server error reading message: " << ec.message();
-            throw std::runtime_error("Server error reading message");
-          }
-        });
-  }
+  void do_read_body(size_t body_length);
 
   /// \brief Adds a message to the message-writing queue
   /// \param[in,out] message Message to write
-  void write_message(TCPMessage&& message) {
-    bool write_in_progress = is_writing();
-    m_message_queue.emplace_back(std::move(message));
-    if (!write_in_progress) {
-      do_write();
-    }
-  }
+  void write_message(TCPMessage&& message);
 
   /// \brief Returns whether or not a message is queued to be written
   bool is_writing() const { return !m_message_queue.empty(); }
@@ -100,30 +58,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
   std::condition_variable& is_writing_cond() { return m_is_writing; }
 
  private:
-  void do_write() {
-    std::lock_guard<std::mutex> lock(m_write_mtx);
-    m_is_writing.notify_all();
-    auto self(shared_from_this());
-    auto message = m_message_queue.front();
-    message.pack(m_write_buffer);
-    NGRAPH_HE_LOG(4) << "Server writing message size " << m_write_buffer.size()
-                     << " bytes";
-
-    boost::asio::async_write(
-        m_socket, boost::asio::buffer(m_write_buffer),
-        [this, self](boost::system::error_code ec, std::size_t length) {
-          if (!ec) {
-            m_message_queue.pop_front();
-            if (!m_message_queue.empty()) {
-              do_write();
-            } else {
-              m_is_writing.notify_all();
-            }
-          } else {
-            NGRAPH_ERR << "Server error writing message: " << ec.message();
-          }
-        });
-  }
+  void do_write();
 
  private:
   std::deque<TCPMessage> m_message_queue;

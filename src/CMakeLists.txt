@@ -56,6 +56,8 @@ set(HE_SRC
     seal/seal_util.cpp
     # tcp
     tcp/tcp_message.cpp
+    tcp/tcp_client.cpp
+    tcp/tcp_session.cpp
     # protobuf files
     ${message_proto_srcs})
 
