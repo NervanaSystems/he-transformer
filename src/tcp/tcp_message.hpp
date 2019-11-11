@@ -17,8 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
-#include <utility>
 
 #include "protos/message.pb.h"
 
@@ -30,25 +28,16 @@ class TCPMessage {
   using data_buffer = std::vector<char>;
 
   /// \brief Creates empty message
-  TCPMessage() = default;
+  TCPMessage();
 
   TCPMessage(pb::TCPMessage& proto_message) = delete;
 
   /// \brief Creates message from given protobuf message
   /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  explicit TCPMessage(pb::TCPMessage&& proto_message)
-      : m_proto_message(
-            std::make_shared<pb::TCPMessage>(std::move(proto_message))) {}
-
-  /// \brief Creates message from given protobuf message
-  /// \param[in,out] proto_message Protobuf message to populate TCPMessage
-  explicit TCPMessage(std::shared_ptr<pb::TCPMessage> proto_message)
-      : m_proto_message(std::move(proto_message)) {}
+  explicit TCPMessage(pb::TCPMessage&& proto_message);
 
   /// \brief Returns pointer to udnerlying protobuf message
-  std::shared_ptr<pb::TCPMessage> proto_message() const {
-    return m_proto_message;
-  }
+  std::shared_ptr<pb::TCPMessage> proto_message() const;
 
   /// \brief Stores a size in the buffer header
   /// \param[in,out] buffer Buffer to write size to
@@ -56,9 +45,9 @@ class TCPMessage {
   static void encode_header(data_buffer& buffer, size_t size);
 
   /// \brief Given a buffer storing a message with the length in the first
-  /// header_length bytes, returns the size of the stored buffer \param[in]
-  /// buffer Buffer storing a message \returns size of message stored in
-  /// buffer
+  /// header_length bytes, returns the size of the stored buffer
+  /// \param[in] buffer Buffer storing a message
+  /// \returns size of message stored in buffer
   static size_t decode_header(const data_buffer& buffer);
 
   /// \brief Writes the message to a buffer

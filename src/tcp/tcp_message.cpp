@@ -28,6 +28,16 @@
 
 namespace ngraph::he {
 
+TCPMessage::TCPMessage() = default;
+
+TCPMessage::TCPMessage(pb::TCPMessage&& proto_message)
+    : m_proto_message(
+          std::make_shared<pb::TCPMessage>(std::move(proto_message))) {}
+
+std::shared_ptr<pb::TCPMessage> TCPMessage::proto_message() const {
+  return m_proto_message;
+}
+
 void TCPMessage::encode_header(TCPMessage::data_buffer& buffer, size_t size) {
   NGRAPH_CHECK(buffer.size() >= TCPMessage::header_length, "Buffer too small");
   std::memcpy(&buffer[0], &size, TCPMessage::header_length);

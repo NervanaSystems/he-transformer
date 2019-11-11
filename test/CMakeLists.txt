@@ -33,7 +33,8 @@ set(SRC
     test_bounded_relu.cpp
     test_perf_micro.cpp
     test_seal.cpp
-    test_protobuf.cpp)
+    test_protobuf.cpp
+    test_tcp_message.cpp)
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp
