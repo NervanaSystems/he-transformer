@@ -152,10 +152,9 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
                             const seal::MemoryPoolHandle& pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  if (!seal::is_metadata_valid_for(encrypted, context)) {
-    throw ngraph_error("encrypted is not valid for encryption parameters");
-  }
-  if (!context->get_context_data(encrypted.parms_id())) {
+  if (!seal::is_metadata_valid_for(encrypted, context) ||
+      !is_buffer_valid(encrypted) ||
+      !context->get_context_data(encrypted.parms_id())) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
   if (!encrypted.is_ntt_form()) {
