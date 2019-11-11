@@ -29,6 +29,7 @@ set(SRC
     test_propagate_he_annotations.cpp
     # src/seal files
     test_encryption_parameters.cpp
+    test_he_seal_executable.cpp
     test_bounded_relu.cpp
     test_perf_micro.cpp
     test_seal.cpp

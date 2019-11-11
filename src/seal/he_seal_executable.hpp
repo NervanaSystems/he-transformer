@@ -203,13 +203,6 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] node_wrapper Wrapper of graph operation
-  bool plaintext_packed(const NodeWrapper& node_wrapper) {
-    return plaintext_packed(*node_wrapper.get_op());
-  }
-
-  /// \brief Returns whether or not operation node should be packed using
-  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation
   bool plaintext_packed(const op::Op& op) {
     auto annotation = op.get_op_annotations();
@@ -219,6 +212,8 @@ class HESealExecutable : public runtime::Executable {
     }
     return false;
   }
+
+  inline void set_verbose_all_ops(bool value) { m_verbose_all_ops = value; }
 
  private:
   HESealBackend& m_he_seal_backend;
