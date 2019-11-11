@@ -213,7 +213,7 @@ class HESealExecutable : public runtime::Executable {
     return false;
   }
 
-  inline void set_verbose_all_ops(bool value) { m_verbose_all_ops = value; }
+  void set_verbose_all_ops(bool value) { m_verbose_all_ops = value; }
 
  private:
   HESealBackend& m_he_seal_backend;
