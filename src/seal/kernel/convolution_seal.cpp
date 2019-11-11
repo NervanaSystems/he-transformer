@@ -216,8 +216,7 @@ void convolution_seal(
     }
 
     static const size_t conv_verbosity_idx = 1000;
-    if (verbose && out_coord_idx % conv_verbosity_idx == 0 &&
-        out_coord_idx != 0) {
+    if (verbose && out_coord_idx % conv_verbosity_idx == 0) {
       NGRAPH_HE_LOG(3) << "Finished out coord " << out_coord_idx;
     }
   }

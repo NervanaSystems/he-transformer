@@ -76,30 +76,6 @@ class HEOpAnnotations : public op::util::OpAnnotations {
     return std::make_shared<HEOpAnnotations>(false, true, false);
   }
 
-  static std::shared_ptr<HEOpAnnotations>
-  server_ciphertext_packed_annotation() {
-    return std::make_shared<HEOpAnnotations>(false, true, true);
-  }
-
-  static std::shared_ptr<HEOpAnnotations>
-  client_plaintext_unpacked_annotation() {
-    return std::make_shared<HEOpAnnotations>(true, false, false);
-  }
-
-  static std::shared_ptr<HEOpAnnotations> client_plaintext_packed_annotation() {
-    return std::make_shared<HEOpAnnotations>(true, false, true);
-  }
-
-  static std::shared_ptr<HEOpAnnotations>
-  client_ciphertext_unpacked_annotation() {
-    return std::make_shared<HEOpAnnotations>(true, true, false);
-  }
-
-  static std::shared_ptr<HEOpAnnotations>
-  client_ciphertext_packed_annotation() {
-    return std::make_shared<HEOpAnnotations>(true, true, true);
-  }
-
  private:
   bool m_from_client = false;
   bool m_encrypted = false;

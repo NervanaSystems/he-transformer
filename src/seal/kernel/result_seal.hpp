@@ -42,8 +42,6 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
 
   } else if (arg.is_plaintext() && out.is_plaintext()) {
     out = arg;
-  } else {
-    NGRAPH_CHECK(false, "Unknown result type");
   }
 }
 

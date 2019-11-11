@@ -95,8 +95,6 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     out.set_plaintext(arg0.get_plaintext());
     scalar_power_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                       out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 

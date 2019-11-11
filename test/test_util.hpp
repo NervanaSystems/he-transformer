@@ -62,24 +62,8 @@ bool all_close(const std::vector<T>& a, const std::vector<T>& b,
 
 inline std::shared_ptr<ngraph::he::HEOpAnnotations> annotation_from_flags(
     const bool from_client, const bool encrypted, const bool packed) {
-  if (!from_client && encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::server_ciphertext_packed_annotation();
-  } else if (!from_client && encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
-  } else if (!from_client && !encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::server_plaintext_packed_annotation();
-  } else if (!from_client && !encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation();
-  } else if (from_client && encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::client_ciphertext_packed_annotation();
-  } else if (from_client && encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation();
-  } else if (from_client && !encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::client_plaintext_packed_annotation();
-  } else if (from_client && !encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::client_plaintext_unpacked_annotation();
-  }
-  throw ngraph_error("Logic error");
+  return std::make_shared<ngraph::he::HEOpAnnotations>(from_client, encrypted,
+                                                       packed);
 };
 
 inline std::shared_ptr<ngraph::runtime::Tensor> tensor_from_flags(

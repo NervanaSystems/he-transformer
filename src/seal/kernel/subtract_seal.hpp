@@ -94,8 +94,6 @@ inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     scalar_subtract_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                          out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 

@@ -95,8 +95,6 @@ inline void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
     }
     scalar_multiply_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                          out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
   out.complex_packing() = arg0.complex_packing();
 }

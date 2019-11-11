@@ -39,13 +39,15 @@ inline void scalar_negate_seal(HEType& arg, HEType& out,
                "Complex packing types don't match");
   out.complex_packing() = arg.complex_packing();
 
+  NGRAPH_CHECK((arg.is_plaintext() == out.is_plaintext()) &&
+                   (arg.is_ciphertext() == out.is_ciphertext()),
+               "Unknown argument types");
+
   if (arg.is_ciphertext() && out.is_ciphertext()) {
     scalar_negate_seal(*arg.get_ciphertext(), out.get_ciphertext(),
                        he_seal_backend);
   } else if (arg.is_plaintext() && out.is_plaintext()) {
     scalar_negate_seal(arg.get_plaintext(), out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 
