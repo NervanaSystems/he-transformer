@@ -19,6 +19,7 @@
 
 #include "gtest/gtest.h"
 #include "he_plaintext.hpp"
+#include "he_type.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
@@ -151,7 +152,6 @@ TEST(seal_util, match_modulus_and_scale_inplace) {
                           *he_backend->get_decryptor(),
                           *he_backend->get_ckks_encoder());
       output.resize(plain.size());
-      NGRAPH_INFO << "output " << output;
       EXPECT_TRUE(ngraph::test::he::all_close(output, plain));
     };
 
@@ -317,4 +317,24 @@ TEST(seal_util, multiply_plain_inplace_large_coeff) {
                       *he_backend->get_encryptor(), complex_packing);
 
   ngraph::he::multiply_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend);
+}
+
+TEST(seal_util, match_to_smallest_chain_index) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  ngraph::he::HEPlaintext plain{1, 2, 3};
+  size_t vec_size{5};
+
+  std::vector<ngraph::he::HEType> plains(vec_size,
+                                         ngraph::he::HEType(plain, false));
+
+  EXPECT_EQ(std::numeric_limits<size_t>::max(),
+            ngraph::he::match_to_smallest_chain_index(plains, *he_backend));
+
+  EXPECT_EQ(plains.size(), vec_size);
+  for (const auto& elem : plains) {
+    EXPECT_TRUE(elem.is_plaintext());
+    EXPECT_TRUE(ngraph::test::he::all_close(elem.get_plaintext(), plain));
+  }
 }
