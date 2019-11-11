@@ -54,6 +54,8 @@ set(HE_SRC
     seal/he_seal_encryption_parameters.cpp
     seal/he_seal_executable.cpp
     seal/seal_util.cpp
+    # tcp
+    tcp/tcp_message.cpp
     # protobuf files
     ${message_proto_srcs})
 
