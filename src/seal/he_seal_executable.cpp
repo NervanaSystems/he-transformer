@@ -731,10 +731,7 @@ bool HESealExecutable::call(
   NGRAPH_HE_LOG(3) << "Mapping function outputs to HETensor";
   for (size_t output_count = 0; output_count < get_results().size();
        ++output_count) {
-    auto output = get_results()[output_count];
-    if (!std::dynamic_pointer_cast<op::Result>(output)) {
-      throw ngraph_error("One of function's outputs isn't op::Result");
-    }
+    std::shared_ptr<op::Result> output = get_results()[output_count];
     ngraph::descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
 
     auto& he_output = he_outputs[output_count];
