@@ -54,6 +54,7 @@ set(BACKEND_TEST_SRC
     test_divide.in.cpp
     test_exp.in.cpp
     test_dot.in.cpp
+    test_rescale.in.cpp
     test_layers.in.cpp
     test_maxpool.in.cpp
     test_minimum.in.cpp

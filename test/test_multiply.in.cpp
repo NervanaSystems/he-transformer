@@ -161,7 +161,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_end_of_depth) {
         "poly_modulus_degree" : 2048,
         "security_level" : 128,
         "coeff_modulus" : [54],
-        "scale" : 1.23,
+        "scale" : 16777216,
         "complex_packing" : true
     })";
   auto he_parms =
