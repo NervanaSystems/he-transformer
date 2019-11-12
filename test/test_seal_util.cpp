@@ -25,6 +25,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
+#include "seal/seal_plaintext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
@@ -337,4 +338,105 @@ TEST(seal_util, match_to_smallest_chain_index) {
     EXPECT_TRUE(elem.is_plaintext());
     EXPECT_TRUE(ngraph::test::he::all_close(elem.get_plaintext(), plain));
   }
+}
+
+TEST(seal_util, encode_invalid) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto context = he_backend->get_context();
+
+  // Pool is uninitialized
+  {
+    std::vector<std::uint64_t> dst;
+    auto parms_id = context->first_parms_id();
+    seal::MemoryPoolHandle pool;
+    EXPECT_ANY_THROW(ngraph::he::encode(1.23, ngraph::element::f32, 1 << 24U,
+                                        parms_id, dst, *he_backend, pool));
+  }
+  // Incorrect scale
+  {
+    std::vector<std::uint64_t> dst;
+    auto parms_id = context->first_parms_id();
+    seal::MemoryPoolHandle pool;
+    EXPECT_ANY_THROW(ngraph::he::encode(1.23, ngraph::element::f32, -1.0,
+                                        parms_id, dst, *he_backend, pool));
+  }
+  // Encoded value is too large
+  {
+    std::vector<std::uint64_t> dst;
+    auto parms_id = context->first_parms_id();
+    EXPECT_ANY_THROW(ngraph::he::encode(std::numeric_limits<float>::max(),
+                                        ngraph::element::f32, 1 << 29, parms_id,
+                                        dst, *he_backend));
+  }
+}
+
+TEST(seal_util, encode_large_coeff) {
+  size_t expected_encode = std::round(16777216 * 1.23);
+
+  // Between 60 and 128 bits
+  {
+    auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+    auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 2048,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60],
+        "scale" : 16777216
+    })";
+    std::string error_str;
+    he_backend->set_config({{"encryption_parameters", param_str}}, error_str);
+
+    auto context = he_backend->get_context();
+    std::vector<std::uint64_t> dst;
+    auto parms_id = context->first_parms_id();
+    ngraph::he::encode(1.23, ngraph::element::f32, 16777216, parms_id, dst,
+                       *he_backend);
+
+    EXPECT_EQ(dst.size(), 1);
+    EXPECT_EQ(dst[0], expected_encode);
+  }
+  // More than 128 bits
+  {
+    auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+    auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 2048,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60, 60, 60],
+        "scale" : 16777216
+    })";
+    std::string error_str;
+    he_backend->set_config({{"encryption_parameters", param_str}}, error_str);
+
+    auto context = he_backend->get_context();
+    std::vector<std::uint64_t> dst;
+    auto parms_id = context->first_parms_id();
+    ngraph::he::encode(1.23, ngraph::element::f32, 16777216, parms_id, dst,
+                       *he_backend);
+
+    EXPECT_EQ(dst.size(), 3);
+    for (const auto& elem : dst) {
+      EXPECT_EQ(elem, expected_encode);
+    }
+  }
+}
+
+TEST(seal_util, encode_plaintext_wrapper_wrong_element_type) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  ngraph::he::SealPlaintextWrapper plain_wrapper;
+  ngraph::he::HEPlaintext plain{1, 2, 3};
+
+  auto context = he_backend->get_context();
+  EXPECT_ANY_THROW(ngraph::he::encode(
+      plain_wrapper, plain, *he_backend->get_ckks_encoder(),
+      context->first_parms_id(), ngraph::element::i8, 1 << 24, false));
 }

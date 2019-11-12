@@ -513,7 +513,6 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
     case element::Type_t::f16:
     case element::Type_t::boolean:
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
-      break;
   }
 
   destination.complex_packing() = complex_packing;
