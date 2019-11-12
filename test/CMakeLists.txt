@@ -34,6 +34,7 @@ set(SRC
     test_perf_micro.cpp
     test_seal.cpp
     test_protobuf.cpp
+    test_seal_plaintext_wrapper.cpp
     test_seal_util.cpp
     # src/tcp
     test_tcp_message.cpp

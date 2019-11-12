@@ -131,11 +131,9 @@ NodeWrapper::NodeWrapper(std::shared_ptr<const ngraph::Node> node)
       NGRAPH_OP(BoundedRelu, ngraph::op)};
 #undef NGRAPH_OP
   auto it = typeid_map.find(m_node->description());
-  if (it != typeid_map.end()) {
-    m_typeid = it->second;
-  } else {
-    throw unsupported_op("Unsupported op '" + m_node->description() + "'");
-  }
+  NGRAPH_CHECK(it != typeid_map.end(), "Unsupported op ",
+               m_node->description());
+  m_typeid = it->second;
 }
 
 std::shared_ptr<const op::Op> NodeWrapper::get_op() const {

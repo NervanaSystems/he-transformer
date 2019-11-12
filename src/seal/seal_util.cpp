@@ -109,9 +109,8 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
   size_t coeff_mod_count = coeff_modulus.size();
 
   // Size check
-  if (!seal::util::product_fits_in(coeff_count, coeff_mod_count)) {
-    throw ngraph_error("invalid parameters");
-  }
+  NGRAPH_CHECK(seal::util::product_fits_in(coeff_count, coeff_mod_count),
+               "invalid parameters");
 
   NGRAPH_CHECK(encrypted.data() != nullptr, "Encrypted data == nullptr");
 
@@ -162,10 +161,9 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   size_t encrypted_ntt_size = encrypted.size();
 
   // Size check
-  if (!seal::util::product_fits_in(encrypted_ntt_size, coeff_count,
-                                   coeff_mod_count)) {
-    throw ngraph_error("invalid parameters");
-  }
+  NGRAPH_CHECK(seal::util::product_fits_in(encrypted_ntt_size, coeff_count,
+                                           coeff_mod_count),
+               "invalid parameters");
 
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   // TODO(fboemer): explore using different scales! Smaller scales might reduce
@@ -291,9 +289,9 @@ void encode(double value, const element::Type& element_type, double scale,
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->get_context_data(parms_id);
-  if (!context_data_ptr) {
-    throw ngraph_error("parms_id is not valid for encryption parameters");
-  }
+
+  NGRAPH_CHECK(context_data_ptr != nullptr,
+               "parms_id is not valid for encryption parameters");
   if (!pool) {
     throw ngraph_error("pool is uninitialized");
   }
@@ -305,9 +303,8 @@ void encode(double value, const element::Type& element_type, double scale,
   size_t coeff_count = parms.poly_modulus_degree();
 
   // Quick sanity check
-  if (!seal::util::product_fits_in(coeff_mod_count, coeff_count)) {
-    throw ngraph_error("invalid parameters");
-  }
+  NGRAPH_CHECK(seal::util::product_fits_in(coeff_mod_count, coeff_count),
+               "invalid parameters");
 
   // Check that scale is positive and not too large
   if (scale <= 0 || (static_cast<int>(log2(scale)) >=
