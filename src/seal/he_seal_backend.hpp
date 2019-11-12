@@ -266,18 +266,6 @@ class HESealBackend : public runtime::Backend {
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
-  /// \brief Returns whether or not the rescaling operation is performed after
-  /// every multiplication.
-  /// \warning Naive rescaling results in a dramatic performance penalty for
-  /// Convolution and Dot operations. Typically, this should never be used
-  bool naive_rescaling() const { return m_naive_rescaling; }
-
-  /// \brief Returns whether or not the rescaling operation is performed after
-  /// every multiplication.
-  /// \warning Naive rescaling results in a dramatic performance penalty for
-  /// Convolution and Dot operations. Typically, this should never be used
-  bool& naive_rescaling() { return m_naive_rescaling; }
-
   /// \brief Returns the chain index, also known as level, of the ciphertext
   /// \param[in] cipher Ciphertext whose chain index to return
   /// \returns The chain index of the ciphertext.
@@ -315,7 +303,6 @@ class HESealBackend : public runtime::Backend {
   }
 
  private:
-  bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;

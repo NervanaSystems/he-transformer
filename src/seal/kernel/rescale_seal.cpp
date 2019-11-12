@@ -23,9 +23,6 @@ namespace ngraph::he {
 
 void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
                   const bool verbose) {
-  if (he_seal_backend.naive_rescaling()) {
-    return;
-  }
   if (verbose) {
     NGRAPH_HE_LOG(3) << "Rescaling " << arg.size() << " elements";
   }

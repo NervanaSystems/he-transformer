@@ -130,9 +130,6 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
     if (out.get_ciphertext()->ciphertext().is_transparent()) {
       HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
       out.set_plaintext(zeros);
-    } else if (he_seal_backend.naive_rescaling()) {
-      he_seal_backend.get_evaluator()->rescale_to_next_inplace(
-          out.get_ciphertext()->ciphertext(), pool);
     }
   } else {
     if (!out.is_ciphertext()) {
