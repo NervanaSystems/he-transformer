@@ -77,7 +77,7 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
 }
 
 std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
-  os << "HEPlaintext(";
+  os << "HEPlaintext( ";
   for (const auto& value : plain) {
     os << value << " ";
   }

@@ -277,3 +277,9 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_scalar_cipher_cipher_complex_unpacked) {
            std::vector<float>{6}, std::vector<float>{48}, false, false, false,
            false);
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, dot_2x0_0_cipher_cipher_complex_unpacked) {
+  dot_test(ngraph::Shape{2, 0}, ngraph::Shape{0}, std::vector<float>{},
+           std::vector<float>{}, std::vector<float>{0, 0}, false, false, false,
+           false);
+}

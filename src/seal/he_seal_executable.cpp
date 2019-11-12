@@ -1074,7 +1074,8 @@ void HESealExecutable::generate_calls(
       }
       dot_seal(args[0]->data(), args[1]->data(), out[0]->data(), in_shape0,
                in_shape1, out[0]->get_packed_shape(),
-               dot->get_reduction_axes_count(), type, m_he_seal_backend);
+               dot->get_reduction_axes_count(), type, m_batch_size,
+               m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
 
       break;

@@ -28,6 +28,6 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
-              HESealBackend& he_seal_backend);
+              size_t batch_size, HESealBackend& he_seal_backend);
 
 }  // namespace ngraph::he

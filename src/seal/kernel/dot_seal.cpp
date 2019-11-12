@@ -24,7 +24,7 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
-              HESealBackend& he_seal_backend) {
+              size_t batch_size, HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   // Get the sizes of the dot axes. It's easiest to pull them from arg1
@@ -135,9 +135,8 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
     }
     // Write the sum back.
     if (first_add) {
-      // TODO(fboemer): batch size number of zeros?
-      HEPlaintext zero(std::vector<double>{0});
-      out[out_index].set_plaintext(zero);
+      HEPlaintext zero(batch_size, 0);
+      out[out_index].set_plaintext(std::move(zero));
     } else {
       out[out_index] = sum;
     }
