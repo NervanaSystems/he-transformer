@@ -14,11 +14,17 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include <fstream>
+#include <iostream>
 #include <sstream>
+#include <string>
 
 #include "gtest/gtest.h"
+#include "logging/ngraph_he_log.hpp"
+#include "ngraph/file_util.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
+#include "seal/seal_util.hpp"
 
 TEST(encryption_parameters, create) {
   size_t poly_modulus_degree{4096};
@@ -90,7 +96,7 @@ TEST(encryption_parameters, save) {
 }
 
 TEST(encryption_parameters, from_string) {
-  std::string config = R"(
+  std::string param_str = R"(
     {
         "scheme_name" : "HE_SEAL",
         "poly_modulus_degree" : 2048,
@@ -101,10 +107,43 @@ TEST(encryption_parameters, from_string) {
     })";
   auto he_parms =
       ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
-          config.c_str());
+          param_str.c_str());
 
   EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
   EXPECT_EQ(he_parms.security_level(), 128);
   EXPECT_EQ(he_parms.scale(), 1.23);
   EXPECT_EQ(he_parms.complex_packing(), true);
+}
+
+TEST(encryption_parameters, from_file) {
+  std::string config = R"(
+    {
+        "scheme_name": "HE_SEAL",
+        "poly_modulus_degree": 2048,
+        "security_level": 128,
+        "coeff_modulus": [54],
+        "complex_packing": true
+    }
+    )";
+
+  std::string filename = ngraph::file_util::tmp_filename();
+  {
+    std::ofstream file(filename);
+    file << config;
+  }
+
+  auto he_parms =
+      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
+          filename.c_str());
+
+  EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
+  EXPECT_EQ(he_parms.security_level(), 128);
+
+  double exp_scale = ngraph::he::choose_scale(seal::CoeffModulus::Create(
+      he_parms.poly_modulus_degree(), std::vector<int>{54}));
+
+  EXPECT_EQ(he_parms.scale(), exp_scale);
+  EXPECT_EQ(he_parms.complex_packing(), true);
+
+  ngraph::file_util::remove_file(filename);
 }
