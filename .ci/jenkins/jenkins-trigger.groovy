@@ -39,25 +39,12 @@ timestamps {
         def sleeptime=0
         retry(count: 3) {
             sleep sleeptime; sleeptime = 10
-            sh "git clone -b $JENKINS_BRANCH https://github.intel.com/AIPG/cje-algo ${JENKINS_DIR}"
+            sh "git clone -b $JENKINS_BRANCH https://github.intel.com/AIPG/cje-algo $JENKINS_DIR"
         }
-
-        // Call the main job script.
-        //
-        // NOTE: We keep the main job script in github.intel.com because it may
-        //      contain references to technology which has not yet been released.
-        //
         
-        echo "Calling he-transformer-ci-premerge.groovy"
-        def heTransformerCIPreMerge = load("${JENKINS_DIR}/he-transformer-ci-premerge.groovy")
-
-        heTransformerCIPreMerge(premerge: 'true',
-                        prURL: CHANGE_URL,
-                        prTitle: CHANGE_TITLE,
-                        prTarget: CHANGE_TARGET,
+        def heTransformerCIPreMerge = load("$JENKINS_DIR/hetransformer-lib/he-transformer-ci-premerge.groovy")
+        heTransformerCIPreMerge(prURL: CHANGE_URL,
                         prAuthor: CHANGE_AUTHOR,
-                        jenkinsBranch: JENKINS_BRANCH,
-                        timeoutTime: TIMEOUTTIME,
                         useMBPipelineSCM: 'true',
                         checkoutBranch: '-UNDEFINED-BRANCH-'
                         )
@@ -69,4 +56,3 @@ timestamps {
 }  // End:  timestamps
 
 echo "Done"
-
