@@ -14,24 +14,12 @@
 // limitations under the License.
 //*****************************************************************************
 
-#pragma once
+#include "gtest/gtest.h"
+#include "logging/ngraph_he_log.hpp"
 
-#include <cstdint>
-#include <string>
+TEST(ngraph_he_log, log_level_str_to_int) {
+  EXPECT_EQ(0, ngraph::he::logging::log_level_str_to_int(nullptr));
 
-#include "ngraph/log.hpp"
-
-namespace ngraph::he::logging {
-// Parse log level (int64) from environment variable (char*)
-int64_t log_level_str_to_int(const char* env_var_val);
-
-int64_t min_ngraph_he_log_level();
-
-}  // namespace ngraph::he::logging
-
-#define NGRAPH_HE_VLOG_IS_ON(lvl) \
-  ((lvl) <= ngraph::he::logging::min_ngraph_he_log_level())
-
-#define NGRAPH_HE_LOG(lvl) \
-  if (NGRAPH_HE_VLOG_IS_ON(lvl)) NGRAPH_INFO
-// Comment to avoid backslash-newline at end of file warning
+  std::string invalid_str{"DUMMY"};
+  EXPECT_EQ(0, ngraph::he::logging::log_level_str_to_int(invalid_str.c_str()));
+}

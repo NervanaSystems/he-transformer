@@ -17,7 +17,6 @@
 #include "seal/he_seal_client.hpp"
 
 #include <algorithm>
-#include <boost/asio.hpp>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -25,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "boost/asio.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"

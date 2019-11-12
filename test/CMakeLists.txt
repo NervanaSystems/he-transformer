@@ -37,7 +37,10 @@ set(SRC
     test_seal_util.cpp
     # src/tcp
     test_tcp_message.cpp
-    test_tcp_client.cpp)
+    test_tcp_client.cpp
+    # test logging
+    test_ngraph_he_log.cpp
+    )
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp

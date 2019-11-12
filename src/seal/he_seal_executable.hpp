@@ -17,7 +17,6 @@
 #pragma once
 
 #include <atomic>
-#include <boost/asio.hpp>
 #include <chrono>
 #include <condition_variable>
 #include <memory>
@@ -26,6 +25,7 @@
 #include <thread>
 #include <vector>
 
+#include "boost/asio.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "logging/ngraph_he_log.hpp"

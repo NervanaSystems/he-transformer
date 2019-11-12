@@ -19,6 +19,7 @@
 
 #include "boost/asio.hpp"
 #include "gtest/gtest.h"
+#include "logging/ngraph_he_log.hpp"
 #include "protos/message.pb.h"
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"

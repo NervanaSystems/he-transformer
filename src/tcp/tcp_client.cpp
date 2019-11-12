@@ -16,13 +16,13 @@
 
 #include "tcp/tcp_client.hpp"
 
-#include <boost/asio.hpp>
 #include <chrono>
 #include <deque>
 #include <memory>
 #include <string>
 #include <thread>
 
+#include "boost/asio.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/check.hpp"
 #include "tcp/tcp_message.hpp"
