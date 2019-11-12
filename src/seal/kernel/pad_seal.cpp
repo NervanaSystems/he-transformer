@@ -31,9 +31,8 @@ void pad_seal(std::vector<HEType>& arg0,
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& out_shape, const CoordinateDiff& padding_below,
               const CoordinateDiff& padding_above, op::PadMode pad_mode) {
-  if (arg1.size() != 1) {
-    throw ngraph_error("Padding element must be scalar");
-  }
+  NGRAPH_CHECK(arg1.size() == 1, "Padding element must be scalar");
+
   auto& pad_val = arg1[0];
 
   // start at (0,0,...,0)

@@ -415,3 +415,18 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_2channel_2image_asym) {
           .get_vector(),
       true, true, false, false);
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, pad_symmetric) {
+  // Symmetric mode padding not supported
+  EXPECT_ANY_THROW(pad_test(
+      ngraph::Shape{2, 3}, ngraph::CoordinateDiff{1, 2},
+      ngraph::CoordinateDiff{1, 2}, ngraph::op::PadMode::SYMMETRIC,
+      ngraph::test::NDArray<float, 2>({{1, 2, 3}, {4, 5, 6}}).get_vector(),
+      std::vector<float>{2112},
+      ngraph::test::NDArray<float, 2>({{2, 1, 1, 2, 3, 3, 2},
+                                       {2, 1, 1, 2, 3, 3, 2},
+                                       {5, 4, 4, 5, 6, 6, 5},
+                                       {5, 4, 4, 5, 6, 6, 5}})
+          .get_vector(),
+      true, false, false, false));
+}

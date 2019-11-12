@@ -39,9 +39,8 @@ inline void reshape_seal(const std::vector<HEType>& arg,
   CoordinateTransform output_transform(out_shape);
   CoordinateTransform::Iterator output_it = output_transform.begin();
 
-  if (output_it == output_transform.end()) {
-    return;
-  }
+  NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
+               shape_size(output_transform.get_target_shape()));
 
   for (const Coordinate& input_coord : input_transform) {
     const Coordinate& output_coord = *output_it;
