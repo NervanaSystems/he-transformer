@@ -133,6 +133,7 @@ TEST(encryption_parameters, from_file) {
         "poly_modulus_degree": 2048,
         "security_level": 128,
         "coeff_modulus": [54],
+        "scale": 1.23,
         "complex_packing": true
     }
     )";
@@ -150,11 +151,42 @@ TEST(encryption_parameters, from_file) {
   EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
   EXPECT_EQ(he_parms.security_level(), 128);
 
-  double exp_scale = ngraph::he::choose_scale(seal::CoeffModulus::Create(
-      he_parms.poly_modulus_degree(), std::vector<int>{54}));
-
-  EXPECT_EQ(he_parms.scale(), exp_scale);
+  EXPECT_EQ(he_parms.scale(), 1.23);
   EXPECT_EQ(he_parms.complex_packing(), true);
 
   ngraph::file_util::remove_file(filename);
+}
+
+TEST(encryption_parameters, choose_scale) {
+  auto test_choose_scale = [](const std::vector<int>& coeff_modulus_bits) {
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 2048,
+        "security_level" : 0,
+        "coeff_modulus" : XXXXXXX,
+        "complex_packing" : true
+    })";
+    std::string filler_str{"XXXXXXX"};
+
+    std::string coeff_mod_str = ngraph::vector_to_string(coeff_modulus_bits);
+    param_str.replace(param_str.find(filler_str), filler_str.length(),
+                      coeff_mod_str);
+
+    auto he_parms =
+        ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
+            param_str.c_str());
+
+    double exp_scale = ngraph::he::choose_scale(seal::CoeffModulus::Create(
+        he_parms.poly_modulus_degree(), coeff_modulus_bits));
+
+    EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
+    EXPECT_EQ(he_parms.security_level(), 0);
+    EXPECT_EQ(he_parms.scale(), exp_scale);
+    EXPECT_EQ(he_parms.complex_packing(), true);
+  };
+
+  test_choose_scale(std::vector<int>{54});
+  test_choose_scale(std::vector<int>{54, 54});
+  test_choose_scale(std::vector<int>{54, 54, 54});
 }
