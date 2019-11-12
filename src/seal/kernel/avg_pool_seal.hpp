@@ -145,23 +145,16 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
       }
     }
 
-    if (n_elements == 0) {
-      throw std::runtime_error("AvgPool elements == 0, must be non-zero");
-    }
+    NGRAPH_CHECK(n_elements != 0, "AvgPool num_elements must be non-zero");
+    NGRAPH_CHECK(!first_add, "AvgPool must have > 1 elements to add");
 
-    if (first_add) {
-      // TODO(fboemer): batch size number of zeros?
-      HEPlaintext zero(std::vector<double>{0});
-      out[out_coord_idx].set_plaintext(zero);
-    } else {
-      // TODO(fboemer): batch size number of zeros?
-      auto inv_n_elements =
-          HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
-                 sum.complex_packing());
+    // TODO(fboemer): batch size number of zeros?
+    auto inv_n_elements =
+        HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
+               sum.complex_packing());
 
-      scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
-      out[out_coord_idx] = sum;
-    }
+    scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
+    out[out_coord_idx] = sum;
   }
 }
 
