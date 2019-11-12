@@ -34,71 +34,43 @@ class HEOpAnnotations : public op::util::OpAnnotations {
   /// encrypted
   /// \param[in] packed Whether or not the output of the operation is stored
   /// using plaintext packing
-  HEOpAnnotations(bool from_client, bool encrypted, bool packed)
-      : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
+  HEOpAnnotations(bool from_client, bool encrypted, bool packed);
 
-  bool from_client() const { return m_from_client; }
-  void set_from_client(bool val) { m_from_client = val; }
+  bool from_client() const;
+  void set_from_client(bool val);
 
-  bool encrypted() const { return m_encrypted; }
-  void set_encrypted(bool val) { m_encrypted = val; }
+  bool encrypted() const;
+  void set_encrypted(bool val);
 
-  bool packed() const { return m_packed; }
-  void set_packed(bool val) { m_packed = val; }
+  bool packed() const;
+  void set_packed(bool val);
 
   /// \brief Returns whether or not Op has HEOPAnnotations
   /// \param[in] op Operation to check for annotation
-  static bool has_he_annotation(const op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    return std::dynamic_pointer_cast<HEOpAnnotations>(annotation) != nullptr;
-  }
+  static bool has_he_annotation(const op::Op& op);
 
   /// \brief Returns HEOpAnnotations from Op
   /// \param[in] op Operation to retrieve annotations from
   /// \throws ngraph_error if op doesn't have HEOpAnnotation
-  static std::shared_ptr<HEOpAnnotations> he_op_annotation(const op::Op& op) {
-    NGRAPH_CHECK(HEOpAnnotations::has_he_annotation(op), "op ", op.get_name(),
-                 " has no HEOpAnnotation");
-    return std::static_pointer_cast<HEOpAnnotations>(op.get_op_annotations());
-  }
+  static std::shared_ptr<HEOpAnnotations> he_op_annotation(const op::Op& op);
 
   /// \brief Returns whether or not operation node should be received from
   /// client. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation, should be Constant or Parameter node
-  static bool from_client(const op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
-      return he_annotation->from_client();
-    }
-    return false;
-  }
+  static bool from_client(const op::Op& op);
 
   /// \brief Returns whether or not operation node should be packed using
   /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
   /// \param[in] op Graph operation
-  static bool plaintext_packed(const op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
-      return he_annotation->packed();
-    }
-    return false;
-  }
+  static bool plaintext_packed(const op::Op& op);
 
   static std::shared_ptr<HEOpAnnotations>
-  server_plaintext_unpacked_annotation() {
-    return std::make_shared<HEOpAnnotations>(false, false, false);
-  }
+  server_plaintext_unpacked_annotation();
 
-  static std::shared_ptr<HEOpAnnotations> server_plaintext_packed_annotation() {
-    return std::make_shared<HEOpAnnotations>(false, false, true);
-  }
+  static std::shared_ptr<HEOpAnnotations> server_plaintext_packed_annotation();
 
   static std::shared_ptr<HEOpAnnotations>
-  server_ciphertext_unpacked_annotation() {
-    return std::make_shared<HEOpAnnotations>(false, true, false);
-  }
+  server_ciphertext_unpacked_annotation();
 
  private:
   bool m_from_client = false;

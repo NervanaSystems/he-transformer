@@ -212,6 +212,8 @@ void HESealExecutable::update_he_op_annotations() {
   set_parameters_and_results(*m_function);
 }
 
+size_t HESealExecutable::batch_size() const { return m_batch_size; }
+
 void HESealExecutable::set_batch_size(size_t batch_size) {
   size_t max_batch_size = m_he_seal_backend.get_ckks_encoder()->slot_count();
   if (complex_packing()) {
@@ -222,6 +224,10 @@ void HESealExecutable::set_batch_size(size_t batch_size) {
   m_batch_size = batch_size;
 
   NGRAPH_HE_LOG(5) << "Server set batch size to " << m_batch_size;
+}
+
+void HESealExecutable::set_verbose_all_ops(bool value) {
+  m_verbose_all_ops = value;
 }
 
 void HESealExecutable::check_client_supports_function() {

@@ -104,8 +104,6 @@ TEST(he_seal_executable, performance_data) {
   auto he_handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
       he_backend->compile(f));
 
-  he_handle->set_verbose_all_ops(false);
-
   he_handle->call_with_validate({t_result}, {t_a, t_b});
   EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
                                           exp_result, 1e-3f));

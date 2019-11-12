@@ -33,37 +33,16 @@ namespace ngraph::he {
 /// (a+bi, c+di) => (a,b,c,d)
 /// \param[out] output Vector to store unpacked real values
 /// \param[in] input Vector of complex values to unpack
-template <typename T>
-inline void complex_vec_to_real_vec(std::vector<T>& output,
-                                    const std::vector<std::complex<T>>& input) {
-  NGRAPH_CHECK(output.empty(), "Output vector is not empty");
-  output.reserve(input.size() * 2);
-  for (const std::complex<T>& value : input) {
-    output.emplace_back(value.real());
-    output.emplace_back(value.imag());
-  }
-}
+void complex_vec_to_real_vec(std::vector<double>& output,
+                             const std::vector<std::complex<double>>& input);
 
 /// \brief Packs elements of input into complex values
 /// (a,b,c,d) => (a+bi, c+di)
 /// (a,b,c) => (a+bi, c+0i)
 /// \param[out] output Vector to store packed complex values
 /// \param[in] input Vector of real values to unpack
-template <typename T>
-inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
-                                    const std::vector<T>& input) {
-  NGRAPH_CHECK(output.empty(), "Output vector is not empty");
-  output.reserve(input.size() / 2);
-  std::vector<T> complex_parts(2, 0);
-  for (size_t i = 0; i < input.size(); ++i) {
-    complex_parts[i % 2] = input[i];
-
-    if (i % 2 == 1 || i == input.size() - 1) {
-      output.emplace_back(std::complex<T>(complex_parts[0], complex_parts[1]));
-      complex_parts = {T(0), T(0)};
-    }
-  }
-}
+void real_vec_to_complex_vec(std::vector<std::complex<double>>& output,
+                             const std::vector<double>& input);
 
 template <typename T>
 inline std::unordered_map<std::string,

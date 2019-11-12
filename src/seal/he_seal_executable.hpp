@@ -80,16 +80,10 @@ class HESealExecutable : public runtime::Executable {
   std::vector<runtime::PerformanceCounter> get_performance_data()
       const override;
 
-  // \brief Returns the port at which the server is expecting a connection
-  size_t get_port() const { return m_port; }
-
   // TODO(fboemer): merge _done() methods
 
   /// \brief Returns whether or not the maxpool op has completed
   bool max_pool_done() const { return m_max_pool_done; }
-
-  /// \brief Returns whether or not the minimum op has completed
-  bool minimum_done() const { return m_minimum_done; }
 
   /// \brief Returns whether or not the session has started
   bool session_started() const { return m_session_started; }
@@ -182,12 +176,13 @@ class HESealExecutable : public runtime::Executable {
   }
 
   /// \brief Returns the batch size
-  size_t batch_size() const { return m_batch_size; }
+  size_t batch_size() const;
 
-  /// \brief Returns the batch size
+  /// \brief Sets the batch size
   void set_batch_size(size_t batch_size);
 
-  void set_verbose_all_ops(bool value) { m_verbose_all_ops = value; }
+  /// \brief Sets verbosity of all operations
+  void set_verbose_all_ops(bool value);
 
  private:
   HESealBackend& m_he_seal_backend;
@@ -236,11 +231,6 @@ class HESealExecutable : public runtime::Executable {
   std::mutex m_max_pool_mutex;
   std::condition_variable m_max_pool_cond;
   bool m_max_pool_done{false};
-
-  // To trigger when minimum is done
-  std::mutex m_minimum_mutex;
-  std::condition_variable m_minimum_cond;
-  bool m_minimum_done{false};
 
   // To trigger when result message has been written
   std::mutex m_result_mutex;

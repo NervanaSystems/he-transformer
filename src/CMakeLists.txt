@@ -23,6 +23,7 @@ set(HE_SRC
     he_type.cpp
     node_wrapper.cpp
     he_util.cpp
+    he_op_annotations.cpp
     he_plaintext.cpp
     # logging
     logging/ngraph_he_log.cpp

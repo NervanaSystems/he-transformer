@@ -16,6 +16,7 @@
 
 #include "gtest/gtest.h"
 #include "he_op_annotations.hpp"
+#include "ngraph/op/parameter.hpp"
 
 TEST(he_op_annotations, set_get) {
   auto ann = ngraph::he::HEOpAnnotations(false, false, false);
@@ -40,4 +41,12 @@ TEST(he_op_annotations, set_get) {
 
   ann.set_packed(false);
   EXPECT_FALSE(ann.packed());
+}
+
+TEST(he_op_annotations, defaults) {
+  auto param = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32,
+                                                       ngraph::Shape{});
+
+  EXPECT_FALSE(ngraph::he::HEOpAnnotations::from_client(*param));
+  EXPECT_FALSE(ngraph::he::HEOpAnnotations::plaintext_packed(*param));
 }

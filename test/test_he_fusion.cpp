@@ -87,7 +87,8 @@ TEST(he_fusion, bounded_relu_no_fusion) {
     auto backend = ngraph::runtime::Backend::create("HE_SEAL");
     auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
     auto handle = he_backend->compile(function);
-    EXPECT_EQ(0, count_ops_of_type<ngraph::op::BoundedRelu>(function));
+    EXPECT_EQ(uint64_t{0},
+              count_ops_of_type<ngraph::op::BoundedRelu>(function));
   };
 
   // Wrong type
@@ -108,7 +109,6 @@ TEST(he_fusion, bounded_relu_no_fusion) {
   /// Alpha is not constant
   {
     ngraph::Shape shape{2, 2};
-    float alpha_val{7.2};
     auto relu_input =
         std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
     auto relu = std::make_shared<ngraph::op::Relu>(relu_input);
