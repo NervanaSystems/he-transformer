@@ -23,6 +23,29 @@
 #include "ngraph/except.hpp"
 
 namespace ngraph::he {
+
+HEPlaintext::HEPlaintext(const std::initializer_list<double>& values)
+    : std::vector<double>(values) {}
+
+HEPlaintext::HEPlaintext(const std::vector<double>& values)
+    : std::vector<double>(values) {}
+
+HEPlaintext::HEPlaintext(std::vector<double>&& values)
+    : std::vector<double>(std::move(values)) {}
+
+HEPlaintext::HEPlaintext(size_t n, double initial_value)
+    : std::vector<double>(n, initial_value) {}
+
+HEPlaintext& HEPlaintext::operator=(const HEPlaintext& v) {
+  static_cast<std::vector<double>*>(this)->operator=(v);
+  return *this;
+}
+
+HEPlaintext& HEPlaintext::operator=(HEPlaintext&& v) noexcept {
+  static_cast<std::vector<double>*>(this)->operator=(v);
+  return *this;
+}
+
 void HEPlaintext::write(void* target, const element::Type& element_type) {
   NGRAPH_CHECK(!empty(), "Input has no values");
   size_t count = this->size();

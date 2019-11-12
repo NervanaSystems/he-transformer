@@ -27,35 +27,24 @@ class HEPlaintext : public std::vector<double> {
  public:
   HEPlaintext() = default;
   ~HEPlaintext() = default;
-
-  HEPlaintext(const std::initializer_list<double>& values)
-      : std::vector<double>(values) {}
-
   HEPlaintext(const HEPlaintext& plain) = default;
   HEPlaintext(HEPlaintext&& plain) = default;
 
-  explicit HEPlaintext(const std::vector<double>& values)
-      : std::vector<double>(values) {}
+  HEPlaintext(const std::initializer_list<double>& values);
 
-  explicit HEPlaintext(std::vector<double>&& values)
-      : std::vector<double>(std::move(values)) {}
+  explicit HEPlaintext(const std::vector<double>& values);
 
-  explicit HEPlaintext(size_t n, double initial_value = 0)
-      : std::vector<double>(n, initial_value) {}
+  explicit HEPlaintext(std::vector<double>&& values);
+
+  explicit HEPlaintext(size_t n, double initial_value = 0);
 
   template <class InputIterator>
   HEPlaintext(InputIterator first, InputIterator last)
       : std::vector<double>(first, last) {}
 
-  HEPlaintext& operator=(const HEPlaintext& v) {
-    static_cast<std::vector<double>*>(this)->operator=(v);
-    return *this;
-  }
+  HEPlaintext& operator=(const HEPlaintext& v);
 
-  HEPlaintext& operator=(HEPlaintext&& v) noexcept {
-    static_cast<std::vector<double>*>(this)->operator=(v);
-    return *this;
-  }
+  HEPlaintext& operator=(HEPlaintext&& v) noexcept;
 
   /// \brief Writes the plaintext to the target as a vector of type
   void write(void* target, const element::Type& element_type);

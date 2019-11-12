@@ -103,8 +103,6 @@ class HETensor : public runtime::Tensor {
   /// \throws ngraph_error if tensor contains any encrypted data
   void unpack();
 
-  const std::vector<HEType>& data() const { return m_data; }
-
   std::vector<HEType>& data() { return m_data; }
 
   HEType& data(size_t i) { return m_data[i]; }
@@ -118,9 +116,6 @@ class HETensor : public runtime::Tensor {
 
   /// \brief Returns the shape of the un-expanded (i.e. packed) tensor.
   const Shape& get_packed_shape() const { return m_packed_shape; }
-
-  /// \brief Returns the shape of the expanded tensor.
-  const Shape& get_expanded_shape() const { return get_shape(); }
 
   /// \brief Returns plaintext packing factor used in the tensor
   size_t get_batch_size() const { return batch_size(get_shape(), m_packed); }
