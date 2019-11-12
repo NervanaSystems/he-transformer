@@ -72,7 +72,6 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
     case element::Type_t::f16:
     case element::Type_t::boolean:
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
-      break;
   }
 #pragma clang diagnostic pop
 }
