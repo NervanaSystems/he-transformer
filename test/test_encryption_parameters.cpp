@@ -177,8 +177,9 @@ TEST(encryption_parameters, choose_scale) {
         ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
             param_str.c_str());
 
-    double exp_scale = ngraph::he::choose_scale(seal::CoeffModulus::Create(
-        he_parms.poly_modulus_degree(), coeff_modulus_bits));
+    double exp_scale = ngraph::he::HESealEncryptionParameters::choose_scale(
+        seal::CoeffModulus::Create(he_parms.poly_modulus_degree(),
+                                   coeff_modulus_bits));
 
     EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
     EXPECT_EQ(he_parms.security_level(), 0);

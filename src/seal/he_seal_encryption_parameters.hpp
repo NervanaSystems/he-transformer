@@ -96,6 +96,12 @@ class HESealEncryptionParameters {
   /// level
   void validate_parameters() const;
 
+  /// \brief Chooses a default scale for the given list of coefficient moduli
+  /// \param[in] coeff_moduli List of coefficient moduli
+  /// \returns Chosen scale
+  static double choose_scale(
+      const std::vector<seal::SmallModulus>& coeff_moduli);
+
   /// \brief Saves encryption parameters to a stream
   void save(std::ostream& stream) const;
 

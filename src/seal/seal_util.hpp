@@ -30,11 +30,6 @@ class SealCiphertextWrapper;
 class SealPlaintextWrapper;
 class HESealBackend;
 
-/// \brief Chooses a default scale for the given list of coefficient moduli
-/// \param[in] coeff_moduli List of coefficient moduli
-/// \returns Chosen scale
-double choose_scale(const std::vector<seal::SmallModulus>& coeff_moduli);
-
 /// \brief Returns SEAL's security level type from the number of bits of
 /// security
 /// \param[in] bits Bits of security
