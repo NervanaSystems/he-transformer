@@ -169,3 +169,45 @@ TEST(he_seal_executable, verbose_op) {
   EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
                                           exp_result, 1e-3f));
 }
+
+TEST(he_seal_executable, provenance_tag) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  ngraph::Shape shape{2, 2};
+
+  bool packed = true;
+  bool arg1_encrypted = false;
+  bool arg2_encrypted = false;
+
+  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+
+  std::string b_provenance_tag{"b_provenance_tag"};
+  b->add_provenance_tag(b_provenance_tag);
+
+  // Create plaintext tensor for ciphertext argument
+  // This behavior occurs when using ngraph-bridge
+  auto t_a =
+      ngraph::test::he::tensor_from_flags(*he_backend, shape, false, packed);
+  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
+                                                 arg2_encrypted, packed);
+  auto t_result = ngraph::test::he::tensor_from_flags(
+      *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+
+  std::vector<float> input_a{1, 2, 3, 4};
+  std::vector<float> input_b{0, -1, 2, -3};
+  std::vector<float> exp_result{1, 1, 5, 1};
+
+  copy_data(t_a, input_a);
+  copy_data(t_b, input_b);
+
+  auto he_handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
+
+  he_handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
+                                          exp_result, 1e-3f));
+}

@@ -270,9 +270,9 @@ bool HESealExecutable::server_setup() {
     if (m_is_compiled) {
       m_client_inputs.clear();
       m_client_inputs.resize(get_parameters().size());
-    } else {
-      NGRAPH_HE_LOG(1) << "Client already setup";
     }
+  } else {
+    NGRAPH_HE_LOG(1) << "Client already setup";
   }
   return true;
 }

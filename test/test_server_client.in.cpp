@@ -34,6 +34,65 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_duplicate_setup) {
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  size_t batch_size = 1;
+
+  ngraph::Shape shape{batch_size, 3};
+  ngraph::Shape shape_c{3, 1};
+  auto a = ngraph::op::Constant::create(ngraph::element::f32, shape,
+                                        {0.1, 0.2, 0.3});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{"enable_client", "true"}, {b->get_name(), "client_input,plain,packed"}},
+      error_str);
+
+  auto c =
+      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_c);
+  auto d =
+      std::make_shared<ngraph::op::Reshape>(c, ngraph::AxisVector{0, 1}, shape);
+  auto t = std::make_shared<ngraph::op::Add>(a, b);
+  t = std::make_shared<ngraph::op::Add>(t, d);
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
+
+  auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape_c);
+  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
+  // Server inputs which are not used
+  auto t_dummy = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+
+  // Used for dummy server inputs
+  float dummy_float = 99;
+  copy_data(t_dummy, std::vector<float>{dummy_float, dummy_float, dummy_float});
+  copy_data(t_c, std::vector<float>{4, 5, 6});
+
+  std::vector<float> results;
+  auto client_thread = std::thread([&]() {
+    std::vector<float> inputs{1, 2, 3};
+    auto he_client = ngraph::he::HESealClient(
+        "localhost", 34000, batch_size,
+        ngraph::he::HETensorConfigMap<float>{
+            {b->get_name(), make_pair("plain", inputs)}});
+
+    auto double_results = he_client.get_results();
+    results = std::vector<float>(double_results.begin(), double_results.end());
+  });
+
+  auto handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
+      he_backend->compile(f));
+
+  // Set up server again
+  EXPECT_TRUE(handle->server_setup());
+
+  handle->call_with_validate({t_result}, {t_dummy, t_c});
+  client_thread.join();
+  EXPECT_TRUE(ngraph::test::he::all_close(
+      results, std::vector<float>{5.1, 7.2, 9.3}, 1e-3f));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_provenance_tag) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
