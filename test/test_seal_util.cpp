@@ -357,9 +357,8 @@ TEST(seal_util, encode_invalid) {
   {
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
-    seal::MemoryPoolHandle pool;
     EXPECT_ANY_THROW(ngraph::he::encode(1.23, ngraph::element::f32, -1.0,
-                                        parms_id, dst, *he_backend, pool));
+                                        parms_id, dst, *he_backend));
   }
   // Encoded value is too large
   {
@@ -371,60 +370,127 @@ TEST(seal_util, encode_invalid) {
   }
 }
 
-TEST(seal_util, encode_large_coeff) {
-  size_t expected_encode = std::round(16777216 * 1.23);
-
-  // Between 60 and 128 bits
-  {
+TEST(seal_util, encode) {
+  auto test_encode = [](const std::string& param_str, double value,
+                        double scale) {
     auto backend = ngraph::runtime::Backend::create("HE_SEAL");
     auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
-    std::string param_str = R"(
-    {
-        "scheme_name" : "HE_SEAL",
-        "poly_modulus_degree" : 2048,
-        "security_level" : 0,
-        "coeff_modulus" : [60, 60],
-        "scale" : 16777216
-    })";
     std::string error_str;
     he_backend->set_config({{"encryption_parameters", param_str}}, error_str);
+
+    seal::Plaintext seal_plain;
+    std::vector<double> vals(he_backend->get_ckks_encoder()->slot_count(),
+                             value);
+    he_backend->get_ckks_encoder()->encode(vals, scale, seal_plain);
 
     auto context = he_backend->get_context();
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
-    ngraph::he::encode(1.23, ngraph::element::f32, 16777216, parms_id, dst,
+    ngraph::he::encode(value, ngraph::element::f32, scale, parms_id, dst,
                        *he_backend);
 
-    EXPECT_EQ(dst.size(), 1);
-    EXPECT_EQ(dst[0], expected_encode);
-  }
-  // More than 128 bits
+    size_t poly_modulus_degree =
+        he_backend->get_encryption_parameters().poly_modulus_degree();
+
+    size_t expected_size = seal_plain.int_array().size() / poly_modulus_degree;
+
+    EXPECT_EQ(dst.size(), expected_size);
+    for (size_t dst_idx = 0; dst_idx < dst.size(); ++dst_idx) {
+      EXPECT_EQ(dst[dst_idx],
+                seal_plain.int_array()[dst_idx * poly_modulus_degree]);
+    }
+  };
+
+  // positive value < 60 bits
   {
-    auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-    auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+    double val = pow(2.0, 10);
+    double scale = pow(2.0, 40);
 
     std::string param_str = R"(
     {
         "scheme_name" : "HE_SEAL",
-        "poly_modulus_degree" : 2048,
+        "poly_modulus_degree" : 1024,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60, 60],
+        "scale" : 1099511627776
+    })";
+    test_encode(param_str, val, scale);
+  }
+  // negative value < 60 bits
+  {
+    double val = -pow(2.0, 10);
+    double scale = pow(2.0, 40);
+
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 1024,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60, 60],
+        "scale" : 1099511627776
+    })";
+    test_encode(param_str, val, scale);
+  }
+  // positive value between 60 and 128 bits
+  {
+    double val = pow(2.0, 30);
+    double scale = pow(2.0, 40);
+
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 1024,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60, 60],
+        "scale" : 1099511627776
+    })";
+    test_encode(param_str, val, scale);
+  }
+  // negative value between 60 and 128 bits
+  {
+    double val = -pow(2.0, 30);
+    double scale = pow(2.0, 40);
+
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 1024,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60, 60],
+        "scale" : 1099511627776
+    })";
+    test_encode(param_str, val, scale);
+  }
+  // positive value > 128 bits
+  {
+    double val = pow(2.0, 63);
+    double scale = pow(2.0, 64);
+
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 1024,
         "security_level" : 0,
         "coeff_modulus" : [60, 60, 60, 60],
-        "scale" : 16777216
+        "scale" : 18446744073709551616
     })";
-    std::string error_str;
-    he_backend->set_config({{"encryption_parameters", param_str}}, error_str);
+    test_encode(param_str, val, scale);
+  }
+  // negative value > 128 bits
+  {
+    double val = -pow(2.0, 63);
+    double scale = pow(2.0, 64);
 
-    auto context = he_backend->get_context();
-    std::vector<std::uint64_t> dst;
-    auto parms_id = context->first_parms_id();
-    ngraph::he::encode(1.23, ngraph::element::f32, 16777216, parms_id, dst,
-                       *he_backend);
-
-    EXPECT_EQ(dst.size(), 3);
-    for (const auto& elem : dst) {
-      EXPECT_EQ(elem, expected_encode);
-    }
+    std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 1024,
+        "security_level" : 0,
+        "coeff_modulus" : [60, 60, 60, 60],
+        "scale" : 18446744073709551616
+    })";
+    test_encode(param_str, val, scale);
   }
 }
 

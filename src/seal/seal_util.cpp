@@ -324,7 +324,7 @@ void encode(double value, const element::Type& element_type, double scale,
   if (scale <= 0 || (static_cast<int>(log2(scale)) >=
                      context_data.total_coeff_modulus_bit_count())) {
     NGRAPH_ERR << "scale " << scale;
-    NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count"
+    NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count "
                << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
@@ -334,7 +334,6 @@ void encode(double value, const element::Type& element_type, double scale,
 
   int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
-#pragma omp critical
     {
       NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
                  << scale;
