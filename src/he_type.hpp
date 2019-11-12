@@ -32,18 +32,10 @@ class HEType {
  public:
   HEType() = delete;
 
-  HEType(const HEPlaintext& plain, const bool complex_packing)
-      : HEType(complex_packing, plain.size()) {
-    m_is_plain = true;
-    m_plain = plain;
-  }
+  HEType(const HEPlaintext& plain, const bool complex_packing);
 
   HEType(const std::shared_ptr<SealCiphertextWrapper>& cipher,
-         const bool complex_packing, const size_t batch_size)
-      : HEType(complex_packing, batch_size) {
-    m_is_plain = false;
-    m_cipher = cipher;
-  }
+         const bool complex_packing, const size_t batch_size);
 
   void save(pb::HEType& proto_he_type) const;
 
@@ -64,13 +56,7 @@ class HEType {
   const HEPlaintext& get_plaintext() const { return m_plain; }
   HEPlaintext& get_plaintext() { return m_plain; }
 
-  void set_plaintext(HEPlaintext plain) {
-    m_plain = std::move(plain);
-    m_is_plain = true;
-    if (m_cipher != nullptr) {
-      m_cipher->ciphertext().release();
-    }
-  }
+  void set_plaintext(HEPlaintext plain);
 
   const std::shared_ptr<SealCiphertextWrapper>& get_ciphertext() const {
     return m_cipher;

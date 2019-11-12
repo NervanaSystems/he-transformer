@@ -103,11 +103,6 @@ class HESealEncryptionParameters {
   static HESealEncryptionParameters load(std::istream& stream);
 
   /// \brief Returns SEAL encryption parameters
-  seal::EncryptionParameters& seal_encryption_parameters() {
-    return m_seal_encryption_parameters;
-  }
-
-  /// \brief Returns SEAL encryption parameters
   const seal::EncryptionParameters& seal_encryption_parameters() const {
     return m_seal_encryption_parameters;
   }
@@ -125,7 +120,7 @@ class HESealEncryptionParameters {
 
   /// \brief Returns the scale
   /// TODO(fboemer): verify scale is valid
-  double& scale() { return m_scale; }
+  void set_scale(double scale) { m_scale = scale; }
 
   /// \brief Returns the security level
   std::uint64_t security_level() const { return m_security_level; }

@@ -127,7 +127,7 @@ bool HESealEncryptionParameters::same_context(
   auto p2 = parms2;
   p1.complex_packing() = p2.complex_packing();
   p1.security_level() = p2.security_level();
-  p1.scale() = p2.scale();
+  p1.set_scale(p2.scale());
 
   return (p1 == p2);
 }

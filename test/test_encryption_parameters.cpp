@@ -115,6 +115,17 @@ TEST(encryption_parameters, from_string) {
   EXPECT_EQ(he_parms.complex_packing(), true);
 }
 
+TEST(encryption_parameters, from_string_invalid) {
+  std::string param_str = R"(
+    {
+        "DUMMY_STR"
+    })";
+
+  EXPECT_ANY_THROW(
+      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
+          param_str.c_str()));
+}
+
 TEST(encryption_parameters, from_file) {
   std::string config = R"(
     {

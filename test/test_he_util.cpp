@@ -97,6 +97,9 @@ TEST(he_util, type_to_double) {
   test_type_to_double(float{10.3});
   test_type_to_double(int32_t{10});
   test_type_to_double(int64_t{10});
+
+  // Unsupported type
+  EXPECT_ANY_THROW(ngraph::he::type_to_double(nullptr, ngraph::element::i8));
 }
 
 TEST(he_util, param_originates_from_name) {
@@ -114,13 +117,14 @@ TEST(he_util, param_originates_from_name) {
 
 TEST(he_util, type_to_pb_type) {
   for (const auto& type : std::vector<ngraph::element::Type>{
-           ngraph::element::Type_t::dynamic, ngraph::element::Type_t::boolean,
-           ngraph::element::Type_t::bf16, ngraph::element::Type_t::f16,
-           ngraph::element::Type_t::f32, ngraph::element::Type_t::f64,
-           ngraph::element::Type_t::i8, ngraph::element::Type_t::i16,
-           ngraph::element::Type_t::i32, ngraph::element::Type_t::i64,
-           ngraph::element::Type_t::u8, ngraph::element::Type_t::u16,
-           ngraph::element::Type_t::u32, ngraph::element::Type_t::u64}) {
+           ngraph::element::Type_t::undefined, ngraph::element::Type_t::dynamic,
+           ngraph::element::Type_t::boolean, ngraph::element::Type_t::bf16,
+           ngraph::element::Type_t::f16, ngraph::element::Type_t::f32,
+           ngraph::element::Type_t::f64, ngraph::element::Type_t::i8,
+           ngraph::element::Type_t::i16, ngraph::element::Type_t::i32,
+           ngraph::element::Type_t::i64, ngraph::element::Type_t::u8,
+           ngraph::element::Type_t::u16, ngraph::element::Type_t::u32,
+           ngraph::element::Type_t::u64}) {
     EXPECT_EQ(ngraph::he::pb_type_to_type(ngraph::he::type_to_pb_type(type)),
               type);
   }
