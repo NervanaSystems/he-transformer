@@ -62,6 +62,30 @@ class HEOpAnnotations : public op::util::OpAnnotations {
     return std::static_pointer_cast<HEOpAnnotations>(op.get_op_annotations());
   }
 
+  /// \brief Returns whether or not operation node should be received from
+  /// client. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation, should be Constant or Parameter node
+  static bool from_client(const op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
+      return he_annotation->from_client();
+    }
+    return false;
+  }
+
+  /// \brief Returns whether or not operation node should be packed using
+  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
+  /// \param[in] op Graph operation
+  static bool plaintext_packed(const op::Op& op) {
+    auto annotation = op.get_op_annotations();
+    if (auto he_annotation =
+            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
+      return he_annotation->packed();
+    }
+    return false;
+  }
+
   static std::shared_ptr<HEOpAnnotations>
   server_plaintext_unpacked_annotation() {
     return std::make_shared<HEOpAnnotations>(false, false, false);

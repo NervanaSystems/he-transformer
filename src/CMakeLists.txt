@@ -24,6 +24,8 @@ set(HE_SRC
     node_wrapper.cpp
     he_util.cpp
     he_plaintext.cpp
+    # logging
+    logging/ngraph_he_log.cpp
     # pass
     pass/he_fusion.cpp
     pass/he_liveness.cpp

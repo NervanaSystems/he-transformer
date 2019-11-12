@@ -117,7 +117,8 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   for (const auto& param : m_function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (HEOpAnnotations::has_he_annotation(*param)) {
-      std::string from_client_str = from_client(*param) ? "" : "not ";
+      std::string from_client_str =
+          HEOpAnnotations::from_client(*param) ? "" : "not ";
       NGRAPH_HE_LOG(3) << "\tshape " << param->get_shape() << " is "
                        << from_client_str << "from client";
     }
@@ -227,7 +228,7 @@ void HESealExecutable::check_client_supports_function() {
   // Check if single parameter is from client
   size_t from_client_count = 0;
   for (const auto& param : get_parameters()) {
-    if (from_client(*param)) {
+    if (HEOpAnnotations::from_client(*param)) {
       from_client_count++;
       NGRAPH_HE_LOG(5) << "Parameter " << param->get_name() << " from client";
     }
@@ -354,7 +355,7 @@ void HESealExecutable::send_inference_shape() {
   proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
 
   for (const auto& input_param : input_parameters) {
-    if (from_client(*input_param)) {
+    if (HEOpAnnotations::from_client(*input_param)) {
       pb::HETensor* proto_he_tensor = proto_msg.add_he_tensors();
 
       std::vector<uint64_t> shape{input_param->get_shape()};
@@ -371,7 +372,7 @@ void HESealExecutable::send_inference_shape() {
 
       proto_he_tensor->set_name(name);
 
-      if (plaintext_packed(*input_param)) {
+      if (HEOpAnnotations::plaintext_packed(*input_param)) {
         NGRAPH_HE_LOG(1) << "Setting parameter " << input_param->get_name()
                          << " to packed";
         proto_he_tensor->set_packed(true);
@@ -558,7 +559,7 @@ void HESealExecutable::handle_client_ciphers(const pb::TCPMessage& proto_msg) {
   auto done_loading = [&]() {
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
-      if (from_client(*param)) {
+      if (HEOpAnnotations::from_client(*param)) {
         NGRAPH_HE_LOG(5) << "From client param shape " << param->get_shape();
         NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
 
@@ -628,7 +629,7 @@ bool HESealExecutable::call(
     auto& param = parameters[input_idx];
     std::shared_ptr<HETensor> he_input;
 
-    if (m_enable_client && from_client(*param)) {
+    if (m_enable_client && HEOpAnnotations::from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
       NGRAPH_CHECK(m_client_inputs.size() > input_idx,
@@ -769,7 +770,8 @@ bool HESealExecutable::call(
       if (verbose) {
         const auto param_op = std::static_pointer_cast<const op::Parameter>(op);
         if (HEOpAnnotations::has_he_annotation(*param_op)) {
-          std::string from_client_str = from_client(*param_op) ? "" : " not";
+          std::string from_client_str =
+              HEOpAnnotations::from_client(*param_op) ? "" : " not";
           NGRAPH_HE_LOG(3) << "Parameter shape " << param_op->get_shape()
                            << from_client_str << " from client";
         }

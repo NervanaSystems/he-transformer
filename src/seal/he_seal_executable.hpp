@@ -187,32 +187,6 @@ class HESealExecutable : public runtime::Executable {
   /// \brief Returns the batch size
   void set_batch_size(size_t batch_size);
 
-  /// \brief Returns whether or not operation node should be received from
-  /// client. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] op Graph operation, should be Constant or Parameter node
-  bool from_client(const op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
-      NGRAPH_HE_LOG(5) << "Op has he annotation " << *he_annotation;
-      return he_annotation->from_client();
-    }
-    NGRAPH_HE_LOG(5) << "Op has no he annotation";
-    return false;
-  }
-
-  /// \brief Returns whether or not operation node should be packed using
-  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] op Graph operation
-  bool plaintext_packed(const op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
-      return he_annotation->packed();
-    }
-    return false;
-  }
-
   void set_verbose_all_ops(bool value) { m_verbose_all_ops = value; }
 
  private:
