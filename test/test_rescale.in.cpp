@@ -43,7 +43,7 @@ NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
           param_str.c_str());
   he_backend->update_encryption_parameters(he_parms);
 
-  ngraph::Shape shape{2, 2};
+  ngraph::Shape shape{3, 1};
 
   bool arg1_encrypted = true;
   bool arg2_encrypted = false;
@@ -65,9 +65,9 @@ NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
   auto t_result = ngraph::test::he::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
 
-  std::vector<float> input_a{1, 2, 3, 4};
-  std::vector<float> input_b{5, 6, 7, 8};
-  std::vector<float> exp_result{5, 12, 21, 32};
+  std::vector<float> input_a{1, 2, 3};
+  std::vector<float> input_b{5, 6, 7};
+  std::vector<float> exp_result{5, 12, 21};
 
   copy_data(t_a, input_a);
   copy_data(t_b, input_b);

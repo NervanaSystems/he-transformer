@@ -192,15 +192,15 @@ void HETensor::write(const void* p, size_t n) {
 
     if (m_data[i].is_plaintext()) {
       m_data[i].set_plaintext(plain);
-    } else if (m_data[i].is_ciphertext()) {
+    } else {
+      NGRAPH_CHECK(m_data[i].is_ciphertext(),
+                   "Cannot write into tensor of unspecified type");
       auto cipher = HESealBackend::create_empty_ciphertext();
 
       encrypt(cipher, plain, m_context->first_parms_id(), element_type,
               m_encryption_params.scale(), m_ckks_encoder, m_encryptor,
               m_data[i].complex_packing());
       m_data[i].set_ciphertext(cipher);
-    } else {
-      NGRAPH_CHECK(false, "Cannot write into tensor of unspecified type");
     }
   }
   m_write_count += num_elements_to_write;

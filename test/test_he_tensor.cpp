@@ -245,3 +245,23 @@ TEST(he_tensor, load_from_context) {
   EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(loaded_he_tensor),
                                           read_vector<float>(saved_he_tensor)));
 }
+
+TEST(he_tensor, io_bounds) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  auto element_type = ngraph ::element::f32;
+
+  auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_plain_tensor(element_type, ngraph::Shape{1, 2, 3},
+                                      false));
+
+  void* dummy = nullptr;
+  // Bytes not a factor of element type
+  EXPECT_ANY_THROW(t_a->read(dummy, element_type.size() + 1));
+  EXPECT_ANY_THROW(t_a->write(dummy, element_type.size() + 1));
+
+  // Too many bytes
+  EXPECT_ANY_THROW(t_a->read(dummy, element_type.size() * 100));
+  EXPECT_ANY_THROW(t_a->write(dummy, element_type.size() * 100));
+}
