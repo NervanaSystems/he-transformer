@@ -170,23 +170,6 @@ class HESealBackend : public runtime::Backend {
     return std::make_shared<SealCiphertextWrapper>();
   }
 
-  /// \brief Creates empty ciphertext at given parameter choice
-  /// \param[in] parms_id Seal encryption parameter id
-  /// \returns Pointer to created ciphertext
-  std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
-      seal::parms_id_type parms_id) const {
-    return std::make_shared<SealCiphertextWrapper>(
-        seal::Ciphertext(m_context, parms_id));
-  }
-
-  /// \brief Creates empty ciphertext at given parameter choice
-  /// \param[in] pool Memory pool used for new memory allocation
-  /// \returns Pointer to created ciphertext
-  std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
-      const seal::MemoryPoolHandle& pool) const {
-    return std::make_shared<SealCiphertextWrapper>(pool);
-  }
-
   /// \brief TODO(fboemer)
   void decode(void* output, const HEPlaintext& input, const element::Type& type,
               size_t count = 1) const;
