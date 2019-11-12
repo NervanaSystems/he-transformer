@@ -46,7 +46,7 @@ void HEFusion::construct_bounded_relu() {
 
     if (m.get_match_root()->get_element_type() != element::f32) {
       NGRAPH_HE_LOG(5) << "mpattern = " << m.get_match_root()->get_name()
-                       << " type is not float!";
+                       << " type is not float";
       return false;
     }
     auto pattern_map = m.get_pattern_map();
