@@ -39,6 +39,10 @@
 #include "tcp/tcp_session.hpp"
 
 namespace ngraph::he {
+namespace test {
+class TestHESealExecutable;
+}
+
 /// \brief Class representing a function to execute
 class HESealExecutable : public runtime::Executable {
  public:
@@ -185,6 +189,8 @@ class HESealExecutable : public runtime::Executable {
   void set_verbose_all_ops(bool value);
 
  private:
+  friend class test::TestHESealExecutable;
+
   HESealBackend& m_he_seal_backend;
   bool m_is_compiled{false};
   bool m_verbose_all_ops{false};
