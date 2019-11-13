@@ -476,14 +476,19 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
         json js = json::parse(function);
 
         auto name = js.at("function");
+
+        static std::unordered_set<std::string> known_function_names{
+            "Relu", "BoundedRelu", "MaxPool"};
+        NGRAPH_CHECK(
+            known_function_names.find(name) != known_function_names.end(),
+            "Unknown function name ", name);
+
         if (name == "Relu") {
           handle_relu_result(*proto_msg);
         } else if (name == "BoundedRelu") {
           handle_bounded_relu_result(*proto_msg);
         } else if (name == "MaxPool") {
           handle_max_pool_result(*proto_msg);
-        } else {
-          throw ngraph_error("Unknown function name");
         }
       }
       break;
@@ -840,7 +845,7 @@ bool HESealExecutable::call(
         NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
         NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
         if (packed_out) {
-          shape = HETensor::unpack_shape(shape, m_batch_size);
+          shape = HETensor::unpack_shape(shape, batch_size());
         }
         NGRAPH_HE_LOG(5) << "Creating output tensor with shape " << shape;
 
@@ -987,7 +992,7 @@ void HESealExecutable::generate_calls(
 
       batch_norm_inference_seal(eps, gamma->data(), beta->data(), input->data(),
                                 mean->data(), variance->data(), out[0]->data(),
-                                args[2]->get_packed_shape(), m_batch_size,
+                                args[2]->get_packed_shape(), batch_size(),
                                 m_he_seal_backend);
       break;
     }
@@ -1054,7 +1059,7 @@ void HESealExecutable::generate_calls(
                        in_shape0, in_shape1, out[0]->get_packed_shape(),
                        window_movement_strides, window_dilation_strides,
                        padding_below, padding_above, data_dilation_strides, 0,
-                       1, 1, 0, 0, 1, type, m_batch_size, m_he_seal_backend,
+                       1, 1, 0, 0, 1, type, batch_size(), m_he_seal_backend,
                        verbose);
 
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
@@ -1080,7 +1085,7 @@ void HESealExecutable::generate_calls(
       }
       dot_seal(args[0]->data(), args[1]->data(), out[0]->data(), in_shape0,
                in_shape1, out[0]->get_packed_shape(),
-               dot->get_reduction_axes_count(), type, m_batch_size,
+               dot->get_reduction_axes_count(), type, batch_size(),
                m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
 

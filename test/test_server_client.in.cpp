@@ -34,6 +34,20 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_bad_configuration) {
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  ngraph::Shape shape{3, 1};
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+
+  std::string error_str;
+  EXPECT_ANY_THROW(
+      he_backend->set_config({{"enable_client", "false"},
+                              {b->get_name(), "client_input,plain,packed"}},
+                             error_str));
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_duplicate_setup) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());

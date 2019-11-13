@@ -121,9 +121,7 @@ class HETensor : public runtime::Tensor {
   size_t get_batch_size() const { return batch_size(get_shape(), m_packed); }
 
   /// \brief Returns number of ciphertext / plaintext objects in the tensor
-  size_t get_batched_element_count() const {
-    return get_element_count() / get_batch_size();
-  }
+  size_t get_batched_element_count() const;
 
   /// \brief Returns whether or not the tensor is packed
   bool is_packed() const { return m_packed; }

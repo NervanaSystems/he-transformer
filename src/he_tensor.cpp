@@ -50,7 +50,9 @@ HETensor::HETensor(const element::Type& element_type, const Shape& shape,
   }
 
   size_t num_elements =
-      m_descriptor->get_tensor_layout()->get_size() / get_batch_size();
+      (get_batch_size() != 0)
+          ? m_descriptor->get_tensor_layout()->get_size() / get_batch_size()
+          : 0;
 
   if (encrypted) {
     m_data.resize(num_elements, HEType(HESealBackend::create_empty_ciphertext(),
@@ -147,10 +149,19 @@ void HETensor::unpack() {
 }
 
 uint64_t HETensor::batch_size(const Shape& shape, bool packed) {
-  if (!shape.empty() && packed) {
+  if (packed && !shape.empty()) {
     return shape[0];
   }
   return 1;
+}
+
+size_t HETensor::get_batched_element_count() const {
+  if (get_batch_size() == 0) {
+    NGRAPH_CHECK(get_element_count() == 0,
+                 "Non-zero element count with batch size 0");
+    return 0;
+  }
+  return get_element_count() / get_batch_size();
 }
 
 bool HETensor::any_encrypted_data() const {
@@ -160,24 +171,37 @@ bool HETensor::any_encrypted_data() const {
 }
 
 void HETensor::check_io_bounds(size_t n) const {
+  size_t bytes_per_element = n;
+  if (get_batch_size() == 0) {
+    NGRAPH_CHECK(n == 0, "I/O access past end of tensor");
+  } else {
+    bytes_per_element /= get_batch_size();
+  }
+
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
 
   // Memory must be byte-aligned to type_byte_size
-  if (n % type_byte_size != 0) {
+  if (bytes_per_element % type_byte_size != 0) {
     throw ngraph_error("n must be divisible by type_byte_size.");
   }
   // Check out-of-range
-  if (n / type_byte_size > get_element_count()) {
+  if (bytes_per_element / type_byte_size > get_element_count()) {
     throw std::out_of_range("I/O access past end of tensor");
   }
 }
 
 void HETensor::write(const void* p, size_t n) {
-  check_io_bounds(n / get_batch_size());
+  check_io_bounds(n);
+
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
-  size_t num_elements_to_write = n / (element_type.size() * get_batch_size());
+
+  size_t num_elements_to_write = n / element_type.size();
+  if (get_batch_size() != 0) {
+    NGRAPH_INFO << "get_batch_size " << get_batch_size();
+    num_elements_to_write /= get_batch_size();
+  }
 
 #pragma omp parallel for
   // NOLINTNEXTLINE
@@ -207,7 +231,7 @@ void HETensor::write(const void* p, size_t n) {
 }
 
 void HETensor::read(void* p, size_t n) const {
-  check_io_bounds(n / get_batch_size());
+  check_io_bounds(n);
   const element::Type& element_type = get_tensor_layout()->get_element_type();
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());

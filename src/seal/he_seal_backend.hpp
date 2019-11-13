@@ -188,16 +188,6 @@ class HESealBackend : public runtime::Backend {
     return m_context;
   }
 
-  /// \brief Returns pointer to secret key
-  const std::shared_ptr<seal::SecretKey> get_secret_key() const {
-    return m_secret_key;
-  }
-
-  /// \brief Returns pointer to public key
-  const std::shared_ptr<seal::PublicKey> get_public_key() const {
-    return m_public_key;
-  }
-
   /// \brief Returns pointer to relinearization keys
   const std::shared_ptr<seal::RelinKeys> get_relin_keys() const {
     return m_relin_keys;

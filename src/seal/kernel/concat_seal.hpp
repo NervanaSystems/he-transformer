@@ -29,6 +29,7 @@ inline void concat_seal(const std::vector<std::vector<HEType>>& args,
                         const Shape& out_shape, size_t concatenation_axis) {
   // We will copy the inputs to the output one at a time. As we go, we will move
   // out along the concatenation axis, starting at 0.
+
   size_t concatenation_pos = 0;
 
   for (size_t i = 0; i < args.size(); i++) {

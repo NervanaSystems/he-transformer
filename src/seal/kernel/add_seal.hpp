@@ -109,8 +109,6 @@ inline void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
     }
     scalar_add_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                     out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 

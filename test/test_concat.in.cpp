@@ -407,3 +407,11 @@ NGRAPH_TEST(${BACKEND_NAME}, concat_2d_tensor_cipher_complex_packed) {
               std::vector<float>{3}, std::vector<float>{1, 2, 3}, true, true,
               true);
 }
+
+NGRAPH_TEST(${BACKEND_NAME},
+            concat_zero_length_1d_middle_cipher_complex_unpacked) {
+  concat_test(ngraph::Shape{4}, ngraph::Shape{0}, ngraph::Shape{4}, 0,
+              std::vector<float>{1, 2, 3, 4}, std::vector<float>{},
+              std::vector<float>{5, 6, 7, 8},
+              std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8}, true, true, false);
+}

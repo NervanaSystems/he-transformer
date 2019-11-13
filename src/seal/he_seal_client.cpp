@@ -181,11 +181,11 @@ void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
   size_t parameter_size = shape_size(HETensor::pack_shape(shape));
   NGRAPH_HE_LOG(5) << "Client parameter_size " << parameter_size;
 
-  if (input_data.size() > parameter_size * m_batch_size) {
-    NGRAPH_HE_LOG(5) << "m_input_config.size() " << m_input_config.size()
-                     << " > paramter_size ( " << parameter_size
-                     << ") * m_batch_size (" << m_batch_size << ")";
-  }
+  NGRAPH_CHECK(input_data.size() == parameter_size * m_batch_size,
+               "incorrect input_data.size() ", input_data.size(),
+               ", expected  ", parameter_size * m_batch_size,
+               " (parameter_size=", parameter_size,
+               "), (batch_size=", m_batch_size, ")");
 
   shape = HETensor::unpack_shape(shape, m_batch_size);
   auto element_type = element::f64;

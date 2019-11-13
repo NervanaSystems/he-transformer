@@ -134,11 +134,9 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
     }
   }
 
-  if (!m_client_tensor_names.empty() && !m_enable_client) {
-    NGRAPH_WARN
-        << "Configuration specifies client input, but client is not enabled";
-    m_client_tensor_names.clear();
-  }
+  NGRAPH_CHECK(
+      m_enable_client || m_client_tensor_names.empty(),
+      "Configuration specifies client input, but client is not enabled");
 
   for (const auto& tensor_name : m_client_tensor_names) {
     NGRAPH_HE_LOG(3) << "Client tensor name " << tensor_name;

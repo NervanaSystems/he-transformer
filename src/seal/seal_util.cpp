@@ -59,27 +59,19 @@ void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
   if (chain_ind0 == chain_ind1) {
     return;
   }
-  bool rescale = !within_rescale_tolerance(arg0, arg1);
+
+  NGRAPH_CHECK(within_rescale_tolerance(arg0, arg1),
+               "arguments are not within rescale tolerance");
 
   if (chain_ind0 < chain_ind1) {
     auto arg0_parms_id = arg0.ciphertext().parms_id();
-    if (rescale) {
-      he_seal_backend.get_evaluator()->rescale_to_inplace(arg1.ciphertext(),
-                                                          arg0_parms_id, pool);
-    } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
-          arg1.ciphertext(), arg0_parms_id, pool);
-    }
+    he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg1.ciphertext(),
+                                                           arg0_parms_id, pool);
     chain_ind1 = he_seal_backend.get_chain_index(arg1);
   } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
-    if (rescale) {
-      he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
-                                                          arg1_parms_id, pool);
-    } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
-          arg0.ciphertext(), arg1_parms_id, pool);
-    }
+    he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
+                                                           arg1_parms_id, pool);
     chain_ind0 = he_seal_backend.get_chain_index(arg0);
   }
   NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain indices don't match (",
@@ -393,11 +385,9 @@ void encode(double value, const element::Type& element_type, double scale,
                 "local_value cannot be the same as local_destination");
           }
 #endif
-          if (local_coeff_mod_count == 1) {
-            seal::util::set_uint_uint(local_value, local_coeff_mod_count,
-                                      local_destination);
-            return;
-          }
+          NGRAPH_CHECK(local_coeff_mod_count != 1,
+                       "Logic error, local_coeff_mod_count should be > 1 for "
+                       "large coefficients");
 
           auto value_copy(
               seal::util::allocate_uint(local_coeff_mod_count, local_pool));

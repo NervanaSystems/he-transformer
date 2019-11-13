@@ -250,7 +250,7 @@ TEST(he_tensor, io_bounds) {
   auto backend = ngraph::runtime::Backend::create("HE_SEAL");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
-  auto element_type = ngraph ::element::f32;
+  auto element_type = ngraph::element::f32;
 
   auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
       he_backend->create_plain_tensor(element_type, ngraph::Shape{1, 2, 3},
@@ -264,4 +264,20 @@ TEST(he_tensor, io_bounds) {
   // Too many bytes
   EXPECT_ANY_THROW(t_a->read(dummy, element_type.size() * 100));
   EXPECT_ANY_THROW(t_a->write(dummy, element_type.size() * 100));
+}
+
+TEST(he_tensor, zero) {
+  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  auto t_zero = std::static_pointer_cast<ngraph::he::HETensor>(
+      he_backend->create_plain_tensor(ngraph::element::f32, ngraph::Shape{0},
+                                      false));
+
+  // I/O access out of bounds
+  void* dummy = nullptr;
+  EXPECT_ANY_THROW(t_zero->write(dummy, 1));
+  EXPECT_ANY_THROW(t_zero->read(dummy, 1));
+
+  EXPECT_EQ(t_zero->get_batched_element_count(), 0);
 }
