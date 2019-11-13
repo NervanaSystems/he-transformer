@@ -27,11 +27,23 @@ namespace ngraph::he {
 
 void scalar_minimum_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                          HEPlaintext& out) {
-  std::vector<double> out_vals(std::min(arg0.size(), arg1.size()));
-  for (size_t i = 0; i < out_vals.size(); ++i) {
-    out_vals[i] = std::min(arg0[i], arg1[i]);
+  HEPlaintext out_vals;
+  if (arg0.size() == 1) {
+    out_vals.resize(arg1.size());
+    std::transform(arg1.begin(), arg1.end(), out_vals.begin(),
+                   [&](auto x) { return std::min(x, arg0[0]); });
+  } else if (arg1.size() == 1) {
+    out_vals.resize(arg0.size());
+    std::transform(arg0.begin(), arg0.end(), out_vals.begin(),
+                   [&](auto x) { return std::min(x, arg1[0]); });
+  } else {
+    size_t min_size = std::min(arg0.size(), arg1.size());
+    out_vals.resize(min_size);
+    for (size_t i = 0; i < min_size; ++i) {
+      out_vals[i] = std::min(arg0[i], arg1[i]);
+    }
   }
-  out = HEPlaintext(std::vector<double>{out_vals});
+  out = std::move(out_vals);
 }
 
 void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,
@@ -66,10 +78,6 @@ void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,
 void minimum_seal(const std::vector<HEType>& arg0,
                   const std::vector<HEType>& arg1, std::vector<HEType>& out,
                   size_t count, HESealBackend& he_seal_backend) {
-  NGRAPH_CHECK(arg0.size() == arg1.size(), "arg0.size() = ", arg0.size(),
-               " does not match arg1.size()", arg1.size());
-  NGRAPH_CHECK(arg0.size() == out.size(), "arg0.size() = ", arg0.size(),
-               " does not match out.size()", out.size());
   for (size_t i = 0; i < count; ++i) {
     scalar_minimum_seal(arg0[i], arg1[i], out[i], he_seal_backend);
   }

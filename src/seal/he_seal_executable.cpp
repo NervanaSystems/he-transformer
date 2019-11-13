@@ -647,8 +647,10 @@ bool HESealExecutable::call(
                    "Not enough client inputs");
       he_input = std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
 
-      if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
-              param->get_op_annotations())) {
+      auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
+          param->get_op_annotations();
+          NGRAPH_CHECK(current_annotation != nullptr, "Parameter ",
+                       param->get_name(), " has no HE op annotation");
         NGRAPH_CHECK(
             current_annotation->packed() == he_input->is_packed(),
             "Parameter annotation ", *current_annotation, " does not match ",
@@ -656,11 +658,6 @@ bool HESealExecutable::call(
 
         current_annotation->set_encrypted(he_input->any_encrypted_data());
         param->set_op_annotations(current_annotation);
-
-      } else {
-        NGRAPH_WARN << "Parameter " << param->get_name()
-                    << " has no HE op annotation";
-      }
     } else {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from server";
@@ -1090,14 +1087,12 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Exp: {
-      if (m_enable_client) {
-        NGRAPH_CHECK(false, "Exp not implemented for client-aided model ");
-      } else {
-        NGRAPH_WARN
-            << " Performing Exp without client is not privacy-preserving ";
-        exp_seal(args[0]->data(), out[0]->data(),
-                 args[0]->get_batched_element_count(), m_he_seal_backend);
-      }
+      NGRAPH_CHECK(!m_enable_client,
+                   "Exp not implemented for client-aided model ");
+      NGRAPH_WARN
+          << " Performing Exp without client is not privacy-preserving ";
+      exp_seal(args[0]->data(), out[0]->data(),
+               args[0]->get_batched_element_count(), m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Max: {
@@ -1106,19 +1101,18 @@ void HESealExecutable::generate_calls(
       NGRAPH_CHECK(!args[0]->is_packed() ||
                        (reduction_axes.find(0) == reduction_axes.end()),
                    "Max reduction axes cannot contain 0 for packed tensors");
-      if (m_enable_client) {
-        NGRAPH_CHECK(false, "Max not implemented for client-aided model");
-      } else {
-        NGRAPH_WARN << "Performing Max without client is not "
-                       "privacy-preserving";
-        size_t output_size = args[0]->get_batched_element_count();
-        NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
-                     output_size, " doesn't match number of elements",
-                     out[0]->data().size());
-        max_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
-                 out[0]->get_packed_shape(), max->get_reduction_axes(),
-                 out[0]->get_batch_size(), m_he_seal_backend);
-      }
+      NGRAPH_CHECK(!m_enable_client,
+                   "Max not implemented for client-aided model");
+      NGRAPH_WARN << "Performing Max without client is not "
+                     "privacy-preserving";
+
+      size_t output_size = args[0]->get_batched_element_count();
+      NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
+                   output_size, " doesn't match number of elements",
+                   out[0]->data().size());
+      max_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
+               out[0]->get_packed_shape(), max->get_reduction_axes(),
+               out[0]->get_batch_size(), m_he_seal_backend);
       break;
     }
     case OP_TYPEID::MaxPool: {

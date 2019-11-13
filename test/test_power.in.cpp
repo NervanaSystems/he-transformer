@@ -27,7 +27,7 @@ static std::string s_manifest = "${MANIFEST}";
 
 auto power_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
                      const bool arg2_encrypted, const bool complex_packing,
-                     const bool packed) {
+                     const bool arg1_packed, const bool arg2_packed) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
@@ -42,17 +42,18 @@ auto power_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   auto t = std::make_shared<ngraph::op::Power>(a, b);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
+  a->set_op_annotations(ngraph::test::he::annotation_from_flags(
+      false, arg1_encrypted, arg1_packed));
+  b->set_op_annotations(ngraph::test::he::annotation_from_flags(
+      false, arg2_encrypted, arg2_packed));
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg1_encrypted, packed);
+                                                 arg1_encrypted, arg1_packed);
   auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg2_encrypted, packed);
+                                                 arg2_encrypted, arg2_packed);
   auto t_result = ngraph::test::he::tensor_from_flags(
-      *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+      *he_backend, shape, arg1_encrypted || arg2_encrypted,
+      arg1_packed || arg2_packed);
 
   std::vector<float> input_a;
   std::vector<float> input_b;
@@ -61,10 +62,18 @@ auto power_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   for (int i = 0; i < ngraph::shape_size(shape); ++i) {
     input_a.emplace_back(i + 1);
     input_b.emplace_back(static_cast<float>(i + 1) / ngraph::shape_size(shape));
-    exp_result.emplace_back(std::pow(input_a.back(), input_b.back()));
 
-    NGRAPH_INFO << "A " << input_a.back() << ", B = " << input_b.back()
-                << " => " << exp_result.back();
+    if (arg1_packed == arg2_packed) {
+      exp_result.emplace_back(std::pow(input_a.back(), input_b.back()));
+    } else if (arg1_packed) {
+      exp_result.emplace_back(std::pow(
+          input_a.back(),
+          input_b[i % shape_size(ngraph::he::HETensor::pack_shape(shape))]));
+    } else if (arg2_packed) {
+      exp_result.emplace_back(std::pow(
+          input_a[i % shape_size(ngraph::he::HETensor::pack_shape(shape))],
+          input_b.back()));
+    }
   }
   copy_data(t_a, input_a);
   copy_data(t_b, input_b);
@@ -75,66 +84,74 @@ auto power_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
                                           exp_result, 1e-3f));
 };
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_unpacked) {
-  power_test(ngraph::Shape{2, 3}, false, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, false, false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_packed) {
-  power_test(ngraph::Shape{2, 3}, false, false, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_unpacked_packed) {
+  power_test(ngraph::Shape{2, 3}, false, false, false, false, true);
+}
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_packed_unpacked) {
+  power_test(ngraph::Shape{2, 3}, false, false, false, true, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_complex_unpacked) {
-  power_test(ngraph::Shape{2, 3}, false, false, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, false, false, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_complex_packed) {
-  power_test(ngraph::Shape{2, 3}, false, false, true, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_complex_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, false, false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_real_unpacked) {
-  power_test(ngraph::Shape{2, 3}, false, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_complex_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, false, false, true, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_real_packed) {
-  power_test(ngraph::Shape{2, 3}, false, true, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_real_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, false, true, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_complex_unpacked) {
-  power_test(ngraph::Shape{2, 3}, false, true, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_real_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, false, true, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_complex_packed) {
-  power_test(ngraph::Shape{2, 3}, false, true, true, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_complex_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, false, true, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_real_unpacked) {
-  power_test(ngraph::Shape{2, 3}, true, false, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_cipher_complex_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, false, true, true, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_real_packed) {
-  power_test(ngraph::Shape{2, 3}, true, false, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_real_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, true, false, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_complex_unpacked) {
-  power_test(ngraph::Shape{2, 3}, true, false, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_real_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, true, false, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_complex_packed) {
-  power_test(ngraph::Shape{2, 3}, true, false, true, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_complex_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, true, false, true, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_real_unpacked) {
-  power_test(ngraph::Shape{2, 3}, true, true, false, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_plain_complex_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, true, false, true, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_real_packed) {
-  power_test(ngraph::Shape{2, 3}, true, true, false, true);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_real_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, true, true, false, false, false);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_complex_unpacked) {
-  power_test(ngraph::Shape{2, 3}, true, true, true, false);
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_real_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, true, true, false, true, true);
 }
 
-NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_complex_packed) {
-  power_test(ngraph::Shape{2, 3}, true, true, true, true);
+NGRAPH_TEST(${BACKEND_NAME},
+            power_2_3_cipher_cipher_complex_unpacked_unpacked) {
+  power_test(ngraph::Shape{2, 3}, true, true, true, false, false);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, power_2_3_cipher_cipher_complex_packed_packed) {
+  power_test(ngraph::Shape{2, 3}, true, true, true, true, true);
 }

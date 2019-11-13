@@ -160,12 +160,15 @@ void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
                " not found");
 
   auto& [input_config, input_data] = input_proto->second;
+  static std::unordered_set<std::string> known_configs{"encrypt", "plain"};
+
+  NGRAPH_CHECK(known_configs.find(input_config) != known_configs.end(),
+               "Unknown configuration ", input_config);
+
   if (input_config == "encrypt") {
     encrypt_tensor = true;
   } else if (input_config == "plain") {
     encrypt_tensor = false;
-  } else {
-    NGRAPH_WARN << "Unknown configuration " << input_config;
   }
 
   NGRAPH_HE_LOG(5) << "Client received inference request with name "
@@ -388,30 +391,32 @@ void HESealClient::handle_message(const TCPMessage& message) {
       break;
     }
     case pb::TCPMessage_Type_REQUEST: {
-      if (proto_msg->has_function()) {
-        const std::string& function = proto_msg->function().function();
-        json js = json::parse(function);
-        auto name = js.at("function");
+      NGRAPH_CHECK(proto_msg->has_function(), "Unknown request type");
 
-        if (name == "Parameter") {
-          handle_inference_request(*proto_msg);
-        } else if (name == "Relu") {
-          handle_relu_request(std::move(*proto_msg));
-        } else if (name == "BoundedRelu") {
-          handle_bounded_relu_request(std::move(*proto_msg));
-        } else if (name == "MaxPool") {
-          handle_max_pool_request(std::move(*proto_msg));
-        } else {
-          NGRAPH_HE_LOG(5) << "Unknown name " << name;
-        }
-      } else {
-        NGRAPH_CHECK(false, "Unknown REQUEST type");
+      const std::string& function = proto_msg->function().function();
+      json js = json::parse(function);
+      auto name = js.at("function");
+
+      static std::unordered_set<std::string> s_known_names{
+          "Parameter", "Relu", "BoundedRelu", "MaxPool"};
+
+      NGRAPH_CHECK(s_known_names.find(name) != s_known_names.end(),
+                   "Unknown name ", name);
+
+      if (name == "Parameter") {
+        handle_inference_request(*proto_msg);
+      } else if (name == "Relu") {
+        handle_relu_request(std::move(*proto_msg));
+      } else if (name == "BoundedRelu") {
+        handle_bounded_relu_request(std::move(*proto_msg));
+      } else if (name == "MaxPool") {
+        handle_max_pool_request(std::move(*proto_msg));
       }
       break;
     }
     case pb::TCPMessage_Type_UNKNOWN:
     default:
-      NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
+      NGRAPH_CHECK(false, "Unknown TCPMessage type");
   }
 #pragma clang diagnostic pop
 }
