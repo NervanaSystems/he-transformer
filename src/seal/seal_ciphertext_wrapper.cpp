@@ -29,9 +29,6 @@ namespace ngraph::he {
 
 SealCiphertextWrapper::SealCiphertextWrapper() = default;
 
-SealCiphertextWrapper::SealCiphertextWrapper(seal::Ciphertext cipher)
-    : m_ciphertext(std::move(cipher)) {}
-
 void SealCiphertextWrapper::save(pb::HEType& he_type) const {
   size_t cipher_size = ciphertext_size(m_ciphertext);
   std::string cipher_str;

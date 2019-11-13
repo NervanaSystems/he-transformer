@@ -59,10 +59,6 @@ class SealCiphertextWrapper {
   /// \brief Create an empty ciphertext
   SealCiphertextWrapper();
 
-  /// \brief Create ciphertext wrapper from ciphertext
-  /// \param[in] cipher Ciphertext to store
-  explicit SealCiphertextWrapper(seal::Ciphertext cipher);
-
   /// \brief Returns the ciphertext
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
 
