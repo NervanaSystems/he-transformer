@@ -271,8 +271,8 @@ TEST(he_tensor, zero) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   auto t_zero = std::static_pointer_cast<ngraph::he::HETensor>(
-      he_backend->create_plain_tensor(ngraph::element::f32, ngraph::Shape{0},
-                                      false));
+      he_backend->create_plain_tensor(ngraph::element::f32, ngraph::Shape{0, 4},
+                                      true));
 
   // I/O access out of bounds
   void* dummy = nullptr;
