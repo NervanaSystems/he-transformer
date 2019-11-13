@@ -56,6 +56,7 @@ set(HE_SRC
     seal/he_seal_client.cpp
     seal/he_seal_encryption_parameters.cpp
     seal/he_seal_executable.cpp
+    seal/seal_ciphertext_wrapper.cpp
     seal/seal_plaintext_wrapper.cpp
     seal/seal_util.cpp
     # tcp

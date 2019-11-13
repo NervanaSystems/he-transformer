@@ -57,12 +57,11 @@ inline void load(seal::Ciphertext& cipher,
 class SealCiphertextWrapper {
  public:
   /// \brief Create an empty ciphertext
-  SealCiphertextWrapper() = default;
+  SealCiphertextWrapper();
 
   /// \brief Create ciphertext wrapper from ciphertext
   /// \param[in] cipher Ciphertext to store
-  explicit SealCiphertextWrapper(seal::Ciphertext cipher)
-      : m_ciphertext(std::move(cipher)) {}
+  explicit SealCiphertextWrapper(seal::Ciphertext cipher);
 
   /// \brief Returns the ciphertext
   seal::Ciphertext& ciphertext() { return m_ciphertext; }
@@ -78,33 +77,14 @@ class SealCiphertextWrapper {
 
   /// \brief Writes the ciphertext to a protobuf object
   /// \param[out] he_type Protobuf object to write ciphertext to
-  void save(pb::HEType& he_type) const {
-    size_t cipher_size = ciphertext_size(m_ciphertext);
-    std::string cipher_str;
-    cipher_str.resize(cipher_size);
-
-    size_t save_size = ngraph::he::save(
-        m_ciphertext, reinterpret_cast<std::byte*>(cipher_str.data()));
-
-    NGRAPH_CHECK(save_size == cipher_size, "Save size != cipher size");
-
-    he_type.set_ciphertext(std::move(cipher_str));
-  }
+  void save(pb::HEType& he_type) const;
 
   /// \brief Loads a ciphertext from a protobuf object
   /// \param[out] dst Destination to load ciphertext to
   /// \param[in] proto_he_type Protobuf object to load object from
   /// \param[in] context SEAL context to validate loaded ciphertext against
   static void load(SealCiphertextWrapper& dst, const pb::HEType& proto_he_type,
-                   std::shared_ptr<seal::SEALContext> context) {
-    NGRAPH_CHECK(!proto_he_type.is_plaintext(),
-                 "Cannot load ciphertext from plaintext HEType");
-
-    const std::string& cipher_str = proto_he_type.ciphertext();
-    ngraph::he::load(dst.ciphertext(), std::move(context),
-                     reinterpret_cast<const std::byte*>(cipher_str.data()),
-                     cipher_str.size());
-  }
+                   std::shared_ptr<seal::SEALContext> context);
 
  private:
   seal::Ciphertext m_ciphertext;

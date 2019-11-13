@@ -38,27 +38,17 @@ class TestHESealExecutable {
   }
 };
 
-TEST(he_seal_executable, generate_calls_unsupported_op) {
+TEST(he_seal_executable, generate_calls) {
   auto backend = ngraph::runtime::Backend::create("HE_SEAL");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   ngraph::Shape shape{2, 2};
 
-  bool packed = true;
-  bool arg1_encrypted = false;
-  bool arg2_encrypted = false;
-
   auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = std::make_shared<ngraph::op::Add>(a, b);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+  auto f = std::make_shared<ngraph::Function>(a, ngraph::ParameterVector{a});
 
   auto t_a =
-      ngraph::test::he::tensor_from_flags(*he_backend, shape, false, packed);
-  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg2_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(
-      *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+      ngraph::test::he::tensor_from_flags(*he_backend, shape, false, false);
 
   auto he_handle = std::static_pointer_cast<ngraph::he::HESealExecutable>(
       he_backend->compile(f));
@@ -66,14 +56,24 @@ TEST(he_seal_executable, generate_calls_unsupported_op) {
   std::vector<std::shared_ptr<ngraph::he::HETensor>> args{
       std::static_pointer_cast<ngraph::he::HETensor>(t_a)};
   std::vector<std::shared_ptr<ngraph::he::HETensor>> out{
-      std::static_pointer_cast<ngraph::he::HETensor>(t_b)};
+      std::static_pointer_cast<ngraph::he::HETensor>(t_a)};
 
-  ngraph::he::NodeWrapper node_wrapper(std::make_shared<ngraph::op::Abs>(a));
-
-  auto test_he_seal_executable =
-      ngraph::he::test::TestHESealExecutable{he_handle};
-  EXPECT_ANY_THROW(test_he_seal_executable.generate_calls(
-      ngraph::element::f32, node_wrapper, out, args));
+  // Unsupported op
+  {
+    ngraph::he::NodeWrapper node_wrapper(std::make_shared<ngraph::op::Abs>(a));
+    auto test_he_seal_executable =
+        ngraph::he::test::TestHESealExecutable{he_handle};
+    EXPECT_ANY_THROW(test_he_seal_executable.generate_calls(
+        ngraph::element::f32, node_wrapper, out, args));
+  }
+  // Skipped op -- parameter
+  {
+    ngraph::he::NodeWrapper node_wrapper(a);
+    auto test_he_seal_executable =
+        ngraph::he::test::TestHESealExecutable{he_handle};
+    EXPECT_NO_THROW(test_he_seal_executable.generate_calls(
+        ngraph::element::f32, node_wrapper, out, args));
+  }
 }
 
 TEST(he_seal_executable, plaintext_with_encrypted_annotation) {

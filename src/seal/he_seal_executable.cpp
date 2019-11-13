@@ -1020,8 +1020,6 @@ void HESealExecutable::generate_calls(
                      broadcast->get_broadcast_axes());
       break;
     }
-    case OP_TYPEID::BroadcastLike:
-      break;
     case OP_TYPEID::Concat: {
       const auto* concat = static_cast<const op::Concat*>(&node);
       std::vector<Shape> in_shapes;
@@ -1172,11 +1170,6 @@ void HESealExecutable::generate_calls(
       NGRAPH_HE_LOG(3) << "Skipping parameter";
       break;
     }
-    case OP_TYPEID::Passthrough: {
-      const auto* passthrough = static_cast<const op::Passthrough*>(&node);
-      throw unsupported_op{"Unsupported operation language: " +
-                           passthrough->language()};
-    }
     case OP_TYPEID::Power: {
       // TODO(fboemer): implement with client
       NGRAPH_WARN
@@ -1225,9 +1218,6 @@ void HESealExecutable::generate_calls(
       }
       reverse_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                    out[0]->get_packed_shape(), reverse->get_reversed_axes());
-      break;
-    }
-    case OP_TYPEID::ScalarConstantLike: {
       break;
     }
     case OP_TYPEID::Slice: {
@@ -1302,6 +1292,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::BatchNormTraining:
     case OP_TYPEID::BatchNormTrainingBackprop:
     case OP_TYPEID::BroadcastDistributed:
+    case OP_TYPEID::BroadcastLike:
     case OP_TYPEID::Ceiling:
     case OP_TYPEID::Convert:
     case OP_TYPEID::ConvolutionBackpropData:
@@ -1335,6 +1326,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::NotEqual:
     case OP_TYPEID::OneHot:
     case OP_TYPEID::Or:
+    case OP_TYPEID::Passthrough:
     case OP_TYPEID::Product:
     case OP_TYPEID::Quantize:
     case OP_TYPEID::QuantizedAvgPool:
@@ -1346,6 +1338,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
+    case OP_TYPEID::ScalarConstantLike:
     case OP_TYPEID::Send:
     case OP_TYPEID::Recv:
     case OP_TYPEID::Range:
