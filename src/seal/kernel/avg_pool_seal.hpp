@@ -36,7 +36,7 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                           const Shape& padding_above,
                           bool include_padding_in_avg_computation,
                           size_t batch_size, HESealBackend& he_seal_backend) {
-  // TODO(fboemer: enable padding in avg pool computation
+  // TODO(unknown): (fboemer: enable padding in avg pool computation
   NGRAPH_CHECK(!include_padding_in_avg_computation,
                "AvgPool doesn't support padding in computation");
   // At the outermost level we will walk over every output coordinate O.

@@ -97,13 +97,8 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0,
     he_seal_backend.get_evaluator()->rescale_to_next_inplace(out->ciphertext(),
                                                              pool);
   } else {
-    if (&arg0 == &arg1) {
-      he_seal_backend.get_evaluator()->square(arg0.ciphertext(),
-                                              out->ciphertext(), pool);
-    } else {
-      he_seal_backend.get_evaluator()->multiply(
-          arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
-    }
+    he_seal_backend.get_evaluator()->multiply(
+        arg0.ciphertext(), arg1.ciphertext(), out->ciphertext(), pool);
 
     he_seal_backend.get_evaluator()->relinearize_inplace(
         out->ciphertext(), *(he_seal_backend.get_relin_keys()), pool);
@@ -128,8 +123,7 @@ void scalar_multiply_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                    out.get_ciphertext()->ciphertext(), he_seal_backend, pool);
 
     if (out.get_ciphertext()->ciphertext().is_transparent()) {
-      HEPlaintext zeros({std::vector<double>(arg1.size(), 0)});
-      out.set_plaintext(zeros);
+      out.set_plaintext(HEPlaintext(arg1.size(), 0));
     }
   } else {
     if (!out.is_ciphertext()) {
@@ -183,6 +177,62 @@ void scalar_multiply_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
     }
   }
   out = std::move(out_vals);
+}
+
+void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
+                          HESealBackend& he_seal_backend) {
+  if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
+    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+                 "Complex packing types don't match");
+    if (!out.is_ciphertext()) {
+      NGRAPH_INFO << "C*C => P";
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_multiply_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
+                         out.get_ciphertext(), arg0.complex_packing(),
+                         he_seal_backend);
+  } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
+    if (!out.is_ciphertext()) {
+      NGRAPH_INFO << "C*P => P";
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_multiply_seal(*arg0.get_ciphertext(), arg1.get_plaintext(), out,
+                         he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
+    if (!out.is_ciphertext()) {
+      NGRAPH_INFO << "P*C => P";
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_multiply_seal(*arg1.get_ciphertext(), arg0.get_plaintext(), out,
+                         he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
+    NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+                 "Complex packing types don't match");
+    if (!out.is_plaintext()) {
+      NGRAPH_INFO << "P*P => C";
+      out.set_plaintext(HEPlaintext());
+    }
+    scalar_multiply_seal(arg0.get_plaintext(), arg1.get_plaintext(),
+                         out.get_plaintext());
+  }
+  out.complex_packing() = arg0.complex_packing();
+}
+
+void multiply_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
+                   std::vector<HEType>& out, size_t count,
+                   const element::Type& element_type,
+                   HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+  NGRAPH_CHECK(count <= arg0.size(), "Count ", count,
+               " is too large for arg0, with size ", arg0.size());
+  NGRAPH_CHECK(count <= arg1.size(), "Count ", count,
+               " is too large for arg1, with size ", arg1.size());
+
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_multiply_seal(arg0[i], arg1[i], out[i], he_seal_backend);
+  }
 }
 
 }  // namespace ngraph::he

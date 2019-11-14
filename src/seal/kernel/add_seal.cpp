@@ -80,4 +80,57 @@ void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
   }
   out = std::move(out_vals);
 }
+
+void scalar_add_seal(HEType& arg0, HEType& arg1, HEType& out,
+                     HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(arg0.complex_packing() == arg1.complex_packing(),
+               "Complex packing types don't match");
+  out.complex_packing() = arg0.complex_packing();
+
+  if (arg0.is_ciphertext() && arg1.is_ciphertext()) {
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_add_seal(*arg0.get_ciphertext(), *arg1.get_ciphertext(),
+                    out.get_ciphertext(), he_seal_backend);
+  } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_add_seal(*arg0.get_ciphertext(), arg1.get_plaintext(),
+                    out.get_ciphertext(), arg0.complex_packing(),
+                    he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
+    if (!out.is_ciphertext()) {
+      out.set_ciphertext(HESealBackend::create_empty_ciphertext());
+    }
+    scalar_add_seal(*arg1.get_ciphertext(), arg0.get_plaintext(),
+                    out.get_ciphertext(), arg0.complex_packing(),
+                    he_seal_backend);
+  } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
+    if (!out.is_plaintext()) {
+      out.set_plaintext(HEPlaintext());
+    }
+    scalar_add_seal(arg0.get_plaintext(), arg1.get_plaintext(),
+                    out.get_plaintext());
+  }
+}
+
+void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
+              std::vector<HEType>& out, size_t count,
+              const element::Type& element_type,
+              HESealBackend& he_seal_backend) {
+  NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
+               "Unsupported type ", element_type);
+  NGRAPH_CHECK(count <= arg0.size(), "Count ", count,
+               " is too large for arg0, with size ", arg0.size());
+  NGRAPH_CHECK(count <= arg1.size(), "Count ", count,
+               " is too large for arg1, with size ", arg1.size());
+
+#pragma omp parallel for
+  for (size_t i = 0; i < count; ++i) {
+    scalar_add_seal(arg0[i], arg1[i], out[i], he_seal_backend);
+  }
+}
+
 }  // namespace ngraph::he

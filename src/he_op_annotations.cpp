@@ -28,6 +28,14 @@ namespace ngraph::he {
 HEOpAnnotations::HEOpAnnotations(bool from_client, bool encrypted, bool packed)
     : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
 
+HEOpAnnotations::HEOpAnnotations(const HEOpAnnotations& op_annotation) =
+    default;
+
+bool HEOpAnnotations::operator==(const HEOpAnnotations& other) const {
+  return (m_from_client == other.m_from_client) &&
+         (m_encrypted == other.m_encrypted) && (m_packed == other.m_packed);
+}
+
 bool HEOpAnnotations::from_client() const { return m_from_client; }
 void HEOpAnnotations::set_from_client(bool val) { m_from_client = val; }
 
@@ -75,6 +83,14 @@ HEOpAnnotations::server_plaintext_unpacked_annotation() {
 std::shared_ptr<HEOpAnnotations>
 HEOpAnnotations::server_ciphertext_unpacked_annotation() {
   return std::make_shared<HEOpAnnotations>(false, true, false);
+}
+
+std::ostream& operator<<(std::ostream& os, const HEOpAnnotations& annotation) {
+  os << "HEOpAnnotation{";
+  os << "from_client=" << (annotation.from_client() ? "True" : "False") << ", ";
+  os << "encrypted=" << (annotation.encrypted() ? "True" : "False") << ", ";
+  os << "packed=" << (annotation.packed() ? "True" : "False") << "}";
+  return os;
 }
 
 }  // namespace ngraph::he

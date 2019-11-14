@@ -122,9 +122,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_provenance_tag) {
   b->add_provenance_tag(b_provenance_tag);
 
   std::string error_str;
-  he_backend->set_config({{"enable_client", "true"},
-                          {b_provenance_tag, "client_input,plain,packed"}},
-                         error_str);
+  he_backend->set_config(
+      {{"enable_client", "true"}, {b_provenance_tag, "client_input,packed"}},
+      error_str);
 
   auto c =
       std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_c);
