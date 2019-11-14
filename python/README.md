@@ -16,7 +16,7 @@ pip install python/dist/pyhe_client-*.whl
 ```
 To check the installation worked correctly, run
 ```bash
-python -c "import pyhe_client"
+python3 -c "import pyhe_client"
 ```
 This should run without errors.
 
@@ -25,7 +25,7 @@ To test:
   1. In one terminal, run
   ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
-python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --enable_client=yes
+python3 $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --enable_client=yes
   ```
 
   This will start the server, which will wait for encrypted inputs from a client.

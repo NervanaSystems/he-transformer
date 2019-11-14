@@ -16,7 +16,7 @@
 
 # Environment to build and unit-test he-transformer
 # with g++ 7.4.0
-# with clang++ 6.0.1
+# with clang++ 9.0.1
 # with python 3.6.8
 # with cmake 3.14.4
 
@@ -31,14 +31,15 @@ RUN apt-get update && apt-get install -y \
         zlib1g zlib1g-dev bash-completion \
         build-essential cmake \
         software-properties-common \
-        clang-3.9 clang-format-3.9 \
         git \
-        wget patch diffutils zlib1g-dev libtinfo-dev
+        wget patch diffutils zlib1g-dev libtinfo-dev \
+        autoconf libtool \
+        doxygen graphviz
 
-# Install clang-6
+# Install clang-9
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
-RUN apt-get update && apt install -y clang-6.0
+RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
+RUN apt-get update && apt install -y clang-9 clang-tidy-9 clang-format-9
 
 RUN apt-get clean autoclean && \
         apt-get autoremove -y
@@ -52,12 +53,12 @@ RUN pip3 install cmake --upgrade
 RUN cmake --version
 RUN make --version
 RUN gcc --version
-RUN clang++-6.0 --version
+RUN clang++-9 --version
 RUN c++ --version
 RUN python3 --version
 RUN virtualenv --version
 
-# Get bazel
+# Get bazel for ng-tf
 RUN wget https://github.com/bazelbuild/bazel/releases/download/0.25.2/bazel-0.25.2-installer-linux-x86_64.sh
 RUN chmod +x ./bazel-0.25.2-installer-linux-x86_64.sh
 RUN bash ./bazel-0.25.2-installer-linux-x86_64.sh

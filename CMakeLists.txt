@@ -126,7 +126,7 @@ if(NGRAPH_HE_CLANG_TIDY)
   if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "CMake_RUN_CLANG_TIDY requires an out-of-source build!")
   endif()
-  find_program(CLANG_TIDY_COMMAND NAMES clang-tidy)
+  find_program(CLANG_TIDY_COMMAND NAMES clang-tidy-9)
   if(NOT CLANG_TIDY_COMMAND)
     message(
       FATAL_ERROR "CMake_RUN_CLANG_TIDY is ON but clang-tidy is not found!")
