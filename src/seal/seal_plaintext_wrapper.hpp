@@ -20,7 +20,7 @@
 
 #include "seal/seal.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Wrapper around Seal::Plaintext with complex packing information
 class SealPlaintextWrapper {
  public:
@@ -54,4 +54,4 @@ class SealPlaintextWrapper {
   seal::Plaintext m_plaintext;
   bool m_complex_packing;
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

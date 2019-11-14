@@ -26,7 +26,7 @@
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TCPMessage::TCPMessage() = default;
 
@@ -70,4 +70,4 @@ bool TCPMessage::unpack(const TCPMessage::data_buffer& buffer) {
       buffer.size() - TCPMessage::header_length);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

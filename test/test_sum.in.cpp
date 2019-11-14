@@ -26,7 +26,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto sum_test = [](const Shape& in_shape, const AxisSet& axis_set,
                    const std::vector<float>& input,
@@ -174,4 +174,4 @@ NGRAPH_TEST(${BACKEND_NAME}, sum_matrix_to_scalar_zero_by_zero) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

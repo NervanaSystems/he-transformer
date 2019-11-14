@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto softmax_test = [](const Shape& shape_a, const AxisSet& axes,
                        const std::vector<float>& input_a,
@@ -219,4 +219,4 @@ NGRAPH_TEST(${BACKEND_NAME}, softmax_axis_cipher_complex_packed) {
       true, true, true);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

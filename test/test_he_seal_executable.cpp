@@ -24,7 +24,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 class TestHESealExecutable {
  public:
@@ -270,4 +270,4 @@ TEST(he_seal_executable, provenance_tag) {
   EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

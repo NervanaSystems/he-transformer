@@ -24,7 +24,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 void scalar_divide_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                         HEPlaintext& out);
 
@@ -41,4 +41,4 @@ void divide_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
                  const element::Type& element_type,
                  HESealBackend& he_seal_backend);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

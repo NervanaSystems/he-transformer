@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto max_pool_test = [](const Shape& shape_a,
                         const Shape& window_shape,

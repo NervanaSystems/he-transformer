@@ -24,7 +24,7 @@
 #include "ngraph/node.hpp"
 #include "ngraph/util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 bool pass::SupportedOps::run_on_function(std::shared_ptr<Function> function) {
   std::list<std::shared_ptr<Node>> ops = function->get_ordered_ops();
@@ -36,4 +36,4 @@ bool pass::SupportedOps::run_on_function(std::shared_ptr<Function> function) {
   return true;
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

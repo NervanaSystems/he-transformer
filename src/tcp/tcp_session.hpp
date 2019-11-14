@@ -25,7 +25,7 @@
 #include "logging/ngraph_he_log.hpp"
 #include "tcp/tcp_message.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Class representing a session over TCP
 class TCPSession : public std::enable_shared_from_this<TCPSession> {
   using data_buffer = TCPMessage::data_buffer;
@@ -74,4 +74,4 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
 
   std::function<void(const TCPMessage&)> m_message_callback;
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

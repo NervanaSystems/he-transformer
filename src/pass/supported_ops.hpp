@@ -21,7 +21,7 @@
 
 #include "ngraph/pass/graph_rewrite.hpp"
 
-namespace ngraph::he::pass {
+namespace ngraph::runtime::he::pass {
 /// \brief Checks whether the graph contains any ops that are not supported
 class SupportedOps : public ngraph::pass::FunctionPass {
  public:
@@ -43,4 +43,4 @@ class SupportedOps : public ngraph::pass::FunctionPass {
  private:
   std::function<bool(const Node&)> m_is_supported;
 };
-}  // namespace ngraph::he::pass
+}  // namespace ngraph::runtime::he::pass

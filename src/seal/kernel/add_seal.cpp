@@ -19,7 +19,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void scalar_add_seal(SealCiphertextWrapper& arg0, SealCiphertextWrapper& arg1,
                      std::shared_ptr<SealCiphertextWrapper>& out,
@@ -133,4 +133,4 @@ void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

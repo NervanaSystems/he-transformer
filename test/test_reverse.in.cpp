@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto reverse_test = [](const Shape& shape_a, const AxisSet& axis_set,
                        const std::vector<float>& input,
@@ -328,4 +328,4 @@ NGRAPH_TEST(${BACKEND_NAME}, reverse_3d_012) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

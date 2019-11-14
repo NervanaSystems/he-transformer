@@ -25,7 +25,7 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(perf_micro, encode) {
   auto perf_test = [](size_t poly_modulus_degree,
@@ -216,4 +216,4 @@ TEST(perf_micro, encode) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

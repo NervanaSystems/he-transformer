@@ -23,7 +23,7 @@
 #include "ngraph/op/op.hpp"
 #include "ngraph/op/util/op_annotations.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HEOpAnnotations::HEOpAnnotations(bool from_client, bool encrypted, bool packed)
     : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
@@ -93,4 +93,4 @@ std::ostream& operator<<(std::ostream& os, const HEOpAnnotations& annotation) {
   return os;
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

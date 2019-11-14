@@ -22,7 +22,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "test_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(he_plaintext, initialize) {
   {
@@ -121,4 +121,4 @@ TEST(he_plaintext, ostream) {
   EXPECT_NO_THROW(ss << plain);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

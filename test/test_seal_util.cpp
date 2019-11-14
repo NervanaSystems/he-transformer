@@ -30,7 +30,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(seal_util, seal_security_level) {
   EXPECT_EQ(seal_security_level(0), seal::sec_level_type::none);
@@ -492,4 +492,4 @@ TEST(seal_util, encode_plaintext_wrapper_wrong_element_type) {
                           false));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

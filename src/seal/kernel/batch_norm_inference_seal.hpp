@@ -28,7 +28,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void batch_norm_inference_seal(
     double eps, std::vector<HEType>& gamma, std::vector<HEType>& beta,
     std::vector<HEType>& input, std::vector<HEType>& mean,
@@ -94,4 +94,4 @@ inline void batch_norm_inference_seal(
                     normed_input[input_index], he_seal_backend);
   }
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

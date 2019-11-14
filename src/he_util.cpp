@@ -27,7 +27,7 @@
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void complex_vec_to_real_vec(std::vector<double>& output,
                              const std::vector<std::complex<double>>& input) {
@@ -228,4 +228,4 @@ element::Type pb_type_to_type(pb::HETensor_ElementType pb_type) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

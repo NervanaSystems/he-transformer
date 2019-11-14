@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
@@ -84,4 +84,4 @@ NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
       test::all_close(read_vector<float>(t_result), exp_result, 1e-1f));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

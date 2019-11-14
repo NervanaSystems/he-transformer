@@ -22,7 +22,7 @@
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void reshape_seal(const std::vector<HEType>& arg,
                          std::vector<HEType>& out, const Shape& in_shape,
                          const AxisVector& in_axis_order,
@@ -50,4 +50,4 @@ inline void reshape_seal(const std::vector<HEType>& arg,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

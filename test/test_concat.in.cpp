@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto concat_test = [](const Shape& shape_a, const Shape& shape_b,
                       const Shape& shape_c, size_t concat_axis,
@@ -399,4 +399,4 @@ NGRAPH_TEST(${BACKEND_NAME},
               std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8}, true, true, false);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

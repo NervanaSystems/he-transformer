@@ -25,7 +25,7 @@
 #include "protos/message.pb.h"
 #include "seal/seal.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Returns the size in bytes required to serialize a ciphertext
 /// \param[in] cipher Ciphertext to measure size of
 inline size_t ciphertext_size(const seal::Ciphertext& cipher) {
@@ -86,4 +86,4 @@ class SealCiphertextWrapper {
   seal::Ciphertext m_ciphertext;
 };
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -26,7 +26,7 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Adds two ciphertexts
 /// \param[in,out] arg0 Ciphertext argument to add. May be rescaled
 /// \param[in,out] arg1 Ciphertext argument to add. May be rescaled
@@ -92,4 +92,4 @@ void add_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
               const element::Type& element_type,
               HESealBackend& he_seal_backend);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

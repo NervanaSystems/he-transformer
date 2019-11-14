@@ -24,7 +24,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HEType::HEType(const HEPlaintext& plain, const bool complex_packing)
     : HEType(complex_packing, plain.size()) {
@@ -79,4 +79,4 @@ void HEType::set_plaintext(HEPlaintext plain) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

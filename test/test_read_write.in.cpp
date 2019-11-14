@@ -26,7 +26,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 NGRAPH_TEST(${BACKEND_NAME}, plain_tv_write_read_scalar) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");

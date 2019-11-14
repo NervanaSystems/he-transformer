@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto exp_test = [](const Shape& shape, const bool arg1_encrypted,
                    const bool complex_packing, const bool packed) {
@@ -103,4 +103,4 @@ NGRAPH_TEST(${BACKEND_NAME}, exp_2_3_cipher_complex_packed) {
   exp_test(Shape{2, 3}, true, true, true);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -24,7 +24,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 HETensor::HETensor(const element::Type& element_type, const Shape& shape,
                    bool plaintext_packing, bool complex_packing, bool encrypted,
                    seal::CKKSEncoder& ckks_encoder,
@@ -389,4 +389,4 @@ void HETensor::load_from_proto_tensor(
   he_tensor->m_write_count += result_count;
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

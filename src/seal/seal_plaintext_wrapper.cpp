@@ -14,15 +14,13 @@
 // limitations under the License.
 //*****************************************************************************
 
-#pragma once
-
 #include "seal/seal_plaintext_wrapper.hpp"
 
 #include <utility>
 
 #include "seal/seal.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 SealPlaintextWrapper::SealPlaintextWrapper(seal::Plaintext plain,
                                            bool complex_packing)
@@ -41,4 +39,4 @@ const seal::Plaintext& SealPlaintextWrapper::plaintext() const {
 
 seal::Plaintext& SealPlaintextWrapper::plaintext() { return m_plaintext; }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -26,7 +26,7 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 class HESealBackend;
 class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -192,4 +192,4 @@ class HETensor : public runtime::Tensor {
   void check_io_bounds(size_t n) const;
 };
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

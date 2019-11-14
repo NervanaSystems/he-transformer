@@ -29,7 +29,7 @@
 #include "tcp/tcp_session.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto dummy_tcp_message = []() {
   // Write message
@@ -185,4 +185,4 @@ TEST(tcp_client, non_empty_message_queue) {
   client_thread.join();
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

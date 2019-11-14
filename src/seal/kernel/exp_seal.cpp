@@ -24,7 +24,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void scalar_exp_seal(const HEPlaintext& arg, HEPlaintext& out) {
   HEPlaintext out_vals(arg.size());
@@ -66,4 +66,4 @@ void exp_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

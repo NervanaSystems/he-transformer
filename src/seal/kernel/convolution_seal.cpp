@@ -21,7 +21,7 @@
 
 #include "logging/ngraph_he_log.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void convolution_seal(
     const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
@@ -222,4 +222,4 @@ void convolution_seal(
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

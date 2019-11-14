@@ -22,7 +22,7 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HEPlaintext::HEPlaintext(const std::initializer_list<double>& values)
     : std::vector<double>(values) {}
@@ -107,4 +107,4 @@ std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
   os << ")";
   return os;
 }
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

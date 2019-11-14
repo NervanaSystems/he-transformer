@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto reshape_test = [](const Shape& shape_a, const Shape& shape_r,
                        const AxisVector& axis_vector,
@@ -275,4 +275,4 @@ NGRAPH_TEST(${BACKEND_NAME}, reshape_6d) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

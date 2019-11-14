@@ -47,13 +47,13 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-namespace ngraph {
-namespace runtime {
+namespace ngraph::runtime {
 class BackendConstructor;
-}  // namespace runtime
+
 namespace he {
 class HEType;
 class SealCiphertextWrapper;
+
 /// \brief Class representing a backend using the CKKS homomorphic encryption
 /// scheme.
 class HESealBackend : public runtime::Backend {
@@ -111,8 +111,8 @@ class HESealBackend : public runtime::Backend {
   ///     5) {"encryption_parameters" : "filename
   ///     or json string"}, which sets the encryption parameters to use.
   ///
-  ///     Note, entries with the same tensor key should be comma-separated, for
-  ///     instance: {tensor_name : "client_input,encrypt,packed"}
+  ///     Note, entries with the same tensor key should be comma-separated,
+  ///     for instance: {tensor_name : "client_input,encrypt,packed"}
   ///
   ///  \warning Specfying entries of form 1) without an entry of form 2) will
   ///  not load the tensors from the client
@@ -135,8 +135,8 @@ class HESealBackend : public runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
       const element::Type& type, const Shape& shape) const;
 
-  /// \brief Creates a plaintext tensor using plaintext packing along the batch
-  /// (i.e. first) axis
+  /// \brief Creates a plaintext tensor using plaintext packing along the
+  /// batch (i.e. first) axis
   /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
@@ -381,4 +381,4 @@ class HESealBackend : public runtime::Backend {
 };
 
 }  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::runtime

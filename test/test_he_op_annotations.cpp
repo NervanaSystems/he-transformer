@@ -18,7 +18,7 @@
 #include "he_op_annotations.hpp"
 #include "ngraph/op/parameter.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(he_op_annotations, set_get) {
   auto ann = HEOpAnnotations(false, false, false);
@@ -59,4 +59,4 @@ TEST(he_op_annotations, defaults) {
   EXPECT_FALSE(HEOpAnnotations::plaintext_packed(*param));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

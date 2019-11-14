@@ -27,7 +27,7 @@
 #include "ngraph/check.hpp"
 #include "tcp/tcp_message.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Class representing a Client over a TCP connection
 
 TCPClient::TCPClient(
@@ -131,4 +131,4 @@ void TCPClient::do_write() {
       });
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

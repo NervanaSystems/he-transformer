@@ -96,7 +96,7 @@
 using json = nlohmann::json;
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
                                    bool enable_performance_collection,
                                    HESealBackend& he_seal_backend,
@@ -1548,4 +1548,4 @@ void HESealExecutable::handle_server_relu_op(
 
   out->data() = m_relu_data;
 }
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

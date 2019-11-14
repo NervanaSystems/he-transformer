@@ -33,7 +33,7 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 bool pass::PropagateHEAnnotations::run_on_function(
     std::shared_ptr<Function> function) {
@@ -122,4 +122,4 @@ bool pass::PropagateHEAnnotations::run_on_function(
   return false;
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

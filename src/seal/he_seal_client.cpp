@@ -39,7 +39,7 @@
 
 using json = nlohmann::json;
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
@@ -438,4 +438,4 @@ void HESealClient::close_connection() {
   m_is_done_cond.notify_all();
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

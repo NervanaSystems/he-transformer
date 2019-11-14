@@ -27,7 +27,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void convolution_seal(
     const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
@@ -41,4 +41,4 @@ void convolution_seal(
     const element::Type& element_type, size_t batch_size,
     HESealBackend& he_seal_backend, bool verbose = true);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

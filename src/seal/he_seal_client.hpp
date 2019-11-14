@@ -30,7 +30,7 @@
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 /// (tensor_name : (configuration, data)
 template <class T>
@@ -75,7 +75,7 @@ class HESealClient {
 
   /// \brief Processes a message from the server
   /// \param[in] message Message to process
-  void handle_message(const ngraph::he::TCPMessage& message);
+  void handle_message(const ngraph::runtime::he::TCPMessage& message);
 
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
@@ -106,7 +106,7 @@ class HESealClient {
 
   /// \brief Writes a mesage to the server
   /// \param[in] message Message to write
-  void write_message(ngraph::he::TCPMessage&& message) {
+  void write_message(ngraph::runtime::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
@@ -152,4 +152,4 @@ class HESealClient {
   std::shared_ptr<HETensor> m_result_tensor;
   std::vector<double> m_results;  // Function outputs
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

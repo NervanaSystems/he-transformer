@@ -22,7 +22,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/kernel/add_seal.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void sum_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                      const Shape& in_shape, const Shape& out_shape,
                      const AxisSet& reduction_axes,
@@ -53,4 +53,4 @@ inline void sum_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

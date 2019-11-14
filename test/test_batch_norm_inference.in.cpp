@@ -28,7 +28,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 template <typename T>
 class BatchNormInferenceTester {
@@ -301,4 +301,4 @@ NGRAPH_TEST(${BACKEND_NAME}, batch_norm_fusion) {
                               read_vector<float>(t_opt_result)));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

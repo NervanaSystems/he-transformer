@@ -27,7 +27,7 @@
 #include "tcp/tcp_message.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(tcp_message, decode_small) {
   TCPMessage::data_buffer buffer;
@@ -77,4 +77,4 @@ TEST(tcp_message, pack_unpack) {
       *message1.proto_message(), *message2.proto_message()));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

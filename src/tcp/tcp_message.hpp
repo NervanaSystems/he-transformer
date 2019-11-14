@@ -20,7 +20,7 @@
 
 #include "protos/message.pb.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Represents a message. A wrapper around pb::TCPMessage
 class TCPMessage {
  public:
@@ -64,4 +64,4 @@ class TCPMessage {
  private:
   std::shared_ptr<pb::TCPMessage> m_proto_message;
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

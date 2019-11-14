@@ -28,7 +28,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 NGRAPH_TEST(${BACKEND_NAME}, create_backend) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
@@ -196,4 +196,4 @@ NGRAPH_TEST(${BACKEND_NAME}, validate_batch_size) {
   EXPECT_THROW({ handle->set_batch_size(10000); }, CheckFailure);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -25,7 +25,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(he_tensor, empty_plain_tensor) {
   auto backend = runtime::Backend::create("HE_SEAL");
@@ -271,4 +271,4 @@ TEST(he_tensor, zero) {
 
   EXPECT_EQ(t_zero->get_batched_element_count(), 0);
 }
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

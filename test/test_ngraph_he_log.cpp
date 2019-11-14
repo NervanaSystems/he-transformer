@@ -17,7 +17,7 @@
 #include "gtest/gtest.h"
 #include "logging/ngraph_he_log.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(ngraph_he_log, log_level_str_to_int) {
   EXPECT_EQ(uint64_t{0}, logging::log_level_str_to_int(nullptr));
@@ -26,4 +26,4 @@ TEST(ngraph_he_log, log_level_str_to_int) {
   EXPECT_EQ(uint64_t{0}, logging::log_level_str_to_int(invalid_str.c_str()));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

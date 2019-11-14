@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto slice_test = [](const Shape& shape, const Coordinate& lower_bounds,
                      const Coordinate& upper_bounds, const Strides& strides,
@@ -174,4 +174,4 @@ NGRAPH_TEST(${BACKEND_NAME}, slice_3d_strided_different_strides) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

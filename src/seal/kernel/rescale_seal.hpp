@@ -22,9 +22,9 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void rescale_seal(std::vector<HEType>& arg, HESealBackend& he_seal_backend,
                   const bool verbose = false);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

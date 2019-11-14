@@ -116,17 +116,17 @@
 #include "ngraph/op/xor.hpp"
 #include "op/bounded_relu.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 NodeWrapper::NodeWrapper(std::shared_ptr<const ngraph::Node> node)
     : m_node{std::move(node)} {
 // This expands the op list in op_tbl.hpp into a list of enumerations that look
 // like this:
-// {"Abs", ngraph::he::OP_TYPEID::Abs},
-// {"Acos", ngraph::he::OP_TYPEID::Acos},
+// {"Abs", ngraph::runtime::he::OP_TYPEID::Abs},
+// {"Acos", ngraph::runtime::he::OP_TYPEID::Acos},
 // ...
-#define NGRAPH_OP(a, b) {#a, ngraph::he::OP_TYPEID::a},
-  static std::unordered_map<std::string, ngraph::he::OP_TYPEID> typeid_map{
+#define NGRAPH_OP(a, b) {#a, ngraph::runtime::he::OP_TYPEID::a},
+  static std::unordered_map<std::string, ngraph::runtime::he::OP_TYPEID> typeid_map{
 #include "ngraph/op/op_tbl.hpp"
       NGRAPH_OP(BoundedRelu, ngraph::op)};
 #undef NGRAPH_OP
@@ -381,4 +381,4 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
 #pragma clang diagnostic push
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

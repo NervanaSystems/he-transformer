@@ -31,7 +31,7 @@
 #include "ngraph/util.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph::he::test {
+namespace ngraph::runtime::he::test {
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
@@ -103,4 +103,4 @@ inline std::shared_ptr<runtime::Tensor> tensor_from_flags(
   throw ngraph_error("Logic error");
 };
 
-}  // namespace ngraph::he::test
+}  // namespace ngraph::runtime::he::test

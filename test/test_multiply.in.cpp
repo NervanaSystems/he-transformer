@@ -26,7 +26,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto mult_test = [](const Shape& shape, const bool arg1_encrypted,
                     const bool arg2_encrypted, const bool complex_packing,
@@ -333,4 +333,4 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_wrong_output_type) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

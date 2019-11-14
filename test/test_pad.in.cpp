@@ -26,7 +26,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto pad_test = [](const Shape& shape_a, const CoordinateDiff& padding_below,
                    const CoordinateDiff& padding_above,
@@ -421,4 +421,4 @@ NGRAPH_TEST(${BACKEND_NAME}, pad_symmetric) {
                true, false, false, false));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

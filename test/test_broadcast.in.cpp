@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto broadcast_test =
     [](const Shape& shape_a, const Shape& shape_r, const AxisSet& axis_set,
@@ -239,4 +239,4 @@ NGRAPH_TEST(${BACKEND_NAME}, broadcast_to_non_existent_axis) {
                ngraph_error);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

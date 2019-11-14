@@ -21,16 +21,16 @@
 
 #include "ngraph/log.hpp"
 
-namespace ngraph::he::logging {
+namespace ngraph::runtime::he::logging {
 // Parse log level (int64) from environment variable (char*)
 int64_t log_level_str_to_int(const char* env_var_val);
 
 int64_t min_ngraph_he_log_level();
 
-}  // namespace ngraph::he::logging
+}  // namespace ngraph::runtime::he::logging
 
 #define NGRAPH_HE_VLOG_IS_ON(lvl) \
-  ((lvl) <= ngraph::he::logging::min_ngraph_he_log_level())
+  ((lvl) <= ngraph::runtime::he::logging::min_ngraph_he_log_level())
 
 #define NGRAPH_HE_LOG(lvl) \
   if (NGRAPH_HE_VLOG_IS_ON(lvl)) NGRAPH_INFO

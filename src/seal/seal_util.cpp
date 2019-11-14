@@ -29,7 +29,7 @@
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 seal::sec_level_type seal_security_level(size_t bits) {
   if (bits == 0) {
@@ -523,4 +523,4 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
   decode(output, plaintext_wrapper, ckks_encoder);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

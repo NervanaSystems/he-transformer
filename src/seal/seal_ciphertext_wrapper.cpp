@@ -25,7 +25,7 @@
 #include "protos/message.pb.h"
 #include "seal/seal.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 SealCiphertextWrapper::SealCiphertextWrapper() = default;
 
@@ -34,7 +34,7 @@ void SealCiphertextWrapper::save(pb::HEType& he_type) const {
   std::string cipher_str;
   cipher_str.resize(cipher_size);
 
-  size_t save_size = ngraph::he::save(
+  size_t save_size = ngraph::runtime::he::save(
       m_ciphertext, reinterpret_cast<std::byte*>(cipher_str.data()));
 
   NGRAPH_CHECK(save_size == cipher_size, "Save size != cipher size");
@@ -49,9 +49,9 @@ void SealCiphertextWrapper::load(SealCiphertextWrapper& dst,
                "Cannot load ciphertext from plaintext HEType");
 
   const std::string& cipher_str = proto_he_type.ciphertext();
-  ngraph::he::load(dst.ciphertext(), std::move(context),
+  ngraph::runtime::he::load(dst.ciphertext(), std::move(context),
                    reinterpret_cast<const std::byte*>(cipher_str.data()),
                    cipher_str.size());
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

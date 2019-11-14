@@ -27,7 +27,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(propagate_he_annotations, cipher) {
   Shape shape{2, 2};
@@ -101,4 +101,4 @@ TEST(propagate_he_annotations, pack) {
   EXPECT_TRUE(t_annotation->packed());
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

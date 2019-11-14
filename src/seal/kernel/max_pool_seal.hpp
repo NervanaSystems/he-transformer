@@ -25,7 +25,7 @@
 #include "seal/kernel/max_seal.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 // Returns list where L[i] is the list of input indices to maximize over for
 // output i
 inline std::vector<std::vector<size_t>> max_pool_seal_max_list(
@@ -170,4 +170,4 @@ inline void max_pool_seal(const std::vector<HEType>& arg,
       *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

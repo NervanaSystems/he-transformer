@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto conv_test = [](const Shape& shape_a, const Shape& shape_b,
                     const Strides& window_movement_strides,
@@ -893,4 +893,4 @@ NGRAPH_TEST(${BACKEND_NAME},
       true, true, false, false);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

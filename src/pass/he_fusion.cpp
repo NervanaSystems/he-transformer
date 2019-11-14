@@ -26,7 +26,7 @@
 #include "ngraph/pattern/op/label.hpp"
 #include "ngraph/runtime/cpu/op/bounded_relu.hpp"
 
-namespace ngraph::he::pass {
+namespace ngraph::runtime::he::pass {
 
 void HEFusion::construct_bounded_relu() {
   auto relu_input = std::make_shared<pattern::op::Label>(element::f32, Shape{});
@@ -86,4 +86,4 @@ void HEFusion::construct_bounded_relu() {
   this->add_matcher(m, callback);
 }
 
-}  // namespace ngraph::he::pass
+}  // namespace ngraph::runtime::he::pass

@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto dot_test = [](const Shape& shape_a, const Shape& shape_b,
                    const std::vector<float>& input_a,
@@ -272,4 +272,4 @@ NGRAPH_TEST(${BACKEND_NAME}, dot_2x0_0_cipher_cipher_complex_unpacked) {
            std::vector<float>{0, 0}, false, false, false, false);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

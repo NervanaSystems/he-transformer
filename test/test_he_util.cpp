@@ -24,7 +24,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(he_util, complex_vec_to_real_vec) {
   {
@@ -127,4 +127,4 @@ TEST(he_util, type_to_pb_type) {
     EXPECT_EQ(pb_type_to_type(type_to_pb_type(type)), type);
   }
 }
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

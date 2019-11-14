@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto max_test = [](const Shape& shape_a, const AxisSet& reduction_axes,
                    const std::vector<float>& input_a,
@@ -705,4 +705,4 @@ NGRAPH_TEST(${BACKEND_NAME}, max_3d_to_scalar_cipher_complex_packed) {
            std::vector<float>{14}, true, true, true);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

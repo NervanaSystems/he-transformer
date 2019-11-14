@@ -27,7 +27,7 @@
 #include "tcp/tcp_message.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(protobuf, serialize_cipher) {
   pb::TCPMessage message;
@@ -46,4 +46,4 @@ TEST(protobuf, serialize_cipher) {
       google::protobuf::util::MessageDifferencer::Equals(deserialize, message));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

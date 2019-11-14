@@ -26,7 +26,7 @@
 #include "ngraph/check.hpp"
 #include "tcp/tcp_message.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 TCPSession::TCPSession(boost::asio::ip::tcp::socket socket,
                        std::function<void(const TCPMessage&)> message_handler)
     : m_socket(std::move(socket)),
@@ -96,4 +96,4 @@ void TCPSession::do_write() {
       });
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

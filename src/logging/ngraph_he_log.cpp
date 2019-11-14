@@ -21,7 +21,7 @@
 
 #include "ngraph/log.hpp"
 
-namespace ngraph::he::logging {
+namespace ngraph::runtime::he::logging {
 // Parse log level (int64) from environment variable (char*)
 int64_t log_level_str_to_int(const char* env_var_val) {
   if (env_var_val == nullptr) {
@@ -46,4 +46,4 @@ int64_t min_ngraph_he_log_level() {
   const char* tf_env_var_val = std::getenv("NGRAPH_HE_LOG_LEVEL");
   return log_level_str_to_int(tf_env_var_val);
 }
-}  // namespace ngraph::he::logging
+}  // namespace ngraph::runtime::he::logging

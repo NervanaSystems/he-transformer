@@ -25,7 +25,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
@@ -107,4 +107,4 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc_cipher_cipher) {
   constant_test(true, true);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

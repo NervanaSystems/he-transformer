@@ -26,7 +26,7 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 static void check_bounded_relu(const Shape& param_shape, float constant_val) {
   auto make_function = [](Shape input_shape, float alpha_val) {
@@ -114,4 +114,4 @@ TEST(he_fusion, bounded_relu_no_fusion) {
     check_no_fusion(f);
   }
 }
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

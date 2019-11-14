@@ -20,7 +20,7 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(he_unsupported_ops, op) {
   auto backend = runtime::Backend::create("HE_SEAL");
@@ -56,4 +56,4 @@ TEST(he_unsupported_ops, element_type) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

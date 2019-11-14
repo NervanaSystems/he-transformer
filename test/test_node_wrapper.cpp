@@ -28,7 +28,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 template <typename OP>
 bool check_nullary() {
@@ -299,4 +299,4 @@ TEST(node_wrapper, tan) { ASSERT_TRUE(check_unary<op::Tan>()); }
 
 TEST(node_wrapper, tanh) { ASSERT_TRUE(check_unary<op::Tanh>()); }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

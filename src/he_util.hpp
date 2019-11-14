@@ -27,7 +27,7 @@
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 /// \brief Unpacks complex values to real values
 /// (a+bi, c+di) => (a,b,c,d)
@@ -82,4 +82,4 @@ pb::HETensor_ElementType type_to_pb_type(const element::Type& element_type);
 
 element::Type pb_type_to_type(pb::HETensor_ElementType pb_type);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

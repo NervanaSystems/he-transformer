@@ -22,7 +22,7 @@
 #include "he_util.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void constant_seal(std::vector<HEType>& out, const element::Type& element_type,
                    const void* data_ptr, const HESealBackend& he_seal_backend,
@@ -42,4 +42,4 @@ void constant_seal(std::vector<HEType>& out, const element::Type& element_type,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

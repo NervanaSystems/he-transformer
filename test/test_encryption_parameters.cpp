@@ -26,7 +26,7 @@
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(encryption_parameters, create) {
   size_t poly_modulus_degree{4096};
@@ -190,4 +190,4 @@ TEST(encryption_parameters, choose_scale) {
   test_choose_scale(std::vector<int>{54, 54, 54});
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -23,7 +23,7 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 #include "test_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(seal_plaintext_wrapper, initialize) {
   // Default plaintext
@@ -42,4 +42,4 @@ TEST(seal_plaintext_wrapper, initialize) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

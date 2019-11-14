@@ -25,7 +25,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 class SealCiphertextWrapper;
 class SealPlaintextWrapper;
 class HESealBackend;
@@ -254,4 +254,4 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              const bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

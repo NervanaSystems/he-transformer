@@ -26,7 +26,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 TEST(bounded_relu, copy) {
   Shape shape{1};
   auto arg0 = std::make_shared<op::Parameter>(element::f32, shape);
@@ -42,4 +42,4 @@ TEST(bounded_relu, copy) {
   EXPECT_FLOAT_EQ(new_bounded_relu->get_alpha(), node->get_alpha());
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

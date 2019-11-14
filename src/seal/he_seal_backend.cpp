@@ -38,7 +38,7 @@ get_backend_constructor_pointer() {
     std::shared_ptr<ngraph::runtime::Backend> create(
         const std::string& config) override {
       NGRAPH_HE_LOG(5) << "Creating backend with config string " << config;
-      return std::make_shared<ngraph::he::HESealBackend>();
+      return std::make_shared<ngraph::runtime::he::HESealBackend>();
     }
   };
 
@@ -47,7 +47,7 @@ get_backend_constructor_pointer() {
   return s_backend_constructor.get();
 }
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HESealBackend::HESealBackend()
     : HESealBackend(HESealEncryptionParameters::parse_config_or_use_default(
@@ -248,7 +248,7 @@ void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             const HEPlaintext& input, const element::Type& type,
                             bool complex_packing) const {
   NGRAPH_CHECK(!input.empty(), "Input has no values in encrypt");
-  ngraph::he::encrypt(output, input, m_context->first_parms_id(), type,
+  ngraph::runtime::he::encrypt(output, input, m_context->first_parms_id(), type,
                       get_scale(), *m_ckks_encoder, *m_encryptor,
                       complex_packing);
 }
@@ -256,8 +256,8 @@ void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 void HESealBackend::decrypt(HEPlaintext& output,
                             const SealCiphertextWrapper& input,
                             const bool complex_packing) const {
-  ngraph::he::decrypt(output, input, complex_packing, *m_decryptor,
+  ngraph::runtime::he::decrypt(output, input, complex_packing, *m_decryptor,
                       *m_ckks_encoder);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

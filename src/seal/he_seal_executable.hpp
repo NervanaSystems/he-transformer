@@ -38,7 +38,7 @@
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 /// \brief Class representing a function to execute
 class HESealExecutable : public runtime::Executable {
@@ -256,4 +256,4 @@ class HESealExecutable : public runtime::Executable {
 
   bool m_stop_const_fold{flag_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

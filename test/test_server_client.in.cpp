@@ -34,7 +34,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_bad_configuration) {
   auto backend = runtime::Backend::create("${BACKEND_NAME}");
@@ -951,4 +951,4 @@ NGRAPH_TEST(${BACKEND_NAME},
       1e-3f));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

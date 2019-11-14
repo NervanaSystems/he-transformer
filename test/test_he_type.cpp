@@ -25,7 +25,7 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 TEST(he_type, plain) {
   {
@@ -146,4 +146,4 @@ TEST(he_type, save_load) {
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -26,7 +26,7 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 // Test multiplying cipher with cipher at different layer
 NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
@@ -351,4 +351,4 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
       (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he
