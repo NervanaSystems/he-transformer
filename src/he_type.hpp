@@ -32,10 +32,10 @@ class HEType {
  public:
   HEType() = delete;
 
-  HEType(const HEPlaintext& plain, const bool complex_packing);
+  HEType(const HEPlaintext& plain, bool complex_packing);
 
   HEType(const std::shared_ptr<SealCiphertextWrapper>& cipher,
-         const bool complex_packing, const size_t batch_size);
+         bool complex_packing, size_t batch_size);
 
   void save(pb::HEType& proto_he_type) const;
 

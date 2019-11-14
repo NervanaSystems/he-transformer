@@ -37,8 +37,6 @@ class HEOpAnnotations : public op::util::OpAnnotations {
   explicit HEOpAnnotations(bool from_client = false, bool encrypted = false,
                            bool packed = false);
 
-  HEOpAnnotations(const HEOpAnnotations& op_annotation);
-
   bool operator==(const HEOpAnnotations& other) const;
 
   bool from_client() const;

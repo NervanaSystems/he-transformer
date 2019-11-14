@@ -28,9 +28,6 @@ namespace ngraph::runtime::he {
 HEOpAnnotations::HEOpAnnotations(bool from_client, bool encrypted, bool packed)
     : m_from_client(from_client), m_encrypted(encrypted), m_packed(packed) {}
 
-HEOpAnnotations::HEOpAnnotations(const HEOpAnnotations& op_annotation) =
-    default;
-
 bool HEOpAnnotations::operator==(const HEOpAnnotations& other) const {
   return (m_from_client == other.m_from_client) &&
          (m_encrypted == other.m_encrypted) && (m_packed == other.m_packed);

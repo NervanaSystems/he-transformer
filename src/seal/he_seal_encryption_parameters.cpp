@@ -113,12 +113,12 @@ double HESealEncryptionParameters::choose_scale(
     const std::vector<seal::SmallModulus>& coeff_moduli) {
   if (coeff_moduli.size() > 2) {
     return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
-  } else if (coeff_moduli.size() > 1) {
-    return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
-  } else {
-    // Enable a single multiply
-    return sqrt(static_cast<double>(coeff_moduli.back().value() / 256.0));
   }
+  if (coeff_moduli.size() > 1) {
+    return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
+  }
+  // Enable a single multiply
+  return sqrt(static_cast<double>(coeff_moduli.back().value() / 256.0));
 }
 
 bool HESealEncryptionParameters::operator==(

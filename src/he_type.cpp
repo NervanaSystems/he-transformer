@@ -26,14 +26,14 @@
 
 namespace ngraph::runtime::he {
 
-HEType::HEType(const HEPlaintext& plain, const bool complex_packing)
+HEType::HEType(const HEPlaintext& plain, bool complex_packing)
     : HEType(complex_packing, plain.size()) {
   m_is_plain = true;
   m_plain = plain;
 }
 
 HEType::HEType(const std::shared_ptr<SealCiphertextWrapper>& cipher,
-               const bool complex_packing, const size_t batch_size)
+               bool complex_packing, size_t batch_size)
     : HEType(complex_packing, batch_size) {
   m_is_plain = false;
   m_cipher = cipher;
