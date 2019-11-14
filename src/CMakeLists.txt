@@ -75,7 +75,6 @@ set_source_files_properties(${message_proto_srcs}
 add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend PUBLIC ${HE_TRANSFORMER_SOURCE_DIR})
 
-find_package(Threads)
 target_link_libraries(he_seal_backend
                       PUBLIC libjson
                              libboost

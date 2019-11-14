@@ -69,7 +69,7 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
     - `scale` is the scale at which number are encoded; `log2(scale)` represents roughly the fixed-bit precision of the encoding. If no scale is passes, the second-to-last coeffcient modulus is used.
     - `complex_packing` specifies whether or not to double the capacity (i.e. maximum batch size) by packing two scalars `(a,b)` in a complex number `a+bi`. Typically, the capacity is `poly_modulus_degree/2`. Enabling complex packing doubles the capacity to `poly_modulus_degree`. Note: enabling `complex_packing` will reduce the performance of ciphertext-ciphertext multiplication.
   * `NGRAPH_HE_VERBOSE_OPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_HE_VERBOSE_OPS=add,multiply,convolution`. *Note*, `NGRAPH_HE_LOG_LEVEL` should be set to at least 3 when using `NGRAPH_HE_VERBOSE_OPS`
-  * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly;
+  * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly:
     - `NGRAPH_HE_LOG_LEVEL=0 [default]` will print minimal amount of information
     - `NGRAPH_HE_LOG_LEVEL=1` will print encryption parameters
     - `NGRAPH_HE_LOG_LEVEL=3` will print op information (when `NGRAPH_HE_VERBOSE_OPS` is enabled)
