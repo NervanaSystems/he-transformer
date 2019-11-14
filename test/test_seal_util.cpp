@@ -30,13 +30,15 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-TEST(seal_util, seal_security_level) {
-  EXPECT_EQ(ngraph::he::seal_security_level(0), seal::sec_level_type::none);
-  EXPECT_EQ(ngraph::he::seal_security_level(128), seal::sec_level_type::tc128);
-  EXPECT_EQ(ngraph::he::seal_security_level(192), seal::sec_level_type::tc192);
-  EXPECT_EQ(ngraph::he::seal_security_level(256), seal::sec_level_type::tc256);
+namespace ngraph::he {
 
-  EXPECT_ANY_THROW({ ngraph::he::seal_security_level(42); });
+TEST(seal_util, seal_security_level) {
+  EXPECT_EQ(seal_security_level(0), seal::sec_level_type::none);
+  EXPECT_EQ(seal_security_level(128), seal::sec_level_type::tc128);
+  EXPECT_EQ(seal_security_level(192), seal::sec_level_type::tc192);
+  EXPECT_EQ(seal_security_level(256), seal::sec_level_type::tc256);
+
+  EXPECT_ANY_THROW({ seal_security_level(42); });
 }
 
 TEST(seal_util, save) {
@@ -68,13 +70,13 @@ TEST(seal_util, save) {
   encryptor.encrypt(plain, cipher);
   seal::Ciphertext cipher_load;
 
-  auto* buffer = reinterpret_cast<std::byte*>(
-      ngraph::ngraph_malloc(ngraph::he::ciphertext_size(cipher)));
+  auto* buffer =
+      reinterpret_cast<std::byte*>(ngraph_malloc(ciphertext_size(cipher)));
 
   auto t1 = std::chrono::high_resolution_clock::now();
-  auto save_size = ngraph::he::save(cipher, buffer);
+  auto save_size = save(cipher, buffer);
   auto t2 = std::chrono::high_resolution_clock::now();
-  ngraph::he::load(cipher_load, context, buffer, save_size);
+  load(cipher_load, context, buffer, save_size);
   auto t3 = std::chrono::high_resolution_clock::now();
 
   NGRAPH_INFO
@@ -97,7 +99,7 @@ TEST(seal_util, save) {
   for (size_t i = 0; i < cipher.int_array().size(); ++i) {
     EXPECT_EQ(cipher_load[i], cipher[i]);
   }
-  ngraph::ngraph_free(buffer);
+  ngraph_free(buffer);
 }
 
 TEST(seal_util, match_modulus_and_scale_inplace) {
@@ -106,25 +108,23 @@ TEST(seal_util, match_modulus_and_scale_inplace) {
   auto test_match_modulus_and_rescale = [&](modulus_operation arg1_op,
                                             modulus_operation arg2_op,
                                             bool reverse_args) {
-    auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-    auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-    ngraph::he::HEPlaintext plain{1, 2, 3};
+    auto backend = runtime::Backend::create("HE_SEAL");
+    auto he_backend = static_cast<HESealBackend*>(backend.get());
+    HEPlaintext plain{1, 2, 3};
     bool complex_packing = false;
 
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
-    auto cipher2 = ngraph::he::HESealBackend::create_empty_ciphertext();
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
+    auto cipher2 = HESealBackend::create_empty_ciphertext();
 
     auto context = he_backend->get_context();
 
-    ngraph::he::encrypt(cipher1, plain, context->first_parms_id(),
-                        ngraph::element::f32, he_backend->get_scale(),
-                        *he_backend->get_ckks_encoder(),
-                        *he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher1, plain, context->first_parms_id(), element::f32,
+            he_backend->get_scale(), *he_backend->get_ckks_encoder(),
+            *he_backend->get_encryptor(), complex_packing);
 
-    ngraph::he::encrypt(cipher2, plain, context->first_parms_id(),
-                        ngraph::element::f32, he_backend->get_scale(),
-                        *he_backend->get_ckks_encoder(),
-                        *he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher2, plain, context->first_parms_id(), element::f32,
+            he_backend->get_scale(), *he_backend->get_ckks_encoder(),
+            *he_backend->get_encryptor(), complex_packing);
 
     auto perform_modulus_operation = [&](modulus_operation op,
                                          seal::Ciphertext& ciphertext) {
@@ -139,21 +139,18 @@ TEST(seal_util, match_modulus_and_scale_inplace) {
     perform_modulus_operation(arg2_op, cipher2->ciphertext());
 
     if (reverse_args) {
-      ngraph::he::match_modulus_and_scale_inplace(*cipher2, *cipher1,
-                                                  *he_backend);
+      match_modulus_and_scale_inplace(*cipher2, *cipher1, *he_backend);
 
     } else {
-      ngraph::he::match_modulus_and_scale_inplace(*cipher1, *cipher2,
-                                                  *he_backend);
+      match_modulus_and_scale_inplace(*cipher1, *cipher2, *he_backend);
     }
 
-    auto check_decryption = [&](ngraph::he::SealCiphertextWrapper& cipher) {
-      ngraph::he::HEPlaintext output;
-      ngraph::he::decrypt(output, cipher, complex_packing,
-                          *he_backend->get_decryptor(),
-                          *he_backend->get_ckks_encoder());
+    auto check_decryption = [&](SealCiphertextWrapper& cipher) {
+      HEPlaintext output;
+      decrypt(output, cipher, complex_packing, *he_backend->get_decryptor(),
+              *he_backend->get_ckks_encoder());
       output.resize(plain.size());
-      EXPECT_TRUE(ngraph::test::he::all_close(output, plain));
+      EXPECT_TRUE(test::all_close(output, plain));
     };
 
     check_decryption(*cipher1);
@@ -175,100 +172,93 @@ TEST(seal_util, match_modulus_and_scale_inplace) {
 }
 
 TEST(seal_util, add_plain_inplace_invalid) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  ngraph::he::HEPlaintext plain{1, 2, 3};
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  HEPlaintext plain{1, 2, 3};
   bool complex_packing = false;
 
   // Encrypted is not valid for encryption parameters
   {
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
-    EXPECT_ANY_THROW(ngraph::he::add_plain_inplace(cipher1->ciphertext(), 1.23,
-                                                   *he_backend));
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
+    EXPECT_ANY_THROW(
+        add_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend));
   }
   // Encrypted must be in NTT form
   {
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
     auto context = he_backend->get_context();
-    ngraph::he::encrypt(cipher1, plain, context->first_parms_id(),
-                        ngraph::element::f32, he_backend->get_scale(),
-                        *he_backend->get_ckks_encoder(),
-                        *he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher1, plain, context->first_parms_id(), element::f32,
+            he_backend->get_scale(), *he_backend->get_ckks_encoder(),
+            *he_backend->get_encryptor(), complex_packing);
 
     // Falsely set NTT form to false
     cipher1->ciphertext().is_ntt_form() = false;
 
-    EXPECT_ANY_THROW(ngraph::he::add_plain_inplace(cipher1->ciphertext(), 1.23,
-                                                   *he_backend));
+    EXPECT_ANY_THROW(
+        add_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend));
   }
   // Transparent result
   {
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
     auto context = he_backend->get_context();
-    ngraph::he::encrypt(cipher1, ngraph::he::HEPlaintext{0, 0, 0},
-                        context->first_parms_id(), ngraph::element::f32,
-                        he_backend->get_scale(),
-                        *he_backend->get_ckks_encoder(),
-                        *he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher1, HEPlaintext{0, 0, 0}, context->first_parms_id(),
+            element::f32, he_backend->get_scale(),
+            *he_backend->get_ckks_encoder(), *he_backend->get_encryptor(),
+            complex_packing);
 
-    ngraph::he::multiply_plain_inplace(cipher1->ciphertext(), 0.00,
-                                       *he_backend);
+    multiply_plain_inplace(cipher1->ciphertext(), 0.00, *he_backend);
     EXPECT_TRUE(cipher1->ciphertext().is_transparent());
 
     // TODO(fboemer): Multiply plain should also throw error
 
     // Result would be transparent
-    EXPECT_ANY_THROW({
-      ngraph::he::add_plain_inplace(cipher1->ciphertext(), 0.00, *he_backend);
-    });
+    EXPECT_ANY_THROW(
+        { add_plain_inplace(cipher1->ciphertext(), 0.00, *he_backend); });
   }
 }
 
 TEST(seal_util, multiply_plain_inplace_invalid) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  ngraph::he::HEPlaintext plain{1, 2, 3};
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  HEPlaintext plain{1, 2, 3};
   bool complex_packing = false;
 
   // Encrypted metadata is not valid for encryption parameters
   {
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
-    EXPECT_ANY_THROW(ngraph::he::multiply_plain_inplace(cipher1->ciphertext(),
-                                                        1.23, *he_backend));
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
+    EXPECT_ANY_THROW(
+        multiply_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend));
   }
   // Encrypted must be in NTT form
   {
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
     auto context = he_backend->get_context();
-    ngraph::he::encrypt(cipher1, plain, context->first_parms_id(),
-                        ngraph::element::f32, he_backend->get_scale(),
-                        *he_backend->get_ckks_encoder(),
-                        *he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher1, plain, context->first_parms_id(), element::f32,
+            he_backend->get_scale(), *he_backend->get_ckks_encoder(),
+            *he_backend->get_encryptor(), complex_packing);
 
     // Falsely set NTT form to false
     cipher1->ciphertext().is_ntt_form() = false;
 
-    EXPECT_ANY_THROW(ngraph::he::multiply_plain_inplace(cipher1->ciphertext(),
-                                                        1.23, *he_backend));
+    EXPECT_ANY_THROW(
+        multiply_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend));
   }
   // Pool is uninitialized
   {
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
     auto context = he_backend->get_context();
-    ngraph::he::encrypt(cipher1, plain, context->first_parms_id(),
-                        ngraph::element::f32, he_backend->get_scale(),
-                        *he_backend->get_ckks_encoder(),
-                        *he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher1, plain, context->first_parms_id(), element::f32,
+            he_backend->get_scale(), *he_backend->get_ckks_encoder(),
+            *he_backend->get_encryptor(), complex_packing);
 
     seal::MemoryPoolHandle pool;
-    EXPECT_ANY_THROW(ngraph::he::multiply_plain_inplace(
-        cipher1->ciphertext(), 1.23, *he_backend, pool));
+    EXPECT_ANY_THROW(
+        multiply_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend, pool));
   }
   // Scale out of bounds
   {
-    auto new_backend = ngraph::runtime::Backend::create("HE_SEAL");
-    auto new_he_backend =
-        static_cast<ngraph::he::HESealBackend*>(new_backend.get());
+    auto new_backend = runtime::Backend::create("HE_SEAL");
+    auto new_he_backend = static_cast<HESealBackend*>(new_backend.get());
     std::string config_str = R"(
     {
         "scheme_name" : "HE_SEAL",
@@ -281,22 +271,21 @@ TEST(seal_util, multiply_plain_inplace_invalid) {
     new_he_backend->set_config({{"encryption_parameters", config_str}},
                                error_str);
 
-    auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
+    auto cipher1 = HESealBackend::create_empty_ciphertext();
     auto context = new_he_backend->get_context();
-    ngraph::he::encrypt(cipher1, plain, context->first_parms_id(),
-                        ngraph::element::f32, new_he_backend->get_scale(),
-                        *new_he_backend->get_ckks_encoder(),
-                        *new_he_backend->get_encryptor(), complex_packing);
+    encrypt(cipher1, plain, context->first_parms_id(), element::f32,
+            new_he_backend->get_scale(), *new_he_backend->get_ckks_encoder(),
+            *new_he_backend->get_encryptor(), complex_packing);
 
-    EXPECT_ANY_THROW(ngraph::he::multiply_plain_inplace(cipher1->ciphertext(),
-                                                        1.23, *new_he_backend));
+    EXPECT_ANY_THROW(
+        multiply_plain_inplace(cipher1->ciphertext(), 1.23, *new_he_backend));
   }
 }
 
 TEST(seal_util, multiply_plain_inplace_large_coeff) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  ngraph::he::HEPlaintext plain{1, 2, 3};
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  HEPlaintext plain{1, 2, 3};
   bool complex_packing = false;
 
   std::string param_str = R"(
@@ -310,39 +299,37 @@ TEST(seal_util, multiply_plain_inplace_large_coeff) {
   std::string error_str;
   he_backend->set_config({{"encryption_parameters", param_str}}, error_str);
 
-  auto cipher1 = ngraph::he::HESealBackend::create_empty_ciphertext();
+  auto cipher1 = HESealBackend::create_empty_ciphertext();
   auto context = he_backend->get_context();
-  ngraph::he::encrypt(cipher1, plain, context->first_parms_id(),
-                      ngraph::element::f32, he_backend->get_scale(),
-                      *he_backend->get_ckks_encoder(),
-                      *he_backend->get_encryptor(), complex_packing);
+  encrypt(cipher1, plain, context->first_parms_id(), element::f32,
+          he_backend->get_scale(), *he_backend->get_ckks_encoder(),
+          *he_backend->get_encryptor(), complex_packing);
 
-  ngraph::he::multiply_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend);
+  multiply_plain_inplace(cipher1->ciphertext(), 1.23, *he_backend);
 }
 
 TEST(seal_util, match_to_smallest_chain_index) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  ngraph::he::HEPlaintext plain{1, 2, 3};
+  HEPlaintext plain{1, 2, 3};
   size_t vec_size{5};
 
-  std::vector<ngraph::he::HEType> plains(vec_size,
-                                         ngraph::he::HEType(plain, false));
+  std::vector<HEType> plains(vec_size, HEType(plain, false));
 
   EXPECT_EQ(std::numeric_limits<size_t>::max(),
-            ngraph::he::match_to_smallest_chain_index(plains, *he_backend));
+            match_to_smallest_chain_index(plains, *he_backend));
 
   EXPECT_EQ(plains.size(), vec_size);
   for (const auto& elem : plains) {
     EXPECT_TRUE(elem.is_plaintext());
-    EXPECT_TRUE(ngraph::test::he::all_close(elem.get_plaintext(), plain));
+    EXPECT_TRUE(test::all_close(elem.get_plaintext(), plain));
   }
 }
 
 TEST(seal_util, encode_invalid) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
   auto context = he_backend->get_context();
 
   // Pool is uninitialized
@@ -350,31 +337,30 @@ TEST(seal_util, encode_invalid) {
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
     seal::MemoryPoolHandle pool;
-    EXPECT_ANY_THROW(ngraph::he::encode(1.23, ngraph::element::f32, 1 << 24U,
-                                        parms_id, dst, *he_backend, pool));
+    EXPECT_ANY_THROW(
+        encode(1.23, element::f32, 1 << 24U, parms_id, dst, *he_backend, pool));
   }
   // Incorrect scale
   {
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
-    EXPECT_ANY_THROW(ngraph::he::encode(1.23, ngraph::element::f32, -1.0,
-                                        parms_id, dst, *he_backend));
+    EXPECT_ANY_THROW(
+        encode(1.23, element::f32, -1.0, parms_id, dst, *he_backend));
   }
   // Encoded value is too large
   {
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
-    EXPECT_ANY_THROW(ngraph::he::encode(std::numeric_limits<float>::max(),
-                                        ngraph::element::f32, 1 << 29, parms_id,
-                                        dst, *he_backend));
+    EXPECT_ANY_THROW(encode(std::numeric_limits<float>::max(), element::f32,
+                            1 << 29, parms_id, dst, *he_backend));
   }
 }
 
 TEST(seal_util, encode) {
   auto test_encode = [](const std::string& param_str, double value,
                         double scale) {
-    auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-    auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+    auto backend = runtime::Backend::create("HE_SEAL");
+    auto he_backend = static_cast<HESealBackend*>(backend.get());
 
     std::string error_str;
     he_backend->set_config({{"encryption_parameters", param_str}}, error_str);
@@ -387,8 +373,7 @@ TEST(seal_util, encode) {
     auto context = he_backend->get_context();
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
-    ngraph::he::encode(value, ngraph::element::f32, scale, parms_id, dst,
-                       *he_backend);
+    encode(value, element::f32, scale, parms_id, dst, *he_backend);
 
     size_t poly_modulus_degree =
         he_backend->get_encryption_parameters().poly_modulus_degree();
@@ -495,14 +480,16 @@ TEST(seal_util, encode) {
 }
 
 TEST(seal_util, encode_plaintext_wrapper_wrong_element_type) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  ngraph::he::SealPlaintextWrapper plain_wrapper;
-  ngraph::he::HEPlaintext plain{1, 2, 3};
+  SealPlaintextWrapper plain_wrapper;
+  HEPlaintext plain{1, 2, 3};
 
   auto context = he_backend->get_context();
-  EXPECT_ANY_THROW(ngraph::he::encode(
-      plain_wrapper, plain, *he_backend->get_ckks_encoder(),
-      context->first_parms_id(), ngraph::element::i8, 1 << 24, false));
+  EXPECT_ANY_THROW(encode(plain_wrapper, plain, *he_backend->get_ckks_encoder(),
+                          context->first_parms_id(), element::i8, 1 << 24,
+                          false));
 }
+
+}  // namespace ngraph::he

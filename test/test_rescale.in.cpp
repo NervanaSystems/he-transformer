@@ -25,9 +25,11 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
+namespace ngraph::he {
+
 NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   std::string param_str = R"(
     {
@@ -38,36 +40,35 @@ NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
         "scale" : 16777216,
         "complex_packing" : true
     })";
-  auto he_parms =
-      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
-          param_str.c_str());
+  auto he_parms = HESealEncryptionParameters::parse_config_or_use_default(
+      param_str.c_str());
   he_backend->update_encryption_parameters(he_parms);
 
-  ngraph::Shape shape{3, 1};
+  Shape shape{3, 1};
 
   bool arg1_encrypted = true;
   bool arg2_encrypted = false;
   bool packed = false;
 
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = std::make_shared<ngraph::op::Multiply>(a, b);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Multiply>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
   const auto& arg1_config =
-      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+      test::config_from_flags(false, arg1_encrypted, packed);
   const auto& arg2_config =
-      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+      test::config_from_flags(false, arg2_encrypted, packed);
 
   std::string error_str;
   he_backend->set_config(
       {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
-  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg1_encrypted, packed);
-  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg2_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
 
   std::vector<float> input_a{1, 2, 3};
@@ -79,6 +80,8 @@ NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
-                                          exp_result, 1e-1f));
+  EXPECT_TRUE(
+      test::all_close(read_vector<float>(t_result), exp_result, 1e-1f));
 }
+
+}  // namespace ngraph::he

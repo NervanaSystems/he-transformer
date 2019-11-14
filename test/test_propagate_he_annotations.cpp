@@ -27,13 +27,15 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-TEST(propagate_he_annotations, cipher) {
-  ngraph::Shape shape{2, 2};
+namespace ngraph::he {
 
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = std::make_shared<ngraph::op::Add>(a, b);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+TEST(propagate_he_annotations, cipher) {
+  Shape shape{2, 2};
+
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Add>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
   bool arg1_enc = false;
   bool arg2_enc = true;
@@ -41,18 +43,18 @@ TEST(propagate_he_annotations, cipher) {
   bool from_client = false;
 
   a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(from_client, arg1_enc, packed));
+      test::annotation_from_flags(from_client, arg1_enc, packed));
   b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(from_client, arg2_enc, packed));
+      test::annotation_from_flags(from_client, arg2_enc, packed));
 
-  ngraph::he::pass::PropagateHEAnnotations().run_on_function(f);
+  pass::PropagateHEAnnotations().run_on_function(f);
 
-  auto a_annotation = std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-      a->get_op_annotations());
-  auto b_annotation = std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-      b->get_op_annotations());
-  auto t_annotation = std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-      t->get_op_annotations());
+  auto a_annotation =
+      std::dynamic_pointer_cast<HEOpAnnotations>(a->get_op_annotations());
+  auto b_annotation =
+      std::dynamic_pointer_cast<HEOpAnnotations>(b->get_op_annotations());
+  auto t_annotation =
+      std::dynamic_pointer_cast<HEOpAnnotations>(t->get_op_annotations());
 
   EXPECT_TRUE(a_annotation != nullptr);
   EXPECT_TRUE(b_annotation != nullptr);
@@ -64,31 +66,31 @@ TEST(propagate_he_annotations, cipher) {
 }
 
 TEST(propagate_he_annotations, pack) {
-  ngraph::Shape shape{2, 2};
+  Shape shape{2, 2};
 
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = std::make_shared<ngraph::op::Add>(a, b);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Add>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
   bool arg1_packed = false;
   bool arg2_packed = true;
   bool encrypted = false;
   bool from_client = false;
 
-  a->set_op_annotations(ngraph::test::he::annotation_from_flags(
-      from_client, encrypted, arg1_packed));
-  b->set_op_annotations(ngraph::test::he::annotation_from_flags(
-      from_client, encrypted, arg2_packed));
+  a->set_op_annotations(
+      test::annotation_from_flags(from_client, encrypted, arg1_packed));
+  b->set_op_annotations(
+      test::annotation_from_flags(from_client, encrypted, arg2_packed));
 
-  ngraph::he::pass::PropagateHEAnnotations().run_on_function(f);
+  pass::PropagateHEAnnotations().run_on_function(f);
 
-  auto a_annotation = std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-      a->get_op_annotations());
-  auto b_annotation = std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-      b->get_op_annotations());
-  auto t_annotation = std::dynamic_pointer_cast<ngraph::he::HEOpAnnotations>(
-      t->get_op_annotations());
+  auto a_annotation =
+      std::dynamic_pointer_cast<HEOpAnnotations>(a->get_op_annotations());
+  auto b_annotation =
+      std::dynamic_pointer_cast<HEOpAnnotations>(b->get_op_annotations());
+  auto t_annotation =
+      std::dynamic_pointer_cast<HEOpAnnotations>(t->get_op_annotations());
 
   EXPECT_TRUE(a_annotation != nullptr);
   EXPECT_TRUE(b_annotation != nullptr);
@@ -98,3 +100,5 @@ TEST(propagate_he_annotations, pack) {
   EXPECT_TRUE(b_annotation->packed());
   EXPECT_TRUE(t_annotation->packed());
 }
+
+}  // namespace ngraph::he

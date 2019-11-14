@@ -27,19 +27,23 @@
 #include "tcp/tcp_message.hpp"
 #include "util/test_tools.hpp"
 
-TEST(protobuf, serialize_cipher) {
-  ngraph::he::pb::TCPMessage message;
+namespace ngraph::he {
 
-  ngraph::he::pb::Function f;
+TEST(protobuf, serialize_cipher) {
+  pb::TCPMessage message;
+
+  pb::Function f;
   f.set_function("123");
   *message.mutable_function() = f;
 
   std::stringstream s;
   message.SerializeToOstream(&s);
 
-  ngraph::he::pb::TCPMessage deserialize;
+  pb::TCPMessage deserialize;
   deserialize.ParseFromIstream(&s);
 
   EXPECT_TRUE(
       google::protobuf::util::MessageDifferencer::Equals(deserialize, message));
 }
+
+}  // namespace ngraph::he

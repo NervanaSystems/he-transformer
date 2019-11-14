@@ -17,10 +17,13 @@
 #include "gtest/gtest.h"
 #include "logging/ngraph_he_log.hpp"
 
+namespace ngraph::he {
+
 TEST(ngraph_he_log, log_level_str_to_int) {
-  EXPECT_EQ(uint64_t{0}, ngraph::he::logging::log_level_str_to_int(nullptr));
+  EXPECT_EQ(uint64_t{0}, logging::log_level_str_to_int(nullptr));
 
   std::string invalid_str{"DUMMY"};
-  EXPECT_EQ(uint64_t{0},
-            ngraph::he::logging::log_level_str_to_int(invalid_str.c_str()));
+  EXPECT_EQ(uint64_t{0}, logging::log_level_str_to_int(invalid_str.c_str()));
 }
+
+}  // namespace ngraph::he

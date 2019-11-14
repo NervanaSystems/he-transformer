@@ -27,19 +27,21 @@
 #include "tcp/tcp_message.hpp"
 #include "util/test_tools.hpp"
 
+namespace ngraph::he {
+
 TEST(tcp_message, decode_small) {
-  ngraph::he::TCPMessage::data_buffer buffer;
-  EXPECT_EQ(ngraph::he::TCPMessage::decode_header(buffer), 0);
+  TCPMessage::data_buffer buffer;
+  EXPECT_EQ(TCPMessage::decode_header(buffer), 0);
 }
 
 TEST(tcp_message, create) {
-  ngraph::he::pb::TCPMessage proto_msg;
-  ngraph::he::pb::Function f;
+  pb::TCPMessage proto_msg;
+  pb::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::pb::TCPMessage tcp_message(std::move(proto_msg));
+  pb::TCPMessage tcp_message(std::move(proto_msg));
   EXPECT_EQ(1, 1);
 }
 
@@ -49,28 +51,30 @@ TEST(tcp_message, encode_decode) {
   buffer.resize(20);
 
   size_t encode_size = 10;
-  ngraph::he::TCPMessage::encode_header(buffer, encode_size);
-  size_t decoded_size = ngraph::he::TCPMessage::decode_header(buffer);
+  TCPMessage::encode_header(buffer, encode_size);
+  size_t decoded_size = TCPMessage::decode_header(buffer);
   EXPECT_EQ(decoded_size, encode_size);
 }
 
 TEST(tcp_message, pack_unpack) {
   using data_buffer = std::vector<char>;
 
-  ngraph::he::pb::TCPMessage proto_msg;
-  ngraph::he::pb::Function f;
+  pb::TCPMessage proto_msg;
+  pb::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::TCPMessage message1(std::move(proto_msg));
+  TCPMessage message1(std::move(proto_msg));
 
   data_buffer buffer;
   message1.pack(buffer);
 
-  ngraph::he::TCPMessage message2;
+  TCPMessage message2;
   message2.unpack(buffer);
 
   EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(
       *message1.proto_message(), *message2.proto_message()));
 }
+
+}  // namespace ngraph::he

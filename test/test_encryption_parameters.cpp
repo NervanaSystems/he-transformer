@@ -26,6 +26,8 @@
 #include "seal/seal.h"
 #include "seal/seal_util.hpp"
 
+namespace ngraph::he {
+
 TEST(encryption_parameters, create) {
   size_t poly_modulus_degree{4096};
   auto seal_encryption_parameters =
@@ -39,31 +41,31 @@ TEST(encryption_parameters, create) {
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
   // Baseline parameters
-  EXPECT_NO_THROW(ngraph::he::HESealEncryptionParameters(
+  EXPECT_NO_THROW(HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 128, 1.23, false));
 
   // Incorrect scheme name
-  EXPECT_ANY_THROW(ngraph::he::HESealEncryptionParameters(
+  EXPECT_ANY_THROW(HESealEncryptionParameters(
       "DUMMY_NAME", seal_encryption_parameters, 128, 1.23, false));
 
   // Incorrect security level
-  EXPECT_ANY_THROW(ngraph::he::HESealEncryptionParameters(
+  EXPECT_ANY_THROW(HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 123, 1.23, false));
 
   // Parameters violate security level
-  EXPECT_ANY_THROW(ngraph::he::HESealEncryptionParameters(
+  EXPECT_ANY_THROW(HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 192, 1.23, false));
 
-  EXPECT_ANY_THROW(ngraph::he::HESealEncryptionParameters(
+  EXPECT_ANY_THROW(HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 256, 1.23, false));
 
   // No enforced security level
-  EXPECT_NO_THROW(ngraph::he::HESealEncryptionParameters(
+  EXPECT_NO_THROW(HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 0, 1.23, false));
 
   // Attributes set properly
-  auto parms = ngraph::he::HESealEncryptionParameters(
-      "HE_SEAL", seal_encryption_parameters, 128, 1.23, true);
+  auto parms = HESealEncryptionParameters("HE_SEAL", seal_encryption_parameters,
+                                          128, 1.23, true);
   EXPECT_EQ(parms.complex_packing(), true);
   EXPECT_EQ(parms.scale(), 1.23);
   EXPECT_EQ(parms.security_level(), 128);
@@ -81,13 +83,13 @@ TEST(encryption_parameters, save) {
 
   seal_encryption_parameters.set_coeff_modulus(coeff_modulus);
 
-  auto he_parms = ngraph::he::HESealEncryptionParameters(
+  auto he_parms = HESealEncryptionParameters(
       "HE_SEAL", seal_encryption_parameters, 128, 1.23, false);
 
   std::stringstream ss;
   he_parms.save(ss);
 
-  auto loaded_parms = ngraph::he::HESealEncryptionParameters::load(ss);
+  auto loaded_parms = HESealEncryptionParameters::load(ss);
 
   EXPECT_EQ(he_parms.scale(), loaded_parms.scale());
   EXPECT_EQ(he_parms.complex_packing(), loaded_parms.complex_packing());
@@ -105,9 +107,8 @@ TEST(encryption_parameters, from_string) {
         "scale" : 1.23,
         "complex_packing" : true
     })";
-  auto he_parms =
-      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
-          param_str.c_str());
+  auto he_parms = HESealEncryptionParameters::parse_config_or_use_default(
+      param_str.c_str());
 
   EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
   EXPECT_EQ(he_parms.security_level(), 128);
@@ -121,9 +122,8 @@ TEST(encryption_parameters, from_string_invalid) {
         "DUMMY_STR"
     })";
 
-  EXPECT_ANY_THROW(
-      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
-          param_str.c_str()));
+  EXPECT_ANY_THROW(HESealEncryptionParameters::parse_config_or_use_default(
+      param_str.c_str()));
 }
 
 TEST(encryption_parameters, from_file) {
@@ -138,15 +138,14 @@ TEST(encryption_parameters, from_file) {
     }
     )";
 
-  std::string filename = ngraph::file_util::tmp_filename();
+  std::string filename = file_util::tmp_filename();
   {
     std::ofstream file(filename);
     file << config;
   }
 
   auto he_parms =
-      ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
-          filename.c_str());
+      HESealEncryptionParameters::parse_config_or_use_default(filename.c_str());
 
   EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
   EXPECT_EQ(he_parms.security_level(), 128);
@@ -154,7 +153,7 @@ TEST(encryption_parameters, from_file) {
   EXPECT_EQ(he_parms.scale(), 1.23);
   EXPECT_EQ(he_parms.complex_packing(), true);
 
-  ngraph::file_util::remove_file(filename);
+  file_util::remove_file(filename);
 }
 
 TEST(encryption_parameters, choose_scale) {
@@ -169,17 +168,16 @@ TEST(encryption_parameters, choose_scale) {
     })";
     std::string filler_str{"XXXXXXX"};
 
-    std::string coeff_mod_str = ngraph::vector_to_string(coeff_modulus_bits);
+    std::string coeff_mod_str = vector_to_string(coeff_modulus_bits);
     param_str.replace(param_str.find(filler_str), filler_str.length(),
                       coeff_mod_str);
 
-    auto he_parms =
-        ngraph::he::HESealEncryptionParameters::parse_config_or_use_default(
-            param_str.c_str());
+    auto he_parms = HESealEncryptionParameters::parse_config_or_use_default(
+        param_str.c_str());
 
-    double exp_scale = ngraph::he::HESealEncryptionParameters::choose_scale(
-        seal::CoeffModulus::Create(he_parms.poly_modulus_degree(),
-                                   coeff_modulus_bits));
+    double exp_scale =
+        HESealEncryptionParameters::choose_scale(seal::CoeffModulus::Create(
+            he_parms.poly_modulus_degree(), coeff_modulus_bits));
 
     EXPECT_EQ(he_parms.poly_modulus_degree(), 2048);
     EXPECT_EQ(he_parms.security_level(), 0);
@@ -191,3 +189,5 @@ TEST(encryption_parameters, choose_scale) {
   test_choose_scale(std::vector<int>{54, 54});
   test_choose_scale(std::vector<int>{54, 54, 54});
 }
+
+}  // namespace ngraph::he

@@ -20,38 +20,40 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
+namespace ngraph::he {
+
 TEST(he_unsupported_ops, op) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto backend = runtime::Backend::create("HE_SEAL");
 
-  ngraph::Shape shape{11};
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto f = std::make_shared<ngraph::Function>(
-      std::make_shared<ngraph::op::Cos>(a), ngraph::ParameterVector{a});
+  Shape shape{11};
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto f = std::make_shared<Function>(std::make_shared<op::Cos>(a),
+                                      ParameterVector{a});
 
-  EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+  EXPECT_THROW({ backend->compile(f); }, CheckFailure);
 }
 
 TEST(he_unsupported_ops, element_type) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
+  auto backend = runtime::Backend::create("HE_SEAL");
 
-  ngraph::Shape shape{11};
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::i8, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::i8, shape);
+  Shape shape{11};
+  auto a = std::make_shared<op::Parameter>(element::i8, shape);
+  auto b = std::make_shared<op::Parameter>(element::i8, shape);
   {
-    auto f = std::make_shared<ngraph::Function>(
-        std::make_shared<ngraph::op::Add>(a, b), ngraph::ParameterVector{a, b});
-    EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+    auto f = std::make_shared<Function>(std::make_shared<op::Add>(a, b),
+                                        ParameterVector{a, b});
+    EXPECT_THROW({ backend->compile(f); }, CheckFailure);
   }
   {
-    auto f = std::make_shared<ngraph::Function>(
-        std::make_shared<ngraph::op::Multiply>(a, b),
-        ngraph::ParameterVector{a, b});
-    EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+    auto f = std::make_shared<Function>(std::make_shared<op::Multiply>(a, b),
+                                        ParameterVector{a, b});
+    EXPECT_THROW({ backend->compile(f); }, CheckFailure);
   }
   {
-    auto f = std::make_shared<ngraph::Function>(
-        std::make_shared<ngraph::op::Subtract>(a, b),
-        ngraph::ParameterVector{a, b});
-    EXPECT_THROW({ backend->compile(f); }, ngraph::CheckFailure);
+    auto f = std::make_shared<Function>(std::make_shared<op::Subtract>(a, b),
+                                        ParameterVector{a, b});
+    EXPECT_THROW({ backend->compile(f); }, CheckFailure);
   }
 }
+
+}  // namespace ngraph::he

@@ -29,15 +29,17 @@
 #include "tcp/tcp_session.hpp"
 #include "util/test_tools.hpp"
 
+namespace ngraph::he {
+
 auto dummy_tcp_message = []() {
   // Write message
-  ngraph::he::pb::TCPMessage proto_msg;
-  ngraph::he::pb::Function f;
+  pb::TCPMessage proto_msg;
+  pb::Function f;
   f.set_function("123");
   *proto_msg.mutable_function() = f;
   std::stringstream s;
   proto_msg.SerializeToOstream(&s);
-  ngraph::he::TCPMessage tcp_message(std::move(proto_msg));
+  TCPMessage tcp_message(std::move(proto_msg));
 
   return tcp_message;
 };
@@ -53,27 +55,25 @@ class MockServer {
     boost::asio::socket_base::reuse_address option(true);
     m_acceptor->set_option(option);
 
-    auto server_callback = [](const ngraph::he::TCPMessage& message) {
-      return;
-    };
+    auto server_callback = [](const TCPMessage& message) { return; };
 
     NGRAPH_HE_LOG(1) << "Server calling async_accept";
-    m_acceptor->async_accept(
-        [this, server_callback](boost::system::error_code ec,
-                                boost::asio::ip::tcp::socket socket) {
-          if (!ec) {
-            m_session = std::make_shared<ngraph::he::TCPSession>(
-                std::move(socket), server_callback);
-            m_session->start();
+    m_acceptor->async_accept([this, server_callback](
+                                 boost::system::error_code ec,
+                                 boost::asio::ip::tcp::socket socket) {
+      if (!ec) {
+        m_session =
+            std::make_shared<TCPSession>(std::move(socket), server_callback);
+        m_session->start();
 
-            std::lock_guard<std::mutex> guard(m_session_mutex);
-            m_session_started = true;
-            m_session_cond.notify_one();
+        std::lock_guard<std::mutex> guard(m_session_mutex);
+        m_session_started = true;
+        m_session_cond.notify_one();
 
-          } else {
-            NGRAPH_ERR << "error accepting connection " << ec.message();
-          }
-        });
+      } else {
+        NGRAPH_ERR << "error accepting connection " << ec.message();
+      }
+    });
 
     m_message_handling_thread = std::thread([this]() {
       try {
@@ -115,7 +115,7 @@ class MockServer {
 
  private:
   std::unique_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-  std::shared_ptr<ngraph::he::TCPSession> m_session;
+  std::shared_ptr<TCPSession> m_session;
   std::thread m_message_handling_thread;
   boost::asio::io_context m_io_context;
   std::mutex m_session_mutex;
@@ -131,25 +131,25 @@ class MockClient {
     boost::asio::io_context io_context;
     boost::asio::ip::tcp::resolver resolver(io_context);
     auto endpoints = resolver.resolve(hostname, std::to_string(port));
-    auto client_callback = [this](const ngraph::he::TCPMessage& message) {
+    auto client_callback = [this](const TCPMessage& message) {
       m_message_count++;
 
       if (m_message_count < m_max_message_count) {
         for (size_t i = 0; i < m_max_message_count; ++i) {
-          ngraph::he::TCPMessage return_message(message);
+          TCPMessage return_message(message);
           m_tcp_client->write_message(std::move(return_message));
         }
       } else {
         m_tcp_client->close();
       }
     };
-    m_tcp_client = std::make_unique<ngraph::he::TCPClient>(
-        io_context, endpoints, client_callback);
+    m_tcp_client =
+        std::make_unique<TCPClient>(io_context, endpoints, client_callback);
     io_context.run();
   }
 
  private:
-  std::unique_ptr<ngraph::he::TCPClient> m_tcp_client;
+  std::unique_ptr<TCPClient> m_tcp_client;
 
   size_t m_message_count{0};
   size_t m_max_message_count;
@@ -184,3 +184,5 @@ TEST(tcp_client, non_empty_message_queue) {
   auto server = MockServer(port, message_count);
   client_thread.join();
 }
+
+}  // namespace ngraph::he

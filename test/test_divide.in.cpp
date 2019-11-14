@@ -25,37 +25,38 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto divide_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
+namespace ngraph::he {
+
+auto divide_test = [](const Shape& shape, const bool arg1_encrypted,
                       const bool arg2_encrypted, const bool complex_packing,
                       const bool packed) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = std::make_shared<ngraph::op::Divide>(a, b);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Divide>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
   const auto& arg1_config =
-      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+      test::config_from_flags(false, arg1_encrypted, packed);
   const auto& arg2_config =
-      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+      test::config_from_flags(false, arg2_encrypted, packed);
 
   std::string error_str;
   he_backend->set_config(
       {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
-  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg1_encrypted, packed);
-  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg2_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
 
   std::vector<float> input_a;
@@ -74,10 +75,10 @@ auto divide_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
     if (packed && complex_packing && arg1_encrypted && !arg2_encrypted) {
       exp_result.emplace_back(
           input_a.back() /
-          input_b[i % shape_size(ngraph::he::HETensor::pack_shape(shape))]);
+          input_b[i % shape_size(HETensor::pack_shape(shape))]);
     } else if (packed && complex_packing && !arg1_encrypted && arg2_encrypted) {
       exp_result.emplace_back(
-          input_a[i % shape_size(ngraph::he::HETensor::pack_shape(shape))] /
+          input_a[i % shape_size(HETensor::pack_shape(shape))] /
           input_b.back());
     } else {
       exp_result.emplace_back(input_a.back() / input_b.back());
@@ -88,70 +89,72 @@ auto divide_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
-                                          exp_result, 1e-3f));
+  EXPECT_TRUE(
+      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_plain_real_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, false, false, false, false);
+  divide_test(Shape{2, 3}, false, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_plain_real_packed) {
-  divide_test(ngraph::Shape{2, 3}, false, false, false, true);
+  divide_test(Shape{2, 3}, false, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_plain_complex_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, false, false, true, false);
+  divide_test(Shape{2, 3}, false, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_plain_complex_packed) {
-  divide_test(ngraph::Shape{2, 3}, false, false, true, true);
+  divide_test(Shape{2, 3}, false, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_cipher_real_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, false, true, false, false);
+  divide_test(Shape{2, 3}, false, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_cipher_real_packed) {
-  divide_test(ngraph::Shape{2, 3}, false, true, false, true);
+  divide_test(Shape{2, 3}, false, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_cipher_complex_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, false, true, true, false);
+  divide_test(Shape{2, 3}, false, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_cipher_complex_packed) {
-  divide_test(ngraph::Shape{2, 3}, false, true, true, true);
+  divide_test(Shape{2, 3}, false, true, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_plain_real_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, true, false, false, false);
+  divide_test(Shape{2, 3}, true, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_plain_real_packed) {
-  divide_test(ngraph::Shape{2, 3}, true, false, false, true);
+  divide_test(Shape{2, 3}, true, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_plain_complex_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, true, false, true, false);
+  divide_test(Shape{2, 3}, true, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_plain_complex_packed) {
-  divide_test(ngraph::Shape{2, 3}, true, false, true, true);
+  divide_test(Shape{2, 3}, true, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_cipher_real_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, true, true, false, false);
+  divide_test(Shape{2, 3}, true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_cipher_real_packed) {
-  divide_test(ngraph::Shape{2, 3}, true, true, false, true);
+  divide_test(Shape{2, 3}, true, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_cipher_complex_unpacked) {
-  divide_test(ngraph::Shape{2, 3}, true, true, true, false);
+  divide_test(Shape{2, 3}, true, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_cipher_cipher_complex_packed) {
-  divide_test(ngraph::Shape{2, 3}, true, true, true, true);
+  divide_test(Shape{2, 3}, true, true, true, true);
 }
+
+}  // namespace ngraph::he

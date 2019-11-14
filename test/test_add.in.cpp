@@ -45,21 +45,21 @@ auto add_test = [](const Shape& shape, const bool arg1_encrypted,
   auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
   const auto& arg1_config =
-      test::he::config_from_flags(false, arg1_encrypted, arg1_packed);
+      test::config_from_flags(false, arg1_encrypted, arg1_packed);
   const auto& arg2_config =
-      test::he::config_from_flags(false, arg2_encrypted, arg2_packed);
+      test::config_from_flags(false, arg2_encrypted, arg2_packed);
 
   std::string error_str;
   he_backend->set_config(
       {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
-  auto t_a = test::he::tensor_from_flags(*he_backend, shape, arg1_encrypted,
-                                         arg1_packed);
-  auto t_b = test::he::tensor_from_flags(*he_backend, shape, arg2_encrypted,
-                                         arg2_packed);
-  auto t_result = test::he::tensor_from_flags(*he_backend, shape,
-                                              arg1_encrypted || arg2_encrypted,
-                                              arg1_packed || arg2_packed);
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, arg1_packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, arg2_packed);
+  auto t_result = test::tensor_from_flags(*he_backend, shape,
+                                          arg1_encrypted || arg2_encrypted,
+                                          arg1_packed || arg2_packed);
 
   std::vector<float> input_a;
   std::vector<float> input_b;
@@ -90,8 +90,7 @@ auto add_test = [](const Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, add_2_3_plain_plain_real_unpacked_unpacked) {
@@ -180,11 +179,11 @@ NGRAPH_TEST(${BACKEND_NAME}, add_wrong_output_type) {
   // cipher cipher => plain
   {
     auto cipher_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, true, packed));
+        test::tensor_from_flags(*he_backend, shape, true, packed));
     auto plain_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
     auto result_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
 
     copy_data(cipher_tensor, cipher_input);
     copy_data(plain_tensor, plain_input);
@@ -197,11 +196,11 @@ NGRAPH_TEST(${BACKEND_NAME}, add_wrong_output_type) {
   // cipher plain => plain
   {
     auto cipher_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, true, packed));
+        test::tensor_from_flags(*he_backend, shape, true, packed));
     auto plain_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
     auto result_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
 
     copy_data(cipher_tensor, cipher_input);
     copy_data(plain_tensor, plain_input);
@@ -214,11 +213,11 @@ NGRAPH_TEST(${BACKEND_NAME}, add_wrong_output_type) {
   // plain cipher => plain
   {
     auto cipher_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, true, packed));
+        test::tensor_from_flags(*he_backend, shape, true, packed));
     auto plain_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
     auto result_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
 
     copy_data(cipher_tensor, cipher_input);
     copy_data(plain_tensor, plain_input);
@@ -231,9 +230,9 @@ NGRAPH_TEST(${BACKEND_NAME}, add_wrong_output_type) {
   // plain plain => cipher
   {
     auto plain_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, false, packed));
+        test::tensor_from_flags(*he_backend, shape, false, packed));
     auto result_tensor = std::static_pointer_cast<HETensor>(
-        test::he::tensor_from_flags(*he_backend, shape, true, packed));
+        test::tensor_from_flags(*he_backend, shape, true, packed));
 
     copy_data(plain_tensor, plain_input);
 

@@ -25,13 +25,14 @@
 #include "test_util.hpp"
 #include "util/test_tools.hpp"
 
-TEST(he_tensor, empty_plain_tensor) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+namespace ngraph::he {
 
-  auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
-      he_backend->create_plain_tensor(ngraph ::element::f32,
-                                      ngraph::Shape{1, 2, 3}, false));
+TEST(he_tensor, empty_plain_tensor) {
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+
+  auto t_a = std::static_pointer_cast<HETensor>(he_backend->create_plain_tensor(
+      ngraph ::element::f32, Shape{1, 2, 3}, false));
 
   EXPECT_EQ(t_a->data().size(), 6);
   for (const auto& elem : t_a->data()) {
@@ -40,12 +41,12 @@ TEST(he_tensor, empty_plain_tensor) {
 }
 
 TEST(he_tensor, empty_cipher_tensor) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
-      he_backend->create_cipher_tensor(ngraph ::element::f32,
-                                       ngraph::Shape{1, 2, 3}, false));
+  auto t_a =
+      std::static_pointer_cast<HETensor>(he_backend->create_cipher_tensor(
+          ngraph ::element::f32, Shape{1, 2, 3}, false));
 
   EXPECT_EQ(t_a->data().size(), 6);
   for (const auto& elem : t_a->data()) {
@@ -54,29 +55,26 @@ TEST(he_tensor, empty_cipher_tensor) {
 }
 
 TEST(he_tensor, pack_non_zero_axis) {
-  EXPECT_ANY_THROW(ngraph::he::HETensor::pack_shape(ngraph::Shape{2, 1}, 1));
-  EXPECT_ANY_THROW(
-      ngraph::he::HETensor::unpack_shape(ngraph::Shape{1, 1}, 2, 1));
+  EXPECT_ANY_THROW(HETensor::pack_shape(Shape{2, 1}, 1));
+  EXPECT_ANY_THROW(HETensor::unpack_shape(Shape{1, 1}, 2, 1));
 }
 
 TEST(he_tensor, pack) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  ngraph::Shape shape{2, 2};
-  ngraph::he::HETensor plain(ngraph::element::f32, shape, false, false, false,
-                             *he_backend);
+  Shape shape{2, 2};
+  HETensor plain(element::f32, shape, false, false, false, *he_backend);
 
-  std::vector<ngraph::he::HEType> elements;
+  std::vector<HEType> elements;
   for (size_t i = 0; i < shape_size(shape); ++i) {
-    elements.emplace_back(ngraph::he::HEPlaintext({static_cast<double>(i)}),
-                          false);
+    elements.emplace_back(HEPlaintext({static_cast<double>(i)}), false);
   }
   plain.data() = elements;
   plain.pack();
 
   EXPECT_TRUE(plain.is_packed());
-  EXPECT_EQ(plain.get_packed_shape(), (ngraph::Shape{1, 2}));
+  EXPECT_EQ(plain.get_packed_shape(), (Shape{1, 2}));
   EXPECT_EQ(plain.get_batch_size(), 2);
   EXPECT_EQ(plain.data().size(), 2);
   for (size_t i = 0; i < 2; ++i) {
@@ -90,23 +88,20 @@ TEST(he_tensor, pack) {
 }
 
 TEST(he_tensor, unpack) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  ngraph::Shape shape{2, 2};
-  ngraph::he::HETensor plain(ngraph::element::f32, shape, true, false, false,
-                             *he_backend);
-  std::vector<ngraph::he::HEType> elements;
+  Shape shape{2, 2};
+  HETensor plain(element::f32, shape, true, false, false, *he_backend);
+  std::vector<HEType> elements;
 
-  elements.emplace_back(ngraph::he::HEPlaintext(std::vector<double>{0, 1}),
-                        false);
-  elements.emplace_back(ngraph::he::HEPlaintext(std::vector<double>{2, 3}),
-                        false);
+  elements.emplace_back(HEPlaintext(std::vector<double>{0, 1}), false);
+  elements.emplace_back(HEPlaintext(std::vector<double>{2, 3}), false);
   plain.data() = elements;
   plain.unpack();
 
   EXPECT_FALSE(plain.is_packed());
-  EXPECT_EQ(plain.get_packed_shape(), (ngraph::Shape{2, 2}));
+  EXPECT_EQ(plain.get_packed_shape(), (Shape{2, 2}));
   EXPECT_EQ(plain.data().size(), 4);
   EXPECT_EQ(plain.get_batch_size(), 1);
 
@@ -121,21 +116,20 @@ TEST(he_tensor, unpack) {
 }
 
 TEST(he_tensor, save) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  auto parms =
-      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto parms = HESealEncryptionParameters::default_real_packing_parms();
   he_backend->update_encryption_parameters(parms);
 
-  ngraph::Shape shape{2};
+  Shape shape{2};
 
-  auto tensor = he_backend->create_plain_tensor(ngraph::element::f32, shape);
+  auto tensor = he_backend->create_plain_tensor(element::f32, shape);
   std::vector<float> tensor_data({5, 6});
 
   copy_data(tensor, tensor_data);
-  auto he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(tensor);
+  auto he_tensor = std::static_pointer_cast<HETensor>(tensor);
 
-  std::vector<ngraph::he::pb::HETensor> protos;
+  std::vector<pb::HETensor> protos;
   he_tensor->write_to_protos(protos);
 
   // Validate saved protos
@@ -162,24 +156,23 @@ TEST(he_tensor, save) {
 }
 
 TEST(he_tensor, load) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  auto parms =
-      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto parms = HESealEncryptionParameters::default_real_packing_parms();
   he_backend->update_encryption_parameters(parms);
 
-  ngraph::Shape shape{2};
-  auto tensor = he_backend->create_plain_tensor(ngraph::element::f32, shape,
-                                                "tensor_name");
+  Shape shape{2};
+  auto tensor =
+      he_backend->create_plain_tensor(element::f32, shape, "tensor_name");
   std::vector<float> tensor_data({5, 6});
 
   copy_data(tensor, tensor_data);
-  auto saved_he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(tensor);
+  auto saved_he_tensor = std::static_pointer_cast<HETensor>(tensor);
 
-  std::vector<ngraph::he::pb::HETensor> protos;
+  std::vector<pb::HETensor> protos;
   saved_he_tensor->write_to_protos(protos);
 
-  auto loaded_he_tensor = ngraph::he::HETensor::load_from_proto_tensors(
+  auto loaded_he_tensor = HETensor::load_from_proto_tensors(
       protos, *he_backend->get_ckks_encoder(), he_backend->get_context(),
       *he_backend->get_encryptor(), *he_backend->get_decryptor(),
       he_backend->get_encryption_parameters());
@@ -198,35 +191,34 @@ TEST(he_tensor, load) {
   NGRAPH_INFO << "saved_he_tensor " << saved_he_tensor->get_element_type();
   NGRAPH_INFO << "loaded_he_tensor " << loaded_he_tensor->get_element_type();
 
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(loaded_he_tensor),
-                                          read_vector<float>(saved_he_tensor)));
+  EXPECT_TRUE(test::all_close(read_vector<float>(loaded_he_tensor),
+                                  read_vector<float>(saved_he_tensor)));
 }
 
 TEST(he_tensor, load_from_context) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-  auto parms =
-      ngraph::he::HESealEncryptionParameters::default_real_packing_parms();
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+  auto parms = HESealEncryptionParameters::default_real_packing_parms();
   he_backend->update_encryption_parameters(parms);
 
-  ngraph::Shape shape{2};
-  auto tensor = he_backend->create_plain_tensor(ngraph::element::f32, shape,
-                                                false, "tensor_name");
+  Shape shape{2};
+  auto tensor = he_backend->create_plain_tensor(element::f32, shape, false,
+                                                "tensor_name");
   std::vector<float> tensor_data({5, 6});
 
   copy_data(tensor, tensor_data);
-  auto saved_he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(tensor);
+  auto saved_he_tensor = std::static_pointer_cast<HETensor>(tensor);
 
-  auto loaded_he_tensor = std::static_pointer_cast<ngraph::he::HETensor>(
-      he_backend->create_plain_tensor(
+  auto loaded_he_tensor =
+      std::static_pointer_cast<HETensor>(he_backend->create_plain_tensor(
           saved_he_tensor->get_element_type(), saved_he_tensor->get_shape(),
           saved_he_tensor->is_packed(), saved_he_tensor->get_name()));
 
-  std::vector<ngraph::he::pb::HETensor> protos;
+  std::vector<pb::HETensor> protos;
   saved_he_tensor->write_to_protos(protos);
 
-  ngraph::he::HETensor::load_from_proto_tensor(loaded_he_tensor, protos[0],
-                                               he_backend->get_context());
+  HETensor::load_from_proto_tensor(loaded_he_tensor, protos[0],
+                                   he_backend->get_context());
 
   EXPECT_EQ(loaded_he_tensor->get_name(), saved_he_tensor->get_name());
   EXPECT_EQ(loaded_he_tensor->is_packed(), saved_he_tensor->is_packed());
@@ -242,19 +234,18 @@ TEST(he_tensor, load_from_context) {
   NGRAPH_INFO << "saved_he_tensor " << saved_he_tensor->get_element_type();
   NGRAPH_INFO << "loaded_he_tensor " << loaded_he_tensor->get_element_type();
 
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(loaded_he_tensor),
-                                          read_vector<float>(saved_he_tensor)));
+  EXPECT_TRUE(test::all_close(read_vector<float>(loaded_he_tensor),
+                                  read_vector<float>(saved_he_tensor)));
 }
 
 TEST(he_tensor, io_bounds) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  auto element_type = ngraph::element::f32;
+  auto element_type = element::f32;
 
-  auto t_a = std::static_pointer_cast<ngraph::he::HETensor>(
-      he_backend->create_plain_tensor(element_type, ngraph::Shape{1, 2, 3},
-                                      false));
+  auto t_a = std::static_pointer_cast<HETensor>(
+      he_backend->create_plain_tensor(element_type, Shape{1, 2, 3}, false));
 
   void* dummy = nullptr;
   // Bytes not a factor of element type
@@ -267,12 +258,11 @@ TEST(he_tensor, io_bounds) {
 }
 
 TEST(he_tensor, zero) {
-  auto backend = ngraph::runtime::Backend::create("HE_SEAL");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("HE_SEAL");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  auto t_zero = std::static_pointer_cast<ngraph::he::HETensor>(
-      he_backend->create_plain_tensor(ngraph::element::f32, ngraph::Shape{0, 4},
-                                      true));
+  auto t_zero = std::static_pointer_cast<HETensor>(
+      he_backend->create_plain_tensor(element::f32, Shape{0, 4}, true));
 
   // I/O access out of bounds
   void* dummy = nullptr;
@@ -281,3 +271,4 @@ TEST(he_tensor, zero) {
 
   EXPECT_EQ(t_zero->get_batched_element_count(), 0);
 }
+}  // namespace ngraph::he

@@ -23,10 +23,12 @@
 #include "seal/seal_plaintext_wrapper.hpp"
 #include "test_util.hpp"
 
+namespace ngraph::he {
+
 TEST(seal_plaintext_wrapper, initialize) {
   // Default plaintext
   {
-    auto plain_wrapper = ngraph::he::SealPlaintextWrapper(true);
+    auto plain_wrapper = SealPlaintextWrapper(true);
     EXPECT_TRUE(plain_wrapper.complex_packing());
 
     plain_wrapper.complex_packing() = false;
@@ -35,7 +37,9 @@ TEST(seal_plaintext_wrapper, initialize) {
   // Passed plaintext
   {
     seal::Plaintext plain(100);
-    auto plain_wrapper = ngraph::he::SealPlaintextWrapper(plain, true);
+    auto plain_wrapper = SealPlaintextWrapper(plain, true);
     EXPECT_EQ(plain, plain_wrapper.plaintext());
   }
 }
+
+}  // namespace ngraph::he

@@ -53,8 +53,7 @@ TEST(he_op_annotations, initialize) {
 }
 
 TEST(he_op_annotations, defaults) {
-  auto param = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32,
-                                                       ngraph::Shape{});
+  auto param = std::make_shared<op::Parameter>(element::f32, Shape{});
 
   EXPECT_FALSE(HEOpAnnotations::from_client(*param));
   EXPECT_FALSE(HEOpAnnotations::plaintext_packed(*param));

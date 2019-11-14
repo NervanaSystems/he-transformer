@@ -25,32 +25,33 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+namespace ngraph::he {
 
-  ngraph::Shape shape{2, 2};
-  auto a =
-      ngraph::op::Constant::create(ngraph::element::f32, shape, {1, 2, 3, 4});
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto c = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
+
+  Shape shape{2, 2};
+  auto a = op::Constant::create(element::f32, shape, {1, 2, 3, 4});
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto c = std::make_shared<op::Parameter>(element::f32, shape);
   auto t = (a + b) * c;
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
+  auto f = std::make_shared<Function>(t, ParameterVector{b, c});
 
   const auto& arg1_config =
-      ngraph::test::he::config_from_flags(false, arg1_encrypted, false);
+      test::config_from_flags(false, arg1_encrypted, false);
   const auto& arg2_config =
-      ngraph::test::he::config_from_flags(false, arg2_encrypted, false);
+      test::config_from_flags(false, arg2_encrypted, false);
 
   std::string error_str;
   he_backend->set_config(
       {{b->get_name(), arg1_config}, {c->get_name(), arg2_config}}, error_str);
 
-  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg1_encrypted, false);
-  auto t_c = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg2_encrypted, false);
-  auto t_result = ngraph::test::he::tensor_from_flags(
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, false);
+  auto t_c =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, false);
+  auto t_result = test::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, false);
 
   std::vector<float> input_b{5, 6, 7, 8};
@@ -62,33 +63,30 @@ auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_b, t_c});
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
-                                          exp_result, 1e-3f));
+  EXPECT_TRUE(
+      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, constant) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
 
-  ngraph::Shape shape{2, 2};
+  Shape shape{2, 2};
   {
-    auto a = ngraph::op::Constant::create(ngraph::element::f32, shape,
-                                          {0.1, 0.2, 0.3, 0.4});
-    auto f = std::make_shared<ngraph::Function>(a, ngraph::ParameterVector{});
-    auto result = backend->create_tensor(ngraph::element::f32, shape);
+    auto a = op::Constant::create(element::f32, shape, {0.1, 0.2, 0.3, 0.4});
+    auto f = std::make_shared<Function>(a, ParameterVector{});
+    auto result = backend->create_tensor(element::f32, shape);
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {});
-    EXPECT_TRUE(ngraph::test::he::all_close(
-        (std::vector<float>{0.1, 0.2, 0.3, 0.4}), read_vector<float>(result)));
+    EXPECT_TRUE(test::all_close((std::vector<float>{0.1, 0.2, 0.3, 0.4}),
+                                    read_vector<float>(result)));
   }
   {
-    auto a = ngraph::op::Constant::create(ngraph::element::f64, shape,
-                                          {0.1, 0.2, 0.3, 0.4});
-    auto f = std::make_shared<ngraph::Function>(a, ngraph::ParameterVector{});
-    auto result = backend->create_tensor(ngraph::element::f64, shape);
+    auto a = op::Constant::create(element::f64, shape, {0.1, 0.2, 0.3, 0.4});
+    auto f = std::make_shared<Function>(a, ParameterVector{});
+    auto result = backend->create_tensor(element::f64, shape);
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {});
-    EXPECT_TRUE(
-        ngraph::test::he::all_close((std::vector<double>{0.1, 0.2, 0.3, 0.4}),
+    EXPECT_TRUE(test::all_close((std::vector<double>{0.1, 0.2, 0.3, 0.4}),
                                     read_vector<double>(result)));
   }
 }
@@ -108,3 +106,5 @@ NGRAPH_TEST(${BACKEND_NAME}, constant_abc_cipher_plain) {
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc_cipher_cipher) {
   constant_test(true, true);
 }
+
+}  // namespace ngraph::he
