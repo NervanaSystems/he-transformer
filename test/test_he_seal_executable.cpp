@@ -81,7 +81,6 @@ TEST(he_seal_executable, plaintext_with_encrypted_annotation) {
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
 
   ngraph::Shape shape{2, 2};
-
   bool packed = true;
   bool arg1_encrypted = true;
   bool arg2_encrypted = false;
@@ -91,10 +90,16 @@ TEST(he_seal_executable, plaintext_with_encrypted_annotation) {
   auto t = std::make_shared<ngraph::op::Add>(a, b);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config({{"enable_client", "false"},
+                          {a->get_name(), arg1_config},
+                          {b->get_name(), arg2_config}},
+                         error_str);
 
   // Create plaintext tensor for ciphertext argument
   // This behavior occurs when using ngraph-bridge
@@ -135,10 +140,16 @@ TEST(he_seal_executable, performance_data) {
   auto t = std::make_shared<ngraph::op::Add>(a, b);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config({{"enable_client", "false"},
+                          {a->get_name(), arg1_config},
+                          {b->get_name(), arg2_config}},
+                         error_str);
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
                                                  arg1_encrypted, packed);
@@ -192,10 +203,16 @@ TEST(he_seal_executable, verbose_op) {
   auto t = std::make_shared<ngraph::op::Add>(a, b);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config({{"enable_client", "false"},
+                          {a->get_name(), arg1_config},
+                          {b->get_name(), arg2_config}},
+                         error_str);
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
                                                  arg1_encrypted, packed);

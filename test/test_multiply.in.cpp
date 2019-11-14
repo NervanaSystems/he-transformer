@@ -41,10 +41,6 @@ auto mult_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
   auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto t = std::make_shared<ngraph::op::Multiply>(a, b);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
                                                  arg1_encrypted, packed);
@@ -52,6 +48,15 @@ auto mult_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
                                                  arg2_encrypted, packed);
   auto t_result = ngraph::test::he::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
   std::vector<float> input_a;
   std::vector<float> input_b;
@@ -179,10 +184,15 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_end_of_depth) {
   auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
   auto t = std::make_shared<ngraph::op::Multiply>(a, b);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
+
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      ngraph::test::he::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
                                                  arg1_encrypted, packed);

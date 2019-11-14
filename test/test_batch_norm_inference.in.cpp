@@ -48,16 +48,22 @@ class BatchNormInferenceTester {
     m_function = std::make_shared<ngraph::Function>(
         bn, ngraph::ParameterVector{input, gamma, beta, mean, variance});
 
-    input->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-    gamma->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
-    beta->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
-    mean->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
-    variance->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
+    auto cipher_annotation =
+        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
+    auto plain_annotation =
+        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation();
+
+    const auto& cipher_config =
+        ngraph::test::he::config_from_annotation(*cipher_annotation);
+    const auto& plain_config =
+        ngraph::test::he::config_from_annotation(*plain_annotation);
+    std::string error_str;
+    m_he_backend->set_config({{input->get_name(), cipher_config},
+                              {gamma->get_name(), plain_config},
+                              {beta->get_name(), plain_config},
+                              {mean->get_name(), plain_config},
+                              {variance->get_name(), plain_config}},
+                             error_str);
 
     m_input = backend->create_cipher_tensor(etype, input_shape);
     m_gamma = backend->create_plain_tensor(etype, channel_shape);

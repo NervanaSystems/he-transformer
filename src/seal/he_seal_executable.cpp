@@ -648,16 +648,16 @@ bool HESealExecutable::call(
       he_input = std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
 
       auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
-          param->get_op_annotations();
-          NGRAPH_CHECK(current_annotation != nullptr, "Parameter ",
-                       param->get_name(), " has no HE op annotation");
-        NGRAPH_CHECK(
-            current_annotation->packed() == he_input->is_packed(),
-            "Parameter annotation ", *current_annotation, " does not match ",
-            (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
+          param->get_op_annotations());
+      NGRAPH_CHECK(current_annotation != nullptr, "Parameter ",
+                   param->get_name(), " has no HE op annotation");
+      NGRAPH_CHECK(
+          current_annotation->packed() == he_input->is_packed(),
+          "Parameter annotation ", *current_annotation, " does not match ",
+          (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
 
-        current_annotation->set_encrypted(he_input->any_encrypted_data());
-        param->set_op_annotations(current_annotation);
+      current_annotation->set_encrypted(he_input->any_encrypted_data());
+      param->set_op_annotations(current_annotation);
     } else {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from server";

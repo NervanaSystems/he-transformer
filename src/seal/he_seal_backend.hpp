@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "he_op_annotations.hpp"
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
 #include "he_type.hpp"
@@ -272,26 +273,6 @@ class HESealBackend : public runtime::Backend {
         ->chain_index();
   }
 
-  /// \brief Returns set of tensors to be provided by the client
-  std::unordered_set<std::string> get_client_tensor_names() const {
-    return m_client_tensor_names;
-  }
-
-  /// \brief Returns set of parameter tensors to be encrypted
-  std::unordered_set<std::string> get_encrypted_tensor_names() const {
-    return m_encrypted_tensor_names;
-  }
-
-  /// \brief Returns set of parameter tensors to remain plaintext.
-  std::unordered_set<std::string> get_plaintext_tensor_names() const {
-    return m_plaintext_tensor_names;
-  }
-
-  /// \brief Returns set of parameter tensors to be packed.
-  std::unordered_set<std::string> get_packed_tensor_names() const {
-    return m_packed_tensor_names;
-  }
-
  private:
   bool m_enable_client{false};
 
@@ -314,10 +295,7 @@ class HESealBackend : public runtime::Backend {
       element::f32.hash(), element::i32.hash(), element::i64.hash(),
       element::f64.hash()};
 
-  std::unordered_set<std::string> m_client_tensor_names;
-  std::unordered_set<std::string> m_encrypted_tensor_names;
-  std::unordered_set<std::string> m_plaintext_tensor_names;
-  std::unordered_set<std::string> m_packed_tensor_names;
+  std::unordered_map<std::string, HEOpAnnotations> m_config_tensors;
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",

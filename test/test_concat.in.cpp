@@ -32,7 +32,7 @@ auto concat_test = [](const ngraph::Shape& shape_a,
                       const std::vector<float>& input_b,
                       const std::vector<float>& input_c,
                       const std::vector<float>& output,
-                      const bool arg1_encrypted, const bool complex_packing,
+                      const bool args_encrypted, const bool complex_packing,
                       const bool packed) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
   auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
@@ -54,21 +54,27 @@ auto concat_test = [](const ngraph::Shape& shape_a,
   auto f =
       std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b, c});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  c->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  const auto& a_config =
+      ngraph::test::he::config_from_flags(false, args_encrypted, packed);
+  const auto& b_config =
+      ngraph::test::he::config_from_flags(false, args_encrypted, packed);
+  const auto& c_config =
+      ngraph::test::he::config_from_flags(false, args_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), a_config},
+                          {b->get_name(), b_config},
+                          {c->get_name(), c_config}},
+                         error_str);
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
-                                                 arg1_encrypted, packed);
+                                                 args_encrypted, packed);
   auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape_b,
-                                                 arg1_encrypted, packed);
+                                                 args_encrypted, packed);
   auto t_c = ngraph::test::he::tensor_from_flags(*he_backend, shape_c,
-                                                 arg1_encrypted, packed);
+                                                 args_encrypted, packed);
   auto t_result = ngraph::test::he::tensor_from_flags(
-      *he_backend, t->get_shape(), arg1_encrypted, packed);
+      *he_backend, t->get_shape(), args_encrypted, packed);
 
   copy_data(t_a, input_a);
   copy_data(t_b, input_b);

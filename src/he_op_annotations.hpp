@@ -34,7 +34,11 @@ class HEOpAnnotations : public op::util::OpAnnotations {
   /// encrypted
   /// \param[in] packed Whether or not the output of the operation is stored
   /// using plaintext packing
-  HEOpAnnotations(bool from_client, bool encrypted, bool packed);
+  HEOpAnnotations(bool from_client = false, bool encrypted = false,
+                  bool packed = false);
+
+  HEOpAnnotations(const HEOpAnnotations& op_annotation) = default;
+  HEOpAnnotations& operator=(const HEOpAnnotations& v) = default;
 
   bool from_client() const;
   void set_from_client(bool val);

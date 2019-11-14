@@ -42,10 +42,9 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_bad_configuration) {
   auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
 
   std::string error_str;
-  EXPECT_ANY_THROW(
-      he_backend->set_config({{"enable_client", "false"},
-                              {b->get_name(), "client_input,plain,packed"}},
-                             error_str));
+  EXPECT_ANY_THROW(he_backend->set_config(
+      {{"enable_client", "false"}, {b->get_name(), "client_input,packed"}},
+      error_str));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_duplicate_setup) {
@@ -62,7 +61,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_duplicate_setup) {
 
   std::string error_str;
   he_backend->set_config(
-      {{"enable_client", "true"}, {b->get_name(), "client_input,plain,packed"}},
+      {{"enable_client", "true"}, {b->get_name(), "client_input,packed"}},
       error_str);
 
   auto c =
@@ -188,8 +187,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_plain) {
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
 
   he_backend->set_config(
-      {{"enable_client", "true"}, {b->get_name(), "client_input,plain"}},
-      error_str);
+      {{"enable_client", "true"}, {b->get_name(), "client_input"}}, error_str);
 
   auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape_c);
   auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);

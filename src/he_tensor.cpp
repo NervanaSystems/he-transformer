@@ -199,7 +199,6 @@ void HETensor::write(const void* p, size_t n) {
 
   size_t num_elements_to_write = n / element_type.size();
   if (get_batch_size() != 0) {
-    NGRAPH_INFO << "get_batch_size " << get_batch_size();
     num_elements_to_write /= get_batch_size();
   }
 

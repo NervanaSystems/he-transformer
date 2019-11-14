@@ -46,8 +46,11 @@ auto reshape_test = [](const ngraph::Shape& shape_a,
   auto t = std::make_shared<ngraph::op::Reshape>(a, axis_vector, shape_r);
   auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
 
   auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
                                                  arg1_encrypted, packed);

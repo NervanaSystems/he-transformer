@@ -44,12 +44,15 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
   auto t_c = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
   auto result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
-  a->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  b->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  c->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
+  auto cipher_annotation =
+      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
+  const auto& cipher_config =
+      ngraph::test::he::config_from_annotation(*cipher_annotation);
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), cipher_config},
+                          {b->get_name(), cipher_config},
+                          {c->get_name(), cipher_config}},
+                         error_str);
 
   {
     copy_data(t_a,
@@ -106,6 +109,18 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
 
   ngraph::Shape shape{2, 2};
 
+  auto cipher_annotation =
+      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
+  auto plain_annotation =
+      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation();
+
+  const auto& cipher_config =
+      ngraph::test::he::config_from_annotation(*cipher_annotation);
+  const auto& plain_config =
+      ngraph::test::he::config_from_annotation(*plain_annotation);
+
+  std::string error_str;
+
   // A B C order
   {
     auto a =
@@ -117,12 +132,10 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     auto f = std::make_shared<ngraph::Function>(
         (a * b) * c, ngraph::ParameterVector{a, b, c});
 
-    a->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-    b->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-    c->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
+    he_backend->set_config({{a->get_name(), cipher_config},
+                            {b->get_name(), cipher_config},
+                            {c->get_name(), plain_config}},
+                           error_str);
 
     auto t_a = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
     auto t_b = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
@@ -154,12 +167,10 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     auto f = std::make_shared<ngraph::Function>(
         (a * b) * c, ngraph::ParameterVector{a, b, c});
 
-    a->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-    b->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-    c->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
+    he_backend->set_config({{a->get_name(), cipher_config},
+                            {b->get_name(), cipher_config},
+                            {c->get_name(), plain_config}},
+                           error_str);
 
     auto t_a = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
     auto t_b = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
@@ -191,12 +202,10 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     auto f = std::make_shared<ngraph::Function>(
         (a * b) * c, ngraph::ParameterVector{a, b, c});
 
-    a->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
-    b->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-    c->set_op_annotations(
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
+    he_backend->set_config({{a->get_name(), plain_config},
+                            {b->get_name(), cipher_config},
+                            {c->get_name(), cipher_config}},
+                           error_str);
 
     auto t_a = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
     auto t_b = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
@@ -288,12 +297,16 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
   auto t_c = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
   auto result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
-  a->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  b->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  c->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
+  auto cipher_annotation =
+      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
+  const auto& cipher_config =
+      ngraph::test::he::config_from_annotation(*cipher_annotation);
+
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), cipher_config},
+                          {b->get_name(), cipher_config},
+                          {c->get_name(), cipher_config}},
+                         error_str);
 
   copy_data(t_a,
             ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
@@ -328,12 +341,21 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
   auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape);
   auto result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
 
-  a->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  b->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  c->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
+  auto cipher_annotation =
+      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
+  auto plain_annotation =
+      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation();
+
+  const auto& cipher_config =
+      ngraph::test::he::config_from_annotation(*cipher_annotation);
+  const auto& plain_config =
+      ngraph::test::he::config_from_annotation(*plain_annotation);
+
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), cipher_config},
+                          {b->get_name(), cipher_config},
+                          {c->get_name(), plain_config}},
+                         error_str);
 
   copy_data(t_a,
             ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());

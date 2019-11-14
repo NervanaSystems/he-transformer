@@ -25,6 +25,47 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
+auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
+  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+
+  ngraph::Shape shape{2, 2};
+  auto a =
+      ngraph::op::Constant::create(ngraph::element::f32, shape, {1, 2, 3, 4});
+  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto c = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
+  auto t = (a + b) * c;
+  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
+
+  const auto& arg1_config =
+      ngraph::test::he::config_from_flags(false, arg1_encrypted, false);
+  const auto& arg2_config =
+      ngraph::test::he::config_from_flags(false, arg2_encrypted, false);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{b->get_name(), arg1_config}, {c->get_name(), arg2_config}}, error_str);
+
+  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
+                                                 arg1_encrypted, false);
+  auto t_c = ngraph::test::he::tensor_from_flags(*he_backend, shape,
+                                                 arg2_encrypted, false);
+  auto t_result = ngraph::test::he::tensor_from_flags(
+      *he_backend, shape, arg1_encrypted || arg2_encrypted, false);
+
+  std::vector<float> input_b{5, 6, 7, 8};
+  std::vector<float> input_c{9, 10, 11, 12};
+  std::vector<float> exp_result{54, 80, 110, 144};
+
+  copy_data(t_b, input_b);
+  copy_data(t_c, input_c);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_b, t_c});
+  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
+                                          exp_result, 1e-3f));
+};
+
 NGRAPH_TEST(${BACKEND_NAME}, constant) {
   auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
 
@@ -53,128 +94,17 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc_plain_plain) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  ngraph::Shape shape{2, 2};
-  auto a =
-      ngraph::op::Constant::create(ngraph::element::f32, shape, {1, 2, 3, 4});
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto c = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = (a + b) * c;
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
-
-  auto t_b = he_backend->create_plain_tensor(ngraph::element::f32, shape);
-  auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-
-  copy_data(t_b,
-            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c,
-            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
-
-  auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_b, t_c});
-  EXPECT_TRUE(ngraph::test::he::all_close(
-      read_vector<float>(t_result),
-      (ngraph::test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector()));
+  constant_test(false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc_plain_cipher) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  ngraph::Shape shape{2, 2};
-  auto a =
-      ngraph::op::Constant::create(ngraph::element::f32, shape, {1, 2, 3, 4});
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto c = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = (a + b) * c;
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
-
-  b->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
-  c->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
-  auto t_b = he_backend->create_plain_tensor(ngraph::element::f32, shape);
-  auto t_c = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-
-  copy_data(t_b,
-            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c,
-            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
-
-  auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_b, t_c});
-  EXPECT_TRUE(ngraph::test::he::all_close(
-      read_vector<float>(t_result),
-      (ngraph::test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector()));
+  constant_test(false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc_cipher_plain) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  ngraph::Shape shape{2, 2};
-  auto a =
-      ngraph::op::Constant::create(ngraph::element::f32, shape, {1, 2, 3, 4});
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto c = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = (a + b) * c;
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
-
-  b->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  c->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation());
-
-  auto t_b = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-  auto t_c = he_backend->create_plain_tensor(ngraph::element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-
-  copy_data(t_b,
-            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c,
-            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
-
-  auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_b, t_c});
-  EXPECT_TRUE(ngraph::test::he::all_close(
-      read_vector<float>(t_result),
-      (ngraph::test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector()));
+  constant_test(true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, constant_abc_cipher_cipher) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
-
-  ngraph::Shape shape{2, 2};
-  auto a =
-      ngraph::op::Constant::create(ngraph::element::f32, shape, {1, 2, 3, 4});
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto c = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = (a + b) * c;
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{b, c});
-
-  b->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-  c->set_op_annotations(
-      ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation());
-
-  auto t_b = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-  auto t_c = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-  auto t_result = he_backend->create_cipher_tensor(ngraph::element::f32, shape);
-
-  copy_data(t_b,
-            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c,
-            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
-
-  auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_b, t_c});
-  EXPECT_TRUE(ngraph::test::he::all_close(
-      read_vector<float>(t_result),
-      (ngraph::test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector()));
+  constant_test(true, true);
 }

@@ -73,11 +73,6 @@ HEOpAnnotations::server_plaintext_unpacked_annotation() {
 }
 
 std::shared_ptr<HEOpAnnotations>
-HEOpAnnotations::server_plaintext_packed_annotation() {
-  return std::make_shared<HEOpAnnotations>(false, false, true);
-}
-
-std::shared_ptr<HEOpAnnotations>
 HEOpAnnotations::server_ciphertext_unpacked_annotation() {
   return std::make_shared<HEOpAnnotations>(false, true, false);
 }

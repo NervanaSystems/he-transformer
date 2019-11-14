@@ -28,6 +28,7 @@
 #include "ngraph/node.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "ngraph/util.hpp"
 #include "seal/he_seal_backend.hpp"
 
 namespace ngraph {
@@ -65,6 +66,27 @@ inline std::shared_ptr<ngraph::he::HEOpAnnotations> annotation_from_flags(
   return std::make_shared<ngraph::he::HEOpAnnotations>(from_client, encrypted,
                                                        packed);
 };
+
+inline std::string config_from_annotation(
+    const ngraph::he::HEOpAnnotations& annotation) {
+  std::vector<std::string> configs;
+  if (annotation.from_client()) {
+    configs.emplace_back("from_client");
+  }
+  if (annotation.encrypted()) {
+    configs.emplace_back("encrypt");
+  }
+  if (annotation.packed()) {
+    configs.emplace_back("packed");
+  }
+  return ngraph::join(configs, ",");
+}
+
+inline std::string config_from_flags(const bool from_client,
+                                     const bool encrypted, const bool packed) {
+  return config_from_annotation(
+      ngraph::he::HEOpAnnotations(from_client, encrypted, packed));
+}
 
 inline std::shared_ptr<ngraph::runtime::Tensor> tensor_from_flags(
     ngraph::he::HESealBackend& he_seal_backend, const ngraph::Shape& shape,
