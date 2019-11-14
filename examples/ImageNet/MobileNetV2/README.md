@@ -139,7 +139,7 @@ python test.py \
 ```bash
 OMP_NUM_THREADS=56 \
 STOP_CONST_FOLD=1 \
-NGRAPH_VOPS=BoundedRelu \
+NGRAPH_HE_VERBOSE_OPS=BoundedRelu \
 NGRAPH_HE_LOG_LEVEL=3 \
 python test.py \
   --batch_size=10  \
@@ -152,7 +152,7 @@ python test.py \
   --enable_client=yes \
   --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N12_L4_complex.json
 ```
-Since this will take a while to run, we have added verbosity flags to the above command, e.g. `NGRAPH_VOPS=all NGRAPH_HE_LOG_LEVEL=3`
+Since this will take a while to run, we have added verbosity flags to the above command, e.g. `NGRAPH_HE_VERBOSE_OPS=all NGRAPH_HE_LOG_LEVEL=3`
 
 In another terminal (with the python environment active), run
 ```bash

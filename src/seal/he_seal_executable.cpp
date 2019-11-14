@@ -128,8 +128,8 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
     }
   }
 
-  if (std::getenv("NGRAPH_VOPS") != nullptr) {
-    std::string verbose_ops_str(std::getenv("NGRAPH_VOPS"));
+  if (std::getenv("NGRAPH_HE_VERBOSE_OPS") != nullptr) {
+    std::string verbose_ops_str(std::getenv("NGRAPH_HE_VERBOSE_OPS"));
     verbose_ops_str = to_lower(verbose_ops_str);
     if (verbose_ops_str == "all") {
       m_verbose_all_ops = true;

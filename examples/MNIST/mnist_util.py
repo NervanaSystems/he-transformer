@@ -150,8 +150,6 @@ def server_config_from_flags(FLAGS, tensor_param_name):
         server_config.parameter_map[tensor_param_name].s = b'client_input'
     elif FLAGS.encrypt_server_data:
         server_config.parameter_map[tensor_param_name].s = b'encrypt'
-    else:
-        server_config.parameter_map[tensor_param_name].s = b'plain'
 
     if FLAGS.pack_data:
         server_config.parameter_map[tensor_param_name].s += b',packed'
