@@ -49,9 +49,9 @@ void SealCiphertextWrapper::load(SealCiphertextWrapper& dst,
                "Cannot load ciphertext from plaintext HEType");
 
   const std::string& cipher_str = proto_he_type.ciphertext();
-  ngraph::runtime::he::load(dst.ciphertext(), std::move(context),
-                   reinterpret_cast<const std::byte*>(cipher_str.data()),
-                   cipher_str.size());
+  ngraph::runtime::he::load(
+      dst.ciphertext(), std::move(context),
+      reinterpret_cast<const std::byte*>(cipher_str.data()), cipher_str.size());
 }
 
 }  // namespace ngraph::runtime::he

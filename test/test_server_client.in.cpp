@@ -365,8 +365,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu) {
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(
-      test::all_close(results, std::vector<float>{0, 0, 3.3}, 1e-3f));
+  EXPECT_TRUE(test::all_close(results, std::vector<float>{0, 0, 3.3}, 1e-3f));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
@@ -414,8 +413,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_double) {
   handle->call_with_validate({t_result}, {t_dummy});
 
   client_thread.join();
-  EXPECT_TRUE(
-      test::all_close(results, std::vector<double>{0, 0, 3.3}, 1e-3));
+  EXPECT_TRUE(test::all_close(results, std::vector<double>{0, 0, 3.3}, 1e-3));
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_relu_int64_t) {
@@ -785,7 +783,7 @@ auto server_client_maxpool_test = [](const Shape& shape,
   auto t_dummy =
       test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
   auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
-                                              arg1_encrypted, packed);
+                                          arg1_encrypted, packed);
   size_t batch_size =
       std::static_pointer_cast<HETensor>(t_dummy)->get_batch_size();
 
@@ -825,11 +823,12 @@ NGRAPH_TEST(${BACKEND_NAME},
             server_client_max_pool_1d_1channel_2image_encrypted_real_packed) {
   server_client_maxpool_test(
       Shape{2, 1, 14}, Shape{3},
-      ngraph::test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
+      ngraph::test::NDArray<float, 3>(
+          {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
+           {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
           .get_vector(),
       ngraph::test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
+                                       {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2}}})
           .get_vector(),
       true, false, true);
 }
@@ -838,15 +837,16 @@ NGRAPH_TEST(${BACKEND_NAME},
             server_client_max_pool_1d_2channel_2image_encrypted_real_packed) {
   server_client_maxpool_test(
       Shape{2, 2, 14}, Shape{3},
-      ngraph::test::NDArray<float, 3>({{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
-                                {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
-                               {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
-                                {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
+      ngraph::test::NDArray<float, 3>(
+          {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
+            {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
+           {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2},
+            {2, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 2, 0}}})
           .get_vector(),
       ngraph::test::NDArray<float, 3>({{{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0},
-                                {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
-                               {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
-                                {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
+                                        {0, 2, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1}},
+                                       {{2, 2, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2},
+                                        {2, 1, 1, 1, 2, 2, 2, 0, 1, 1, 2, 2}}})
           .get_vector(),
       true, false, true);
 }
@@ -856,42 +856,42 @@ NGRAPH_TEST(${BACKEND_NAME},
   server_client_maxpool_test(
       Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
-                                 {0, 3, 2, 0, 0},
-                                 {2, 0, 0, 0, 1},
-                                 {2, 0, 1, 1, 2},
-                                 {0, 2, 1, 0, 0}},
-                                {{0, 0, 0, 2, 0},  // img 0 chan 1
-                                 {0, 2, 3, 0, 1},
-                                 {2, 0, 1, 0, 2},
-                                 {3, 1, 0, 0, 0},
-                                 {2, 0, 0, 0, 0}}},
-                               {{{0, 2, 1, 1, 0},  // img 1 chan 0
-                                 {0, 0, 2, 0, 1},
-                                 {0, 0, 1, 2, 3},
-                                 {2, 0, 0, 3, 0},
-                                 {0, 0, 0, 0, 0}},
-                                {{2, 1, 0, 0, 1},  // img 1 chan 1
-                                 {0, 2, 0, 0, 0},
-                                 {1, 1, 2, 0, 2},
-                                 {1, 1, 1, 0, 1},
-                                 {1, 0, 0, 0, 2}}}})
+                                         {0, 3, 2, 0, 0},
+                                         {2, 0, 0, 0, 1},
+                                         {2, 0, 1, 1, 2},
+                                         {0, 2, 1, 0, 0}},
+                                        {{0, 0, 0, 2, 0},  // img 0 chan 1
+                                         {0, 2, 3, 0, 1},
+                                         {2, 0, 1, 0, 2},
+                                         {3, 1, 0, 0, 0},
+                                         {2, 0, 0, 0, 0}}},
+                                       {{{0, 2, 1, 1, 0},  // img 1 chan 0
+                                         {0, 0, 2, 0, 1},
+                                         {0, 0, 1, 2, 3},
+                                         {2, 0, 0, 3, 0},
+                                         {0, 0, 0, 0, 0}},
+                                        {{2, 1, 0, 0, 1},  // img 1 chan 1
+                                         {0, 2, 0, 0, 0},
+                                         {1, 1, 2, 0, 2},
+                                         {1, 1, 1, 0, 1},
+                                         {1, 0, 0, 0, 2}}}})
           .get_vector(),
       ngraph::test::NDArray<float, 4>({{{{3, 3, 2},  // img 0 chan 0
-                                 {3, 3, 2},
-                                 {2, 1, 2},
-                                 {2, 2, 2}},
-                                {{3, 3, 3},  // img 0 chan 1
-                                 {3, 3, 3},
-                                 {3, 1, 2},
-                                 {3, 1, 0}}},
-                               {{{2, 2, 2},  // img 1 chan 0
-                                 {2, 2, 3},
-                                 {2, 3, 3},
-                                 {2, 3, 3}},
-                                {{2, 2, 1},  // img 1 chan 1
-                                 {2, 2, 2},
-                                 {2, 2, 2},
-                                 {1, 1, 2}}}})
+                                         {3, 3, 2},
+                                         {2, 1, 2},
+                                         {2, 2, 2}},
+                                        {{3, 3, 3},  // img 0 chan 1
+                                         {3, 3, 3},
+                                         {3, 1, 2},
+                                         {3, 1, 0}}},
+                                       {{{2, 2, 2},  // img 1 chan 0
+                                         {2, 2, 3},
+                                         {2, 3, 3},
+                                         {2, 3, 3}},
+                                        {{2, 2, 1},  // img 1 chan 1
+                                         {2, 2, 2},
+                                         {2, 2, 2},
+                                         {1, 1, 2}}}})
           .get_vector(),
       true, false, true);
 }

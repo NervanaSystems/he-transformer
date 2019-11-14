@@ -37,8 +37,7 @@ auto result_test = [](const bool input_encrypted, const bool output_encrypted) {
   auto t = std::make_shared<op::Relu>(a);
   auto f = std::make_shared<Function>(t, ParameterVector{a});
 
-  const auto& config =
-      test::config_from_flags(false, input_encrypted, false);
+  const auto& config = test::config_from_flags(false, input_encrypted, false);
 
   std::string error_str;
   he_backend->set_config({{a->get_name(), config}}, error_str);
@@ -54,8 +53,7 @@ auto result_test = [](const bool input_encrypted, const bool output_encrypted) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, result_cipher_to_cipher) {

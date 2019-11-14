@@ -126,9 +126,10 @@ NodeWrapper::NodeWrapper(std::shared_ptr<const ngraph::Node> node)
 // {"Acos", ngraph::runtime::he::OP_TYPEID::Acos},
 // ...
 #define NGRAPH_OP(a, b) {#a, ngraph::runtime::he::OP_TYPEID::a},
-  static std::unordered_map<std::string, ngraph::runtime::he::OP_TYPEID> typeid_map{
+  static std::unordered_map<std::string, ngraph::runtime::he::OP_TYPEID>
+      typeid_map{
 #include "ngraph/op/op_tbl.hpp"
-      NGRAPH_OP(BoundedRelu, ngraph::op)};
+          NGRAPH_OP(BoundedRelu, ngraph::op)};
 #undef NGRAPH_OP
   auto it = typeid_map.find(m_node->description());
   NGRAPH_CHECK(it != typeid_map.end(), "Unsupported op ",

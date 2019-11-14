@@ -49,12 +49,9 @@ auto concat_test = [](const Shape& shape_a, const Shape& shape_b,
   auto t = std::make_shared<op::Concat>(NodeVector{a, b, c}, concat_axis);
   auto f = std::make_shared<Function>(t, ParameterVector{a, b, c});
 
-  const auto& a_config =
-      test::config_from_flags(false, args_encrypted, packed);
-  const auto& b_config =
-      test::config_from_flags(false, args_encrypted, packed);
-  const auto& c_config =
-      test::config_from_flags(false, args_encrypted, packed);
+  const auto& a_config = test::config_from_flags(false, args_encrypted, packed);
+  const auto& b_config = test::config_from_flags(false, args_encrypted, packed);
+  const auto& c_config = test::config_from_flags(false, args_encrypted, packed);
 
   std::string error_str;
   he_backend->set_config({{a->get_name(), a_config},
@@ -69,7 +66,7 @@ auto concat_test = [](const Shape& shape_a, const Shape& shape_b,
   auto t_c =
       test::tensor_from_flags(*he_backend, shape_c, args_encrypted, packed);
   auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
-                                              args_encrypted, packed);
+                                          args_encrypted, packed);
 
   copy_data(t_a, input_a);
   copy_data(t_b, input_b);

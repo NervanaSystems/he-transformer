@@ -192,7 +192,7 @@ TEST(he_tensor, load) {
   NGRAPH_INFO << "loaded_he_tensor " << loaded_he_tensor->get_element_type();
 
   EXPECT_TRUE(test::all_close(read_vector<float>(loaded_he_tensor),
-                                  read_vector<float>(saved_he_tensor)));
+                              read_vector<float>(saved_he_tensor)));
 }
 
 TEST(he_tensor, load_from_context) {
@@ -235,7 +235,7 @@ TEST(he_tensor, load_from_context) {
   NGRAPH_INFO << "loaded_he_tensor " << loaded_he_tensor->get_element_type();
 
   EXPECT_TRUE(test::all_close(read_vector<float>(loaded_he_tensor),
-                                  read_vector<float>(saved_he_tensor)));
+                              read_vector<float>(saved_he_tensor)));
 }
 
 TEST(he_tensor, io_bounds) {

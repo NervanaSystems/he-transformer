@@ -47,10 +47,8 @@ auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
   he_backend->set_config(
       {{b->get_name(), arg1_config}, {c->get_name(), arg2_config}}, error_str);
 
-  auto t_b =
-      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, false);
-  auto t_c =
-      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, false);
+  auto t_b = test::tensor_from_flags(*he_backend, shape, arg1_encrypted, false);
+  auto t_c = test::tensor_from_flags(*he_backend, shape, arg2_encrypted, false);
   auto t_result = test::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, false);
 
@@ -63,8 +61,7 @@ auto constant_test = [](const bool arg1_encrypted, const bool arg2_encrypted) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_b, t_c});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, constant) {
@@ -78,7 +75,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {});
     EXPECT_TRUE(test::all_close((std::vector<float>{0.1, 0.2, 0.3, 0.4}),
-                                    read_vector<float>(result)));
+                                read_vector<float>(result)));
   }
   {
     auto a = op::Constant::create(element::f64, shape, {0.1, 0.2, 0.3, 0.4});
@@ -87,7 +84,7 @@ NGRAPH_TEST(${BACKEND_NAME}, constant) {
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {});
     EXPECT_TRUE(test::all_close((std::vector<double>{0.1, 0.2, 0.3, 0.4}),
-                                    read_vector<double>(result)));
+                                read_vector<double>(result)));
   }
 }
 

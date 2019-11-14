@@ -55,9 +55,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
                          error_str);
 
   {
-    copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-    copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(t_a,
+              ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(t_b,
+              ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(
+        t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle1 = backend->compile(f);
     handle1->call_with_validate({result}, {t_a, t_b, t_c});
@@ -68,9 +71,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
   }
 
   {
-    copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-    copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(t_a,
+              ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(t_b,
+              ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(
+        t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle2 = backend->compile(f);
     handle2->call_with_validate({result}, {t_b, t_a, t_c});
@@ -80,9 +86,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
         1e-1f));
   }
   {
-    copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-    copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(t_a,
+              ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(t_b,
+              ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(
+        t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle3 = backend->compile(f);
     handle3->call_with_validate({result}, {t_c, t_a, t_b});
@@ -127,9 +136,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     auto t_c = he_backend->create_plain_tensor(element::f32, shape);
     auto result = he_backend->create_cipher_tensor(element::f32, shape);
 
-    copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-    copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(t_a,
+              ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(t_b,
+              ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(
+        t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {t_a, t_b, t_c});
@@ -155,9 +167,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     auto t_c = he_backend->create_plain_tensor(element::f32, shape);
     auto result = he_backend->create_cipher_tensor(element::f32, shape);
 
-    copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-    copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(t_a,
+              ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(t_b,
+              ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(
+        t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {t_b, t_a, t_c});
@@ -183,9 +198,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     auto t_c = he_backend->create_plain_tensor(element::f32, shape);
     auto result = he_backend->create_cipher_tensor(element::f32, shape);
 
-    copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-    copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-    copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+    copy_data(t_a,
+              ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+    copy_data(t_b,
+              ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+    copy_data(
+        t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle = backend->compile(f);
     handle->call_with_validate({result}, {t_c, t_a, t_b});
@@ -213,9 +231,12 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_plain_plain) {
   auto t_c = he_backend->create_plain_tensor(element::f32, shape);
   auto result = he_backend->create_plain_tensor(element::f32, shape);
 
-  copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+  copy_data(t_a,
+            ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(t_b,
+            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(t_c,
+            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
   {
     auto handle1 = backend->compile(f);
@@ -270,15 +291,19 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_cipher) {
                           {c->get_name(), cipher_config}},
                          error_str);
 
-  copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+  copy_data(t_a,
+            ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(t_b,
+            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(t_c,
+            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {t_a, t_b, t_c});
   EXPECT_TRUE(test::all_close(
       read_vector<float>(result),
-      (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
+      (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(),
+      1e-1f));
 }
 
 // Test adding cipher with plain at different layer
@@ -312,15 +337,19 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_cipher_plain) {
                           {c->get_name(), plain_config}},
                          error_str);
 
-  copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+  copy_data(t_a,
+            ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(t_b,
+            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(t_c,
+            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {t_a, t_b, t_c});
   EXPECT_TRUE(test::all_close(
       read_vector<float>(result),
-      (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
+      (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(),
+      1e-1f));
 }
 
 // Test adding plain with plain at different layer
@@ -340,15 +369,19 @@ NGRAPH_TEST(${BACKEND_NAME}, add_layer_plain_plain) {
   auto t_c = he_backend->create_plain_tensor(element::f32, shape);
   auto result = he_backend->create_plain_tensor(element::f32, shape);
 
-  copy_data(t_a, ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
-  copy_data(t_b, ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
-  copy_data(t_c, ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
+  copy_data(t_a,
+            ngraph::test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
+  copy_data(t_b,
+            ngraph::test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
+  copy_data(t_c,
+            ngraph::test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
   auto handle = backend->compile(f);
   handle->call_with_validate({result}, {t_a, t_b, t_c});
   EXPECT_TRUE(test::all_close(
       read_vector<float>(result),
-      (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(), 1e-1f));
+      (ngraph::test::NDArray<float, 2>({{14, 22}, {32, 44}})).get_vector(),
+      1e-1f));
 }
 
 }  // namespace ngraph::runtime::he

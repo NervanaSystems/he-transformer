@@ -52,7 +52,7 @@ auto max_test = [](const Shape& shape_a, const AxisSet& reduction_axes,
   auto t_a =
       test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
   auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
-                                              arg1_encrypted, packed);
+                                          arg1_encrypted, packed);
 
   copy_data(t_a, input_a);
   auto handle = backend->compile(f);
@@ -61,8 +61,7 @@ auto max_test = [](const Shape& shape_a, const AxisSet& reduction_axes,
     EXPECT_ANY_THROW((handle->call_with_validate({t_result}, {t_a})));
   } else {
     handle->call_with_validate({t_result}, {t_a});
-    EXPECT_TRUE(
-        test::all_close(read_vector<float>(t_result), output, 1e-3f));
+    EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
   }
 };
 

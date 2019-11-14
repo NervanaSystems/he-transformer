@@ -50,10 +50,10 @@ auto sum_test = [](const Shape& in_shape, const AxisSet& axis_set,
   std::string error_str;
   he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
 
-  auto t_a = test::tensor_from_flags(*he_backend, in_shape, arg1_encrypted,
-                                         packed);
+  auto t_a =
+      test::tensor_from_flags(*he_backend, in_shape, arg1_encrypted, packed);
   auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
-                                              arg1_encrypted, packed);
+                                          arg1_encrypted, packed);
   copy_data(t_a, input);
 
   auto handle = backend->compile(f);

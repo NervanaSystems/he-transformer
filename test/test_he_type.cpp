@@ -119,7 +119,7 @@ TEST(he_type, save_load) {
     EXPECT_EQ(loaded_he_type.batch_size(), he_type.batch_size());
 
     EXPECT_TRUE(test::all_close(loaded_he_type.get_plaintext(),
-                                            he_type.get_plaintext()));
+                                he_type.get_plaintext()));
   }
   {
     HEPlaintext plain{7};
@@ -142,7 +142,7 @@ TEST(he_type, save_load) {
     EXPECT_EQ(loaded_he_type.batch_size(), he_type.batch_size());
 
     EXPECT_TRUE(test::all_close(loaded_he_type.get_plaintext(),
-                                            he_type.get_plaintext()));
+                                he_type.get_plaintext()));
   }
 }
 

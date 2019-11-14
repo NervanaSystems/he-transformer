@@ -80,8 +80,7 @@ NGRAPH_TEST(${BACKEND_NAME}, skip_rescale_lowest) {
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), exp_result, 1e-1f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-1f));
 }
 
 }  // namespace ngraph::runtime::he

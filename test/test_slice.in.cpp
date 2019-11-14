@@ -54,7 +54,7 @@ auto slice_test = [](const Shape& shape, const Coordinate& lower_bounds,
   auto t_a =
       test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
   auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
-                                              arg1_encrypted, packed);
+                                          arg1_encrypted, packed);
 
   copy_data(t_a, input);
 

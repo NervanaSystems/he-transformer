@@ -27,41 +27,40 @@ static std::string s_manifest = "${MANIFEST}";
 
 namespace ngraph::runtime::he {
 
-auto reshape_test = [](const Shape& shape_a, const Shape& shape_r,
-                       const AxisVector& axis_vector,
-                       const std::vector<float>& input,
-                       const std::vector<float>& output,
-                       const bool arg1_encrypted, const bool complex_packing,
-                       const bool packed) {
-  auto backend = runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<HESealBackend*>(backend.get());
+auto reshape_test =
+    [](const Shape& shape_a, const Shape& shape_r,
+       const AxisVector& axis_vector, const std::vector<float>& input,
+       const std::vector<float>& output, const bool arg1_encrypted,
+       const bool complex_packing, const bool packed) {
+      auto backend = runtime::Backend::create("${BACKEND_NAME}");
+      auto he_backend = static_cast<HESealBackend*>(backend.get());
 
-  if (complex_packing) {
-    he_backend->update_encryption_parameters(
-        HESealEncryptionParameters::default_complex_packing_parms());
-  }
+      if (complex_packing) {
+        he_backend->update_encryption_parameters(
+            HESealEncryptionParameters::default_complex_packing_parms());
+      }
 
-  auto a = std::make_shared<op::Parameter>(element::f32, shape_a);
-  auto t = std::make_shared<op::Reshape>(a, axis_vector, shape_r);
-  auto f = std::make_shared<Function>(t, ParameterVector{a});
+      auto a = std::make_shared<op::Parameter>(element::f32, shape_a);
+      auto t = std::make_shared<op::Reshape>(a, axis_vector, shape_r);
+      auto f = std::make_shared<Function>(t, ParameterVector{a});
 
-  const auto& arg1_config =
-      test::config_from_flags(false, arg1_encrypted, packed);
+      const auto& arg1_config =
+          test::config_from_flags(false, arg1_encrypted, packed);
 
-  std::string error_str;
-  he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
+      std::string error_str;
+      he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
 
-  auto t_a =
-      test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
-  auto t_result =
-      test::tensor_from_flags(*he_backend, shape_r, arg1_encrypted, packed);
+      auto t_a =
+          test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+      auto t_result =
+          test::tensor_from_flags(*he_backend, shape_r, arg1_encrypted, packed);
 
-  copy_data(t_a, input);
+      copy_data(t_a, input);
 
-  auto handle = backend->compile(f);
-  handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
-};
+      auto handle = backend->compile(f);
+      handle->call_with_validate({t_result}, {t_a});
+      EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
+    };
 
 NGRAPH_TEST(${BACKEND_NAME}, reshape_t2v_012) {
   for (bool arg1_encrypted : std::vector<bool>{false, true}) {

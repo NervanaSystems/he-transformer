@@ -27,8 +27,7 @@ static std::string s_manifest = "${MANIFEST}";
 
 namespace ngraph::runtime::he {
 
-auto avg_pool_test = [](const Shape& shape_a,
-                        const Shape& window_shape,
+auto avg_pool_test = [](const Shape& shape_a, const Shape& window_shape,
                         const Strides& window_movement_strides,
                         const std::vector<float>& input_a,
                         const std::vector<float>& output,
@@ -39,14 +38,12 @@ auto avg_pool_test = [](const Shape& shape_a,
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        he::HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a =
-      std::make_shared<op::Parameter>(element::f32, shape_a);
-  auto t = std::make_shared<op::AvgPool>(a, window_shape,
-                                                 window_movement_strides);
+  auto a = std::make_shared<op::Parameter>(element::f32, shape_a);
+  auto t =
+      std::make_shared<op::AvgPool>(a, window_shape, window_movement_strides);
   auto f = std::make_shared<Function>(t, ParameterVector{a});
 
   const auto& arg1_config =
@@ -55,17 +52,16 @@ auto avg_pool_test = [](const Shape& shape_a,
   std::string error_str;
   he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
 
-  auto t_a = test::tensor_from_flags(*he_backend, shape_a,
-                                                 arg1_encrypted, packed);
-  auto t_result = test::tensor_from_flags(
-      *he_backend, t->get_shape(), arg1_encrypted, packed);
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+  auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
+                                          arg1_encrypted, packed);
 
   copy_data(t_a, input_a);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain_real_unpacked) {
@@ -522,4 +518,4 @@ NGRAPH_TEST(${BACKEND_NAME},
       true, false, false);
 }
 
-}
+}  // namespace ngraph::runtime::he

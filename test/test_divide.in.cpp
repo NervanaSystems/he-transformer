@@ -89,8 +89,7 @@ auto divide_test = [](const Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, divide_2_3_plain_plain_real_unpacked) {

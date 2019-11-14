@@ -52,13 +52,13 @@ auto power_test = [](const Shape& shape, const bool arg1_encrypted,
   he_backend->set_config(
       {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
-  auto t_a = test::tensor_from_flags(*he_backend, shape, arg1_encrypted,
-                                         arg1_packed);
-  auto t_b = test::tensor_from_flags(*he_backend, shape, arg2_encrypted,
-                                         arg2_packed);
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, arg1_packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, arg2_packed);
   auto t_result = test::tensor_from_flags(*he_backend, shape,
-                                              arg1_encrypted || arg2_encrypted,
-                                              arg1_packed || arg2_packed);
+                                          arg1_encrypted || arg2_encrypted,
+                                          arg1_packed || arg2_packed);
 
   std::vector<float> input_a;
   std::vector<float> input_b;
@@ -85,8 +85,7 @@ auto power_test = [](const Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(
-      test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, power_2_3_plain_plain_real_unpacked_unpacked) {

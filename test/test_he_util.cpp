@@ -42,8 +42,7 @@ TEST(he_util, complex_vec_to_real_vec) {
     complex_vec_to_real_vec(real_vec, complex_vec);
 
     EXPECT_EQ(real_vec.size(), 2 * complex_vec.size());
-    EXPECT_TRUE(
-        test::all_close(real_vec, std::vector<double>{-2, -1, 3, 0}));
+    EXPECT_TRUE(test::all_close(real_vec, std::vector<double>{-2, -1, 3, 0}));
   }
 }
 

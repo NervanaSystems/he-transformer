@@ -249,15 +249,15 @@ void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             bool complex_packing) const {
   NGRAPH_CHECK(!input.empty(), "Input has no values in encrypt");
   ngraph::runtime::he::encrypt(output, input, m_context->first_parms_id(), type,
-                      get_scale(), *m_ckks_encoder, *m_encryptor,
-                      complex_packing);
+                               get_scale(), *m_ckks_encoder, *m_encryptor,
+                               complex_packing);
 }
 
 void HESealBackend::decrypt(HEPlaintext& output,
                             const SealCiphertextWrapper& input,
                             const bool complex_packing) const {
   ngraph::runtime::he::decrypt(output, input, complex_packing, *m_decryptor,
-                      *m_ckks_encoder);
+                               *m_ckks_encoder);
 }
 
 }  // namespace ngraph::runtime::he
