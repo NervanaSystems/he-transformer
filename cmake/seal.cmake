@@ -19,7 +19,7 @@ include(ExternalProject)
 set(SEAL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_seal)
 set(SEAL_SRC_DIR ${SEAL_PREFIX}/src/ext_seal/native/src)
 set(SEAL_REPO_URL https://github.com/Microsoft/SEAL.git)
-set(SEAL_GIT_TAG 3.4.2)
+set(SEAL_GIT_TAG 3.4.4)
 
 # Without these, SEAL's globals.cpp will be deallocated twice, once by
 # he_seal_backend, which loads libseal.a, and once by the global destructor.
@@ -36,6 +36,26 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   add_compile_options(-Wno-old-style-cast)
 endif()
 
+
+set(ZLIB_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_zlib)
+set(ZLIB_SRC_DIR ${ZLIB_PREFIX}/src)
+set(ZLIB_LIB_DIR ${ZLIB_SRC_DIR}/ext_zlib-build)
+set(ZLIB_REPO_URL https://github.com/madler/zlib.git)
+set(ZLIB_GIT_TAG v1.2.11)
+
+ExternalProject_Add(ext_zlib
+    GIT_REPOSITORY    ${ZLIB_REPO_URL}
+    GIT_TAG           ${ZLIB_GIT_TAG}
+    PREFIX            ${ZLIB_PREFIX}
+    INSTALL_COMMAND   ""
+    UPDATE_COMMAND    ""
+)
+
+add_library(zlib STATIC IMPORTED)
+  set_target_properties(zlib
+                        PROPERTIES IMPORTED_LOCATION ${ZLIB_LIB_DIR}/libz.a)
+  add_dependencies(zlib ext_zlib)
+
 ExternalProject_Add(
   ext_seal
   GIT_REPOSITORY ${SEAL_REPO_URL}
@@ -50,10 +70,12 @@ ExternalProject_Add(
                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     -DSEAL_USE_CXX17=ON
+                    -DZLIB_ROOT=${ZLIB_PREFIX}
                     # Skip updates
-  UPDATE_COMMAND "")
+  # UPDATE_COMMAND ""
+  )
 
-ExternalProject_Get_Property(ext_seal SOURCE_DIR)
+# ExternalProject_Get_Property(ext_seal SOURCE_DIR)
 add_library(libseal_only STATIC IMPORTED)
 
 set(SEAL_HEADERS_PATH ${EXTERNAL_INSTALL_INCLUDE_DIR}/SEAL-3.4)
@@ -67,10 +89,4 @@ add_dependencies(libseal_only ext_seal)
 
 # Link to this library to also link with zlib, which SEAL uses
 add_library(libseal INTERFACE)
-
-find_package(ZLIB 1.2.11 EXACT)
-if(ZLIB_FOUND)
-  target_link_libraries(libseal INTERFACE ZLIB::ZLIB)
-endif()
-
-target_link_libraries(libseal INTERFACE libseal_only)
+target_link_libraries(libseal INTERFACE zlib libseal_only)
