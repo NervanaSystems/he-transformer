@@ -34,7 +34,7 @@ class TCPSession : public std::enable_shared_from_this<TCPSession> {
  public:
   /// \brief Constructs a session with a given message handler
   TCPSession(boost::asio::ip::tcp::socket socket,
-             std::function<void(const TCPMessage&)> message_handler);
+             const std::function<void(const TCPMessage&)>& message_handler);
 
   /// \brief Start the session
   void start() { do_read_header(); }

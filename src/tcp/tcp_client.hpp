@@ -37,14 +37,14 @@ class TCPClient {
   /// \param[in] message_handler Function to handle responses from the server
   TCPClient(boost::asio::io_context& io_context,
             const boost::asio::ip::tcp::resolver::results_type& endpoints,
-            std::function<void(const TCPMessage&)> message_handler);
+            const std::function<void(const TCPMessage&)>& message_handler);
 
   /// \brief Closes the socket
   void close();
 
   /// \brief Asynchronously writes the message
   /// \param[in,out] message Message to write
-  void write_message(const TCPMessage&& message);
+  void write_message(TCPMessage&& message);
 
  private:
   void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints,

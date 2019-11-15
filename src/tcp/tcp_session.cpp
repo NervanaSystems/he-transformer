@@ -27,8 +27,9 @@
 #include "tcp/tcp_message.hpp"
 
 namespace ngraph::runtime::he {
-TCPSession::TCPSession(boost::asio::ip::tcp::socket socket,
-                       std::function<void(const TCPMessage&)> message_handler)
+TCPSession::TCPSession(
+    boost::asio::ip::tcp::socket socket,
+    const std::function<void(const TCPMessage&)>& message_handler)
     : m_socket(std::move(socket)),
       m_message_callback(std::bind(message_handler, std::placeholders::_1)) {}
 
@@ -39,11 +40,12 @@ void TCPSession::do_read_header() {
   auto self(shared_from_this());
   boost::asio::async_read(
       m_socket, boost::asio::buffer(&m_read_buffer[0], header_length),
-      [this, self](boost::system::error_code ec, std::size_t length) {
-        NGRAPH_CHECK(!ec || ec.message() == s_expected_teardown_message.c_str(),
-                     "Server error reading message header: ", ec.message());
+      [this, self](boost::system::error_code ec, std::size_t /* length */) {
+        NGRAPH_CHECK(
+            !ec || ec.message() == TCPSession::s_expected_teardown_message,
+            "Server error reading message header: ", ec.message());
         if (!ec) {
-          size_t msg_len = m_read_message.decode_header(m_read_buffer);
+          size_t msg_len = TCPMessage::decode_header(m_read_buffer);
           do_read_body(msg_len);
         }
       });
@@ -55,9 +57,10 @@ void TCPSession::do_read_body(size_t body_length) {
   auto self(shared_from_this());
   boost::asio::async_read(
       m_socket, boost::asio::buffer(&m_read_buffer[header_length], body_length),
-      [this, self](boost::system::error_code ec, std::size_t length) {
-        NGRAPH_CHECK(!ec || ec.message() == s_expected_teardown_message.c_str(),
-                     "Server error reading message body: ", ec.message());
+      [this, self](boost::system::error_code ec, std::size_t /* length */) {
+        NGRAPH_CHECK(
+            !ec || ec.message() == TCPSession::s_expected_teardown_message,
+            "Server error reading message body: ", ec.message());
         if (!ec) {
           m_read_message.unpack(m_read_buffer);
           m_message_callback(m_read_message);
@@ -85,7 +88,7 @@ void TCPSession::do_write() {
 
   boost::asio::async_write(
       m_socket, boost::asio::buffer(m_write_buffer),
-      [this, self](boost::system::error_code ec, std::size_t length) {
+      [this, self](boost::system::error_code ec, std::size_t /* length */) {
         NGRAPH_CHECK(!ec, "Server error writing message: ", ec.message());
         m_message_queue.pop_front();
         if (!m_message_queue.empty()) {

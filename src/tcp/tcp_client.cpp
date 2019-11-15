@@ -33,7 +33,7 @@ namespace ngraph::runtime::he {
 TCPClient::TCPClient(
     boost::asio::io_context& io_context,
     const boost::asio::ip::tcp::resolver::results_type& endpoints,
-    std::function<void(const TCPMessage&)> message_handler)
+    const std::function<void(const TCPMessage&)>& message_handler)
     : m_io_context(io_context),
       m_socket(io_context),
       m_message_callback(std::bind(message_handler, std::placeholders::_1)) {
@@ -49,7 +49,7 @@ void TCPClient::close() {
 
 /// \brief Asynchronously writes the message
 /// \param[in,out] message Message to write
-void TCPClient::write_message(const TCPMessage&& message) {
+void TCPClient::write_message(TCPMessage&& message) {
   bool write_in_progress = !m_message_queue.empty();
   m_message_queue.push_back(std::move(message));
   if (!write_in_progress) {
@@ -62,8 +62,10 @@ void TCPClient::do_connect(
     size_t delay_ms) {
   boost::asio::async_connect(
       m_socket, endpoints,
-      [this, delay_ms, &endpoints](boost::system::error_code ec,
-                                   boost::asio::ip::tcp::endpoint) {
+      [this, delay_ms, &endpoints](
+          const boost::system::error_code& ec,
+          const boost::asio::ip::tcp::endpoint& connect_endpoint) {
+        static_cast<void>(connect_endpoint);  // Avoid unused-parameter warning
         if (!ec) {
           NGRAPH_HE_LOG(1) << "Connected to server";
           do_read_header();
@@ -75,7 +77,7 @@ void TCPClient::do_connect(
             new_delay_ms *= 2;
           }
           NGRAPH_INFO << "Trying to connect again";
-          do_connect(std::move(endpoints), new_delay_ms);
+          do_connect(endpoints, new_delay_ms);
         }
       });
 }
@@ -86,11 +88,11 @@ void TCPClient::do_read_header() {
   }
   boost::asio::async_read(
       m_socket, boost::asio::buffer(&m_read_buffer[0], header_length),
-      [this](boost::system::error_code ec, std::size_t length) {
-        NGRAPH_CHECK(!ec || ec.message() == s_expected_teardown_message.c_str(),
+      [this](boost::system::error_code ec, std::size_t /* length */) {
+        NGRAPH_CHECK(!ec || ec.message() == s_expected_teardown_message,
                      "Client error reading message header: ", ec.message());
         if (!ec) {
-          size_t msg_len = m_read_message.decode_header(m_read_buffer);
+          size_t msg_len = TCPMessage::decode_header(m_read_buffer);
           do_read_body(msg_len);
         }
       });
@@ -100,8 +102,8 @@ void TCPClient::do_read_body(size_t body_length) {
   m_read_buffer.resize(header_length + body_length);
   boost::asio::async_read(
       m_socket, boost::asio::buffer(&m_read_buffer[header_length], body_length),
-      [this](boost::system::error_code ec, std::size_t length) {
-        NGRAPH_CHECK(!ec || ec.message() == s_expected_teardown_message.c_str(),
+      [this](boost::system::error_code ec, std::size_t /* length */) {
+        NGRAPH_CHECK(!ec || ec.message() == s_expected_teardown_message,
                      "Client error reading message body: ", ec.message());
         if (!ec) {
           m_read_message.unpack(m_read_buffer);
@@ -119,7 +121,7 @@ void TCPClient::do_write() {
 
   boost::asio::async_write(
       m_socket, boost::asio::buffer(m_write_buffer),
-      [this](boost::system::error_code ec, std::size_t length) {
+      [this](boost::system::error_code ec, std::size_t /* length */) {
         if (!ec) {
           m_message_queue.pop_front();
           if (!m_message_queue.empty()) {

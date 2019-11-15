@@ -69,3 +69,6 @@ divide_2_3_plain_cipher_complex_packed
 
 # Seems to hang sometimes
 # server_client_provenance_tag
+
+# Error not caught if using multi-threading
+mult_end_of_depth

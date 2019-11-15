@@ -181,10 +181,10 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
       // Multiply by scalar instead of doing dyadic product
       if (coeff_modulus[j].value() < (1UL << 31U)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
-        auto iter = barrett64_ratio_map.find(modulus_value);
-        NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
+        auto it = barrett64_ratio_map.find(modulus_value);
+        NGRAPH_CHECK(it != barrett64_ratio_map.end(), "Modulus value ",
                      modulus_value, "not in Barrett64 ratio map");
-        const std::uint64_t barrett_ratio = iter->second;
+        const std::uint64_t barrett_ratio = it->second;
         multiply_poly_scalar_coeffmod64(encrypted.data(i) + (j * coeff_count),
                                         coeff_count, plaintext_vals[j],
                                         modulus_value, barrett_ratio,
