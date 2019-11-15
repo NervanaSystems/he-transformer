@@ -175,10 +175,6 @@ class HESealBackend : public runtime::Backend {
   }
 
   /// \brief TODO(fboemer)
-  void decode(void* output, const HEPlaintext& input, const element::Type& type,
-              size_t count = 1) const;
-
-  /// \brief TODO(fboemer)
   void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                const HEPlaintext& input, const element::Type& type,
                bool complex_packing = false) const;
