@@ -268,6 +268,9 @@ class HESealBackend : public runtime::Backend {
   /// evaluation
   bool& garbled_circuit_enabled() { return m_enable_garbled_circuit; }
 
+  /// \brief Returns whether or not the client is enabled
+  bool enable_client() const { return m_enable_client; }
+
   /// \brief Returns the chain index, also known as level, of the ciphertext
   /// \param[in] cipher Ciphertext whose chain index to return
   /// \returns The chain index of the ciphertext.

@@ -68,8 +68,10 @@ void HESealBackend::generate_context() {
   auto context_data = m_context->key_context_data();
 
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
-  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
-  m_galois_keys = std::make_shared<seal::GaloisKeys>(m_keygen->galois_keys());
+  if (m_context->using_keyswitching()) {
+    m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+    m_galois_keys = std::make_shared<seal::GaloisKeys>(m_keygen->galois_keys());
+  }
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -273,7 +275,7 @@ std::shared_ptr<runtime::Executable> HESealBackend::compile(
 
   return std::dynamic_pointer_cast<runtime::Executable>(
       std::make_shared<HESealExecutable>(function, enable_performance_data,
-                                         *this, m_enable_client));
+                                         *this));
 }
 
 bool HESealBackend::is_supported(const Node& node) const {
