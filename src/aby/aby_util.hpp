@@ -16,12 +16,13 @@
 
 #pragma once
 
+#include <ENCRYPTO_utils/crypto/crypto.h>
+
 #include <cmath>
+#include <iostream>
 #include <memory>
 #include <vector>
 
-#include <ENCRYPTO_utils/crypto/crypto.h>
-#include <iostream>
 #include "abycore/aby/abyparty.h"
 #include "abycore/circuit/booleancircuits.h"
 #include "abycore/circuit/share.h"
@@ -30,8 +31,7 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph {
-namespace aby {
+namespace ngraph::runtime::aby {
 template <typename T>
 void print_argument(const std::vector<T>& values, const std::string& name) {
   size_t print_size = std::min(values.size(), 10UL);
@@ -86,5 +86,4 @@ inline share* reduce_mod(BooleanCircuit& circ, share* x, share* mod) {
   return x;
 };
 
-}  // namespace aby
-}  // namespace ngraph
+}  // namespace ngraph::runtime::aby

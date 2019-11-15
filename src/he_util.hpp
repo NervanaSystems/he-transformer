@@ -107,9 +107,9 @@ double type_to_double(const void* src, const element::Type& element_type);
 bool param_originates_from_name(const op::Parameter& param,
                                 const std::string& name);
 
-inline proto::Function node_to_proto_function(
+inline pb::Function node_to_proto_function(
     const NodeWrapper& node_wrapper,
-    std::unordered_map<std::string, std::string> extra_configs = {}) {
+    const std::unordered_map<std::string, std::string>& extra_configs = {}) {
   const Node& node = *node_wrapper.get_node();
   auto type_id = node_wrapper.get_typeid();
 
@@ -124,12 +124,11 @@ inline proto::Function node_to_proto_function(
     js[key] = value;
   }
 
-  proto::Function f;
+  pb::Function f;
   f.set_function(js.dump());
   return f;
 }
 
-}  // namespace ngraph::runtime::he
 pb::HETensor_ElementType type_to_pb_type(const element::Type& element_type);
 
 element::Type pb_type_to_type(pb::HETensor_ElementType pb_type);

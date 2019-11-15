@@ -648,7 +648,7 @@ bool HESealExecutable::call(
     auto& param = parameters[input_idx];
     std::shared_ptr<HETensor> he_input;
 
-    if (m_enable_client && HEOpAnnotations::from_client(*param)) {
+    if (enable_client() && HEOpAnnotations::from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
       NGRAPH_CHECK(m_client_inputs.size() > input_idx,
@@ -1095,7 +1095,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::Exp: {
-      NGRAPH_CHECK(!m_enable_client,
+      NGRAPH_CHECK(!enable_client(),
                    "Exp not implemented for client-aided model ");
       NGRAPH_WARN
           << " Performing Exp without client is not privacy-preserving ";
@@ -1109,7 +1109,7 @@ void HESealExecutable::generate_calls(
       NGRAPH_CHECK(!args[0]->is_packed() ||
                        (reduction_axes.find(0) == reduction_axes.end()),
                    "Max reduction axes cannot contain 0 for packed tensors");
-      NGRAPH_CHECK(!m_enable_client,
+      NGRAPH_CHECK(!enable_client(),
                    "Max not implemented for client-aided model");
       NGRAPH_WARN << "Performing Max without client is not "
                      "privacy-preserving";
@@ -1497,14 +1497,14 @@ void HESealExecutable::handle_server_relu_op(
                            << cipher_batch.size();
         }
 
-        proto::TCPMessage proto_msg;
-        proto_msg.set_type(proto::TCPMessage_Type_REQUEST);
+        pb::TCPMessage proto_msg;
+        proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
         *proto_msg.mutable_function() = node_to_proto_function(
             node_wrapper,
             {{"enable_gc", bool_to_string(enable_garbled_circuits())}});
         std::string function_str = proto_msg.function().function();
 
-        // TODO: set complex_packing to correct values?
+        // TODO(fboemer): set complex_packing to correct values?
         auto relu_tensor = std::make_shared<HETensor>(
             arg->get_element_type(),
             Shape{cipher_batch[0].batch_size(), cipher_batch.size()},

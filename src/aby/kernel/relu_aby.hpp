@@ -16,12 +16,12 @@
 
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
-#include <ENCRYPTO_utils/crypto/crypto.h>
-#include <iostream>
-#include "aby/util.hpp"
+#include "ENCRYPTO_utils/crypto/crypto.h"
+#include "aby/aby_util.hpp"
 #include "abycore/aby/abyparty.h"
 #include "abycore/circuit/booleancircuits.h"
 #include "abycore/circuit/share.h"
@@ -30,8 +30,7 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph {
-namespace aby {
+namespace ngraph::runtime::aby {
 // @param xs: server share of X, values in [0,q]
 // @param xc: client share of X, values in [0,q]
 // @param rs: server share of output random mask, values in [0,q]
@@ -91,5 +90,5 @@ inline share* relu_aby(BooleanCircuit& circ, size_t num_vals,
   out = circ.PutOUTGate(x, CLIENT);
   return out;
 }
-}  // namespace aby
-}  // namespace ngraph
+
+}  // namespace ngraph::runtime::aby

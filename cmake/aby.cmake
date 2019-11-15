@@ -16,8 +16,6 @@
 
 include(ExternalProject)
 
-message("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
-
 
 set(ABY_REPO_URL https://github.com/encryptogroup/ABY.git)
 set(ABY_GIT_TAG public)
@@ -26,16 +24,8 @@ set(ABY_SRC_DIR ${ABY_PREFIX}/src/)
 set(ABY_INCLUDE_DIR ${ABY_PREFIX}/include)
 set(ABY_PATCH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/aby_perf_stats.patch)
 
-message(STATUS "ABY_INCLUDE_DIR ${ABY_INCLUDE_DIR}")
-
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(Apple)?Clang$")
   add_compile_options(-Wno-vla-extension)
-endif()
-
-if(ABY_VERBOSE)
-  set(ABY_PATCH_COMMAND "git apply ${ABY_PATCH}")
-else()
-  set(ABY_PATCH_COMMAND "")
 endif()
 
 message(STATUS "ABY_PATCH_COMMAND ${ABY_PATCH_COMMAND}")
@@ -51,6 +41,7 @@ ExternalProject_Add(ext_aby
                     DEPENDS libboost
                     INSTALL_DIR ${EXTERNAL_INSTALL_DIR}
                     PATCH_COMMAND ${ABY_PATCH_COMMAND}
+                    INSTALL_COMMAND ""
                     UPDATE_COMMAND "")
 
 ExternalProject_Get_Property(ext_aby SOURCE_DIR BINARY_DIR)
@@ -61,6 +52,8 @@ find_package(GMPXX REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 set(ABY_LIB_DIR ${BINARY_DIR}/lib})
+
+message("ABY_INCLUDE_DIR ${ABY_INCLUDE_DIR}")
 
 if(NOT IS_DIRECTORY ${ABY_INCLUDE_DIR})
   file(MAKE_DIRECTORY ${ABY_INCLUDE_DIR})

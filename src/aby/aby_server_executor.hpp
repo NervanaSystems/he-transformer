@@ -24,12 +24,10 @@
 #include "ngraph/util.hpp"
 #include "seal/he_seal_executable.hpp"
 
-namespace ngraph {
-
-namespace he {
+namespace ngraph::runtime::he {
 class HESealExecutable;
 }
-namespace aby {
+namespace ngraph::runtime::aby {
 
 class ABYServerExecutor : public ABYExecutor {
  public:
@@ -45,15 +43,15 @@ class ABYServerExecutor : public ABYExecutor {
   ~ABYServerExecutor() = default;
 
   std::shared_ptr<he::HETensor> generate_gc_mask(
-      const ngraph::Shape& shape, bool plaintext_packing, bool complex_packing,
+      const Shape& shape, bool plaintext_packing, bool complex_packing,
       const std::string& name, bool random = true, uint64_t default_value = 0);
 
   std::shared_ptr<he::HETensor> generate_gc_input_mask(
-      const ngraph::Shape& shape, bool plaintext_packing, bool complex_packing,
+      const Shape& shape, bool plaintext_packing, bool complex_packing,
       uint64_t default_value = 0);
 
   std::shared_ptr<he::HETensor> generate_gc_output_mask(
-      const ngraph::Shape& shape, bool plaintext_packing, bool complex_packing,
+      const Shape& shape, bool plaintext_packing, bool complex_packing,
       uint64_t default_value = 0);
 
   void prepare_aby_circuit(const std::string& function,
@@ -88,5 +86,4 @@ class ABYServerExecutor : public ABYExecutor {
   std::uniform_int_distribution<int64_t> m_random_distribution;
 };
 
-}  // namespace aby
-}  // namespace ngraph
+}  // namespace ngraph::runtime::aby

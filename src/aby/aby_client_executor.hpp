@@ -24,12 +24,11 @@
 #include "ngraph/util.hpp"
 #include "seal/he_seal_client.hpp"
 
-namespace ngraph {
-
-namespace he {
+namespace ngraph::runtime::he {
 class HESealClient;
 }
-namespace aby {
+
+namespace ngraph::runtime::aby {
 
 class ABYClientExecutor : public ABYExecutor {
  public:
@@ -59,5 +58,4 @@ class ABYClientExecutor : public ABYExecutor {
   const he::HESealClient& m_he_seal_client;
 };
 
-}  // namespace aby
-}  // namespace ngraph
+}  // namespace ngraph::runtime::aby

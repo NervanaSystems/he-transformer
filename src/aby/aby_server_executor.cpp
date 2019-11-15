@@ -24,8 +24,7 @@
 
 using json = nlohmann::json;
 
-namespace ngraph {
-namespace aby {
+namespace ngraph::runtime::aby {
 
 ABYServerExecutor::ABYServerExecutor(
     he::HESealExecutable& he_seal_executable, std::string mpc_protocol,
@@ -405,5 +404,4 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
   }
 }
 
-}  // namespace aby
-}  // namespace ngraph
+}  // namespace ngraph::runtime::aby

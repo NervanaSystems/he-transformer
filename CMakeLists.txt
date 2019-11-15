@@ -23,6 +23,8 @@ project(he_transformer LANGUAGES CXX)
 # set directory where the custom finders live
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+message("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
+
 if(CMAKE_BUILD_TYPE)
   set(RELEASE_TYPES
       Debug

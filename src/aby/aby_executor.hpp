@@ -27,8 +27,7 @@
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
 
-namespace ngraph {
-namespace aby {
+namespace ngraph::runtime::aby {
 
 class ABYExecutor {
  public:
@@ -82,5 +81,5 @@ class ABYExecutor {
   size_t m_lowest_coeff_modulus{0};
 };
 
-}  // namespace aby
+}  // namespace ngraph::runtime::aby
 }  // namespace ngraph

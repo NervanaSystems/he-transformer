@@ -19,8 +19,7 @@
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph {
-namespace aby {
+namespace ngraph::runime::aby {
 
 ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
                          const std::string& hostname, std::size_t port,
@@ -65,5 +64,4 @@ ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
 // TODO(fboemer): delete ABYParty
 ABYExecutor::~ABYExecutor() = default;
 
-}  // namespace aby
-}  // namespace ngraph
+}  // namespace ngraph::runime::aby
