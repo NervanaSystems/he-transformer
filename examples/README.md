@@ -1,3 +1,5 @@
+# Python example
+
 This example demonstrates a simple example of a small matrix multiplication and addition. This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with the ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
 
 The examples rely on numpy, so first run
@@ -10,21 +12,20 @@ To run on the CPU backend,
 python $HE_TRANSFORMER/examples/ax.py --backend=CPU
 ```
 
-To run on the CKKS backend,
+To run on the HE backend,
 ```bash
 python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
 ```
 
-By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag, for example
+By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag. For example:
 ```bash
 python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
  ```
 
 #  Client-server model
-In practice, the public key and secret key will not be stored in the same location.
-Instead, a client will provide the backend with encrypted data.
+In a proper deployment setting, the public key and secret key will not be stored in the same location. Instead, a client will store the secret key, and provide the backend with encrypted data.
 
-The client uses python bindings. See the `python` folder for instructions to build he-transformer with python bindings.
+The client-server model uses python bindings. See the [README.md](https://github.com/NervanaSystems/he-transformer/tree/master/README.md) for instructions to build he-transformer with python bindings.
 
 For a simple demonstration of a server-client approach, run
 ```bash
