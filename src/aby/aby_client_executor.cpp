@@ -90,8 +90,8 @@ void ABYClientExecutor::run_aby_relu_circuit(
     auto scale = he_type.get_ciphertext()->scale();
 
     // Reduce values to range (-q/(2*scale), q/(2*scale))
-    auto relu_val = aby::mod_reduce_zero_centered(
-        relu_vals[i], m_lowest_coeff_modulus / scale);
+    auto relu_val =
+        mod_reduce_zero_centered(relu_vals[i], m_lowest_coeff_modulus / scale);
 
     // Turn SEAL's mapping (-q/(2*scale), q/(2*scale)) to (0,q)
     uint64_t relu_int_val;
@@ -107,9 +107,8 @@ void ABYClientExecutor::run_aby_relu_circuit(
   std::vector<uint64_t> zeros(tensor_size, 0);
 
   BooleanCircuit* circ = get_circuit();
-  auto* relu_out = ngraph::runtime::aby::relu_aby(
-      *circ, tensor_size, zeros, client_gc_vals, zeros, m_aby_bitlen,
-      m_lowest_coeff_modulus);
+  auto* relu_out = relu_aby(*circ, tensor_size, zeros, client_gc_vals, zeros,
+                            m_aby_bitlen, m_lowest_coeff_modulus);
   NGRAPH_HE_LOG(3) << "Client executing relu circuit";
 
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -144,19 +143,19 @@ void ABYClientExecutor::run_aby_relu_circuit(
     for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
       size_t out_idx = result_idx + fill_idx * tensor_data.size();
       uint64_t out_val = out_vals_relu[out_idx];
-      double d_out_val = ngraph::runtime::aby::uint64_to_double(
-          out_val, m_lowest_coeff_modulus, scale);
+      double d_out_val =
+          uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
       post_relu_vals[fill_idx] = d_out_val;
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
     NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
 
-    ngraph::runtime::he::encrypt(
+    runtime::he::encrypt(
         cipher, post_relu_vals,
-        m_he_seal_client.get_context()->first_parms_id(), ngraph::element::f64,
-        scale, *m_he_seal_client.get_ckks_encoder(),
-        *m_he_seal_client.get_encryptor(), m_he_seal_client.complex_packing());
+        m_he_seal_client.get_context()->first_parms_id(), element::f64, scale,
+        *m_he_seal_client.get_ckks_encoder(), *m_he_seal_client.get_encryptor(),
+        m_he_seal_client.complex_packing());
 
     NGRAPH_INFO << "Done encrypting";
     tensor->data(result_idx).set_ciphertext(cipher);
@@ -191,8 +190,8 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
     auto scale = he_type.get_ciphertext()->scale();
 
     // Reduce values to range (-q/(2*scale), q/(2*scale))
-    auto relu_val = aby::mod_reduce_zero_centered(
-        relu_vals[i], m_lowest_coeff_modulus / scale);
+    auto relu_val =
+        mod_reduce_zero_centered(relu_vals[i], m_lowest_coeff_modulus / scale);
 
     // Turn SEAL's mapping (-q/(2*scale), q/(2*scale)) to (0,q)
     uint64_t relu_int_val;
@@ -207,9 +206,9 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
   NGRAPH_HE_LOG(3) << "Client creating bounded relu circuit";
   std::vector<uint64_t> zeros(tensor_size, 0);
   BooleanCircuit* circ = get_circuit();
-  auto* relu_out = ngraph::runtime::aby::bounded_relu_aby(
-      *circ, tensor_size, zeros, client_gc_vals, zeros, zeros, m_aby_bitlen,
-      m_lowest_coeff_modulus);
+  auto* relu_out =
+      bounded_relu_aby(*circ, tensor_size, zeros, client_gc_vals, zeros, zeros,
+                       m_aby_bitlen, m_lowest_coeff_modulus);
   NGRAPH_HE_LOG(3) << "Client executing relu bounded circuit";
 
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -244,19 +243,19 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
     for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
       size_t out_idx = result_idx + fill_idx * tensor_data.size();
       uint64_t out_val = out_vals_relu[out_idx];
-      double d_out_val = ngraph::runtime::aby::uint64_to_double(
-          out_val, m_lowest_coeff_modulus, scale);
+      double d_out_val =
+          uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
       post_relu_vals[fill_idx] = d_out_val;
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
     NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
 
-    ngraph::runtime::he::encrypt(
+    runtime::he::encrypt(
         cipher, post_relu_vals,
-        m_he_seal_client.get_context()->first_parms_id(), ngraph::element::f64,
-        scale, *m_he_seal_client.get_ckks_encoder(),
-        *m_he_seal_client.get_encryptor(), m_he_seal_client.complex_packing());
+        m_he_seal_client.get_context()->first_parms_id(), element::f64, scale,
+        *m_he_seal_client.get_ckks_encoder(), *m_he_seal_client.get_encryptor(),
+        m_he_seal_client.complex_packing());
 
     NGRAPH_INFO << "Done encrypting";
     tensor->data(result_idx).set_ciphertext(cipher);

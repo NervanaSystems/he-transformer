@@ -32,16 +32,13 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
   out.complex_packing() = arg.complex_packing();
 
   if (arg.is_ciphertext() && out.is_ciphertext()) {
-    out = arg;
+    out = HEType(arg);
   } else if (arg.is_ciphertext() && out.is_plaintext()) {
-    // TODO(fboemer): decrypt instead?
     out.set_ciphertext(arg.get_ciphertext());
   } else if (arg.is_plaintext() && out.is_ciphertext()) {
-    // TODO(fboemer): encrypt instead?
     out.set_plaintext(arg.get_plaintext());
-
   } else if (arg.is_plaintext() && out.is_plaintext()) {
-    out = arg;
+    out = HEType(arg);
   }
 }
 

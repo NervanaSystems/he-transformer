@@ -254,7 +254,7 @@ void HETensor::read(void* p, size_t n) const {
     HEPlaintext plain;
     if (m_data[i].is_ciphertext()) {
       decrypt(plain, *m_data[i].get_ciphertext(), m_data[i].complex_packing(),
-              m_decryptor, m_ckks_encoder);
+              m_decryptor, m_ckks_encoder, m_context);
     } else {
       plain = m_data[i].get_plaintext();
     }

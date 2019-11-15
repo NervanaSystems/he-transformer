@@ -284,7 +284,7 @@ void HESealBackend::decrypt(HEPlaintext& output,
                             const SealCiphertextWrapper& input,
                             const bool complex_packing) const {
   ngraph::runtime::he::decrypt(output, input, complex_packing, *m_decryptor,
-                               *m_ckks_encoder);
+                               *m_ckks_encoder, m_context);
 }
 
 }  // namespace ngraph::runtime::he

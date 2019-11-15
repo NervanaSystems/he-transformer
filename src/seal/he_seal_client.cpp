@@ -302,7 +302,7 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
                        m_context->first_parms_id(), scale(), *m_ckks_encoder,
-                       *m_encryptor, *m_decryptor);
+                       *m_encryptor, *m_decryptor, m_context);
     }
   }
 
