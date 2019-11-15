@@ -57,7 +57,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_add_3_multiple_parameters_plain) {
   he_backend->set_config(
       std::map<std::string, std::string>{{"enable_client", "true"},
                                          {"enable_gc", "true"},
-                                         {b->get_name(), "from_client"}},
+                                         {b->get_name(), "client_input"}},
       error_str);
 
   auto t_c = he_backend->create_plain_tensor(element::f32, shape_c);
@@ -108,7 +108,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_add_3_relu) {
       std::map<std::string, std::string>{
           {"enable_client", "true"},
           {"enable_gc", "true"},
-          {b->get_name(), "from_client,encrypt"}},
+          {b->get_name(), "client_input,encrypt"}},
       error_str);
 
   // Server inputs which are not used

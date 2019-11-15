@@ -72,6 +72,7 @@ ExternalProject_Add(
                     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                     -DSEAL_USE_CXX17=ON
                     -DZLIB_ROOT=${ZLIB_PREFIX}
+  PATCH_COMMAND git apply ${SEAL_PATCH}
                     # Skip updates
   # UPDATE_COMMAND ""
   )

@@ -1523,19 +1523,9 @@ void HESealExecutable::handle_server_relu_op(
         for (const auto& proto_tensor : proto_tensors) {
           pb::TCPMessage write_msg;
           write_msg.set_type(pb::TCPMessage_Type_REQUEST);
-
-          // TODO(fboemer): factor out serializing the function
-          json js = {{"function", node.description()}};
-          if (type_id == OP_TYPEID::BoundedRelu) {
-            const auto* bounded_relu =
-                static_cast<const op::BoundedRelu*>(&node);
-            float alpha = bounded_relu->get_alpha();
-            js["bound"] = alpha;
-          }
-
-          pb::Function f;
-          f.set_function(js.dump());
-          *write_msg.mutable_function() = f;
+          *write_msg.mutable_function() = node_to_proto_function(
+              node_wrapper,
+              {{"enable_gc", bool_to_string(enable_garbled_circuits())}});
 
           *write_msg.add_he_tensors() = proto_tensor;
           TCPMessage relu_message(std::move(write_msg));
