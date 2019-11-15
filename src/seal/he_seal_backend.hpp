@@ -268,6 +268,14 @@ class HESealBackend : public runtime::Backend {
   /// evaluation
   bool& garbled_circuit_enabled() { return m_enable_garbled_circuit; }
 
+  /// \brief Returns whether or not the garbled circuit inputs should be masked
+  /// for privacy
+  bool mask_gc_inputs() const { return m_mask_gc_inputs; }
+
+  /// \brief Returns whether or not the garbled circuit inputs should be masked
+  /// for privacy
+  bool mask_gc_outputs() const { return m_mask_gc_outputs; }
+
   /// \brief Returns whether or not the client is enabled
   bool enable_client() const { return m_enable_client; }
 
@@ -311,20 +319,6 @@ class HESealBackend : public runtime::Backend {
       throw(e);
     }
   }
-
-  /// \brief Returns whether or not the client is enabled
-  bool enable_client() const { return m_enable_client; }
-
-  /// \brief Returns whether or not the client is enabled with garbled circuits
-  bool enable_garbled_circuit() const { return m_enable_garbled_circuit; }
-
-  /// \brief Returns whether or not the garbled circuit inputs should be masked
-  /// for privacy
-  bool mask_gc_inputs() const { return m_mask_gc_inputs; }
-
-  /// \brief Returns whether or not the garbled circuit inputs should be masked
-  /// for privacy
-  bool mask_gc_outputs() const { return m_mask_gc_outputs; }
 
  private:
  private:

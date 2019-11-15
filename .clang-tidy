@@ -15,17 +15,21 @@ Checks: >
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-narrowing-conversions,
   -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-type-member-init,
   google-*,
   -google-runtime-references,
   -google-default-arguments,
   misc-*,
+  -misc-unused-parameters,
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   performance-*,
+  -performance-unnecessary-value-param,
   portability-*,
   readability-*,
   -readability-magic-numbers,
+  -readability-uppercase-literal-suffix
 
 HeaderFilterRegex: 'src/[^/]*\.(h|hpp|cpp)$'
 

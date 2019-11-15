@@ -30,7 +30,7 @@
 #include "ngraph/type/element_type.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph::runtime::he {
+namespace ngraph::runtime::aby {
 // @param xs: server share of X, values in [0,q]
 // @param xc: client share of X, values in [0,q]
 // @param rs: server share of output random mask, values in [0,q]
@@ -101,4 +101,4 @@ inline share* bounded_relu_aby(BooleanCircuit& circ, size_t num_vals,
   return out;
 }
 
-}  // namespace ngraph::runtime::he
+}  // namespace ngraph::runtime::aby

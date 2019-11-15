@@ -41,7 +41,6 @@ ExternalProject_Add(ext_aby
                     DEPENDS libboost
                     INSTALL_DIR ${EXTERNAL_INSTALL_DIR}
                     PATCH_COMMAND ${ABY_PATCH_COMMAND}
-                    INSTALL_COMMAND ""
                     UPDATE_COMMAND "")
 
 ExternalProject_Get_Property(ext_aby SOURCE_DIR BINARY_DIR)

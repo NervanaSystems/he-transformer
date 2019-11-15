@@ -31,10 +31,10 @@ namespace ngraph::runtime::aby {
 
 class ABYExecutor {
  public:
-  ABYExecutor(std::string role, std::string mpc_protocol,
+  ABYExecutor(const std::string& role, const std::string& mpc_protocol,
               const std::string& hostname, std::size_t port,
               uint64_t security_level, uint32_t bit_length,
-              uint32_t num_threads, std::string mg_algo_str,
+              uint32_t num_threads, const std::string& mg_algo_str,
               uint32_t reserve_num_gates);
 
   virtual ~ABYExecutor();
@@ -69,7 +69,7 @@ class ABYExecutor {
  protected:
   size_t m_num_threads;
 
-  std::vector<Sharing*> m_sharings;
+  std::vector<Sharing*> m_sharings{};
 
   e_role m_role;
   e_sharing m_aby_gc_protocol;
@@ -82,4 +82,3 @@ class ABYExecutor {
 };
 
 }  // namespace ngraph::runtime::aby
-}  // namespace ngraph

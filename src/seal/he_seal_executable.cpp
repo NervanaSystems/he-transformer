@@ -1257,12 +1257,12 @@ void HESealExecutable::generate_calls(
     }
     case OP_TYPEID::Softmax: {
       const auto* softmax = static_cast<const op::Softmax*>(&node);
-      auto axes = softmax->get_axes();
+      const auto& axes = softmax->get_axes();
       NGRAPH_CHECK(!args[0]->is_packed() || (axes.find(0) == axes.end()),
                    "Softmax axes cannot contain 0 for packed tensors");
 
       softmax_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
-                   softmax->get_axes(), type, m_he_seal_backend);
+                   axes, type, m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Subtract: {
@@ -1519,10 +1519,10 @@ void HESealExecutable::handle_server_relu_op(
         }
 
         std::vector<pb::HETensor> proto_tensors;
-        relu_tensor.write_to_protos(proto_tensors);
+        relu_tensor->write_to_protos(proto_tensors);
         for (const auto& proto_tensor : proto_tensors) {
-          pb::TCPMessage proto_msg;
-          proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
+          pb::TCPMessage write_msg;
+          write_msg.set_type(pb::TCPMessage_Type_REQUEST);
 
           // TODO(fboemer): factor out serializing the function
           json js = {{"function", node.description()}};
@@ -1535,10 +1535,10 @@ void HESealExecutable::handle_server_relu_op(
 
           pb::Function f;
           f.set_function(js.dump());
-          *proto_msg.mutable_function() = f;
+          *write_msg.mutable_function() = f;
 
-          *proto_msg.add_he_tensors() = proto_tensor;
-          TCPMessage relu_message(std::move(proto_msg));
+          *write_msg.add_he_tensors() = proto_tensor;
+          TCPMessage relu_message(std::move(write_msg));
 
           NGRAPH_HE_LOG(5) << "Server writing relu request message";
           m_session->write_message(std::move(relu_message));

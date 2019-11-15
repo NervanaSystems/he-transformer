@@ -38,8 +38,7 @@ class ABYClientExecutor : public ABYExecutor {
                     std::size_t port = 34001, uint64_t security_level = 128,
                     uint32_t bit_length = 64, uint32_t num_threads = 1,
                     std::string mg_algo_str = std::string("MT_OT"),
-                    uint32_t reserve_num_gates = 65536,
-                    const std::string& circuit_directory = "");
+                    uint32_t reserve_num_gates = 65536);
 
   ~ABYClientExecutor() = default;
 

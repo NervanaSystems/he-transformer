@@ -282,6 +282,8 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
+  const std::string& function = message.function().function();
+  const json& js = json::parse(function);
   bool enable_gc = string_to_bool(std::string(js.at("enable_gc")));
   NGRAPH_INFO << "Client relu with gc? " << enable_gc;
 

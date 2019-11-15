@@ -22,11 +22,8 @@
 #include <string>
 #include <vector>
 
-<<<<<<< HEAD
 #include "aby/aby_client_executor.hpp"
-=======
 #include "boost/asio.hpp"
->>>>>>> fboemer/cov3
 #include "he_tensor.hpp"
 #include "he_util.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
@@ -34,15 +31,11 @@
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
 
-<<<<<<< HEAD
-namespace ngraph::aby {
+namespace ngraph::runtime::aby {
 class ABYClientExecutor;
 }
-=======
-namespace ngraph::runtime::he {
->>>>>>> fboemer/cov3
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// (tensor_name : (configuration, data)
 template <class T>
 using HETensorConfigMap =
@@ -140,8 +133,7 @@ class HESealClient {
   /// \brief Returns the scale of the encryption parameters
   double scale() const { return m_encryption_params.scale(); }
 
-  inline const ngraph::he::HESealEncryptionParameters& encryption_paramters()
-      const {
+  const HESealEncryptionParameters& encryption_paramters() const {
     return m_encryption_params;
   }
 
@@ -151,12 +143,12 @@ class HESealClient {
   }
 
   /// \brief Returns pointer to encryptor
-  const inline std::shared_ptr<seal::Encryptor> get_encryptor() const {
+  const std::shared_ptr<seal::Encryptor> get_encryptor() const {
     return m_encryptor;
   }
 
   /// \brief Returns pointer to SEAL context
-  const inline std::shared_ptr<seal::SEALContext> get_context() const {
+  const std::shared_ptr<seal::SEALContext> get_context() const {
     return m_context;
   }
 
@@ -164,12 +156,8 @@ class HESealClient {
   std::string m_hostname;  // Hostname of server to connect to
 
   std::unique_ptr<TCPClient> m_tcp_client;
-<<<<<<< HEAD
   std::unique_ptr<aby::ABYClientExecutor> m_aby_executor;
-  ngraph::he::HESealEncryptionParameters m_encryption_params;
-=======
   HESealEncryptionParameters m_encryption_params;
->>>>>>> fboemer/cov3
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::SEALContext> m_context;

@@ -134,6 +134,30 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       } else {
         NGRAPH_HE_LOG(3) << "Not masking garbled circuits outputs from config";
       }
+    } else {
+      std::string lower_option = to_lower(option);
+      std::vector<std::string> lower_settings = split(to_lower(setting), ',');
+      // Strip attributes, i.e. "tensor_name:0 => tensor_name"
+      std::string tensor_name = option.substr(0, option.find(':', 0));
+      m_config_tensors.insert_or_assign(
+          tensor_name,
+          *HEOpAnnotations::server_plaintext_unpacked_annotation());
+
+      static std::unordered_set<std::string> valid_config_settings{
+          "client_input", "encrypt", "packed", ""};
+      for (const auto& lower_setting : lower_settings) {
+        NGRAPH_CHECK(valid_config_settings.find(lower_setting) !=
+                         valid_config_settings.end(),
+                     "Invalid config setting ", lower_setting);
+
+        if (lower_setting == "client_input") {
+          m_config_tensors.at(tensor_name).set_from_client(true);
+        } else if (lower_setting == "encrypt") {
+          m_config_tensors.at(tensor_name).set_encrypted(true);
+        } else if (lower_setting == "packed") {
+          m_config_tensors.at(tensor_name).set_packed(true);
+        }
+      }
     }
   }
 
@@ -143,58 +167,21 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
     m_enable_garbled_circuit = false;
   }
 
-  if (!m_client_tensor_names.empty() && !m_enable_client) {
-    NGRAPH_WARN
-        << "Configuration specifies client input, but client is not enabled";
-    m_client_tensor_names.clear();
-  }
+  bool any_config_from_client =
+      std::any_of(m_config_tensors.begin(), m_config_tensors.end(),
+                  [](const auto& name_and_op_annotation) {
+                    const auto& [name, op_annotation] = name_and_op_annotation;
+                    return op_annotation.from_client();
+                  });
+  NGRAPH_CHECK(
+      m_enable_client || !any_config_from_client,
+      "Configuration specifies client input, but client is not enabled");
 
-  for (const auto& tensor_name : m_client_tensor_names) {
-    NGRAPH_HE_LOG(3) << "Client tensor name " << tensor_name;
+  for (const auto& [name, config] : m_config_tensors) {
+    NGRAPH_HE_LOG(3) << "Tensor name: " << name << " with config " << config;
   }
-  for (const auto& tensor_name : m_encrypted_tensor_names) {
-    NGRAPH_HE_LOG(3) << "Encrypted tensor name " << tensor_name;
-  }
-  else {
-    std::string lower_option = to_lower(option);
-    std::vector<std::string> lower_settings = split(to_lower(setting), ',');
-    // Strip attributes, i.e. "tensor_name:0 => tensor_name"
-    std::string tensor_name = option.substr(0, option.find(':', 0));
-    m_config_tensors.insert_or_assign(
-        tensor_name, *HEOpAnnotations::server_plaintext_unpacked_annotation());
-
-    static std::unordered_set<std::string> valid_config_settings{
-        "client_input", "encrypt", "packed", ""};
-    for (const auto& lower_setting : lower_settings) {
-      NGRAPH_CHECK(valid_config_settings.find(lower_setting) !=
-                       valid_config_settings.end(),
-                   "Invalid config setting ", lower_setting);
-
-      if (lower_setting == "client_input") {
-        m_config_tensors.at(tensor_name).set_from_client(true);
-      } else if (lower_setting == "encrypt") {
-        m_config_tensors.at(tensor_name).set_encrypted(true);
-      } else if (lower_setting == "packed") {
-        m_config_tensors.at(tensor_name).set_packed(true);
-      }
-    }
-  }
+  return true;
 }
-
-bool any_config_from_client =
-    std::any_of(m_config_tensors.begin(), m_config_tensors.end(),
-                [](const auto& name_and_op_annotation) {
-                  const auto& [name, op_annotation] = name_and_op_annotation;
-                  return op_annotation.from_client();
-                });
-NGRAPH_CHECK(m_enable_client || !any_config_from_client,
-             "Configuration specifies client input, but client is not enabled");
-
-for (const auto& [name, config] : m_config_tensors) {
-  NGRAPH_HE_LOG(3) << "Tensor name: " << name << " with config " << config;
-}
-return true;
-}  // namespace ngraph::runtime::he
 
 void HESealBackend::update_encryption_parameters(
     const HESealEncryptionParameters& new_parms) {

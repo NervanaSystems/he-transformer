@@ -26,14 +26,15 @@ using json = nlohmann::json;
 
 namespace ngraph::runtime::aby {
 
-ABYServerExecutor::ABYServerExecutor(
-    he::HESealExecutable& he_seal_executable, std::string mpc_protocol,
-    std::string hostname, std::size_t port, uint64_t security_level,
-    uint32_t bit_length, uint32_t num_threads, std::string mg_algo_str,
-    uint32_t reserve_num_gates, const std::string& circuit_directory)
-    : ABYExecutor("server", std::move(mpc_protocol), std::move(hostname), port,
-                  security_level, bit_length, num_threads,
-                  std::move(mg_algo_str), reserve_num_gates, circuit_directory),
+ABYServerExecutor::ABYServerExecutor(he::HESealExecutable& he_seal_executable,
+                                     const std::string& mpc_protocol,
+                                     const std::string hostname,
+                                     std::size_t port, uint64_t security_level,
+                                     uint32_t bit_length, uint32_t num_threads,
+                                     std::string mg_algo_str,
+                                     uint32_t reserve_num_gates)
+    : ABYExecutor("server", mpc_protocol, hostname, port, security_level,
+                  bit_length, num_threads, mg_algo_str, reserve_num_gates),
       m_he_seal_executable{he_seal_executable} {
   m_lowest_coeff_modulus = m_he_seal_executable.he_seal_backend()
                                .get_encryption_parameters()
@@ -116,7 +117,8 @@ std::shared_ptr<he::HETensor> ABYServerExecutor::generate_gc_mask(
   NGRAPH_INFO << "Random mask vals:";
   for (const auto& elem : rand_vals) {
     NGRAPH_INFO << elem;
-  };
+  }
+
   tensor->write(rand_vals.data(), rand_vals.size() * sizeof(uint64_t));
 
   return tensor;
@@ -221,9 +223,9 @@ void ABYServerExecutor::run_aby_relu_circuit(
   NGRAPH_INFO << "gc_input_mask_vals " << gc_input_mask_vals.size();
   NGRAPH_INFO << "gc_output_mask_vals " << gc_output_mask_vals.size();
 
-  ngraph::aby::relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
-                        gc_output_mask_vals, m_aby_bitlen,
-                        m_lowest_coeff_modulus);
+  ngraph::runtime::aby::relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
+                                 gc_output_mask_vals, m_aby_bitlen,
+                                 m_lowest_coeff_modulus);
 
   NGRAPH_HE_LOG(3) << "server executing relu circuit";
   m_ABYParty->ExecCircuit();
@@ -360,9 +362,9 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
   NGRAPH_INFO << "gc_input_mask_vals " << gc_input_mask_vals.size();
   NGRAPH_INFO << "gc_output_mask_vals " << gc_output_mask_vals.size();
 
-  ngraph::aby::bounded_relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
-                                gc_output_mask_vals, bound_vals, m_aby_bitlen,
-                                m_lowest_coeff_modulus);
+  ngraph::runtime::aby::bounded_relu_aby(
+      *circ, num_aby_vals, gc_input_mask_vals, zeros, gc_output_mask_vals,
+      bound_vals, m_aby_bitlen, m_lowest_coeff_modulus);
 
   NGRAPH_HE_LOG(3) << "server executing bounded relu circuit";
   m_ABYParty->ExecCircuit();

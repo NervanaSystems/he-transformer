@@ -97,6 +97,12 @@ map_to_double_map(
   return outputs;
 }
 
+/// \brief Interprets a string as a boolean value
+/// \param[in] flag Flag value
+/// \param[in] default_value Value to return if flag is not able to be parsed
+/// \returns True if flag represents a True value, False otherwise
+bool flag_to_bool(const char* flag, bool default_value = false);
+
 /// \brief Converts a type to a double using static_cast
 /// Note, this means a reduction of range in int64 and uint64 values.
 /// \param[in] src Source from which to read

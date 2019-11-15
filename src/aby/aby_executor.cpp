@@ -19,23 +19,24 @@
 #include "seal/kernel/subtract_seal.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::runime::aby {
+namespace ngraph::runtime::aby {
 
-ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
+ABYExecutor::ABYExecutor(const std::string& role,
+                         const std::string& mpc_protocol,
                          const std::string& hostname, std::size_t port,
                          uint64_t security_level, uint32_t bit_length,
-                         uint32_t num_threads, std::string mg_algo_str,
+                         uint32_t num_threads, const std::string& mg_algo_str,
                          uint32_t reserve_num_gates)
     : m_num_threads{num_threads}, m_aby_bitlen{bit_length} {
-  std::map<std::string, e_role> role_map{{"server", SERVER},
-                                         {"client", CLIENT}};
+  static std::map<std::string, e_role> role_map{{"server", SERVER},
+                                                {"client", CLIENT}};
 
   auto role_it = role_map.find(ngraph::to_lower(role));
   NGRAPH_CHECK(role_it != role_map.end(), "Unknown role ", role);
   m_role = role_it->second;
 
-  std::map<std::string, e_sharing> protocol_map{{"yao", S_YAO},
-                                                {"gmw", S_BOOL}};
+  static std::map<std::string, e_sharing> protocol_map{{"yao", S_YAO},
+                                                       {"gmw", S_BOOL}};
 
   auto protocol_it = protocol_map.find(ngraph::to_lower(mpc_protocol));
   NGRAPH_CHECK(role_it != role_map.end(), "Unknown role ", role);
@@ -64,4 +65,4 @@ ABYExecutor::ABYExecutor(std::string role, std::string mpc_protocol,
 // TODO(fboemer): delete ABYParty
 ABYExecutor::~ABYExecutor() = default;
 
-}  // namespace ngraph::runime::aby
+}  // namespace ngraph::runtime::aby

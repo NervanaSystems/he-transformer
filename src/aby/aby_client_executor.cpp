@@ -28,14 +28,15 @@ using json = nlohmann::json;
 
 namespace ngraph::runtime::aby {
 
-ABYClientExecutor::ABYClientExecutor(
-    std::string mpc_protocol, const he::HESealClient& he_seal_client,
-    std::string hostname, std::size_t port, uint64_t security_level,
-    uint32_t bit_length, uint32_t num_threads, std::string mg_algo_str,
-    uint32_t reserve_num_gates, const std::string& circuit_directory)
-    : ABYExecutor("client", std::move(mpc_protocol), std::move(hostname), port,
-                  security_level, bit_length, num_threads,
-                  std::move(mg_algo_str), reserve_num_gates, circuit_directory),
+ABYClientExecutor::ABYClientExecutor(std::string mpc_protocol,
+                                     const he::HESealClient& he_seal_client,
+                                     std::string hostname, std::size_t port,
+                                     uint64_t security_level,
+                                     uint32_t bit_length, uint32_t num_threads,
+                                     std::string mg_algo_str,
+                                     uint32_t reserve_num_gates)
+    : ABYExecutor("client", mpc_protocol, hostname, port, security_level,
+                  bit_length, num_threads, mg_algo_str, reserve_num_gates),
       m_he_seal_client(he_seal_client) {
   m_lowest_coeff_modulus = m_he_seal_client.encryption_paramters()
                                .seal_encryption_parameters()
@@ -106,9 +107,9 @@ void ABYClientExecutor::run_aby_relu_circuit(
   std::vector<uint64_t> zeros(tensor_size, 0);
 
   BooleanCircuit* circ = get_circuit();
-  auto* relu_out =
-      ngraph::aby::relu_aby(*circ, tensor_size, zeros, client_gc_vals, zeros,
-                            m_aby_bitlen, m_lowest_coeff_modulus);
+  auto* relu_out = ngraph::runtime::aby::relu_aby(
+      *circ, tensor_size, zeros, client_gc_vals, zeros, m_aby_bitlen,
+      m_lowest_coeff_modulus);
   NGRAPH_HE_LOG(3) << "Client executing relu circuit";
 
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -119,7 +120,8 @@ void ABYClientExecutor::run_aby_relu_circuit(
       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
       << "us";
 
-  uint32_t out_bitlen_relu, result_count;
+  uint32_t out_bitlen_relu;
+  uint32_t result_count;
   uint64_t* out_vals_relu;  // output of circuit this value will be encrypted
                             // and sent to server
   relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
@@ -142,15 +144,15 @@ void ABYClientExecutor::run_aby_relu_circuit(
     for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
       size_t out_idx = result_idx + fill_idx * tensor_data.size();
       uint64_t out_val = out_vals_relu[out_idx];
-      double d_out_val =
-          ngraph::aby::uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
+      double d_out_val = ngraph::runtime::aby::uint64_to_double(
+          out_val, m_lowest_coeff_modulus, scale);
       post_relu_vals[fill_idx] = d_out_val;
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
     NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
 
-    ngraph::he::encrypt(
+    ngraph::runtime::he::encrypt(
         cipher, post_relu_vals,
         m_he_seal_client.get_context()->first_parms_id(), ngraph::element::f64,
         scale, *m_he_seal_client.get_ckks_encoder(),
@@ -166,8 +168,6 @@ void ABYClientExecutor::run_aby_relu_circuit(
 void ABYClientExecutor::run_aby_bounded_relu_circuit(
     const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
   NGRAPH_HE_LOG(3) << "run_aby_bounded_relu_circuit";
-  json js = json::parse(function);
-  double bound = js["bound"];
 
   auto& tensor_data = tensor->data();
   size_t batch_size = tensor_data[0].batch_size();
@@ -207,7 +207,7 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
   NGRAPH_HE_LOG(3) << "Client creating bounded relu circuit";
   std::vector<uint64_t> zeros(tensor_size, 0);
   BooleanCircuit* circ = get_circuit();
-  auto* relu_out = ngraph::aby::bounded_relu_aby(
+  auto* relu_out = ngraph::runtime::aby::bounded_relu_aby(
       *circ, tensor_size, zeros, client_gc_vals, zeros, zeros, m_aby_bitlen,
       m_lowest_coeff_modulus);
   NGRAPH_HE_LOG(3) << "Client executing relu bounded circuit";
@@ -220,7 +220,8 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
       << "us";
 
-  uint32_t out_bitlen_relu, result_count;
+  uint32_t out_bitlen_relu;
+  uint32_t result_count;
   uint64_t* out_vals_relu;  // output of circuit this value will be encrypted
                             // and sent to server
   relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
@@ -243,15 +244,15 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
     for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
       size_t out_idx = result_idx + fill_idx * tensor_data.size();
       uint64_t out_val = out_vals_relu[out_idx];
-      double d_out_val =
-          ngraph::aby::uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
+      double d_out_val = ngraph::runtime::aby::uint64_to_double(
+          out_val, m_lowest_coeff_modulus, scale);
       post_relu_vals[fill_idx] = d_out_val;
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
     NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
 
-    ngraph::he::encrypt(
+    ngraph::runtime::he::encrypt(
         cipher, post_relu_vals,
         m_he_seal_client.get_context()->first_parms_id(), ngraph::element::f64,
         scale, *m_he_seal_client.get_ckks_encoder(),

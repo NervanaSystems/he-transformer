@@ -27,8 +27,7 @@
 #include "abycore/sharing/sharing.h"
 #include "gtest/gtest.h"
 
-using namespace std;
-using namespace ngraph::aby;
+namespace ngraph::runtime::aby {
 
 TEST(aby, trivial) {
   int a = 1;
@@ -93,8 +92,8 @@ auto test_relu_circuit = [](size_t num_vals, size_t coeff_modulus) {
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    share* relu_out = ngraph::aby::relu_aby(circ, num_vals, xs, zeros, r,
-                                            bitlen, coeff_modulus);
+    ngraph::runtime::aby::relu_aby(circ, num_vals, xs, zeros, r, bitlen,
+                                   coeff_modulus);
     server->ExecCircuit();
     server->Reset();
   };
@@ -110,8 +109,8 @@ auto test_relu_circuit = [](size_t num_vals, size_t coeff_modulus) {
     BooleanCircuit& circ = dynamic_cast<BooleanCircuit&>(
         *sharings[sharing]->GetCircuitBuildRoutine());
 
-    share* relu_out = ngraph::aby::relu_aby(circ, num_vals, zeros, xc, zeros,
-                                            bitlen, coeff_modulus);
+    share* relu_out = ngraph::runtime::aby::relu_aby(
+        circ, num_vals, zeros, xc, zeros, bitlen, coeff_modulus);
 
     client->ExecCircuit();
 
@@ -213,8 +212,8 @@ auto test_bounded_relu_circuit = [](size_t num_vals, size_t coeff_modulus) {
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    share* relu_out = ngraph::aby::bounded_relu_aby(
-        circ, num_vals, xs, zeros, r, bounds, bitlen, coeff_modulus);
+    ngraph::runtime::aby::bounded_relu_aby(circ, num_vals, xs, zeros, r, bounds,
+                                           bitlen, coeff_modulus);
     server->ExecCircuit();
     server->Reset();
   };
@@ -230,7 +229,7 @@ auto test_bounded_relu_circuit = [](size_t num_vals, size_t coeff_modulus) {
     BooleanCircuit& circ = dynamic_cast<BooleanCircuit&>(
         *sharings[sharing]->GetCircuitBuildRoutine());
 
-    share* relu_out = ngraph::aby::bounded_relu_aby(
+    share* relu_out = ngraph::runtime::aby::bounded_relu_aby(
         circ, num_vals, zeros, xc, zeros, zeros, bitlen, coeff_modulus);
 
     client->ExecCircuit();
@@ -289,3 +288,5 @@ TEST(aby, mod_reduce_zero_centered) {
   // Far above range
   EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(9.1, 2.0), -0.9);
 }
+
+}  // namespace ngraph::runtime::aby
