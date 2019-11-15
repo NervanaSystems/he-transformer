@@ -51,7 +51,7 @@ class HESealExecutable : public runtime::Executable {
   /// secret key
   HESealExecutable(const std::shared_ptr<Function>& function,
                    bool enable_performance_collection,
-                   HESealBackend& he_seal_backend, bool enable_client);
+                   HESealBackend& he_seal_backend);
 
   /// \brief Shuts down the TCP session if client is enabled
   ~HESealExecutable() noexcept override;
@@ -62,6 +62,9 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Starts the server, which awaits a connection from a client
   void start_server();
+
+  /// \brief Returns whether or not the client is enabled
+  bool enable_client() const { return m_he_seal_backend.enable_client(); }
 
   void update_he_op_annotations();
 
@@ -197,7 +200,6 @@ class HESealExecutable : public runtime::Executable {
   bool m_client_public_key_set{false};
   bool m_client_eval_key_set{false};
 
-  bool m_enable_client;
   bool m_server_setup{false};
   size_t m_batch_size;
   size_t m_port;  // Which port the server is hosted at

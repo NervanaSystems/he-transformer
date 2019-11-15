@@ -87,7 +87,9 @@ void HESealClient::set_seal_context() {
   print_encryption_parameters(m_encryption_params, *m_context);
 
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
-  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+  if (m_context->using_keyswitching()) {
+    m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+  }
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);

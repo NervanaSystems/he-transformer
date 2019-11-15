@@ -257,6 +257,9 @@ class HESealBackend : public runtime::Backend {
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
+  /// \brief Returns whether or not the client is enabled
+  bool enable_client() const { return m_enable_client; }
+
   /// \brief Returns the chain index, also known as level, of the ciphertext
   /// \param[in] cipher Ciphertext whose chain index to return
   /// \returns The chain index of the ciphertext.
