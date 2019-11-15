@@ -25,47 +25,48 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto avg_pool_test = [](const ngraph::Shape& shape_a,
-                        const ngraph::Shape& window_shape,
-                        const ngraph::Strides& window_movement_strides,
+namespace ngraph::runtime::he {
+
+auto avg_pool_test = [](const Shape& shape_a, const Shape& window_shape,
+                        const Strides& window_movement_strides,
                         const std::vector<float>& input_a,
                         const std::vector<float>& output,
                         const bool arg1_encrypted, const bool complex_packing,
                         const bool packed) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<he::HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        he::HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a =
-      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
-  auto t = std::make_shared<ngraph::op::AvgPool>(a, window_shape,
-                                                 window_movement_strides);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
+  auto a = std::make_shared<op::Parameter>(element::f32, shape_a);
+  auto t =
+      std::make_shared<op::AvgPool>(a, window_shape, window_movement_strides);
+  auto f = std::make_shared<Function>(t, ParameterVector{a});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  const auto& arg1_config =
+      test::config_from_flags(false, arg1_encrypted, packed);
 
-  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
-                                                 arg1_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(
-      *he_backend, t->get_shape(), arg1_encrypted, packed);
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
+
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+  auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
+                                          arg1_encrypted, packed);
 
   copy_data(t_a, input_a);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(
-      ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain_real_unpacked) {
   float denom = 3.0;
-  avg_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3}, ngraph::Strides{},
+  avg_pool_test(Shape{1, 1, 14}, Shape{3}, Strides{},
                 ngraph::test::NDArray<float, 3>{
                     {{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
                     .get_vector(),
@@ -79,7 +80,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_plain_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_cipher_real_unpacked) {
   float denom = 3.0;
-  avg_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3}, ngraph::Strides{},
+  avg_pool_test(Shape{1, 1, 14}, Shape{3}, Strides{},
                 ngraph::test::NDArray<float, 3>{
                     {{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}}}
                     .get_vector(),
@@ -94,7 +95,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_1image_cipher_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_unpacked) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 1, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -112,7 +113,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_packed) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 1, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -130,7 +131,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_plain_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_unpacked) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 1, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -148,7 +149,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_packed) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 1, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -166,7 +167,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_1channel_2image_cipher_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_plain_real_unpacked) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 2, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -192,7 +193,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_plain_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_plain_real_packed) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 2, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -218,7 +219,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_plain_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_cipher_real_unpacked) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 2, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -244,7 +245,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_cipher_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_cipher_real_packed) {
   float denom = 3.0;
   avg_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3}, ngraph::Strides{},
+      Shape{2, 2, 14}, Shape{3}, Strides{},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -270,7 +271,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_1d_2channel_2image_cipher_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_plain_real_unpacked) {
   float denom = 2 * 3;
   avg_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3}, ngraph::Strides{},
+      Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -322,7 +323,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_plain_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_plain_real_packed) {
   float denom = 2 * 3;
   avg_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3}, ngraph::Strides{},
+      Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -374,7 +375,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_plain_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_cipher_real_unpacked) {
   float denom = 2 * 3;
   avg_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3}, ngraph::Strides{},
+      Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -426,7 +427,7 @@ NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_cipher_real_unpacked) {
 NGRAPH_TEST(${BACKEND_NAME}, avg_pool_2d_2channel_2image_cipher_real_packed) {
   float denom = 2 * 3;
   avg_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3}, ngraph::Strides{},
+      Shape{2, 2, 5, 5}, Shape{2, 3}, Strides{},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -479,7 +480,7 @@ NGRAPH_TEST(${BACKEND_NAME},
             avg_pool_2d_1channel_1image_strided_plain_real_unpacked) {
   float denom = 2 * 3;
   avg_pool_test(
-      ngraph::Shape{1, 1, 8, 8}, ngraph::Shape{2, 3}, ngraph::Strides{3, 2},
+      Shape{1, 1, 8, 8}, Shape{2, 3}, Strides{3, 2},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1, 2, 0, 0},
                                          {0, 3, 2, 0, 0, 0, 1, 0},
                                          {2, 0, 0, 0, 1, 0, 0, 0},
@@ -500,7 +501,7 @@ NGRAPH_TEST(${BACKEND_NAME},
             avg_pool_2d_1channel_1image_strided_cipher_real_unpacked) {
   float denom = 2 * 3;
   avg_pool_test(
-      ngraph::Shape{1, 1, 8, 8}, ngraph::Shape{2, 3}, ngraph::Strides{3, 2},
+      Shape{1, 1, 8, 8}, Shape{2, 3}, Strides{3, 2},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1, 2, 0, 0},
                                          {0, 3, 2, 0, 0, 0, 1, 0},
                                          {2, 0, 0, 0, 1, 0, 0, 0},
@@ -516,3 +517,5 @@ NGRAPH_TEST(${BACKEND_NAME},
           .get_vector(),
       true, false, false);
 }
+
+}  // namespace ngraph::runtime::he

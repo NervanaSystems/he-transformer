@@ -25,51 +25,52 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto max_pool_test = [](const ngraph::Shape& shape_a,
-                        const ngraph::Shape& window_shape,
+namespace ngraph::runtime::he {
+
+auto max_pool_test = [](const Shape& shape_a, const Shape& window_shape,
                         const std::vector<float>& input_a,
                         const std::vector<float>& output,
                         const bool arg1_encrypted, const bool complex_packing,
                         const bool packed) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a =
-      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
-  auto t = std::make_shared<ngraph::op::MaxPool>(a, window_shape);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a});
+  auto a = std::make_shared<op::Parameter>(element::f32, shape_a);
+  auto t = std::make_shared<op::MaxPool>(a, window_shape);
+  auto f = std::make_shared<Function>(t, ParameterVector{a});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  const auto& arg1_config =
+      test::config_from_flags(false, arg1_encrypted, packed);
 
-  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
-                                                 arg1_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(
-      *he_backend, t->get_shape(), arg1_encrypted, packed);
+  std::string error_str;
+  he_backend->set_config({{a->get_name(), arg1_config}}, error_str);
+
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
+  auto t_result = test::tensor_from_flags(*he_backend, t->get_shape(),
+                                          arg1_encrypted, packed);
 
   copy_data(t_a, input_a);
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a});
-  EXPECT_TRUE(
-      ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_real_unpacked) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false,
                 false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_real_packed) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false,
                 false, true);
@@ -77,28 +78,28 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_real_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_1channel_1image_plain_complex_unpacked) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false,
                 true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_plain_complex_packed) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, false,
                 true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher_real_unpacked) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true,
                 false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher_real_packed) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true,
                 false, true);
@@ -106,7 +107,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_1image_cipher_real_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_1channel_1image_cipher_complex_unpacked) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true,
                 true, false);
@@ -114,7 +115,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_1channel_1image_cipher_complex_packed) {
-  max_pool_test(ngraph::Shape{1, 1, 14}, ngraph::Shape{3},
+  max_pool_test(Shape{1, 1, 14}, Shape{3},
                 std::vector<float>{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
                 std::vector<float>{1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 2, 0}, true,
                 true, true);
@@ -122,7 +123,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_real_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -135,7 +136,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_real_packed) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -149,7 +150,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_1channel_2image_plain_complex_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -162,7 +163,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_complex_packed) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -175,7 +176,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_plain_complex_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_real_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -188,7 +189,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_real_packed) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -202,7 +203,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_1channel_2image_cipher_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_1channel_2image_cipher_complex_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -216,7 +217,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_1channel_2image_cipher_complex_packed) {
   max_pool_test(
-      ngraph::Shape{2, 1, 14}, ngraph::Shape{3},
+      Shape{2, 1, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0}},
            {{0, 2, 1, 1, 0, 0, 0, 2, 0, 1, 0, 0, 1, 2}}})
@@ -229,7 +230,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -248,7 +249,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_upacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -268,7 +269,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_real_upacked) {
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_2channel_2image_plain_complex_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -287,7 +288,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_complex_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -306,7 +307,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_plain_complex_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -325,7 +326,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -345,7 +346,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_1d_2channel_2image_cipher_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_2channel_2image_cipher_complex_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -365,7 +366,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_1d_2channel_2image_cipher_complex_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 14}, ngraph::Shape{3},
+      Shape{2, 2, 14}, Shape{3},
       ngraph::test::NDArray<float, 3>(
           {{{0, 1, 0, 2, 1, 0, 3, 2, 0, 0, 2, 0, 0, 0},
             {0, 0, 0, 2, 0, 0, 2, 3, 0, 1, 2, 0, 1, 0}},
@@ -384,7 +385,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -434,7 +435,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -485,7 +486,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_2d_2channel_2image_plain_complex_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -535,7 +536,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_complex_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -585,7 +586,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_plain_complex_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -635,7 +636,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -686,7 +687,7 @@ NGRAPH_TEST(${BACKEND_NAME}, max_pool_2d_2channel_2image_cipher_real_packed) {
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_2d_2channel_2image_cipher_complex_unpacked) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -737,7 +738,7 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             max_pool_2d_2channel_2image_cipher_complex_packed) {
   max_pool_test(
-      ngraph::Shape{2, 2, 5, 5}, ngraph::Shape{2, 3},
+      Shape{2, 2, 5, 5}, Shape{2, 3},
       ngraph::test::NDArray<float, 4>({{{{0, 1, 0, 2, 1},  // img 0 chan 0
                                          {0, 3, 2, 0, 0},
                                          {2, 0, 0, 0, 1},
@@ -784,3 +785,5 @@ NGRAPH_TEST(${BACKEND_NAME},
           .get_vector(),
       true, true, true);
 }
+
+}  // namespace ngraph::runtime::he

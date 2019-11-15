@@ -21,7 +21,7 @@
 
 #include "logging/ngraph_he_log.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void convolution_seal(
     const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
@@ -32,7 +32,7 @@ void convolution_seal(
     size_t batch_axis_data, size_t input_channel_axis_data,
     size_t input_channel_axis_filters, size_t output_channel_axis_filters,
     size_t batch_axis_result, size_t output_channel_axis_result,
-    bool rotate_filter, const element::Type& element_type, size_t batch_size,
+    const element::Type& element_type, size_t batch_size,
     HESealBackend& he_seal_backend, bool verbose) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
@@ -49,7 +49,7 @@ void convolution_seal(
   CoordinateTransform output_transform(out_shape);
 
   // Store output coordinates for parallelization
-  std::vector<ngraph::Coordinate> out_coords;
+  std::vector<Coordinate> out_coords;
   for (const Coordinate& out_coord : output_transform) {
     out_coords.emplace_back(out_coord);
   }
@@ -188,16 +188,6 @@ void convolution_seal(
       const Coordinate& input_batch_coord = *input_it;
       Coordinate filter_coord = *filter_it;
 
-      if (rotate_filter) {
-        Shape target_shape = filter_transform.get_target_shape();
-
-        // Note that we only reverse the spatial dimensions here (loop
-        // starts at 2)
-        for (size_t i = 2; i < filter_coord.size(); i++) {
-          filter_coord[i] = target_shape[i] - filter_coord[i] - 1;
-        }
-      }
-
       if (input_batch_transform.has_source_coordinate(input_batch_coord)) {
         auto mult_arg0 = arg0[input_batch_transform.index(input_batch_coord)];
         auto mult_arg1 = arg1[filter_transform.index(filter_coord)];
@@ -226,11 +216,10 @@ void convolution_seal(
     }
 
     static const size_t conv_verbosity_idx = 1000;
-    if (verbose && out_coord_idx % conv_verbosity_idx == 0 &&
-        out_coord_idx != 0) {
+    if (verbose && out_coord_idx % conv_verbosity_idx == 0) {
       NGRAPH_HE_LOG(3) << "Finished out coord " << out_coord_idx;
     }
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

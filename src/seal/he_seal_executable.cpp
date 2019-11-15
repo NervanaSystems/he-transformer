@@ -96,7 +96,7 @@
 using json = nlohmann::json;
 using ngraph::descriptor::layout::DenseTensorLayout;
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
                                    bool enable_performance_collection,
                                    HESealBackend& he_seal_backend)
@@ -113,7 +113,8 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   for (const auto& param : m_function->get_parameters()) {
     NGRAPH_HE_LOG(3) << "Parameter " << param->get_name();
     if (HEOpAnnotations::has_he_annotation(*param)) {
-      std::string from_client_str = from_client(*param) ? "" : "not ";
+      std::string from_client_str =
+          HEOpAnnotations::from_client(*param) ? "" : "not ";
       NGRAPH_HE_LOG(3) << "\tshape " << param->get_shape() << " is "
                        << from_client_str << "from client";
     }
@@ -123,9 +124,9 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
     }
   }
 
-  if (std::getenv("NGRAPH_VOPS") != nullptr) {
-    std::string verbose_ops_str(std::getenv("NGRAPH_VOPS"));
-    verbose_ops_str = ngraph::to_lower(verbose_ops_str);
+  if (std::getenv("NGRAPH_HE_VERBOSE_OPS") != nullptr) {
+    std::string verbose_ops_str(std::getenv("NGRAPH_HE_VERBOSE_OPS"));
+    verbose_ops_str = to_lower(verbose_ops_str);
     if (verbose_ops_str == "all") {
       m_verbose_all_ops = true;
     }
@@ -161,9 +162,7 @@ HESealExecutable::HESealExecutable(const std::shared_ptr<Function>& function,
   pass_manager_he.register_pass<pass::HEFusion>();
   pass_manager_he.register_pass<pass::HELiveness>();
   pass_manager_he.register_pass<pass::SupportedOps>(
-      [this](const ngraph::Node& op) {
-        return m_he_seal_backend.is_supported(op);
-      });
+      [this](const Node& op) { return m_he_seal_backend.is_supported(op); });
 
   NGRAPH_HE_LOG(4) << "Running HE passes";
   pass_manager_he.run_passes(m_function);
@@ -209,6 +208,8 @@ void HESealExecutable::update_he_op_annotations() {
   set_parameters_and_results(*m_function);
 }
 
+size_t HESealExecutable::batch_size() const { return m_batch_size; }
+
 void HESealExecutable::set_batch_size(size_t batch_size) {
   size_t max_batch_size = m_he_seal_backend.get_ckks_encoder()->slot_count();
   if (complex_packing()) {
@@ -221,11 +222,15 @@ void HESealExecutable::set_batch_size(size_t batch_size) {
   NGRAPH_HE_LOG(5) << "Server set batch size to " << m_batch_size;
 }
 
+void HESealExecutable::set_verbose_all_ops(bool value) {
+  m_verbose_all_ops = value;
+}
+
 void HESealExecutable::check_client_supports_function() {
   // Check if single parameter is from client
   size_t from_client_count = 0;
   for (const auto& param : get_parameters()) {
-    if (from_client(*param)) {
+    if (HEOpAnnotations::from_client(*param)) {
       from_client_count++;
       NGRAPH_HE_LOG(5) << "Parameter " << param->get_name() << " from client";
     }
@@ -273,9 +278,9 @@ bool HESealExecutable::server_setup() {
     if (m_is_compiled) {
       m_client_inputs.clear();
       m_client_inputs.resize(get_parameters().size());
-    } else {
-      NGRAPH_HE_LOG(1) << "Client already setup";
     }
+  } else {
+    NGRAPH_HE_LOG(1) << "Client already setup";
   }
   return true;
 }
@@ -319,8 +324,7 @@ void HESealExecutable::start_server() {
     try {
       m_io_context.run();
     } catch (std::exception& e) {
-      NGRAPH_ERR << "Server error hanndling thread: " << std::string(e.what());
-      NGRAPH_CHECK(false, "Server error hanndling thread: ", e.what());
+      NGRAPH_CHECK(false, "Server error handling thread: ", e.what());
     }
   });
 }
@@ -358,7 +362,7 @@ void HESealExecutable::send_inference_shape() {
   proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
 
   for (const auto& input_param : input_parameters) {
-    if (from_client(*input_param)) {
+    if (HEOpAnnotations::from_client(*input_param)) {
       pb::HETensor* proto_he_tensor = proto_msg.add_he_tensors();
 
       std::vector<uint64_t> shape{input_param->get_shape()};
@@ -375,7 +379,7 @@ void HESealExecutable::send_inference_shape() {
 
       proto_he_tensor->set_name(name);
 
-      if (plaintext_packed(*input_param)) {
+      if (HEOpAnnotations::plaintext_packed(*input_param)) {
         NGRAPH_HE_LOG(1) << "Setting parameter " << input_param->get_name()
                          << " to packed";
         proto_he_tensor->set_packed(true);
@@ -480,14 +484,19 @@ void HESealExecutable::handle_message(const TCPMessage& message) {
         json js = json::parse(function);
 
         auto name = js.at("function");
+
+        static std::unordered_set<std::string> known_function_names{
+            "Relu", "BoundedRelu", "MaxPool"};
+        NGRAPH_CHECK(
+            known_function_names.find(name) != known_function_names.end(),
+            "Unknown function name ", name);
+
         if (name == "Relu") {
           handle_relu_result(*proto_msg);
         } else if (name == "BoundedRelu") {
           handle_bounded_relu_result(*proto_msg);
         } else if (name == "MaxPool") {
           handle_max_pool_result(*proto_msg);
-        } else {
-          throw ngraph_error("Unknown function name");
         }
       }
       break;
@@ -569,7 +578,7 @@ void HESealExecutable::handle_client_ciphers(const pb::TCPMessage& proto_msg) {
   auto done_loading = [&]() {
     for (size_t parm_idx = 0; parm_idx < input_parameters.size(); ++parm_idx) {
       const auto& param = input_parameters[parm_idx];
-      if (from_client(*param)) {
+      if (HEOpAnnotations::from_client(*param)) {
         NGRAPH_HE_LOG(5) << "From client param shape " << param->get_shape();
         NGRAPH_HE_LOG(5) << "m_batch_size " << m_batch_size;
 
@@ -594,7 +603,7 @@ void HESealExecutable::handle_client_ciphers(const pb::TCPMessage& proto_msg) {
   }
 }
 
-std::vector<ngraph::runtime::PerformanceCounter>
+std::vector<runtime::PerformanceCounter>
 HESealExecutable::get_performance_data() const {
   std::vector<runtime::PerformanceCounter> rc;
   for (const auto& [node, stop_watch] : m_timer_map) {
@@ -639,27 +648,24 @@ bool HESealExecutable::call(
     auto& param = parameters[input_idx];
     std::shared_ptr<HETensor> he_input;
 
-    if (enable_client() && from_client(*param)) {
+    if (m_enable_client && HEOpAnnotations::from_client(*param)) {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from client";
       NGRAPH_CHECK(m_client_inputs.size() > input_idx,
                    "Not enough client inputs");
       he_input = std::static_pointer_cast<HETensor>(m_client_inputs[input_idx]);
 
-      if (auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
-              param->get_op_annotations())) {
-        NGRAPH_CHECK(
-            current_annotation->packed() == he_input->is_packed(),
-            "Parameter annotation ", *current_annotation, " does not match ",
-            (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
+      auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
+          param->get_op_annotations());
+      NGRAPH_CHECK(current_annotation != nullptr, "Parameter ",
+                   param->get_name(), " has no HE op annotation");
+      NGRAPH_CHECK(
+          current_annotation->packed() == he_input->is_packed(),
+          "Parameter annotation ", *current_annotation, " does not match ",
+          (he_input->is_packed() ? "packed" : "unpacked"), "input tensor");
 
-        current_annotation->set_encrypted(he_input->any_encrypted_data());
-        param->set_op_annotations(current_annotation);
-
-      } else {
-        NGRAPH_WARN << "Parameter " << param->get_name()
-                    << " has no HE op annotation";
-      }
+      current_annotation->set_encrypted(he_input->any_encrypted_data());
+      param->set_op_annotations(current_annotation);
     } else {
       NGRAPH_HE_LOG(1) << "Processing parameter " << param->get_name()
                        << "(shape {" << param_shape << "}) from server";
@@ -728,8 +734,7 @@ bool HESealExecutable::call(
   NGRAPH_HE_LOG(3) << "Mapping function parameters to HETensor";
   NGRAPH_CHECK(he_inputs.size() >= parameters.size(),
                "Not enough inputs in input map");
-  std::unordered_map<ngraph::descriptor::Tensor*, std::shared_ptr<HETensor>>
-      tensor_map;
+  std::unordered_map<descriptor::Tensor*, std::shared_ptr<HETensor>> tensor_map;
   size_t input_count = 0;
   for (const auto& param : parameters) {
     for (size_t param_out_idx = 0; param_out_idx < param->get_output_size();
@@ -743,10 +748,7 @@ bool HESealExecutable::call(
   NGRAPH_HE_LOG(3) << "Mapping function outputs to HETensor";
   for (size_t output_count = 0; output_count < get_results().size();
        ++output_count) {
-    auto output = get_results()[output_count];
-    if (!std::dynamic_pointer_cast<op::Result>(output)) {
-      throw ngraph_error("One of function's outputs isn't op::Result");
-    }
+    std::shared_ptr<op::Result> output = get_results()[output_count];
     ngraph::descriptor::Tensor* tv = output->get_output_tensor_ptr(0).get();
 
     auto& he_output = he_outputs[output_count];
@@ -782,10 +784,10 @@ bool HESealExecutable::call(
 
     if (type_id == OP_TYPEID::Parameter) {
       if (verbose) {
-        const auto param_op =
-            std::static_pointer_cast<const ngraph::op::Parameter>(op);
+        const auto param_op = std::static_pointer_cast<const op::Parameter>(op);
         if (HEOpAnnotations::has_he_annotation(*param_op)) {
-          std::string from_client_str = from_client(*param_op) ? "" : " not";
+          std::string from_client_str =
+              HEOpAnnotations::from_client(*param_op) ? "" : " not";
           NGRAPH_HE_LOG(3) << "Parameter shape " << param_op->get_shape()
                            << from_client_str << " from client";
         }
@@ -827,28 +829,28 @@ bool HESealExecutable::call(
         if (op->is_op()) {
           std::shared_ptr<HEOpAnnotations> he_op_annotation =
               HEOpAnnotations::he_op_annotation(
-                  *std::static_pointer_cast<const ngraph::op::Op>(op));
+                  *std::static_pointer_cast<const op::Op>(op));
           encrypted_out = he_op_annotation->encrypted();
           packed_out = he_op_annotation->packed();
         } else {
           NGRAPH_WARN
               << "Node " << op->get_name()
               << " is not op, using default encrypted / packing behavior";
-          encrypted_out = std::any_of(
-              op_inputs.begin(), op_inputs.end(),
-              [](const std::shared_ptr<ngraph::he::HETensor>& op_input) {
-                return op_input->any_encrypted_data();
-              });
-          packed_out = std::any_of(
-              op_inputs.begin(), op_inputs.end(),
-              [](const std::shared_ptr<ngraph::he::HETensor>& he_tensor) {
-                return he_tensor->is_packed();
-              });
+          encrypted_out =
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](const std::shared_ptr<HETensor>& op_input) {
+                            return op_input->any_encrypted_data();
+                          });
+          packed_out =
+              std::any_of(op_inputs.begin(), op_inputs.end(),
+                          [](const std::shared_ptr<HETensor>& he_tensor) {
+                            return he_tensor->is_packed();
+                          });
         }
         NGRAPH_HE_LOG(3) << "encrypted_out " << encrypted_out;
         NGRAPH_HE_LOG(3) << "packed_out " << packed_out;
         if (packed_out) {
-          HETensor::unpack_shape(shape, m_batch_size);
+          shape = HETensor::unpack_shape(shape, batch_size());
         }
         NGRAPH_HE_LOG(5) << "Creating output tensor with shape " << shape;
 
@@ -890,8 +892,8 @@ bool HESealExecutable::call(
         }
       }
       if (!erased) {
-        NGRAPH_DEBUG << "Failed to erase " << t->get_name()
-                     << " from tensor map";
+        NGRAPH_HE_LOG(5) << "Failed to erase " << t->get_name()
+                         << " from tensor map";
       }
     }
     if (verbose) {
@@ -951,12 +953,12 @@ void HESealExecutable::generate_calls(
   std::string node_op = node.description();
 
 // We want to check that every OP_TYPEID enumeration is included in the
-// list. These GCC flags enable compile-time checking so that if an
+// list. These clang flags enable compile-time checking so that if an
 //      enumeration
 // is not in the list an error is generated.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic error "-Wswitch"
-#pragma GCC diagnostic error "-Wswitch-enum"
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wswitch"
+#pragma clang diagnostic error "-Wswitch-enum"
   switch (node_wrapper.get_typeid()) {
     case OP_TYPEID::Add: {
       add_seal(args[0]->data(), args[1]->data(), out[0]->data(),
@@ -982,7 +984,7 @@ void HESealExecutable::generate_calls(
       break;
     }
     case OP_TYPEID::BatchNormInference: {
-      const auto bn = static_cast<const ngraph::op::BatchNormInference*>(&node);
+      const auto bn = static_cast<const op::BatchNormInference*>(&node);
       double eps = bn->get_eps_value();
       NGRAPH_CHECK(args.size() == 5, "BatchNormInference has ", args.size(),
                    "arguments (expected 5).");
@@ -995,7 +997,7 @@ void HESealExecutable::generate_calls(
 
       batch_norm_inference_seal(eps, gamma->data(), beta->data(), input->data(),
                                 mean->data(), variance->data(), out[0]->data(),
-                                args[2]->get_packed_shape(), m_batch_size,
+                                args[2]->get_packed_shape(), batch_size(),
                                 m_he_seal_backend);
       break;
     }
@@ -1023,8 +1025,6 @@ void HESealExecutable::generate_calls(
                      broadcast->get_broadcast_axes());
       break;
     }
-    case OP_TYPEID::BroadcastLike:
-      break;
     case OP_TYPEID::Concat: {
       const auto* concat = static_cast<const op::Concat*>(&node);
       std::vector<Shape> in_shapes;
@@ -1062,8 +1062,8 @@ void HESealExecutable::generate_calls(
                        in_shape0, in_shape1, out[0]->get_packed_shape(),
                        window_movement_strides, window_dilation_strides,
                        padding_below, padding_above, data_dilation_strides, 0,
-                       1, 1, 0, 0, 1, false, type, m_batch_size,
-                       m_he_seal_backend, verbose);
+                       1, 1, 0, 0, 1, type, batch_size(), m_he_seal_backend,
+                       verbose);
 
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
 
@@ -1088,20 +1088,19 @@ void HESealExecutable::generate_calls(
       }
       dot_seal(args[0]->data(), args[1]->data(), out[0]->data(), in_shape0,
                in_shape1, out[0]->get_packed_shape(),
-               dot->get_reduction_axes_count(), type, m_he_seal_backend);
+               dot->get_reduction_axes_count(), type, batch_size(),
+               m_he_seal_backend);
       rescale_seal(out[0]->data(), m_he_seal_backend, verbose);
 
       break;
     }
     case OP_TYPEID::Exp: {
-      if (enable_client()) {
-        NGRAPH_CHECK(false, "Exp not implemented for client-aided model ");
-      } else {
-        NGRAPH_WARN
-            << " Performing Exp without client is not privacy-preserving ";
-        exp_seal(args[0]->data(), out[0]->data(),
-                 args[0]->get_batched_element_count(), m_he_seal_backend);
-      }
+      NGRAPH_CHECK(!m_enable_client,
+                   "Exp not implemented for client-aided model ");
+      NGRAPH_WARN
+          << " Performing Exp without client is not privacy-preserving ";
+      exp_seal(args[0]->data(), out[0]->data(),
+               args[0]->get_batched_element_count(), m_he_seal_backend);
       break;
     }
     case OP_TYPEID::Max: {
@@ -1110,19 +1109,18 @@ void HESealExecutable::generate_calls(
       NGRAPH_CHECK(!args[0]->is_packed() ||
                        (reduction_axes.find(0) == reduction_axes.end()),
                    "Max reduction axes cannot contain 0 for packed tensors");
-      if (enable_client()) {
-        NGRAPH_CHECK(false, "Max not implemented for client-aided model");
-      } else {
-        NGRAPH_WARN << "Performing Max without client is not "
-                       "privacy-preserving";
-        size_t output_size = args[0]->get_batched_element_count();
-        NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
-                     output_size, " doesn't match number of elements",
-                     out[0]->data().size());
-        max_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
-                 out[0]->get_packed_shape(), max->get_reduction_axes(),
-                 out[0]->get_batch_size(), m_he_seal_backend);
-      }
+      NGRAPH_CHECK(!m_enable_client,
+                   "Max not implemented for client-aided model");
+      NGRAPH_WARN << "Performing Max without client is not "
+                     "privacy-preserving";
+
+      size_t output_size = args[0]->get_batched_element_count();
+      NGRAPH_CHECK(output_size == args[0]->data().size(), "output size ",
+                   output_size, " doesn't match number of elements",
+                   out[0]->data().size());
+      max_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
+               out[0]->get_packed_shape(), max->get_reduction_axes(),
+               out[0]->get_batch_size(), m_he_seal_backend);
       break;
     }
     case OP_TYPEID::MaxPool: {
@@ -1174,11 +1172,6 @@ void HESealExecutable::generate_calls(
       NGRAPH_HE_LOG(3) << "Skipping parameter";
       break;
     }
-    case OP_TYPEID::Passthrough: {
-      const auto* passthrough = static_cast<const op::Passthrough*>(&node);
-      throw unsupported_op{"Unsupported operation language: " +
-                           passthrough->language()};
-    }
     case OP_TYPEID::Power: {
       // TODO(fboemer): implement with client
       NGRAPH_WARN
@@ -1227,9 +1220,6 @@ void HESealExecutable::generate_calls(
       }
       reverse_seal(args[0]->data(), out[0]->data(), args[0]->get_packed_shape(),
                    out[0]->get_packed_shape(), reverse->get_reversed_axes());
-      break;
-    }
-    case OP_TYPEID::ScalarConstantLike: {
       break;
     }
     case OP_TYPEID::Slice: {
@@ -1304,6 +1294,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::BatchNormTraining:
     case OP_TYPEID::BatchNormTrainingBackprop:
     case OP_TYPEID::BroadcastDistributed:
+    case OP_TYPEID::BroadcastLike:
     case OP_TYPEID::Ceiling:
     case OP_TYPEID::Convert:
     case OP_TYPEID::ConvolutionBackpropData:
@@ -1337,6 +1328,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::NotEqual:
     case OP_TYPEID::OneHot:
     case OP_TYPEID::Or:
+    case OP_TYPEID::Passthrough:
     case OP_TYPEID::Product:
     case OP_TYPEID::Quantize:
     case OP_TYPEID::QuantizedAvgPool:
@@ -1348,6 +1340,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
     case OP_TYPEID::QuantizedMaxPool:
+    case OP_TYPEID::ScalarConstantLike:
     case OP_TYPEID::Send:
     case OP_TYPEID::Recv:
     case OP_TYPEID::Range:
@@ -1373,7 +1366,7 @@ void HESealExecutable::generate_calls(
     case OP_TYPEID::Xor:
     default:
       throw unsupported_op("Unsupported op '" + node.description() + "'");
-#pragma GCC diagnostic pop
+#pragma clang diagnostic pop
   }
 }  // namespace he
 
@@ -1554,35 +1547,34 @@ void HESealExecutable::handle_server_relu_op(
             m_aby_executor->run_aby_circuit(function_str, relu_tensor);
             NGRAPH_INFO << "Server done running relu circuit";
           }
-        };
-
-        // Process unknown values
-        std::vector<HEType> relu_ciphers_batch;
-        relu_ciphers_batch.reserve(max_relu_message_cnt);
-
-        for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
-          NGRAPH_CHECK(arg->data(unknown_relu_idx).is_ciphertext(),
-                       "HEType should be ciphertext");
-          relu_ciphers_batch.emplace_back(arg->data(unknown_relu_idx));
-          if (relu_ciphers_batch.size() == max_relu_message_cnt) {
-            process_unknown_relu_ciphers_batch(relu_ciphers_batch);
-            relu_ciphers_batch.clear();
-          }
         }
-        if (!relu_ciphers_batch.empty()) {
-          process_unknown_relu_ciphers_batch(relu_ciphers_batch);
-          relu_ciphers_batch.clear();
-        }
+      };
 
-        // Wait until all batches have been processed
-        std::unique_lock<std::mutex> mlock(m_relu_mutex);
-        m_relu_cond.wait(mlock, [=]() {
-          return m_relu_done_count == m_unknown_relu_idx.size();
-        });
-        m_relu_done_count = 0;
+  // Process unknown values
+  std::vector<HEType> relu_ciphers_batch;
+  relu_ciphers_batch.reserve(max_relu_message_cnt);
 
-        out->data() = m_relu_data;
-      }
+  for (const auto& unknown_relu_idx : m_unknown_relu_idx) {
+    NGRAPH_CHECK(arg->data(unknown_relu_idx).is_ciphertext(),
+                 "HEType should be ciphertext");
+    relu_ciphers_batch.emplace_back(arg->data(unknown_relu_idx));
+    if (relu_ciphers_batch.size() == max_relu_message_cnt) {
+      process_unknown_relu_ciphers_batch(relu_ciphers_batch);
+      relu_ciphers_batch.clear();
+    }
+  }
+  if (!relu_ciphers_batch.empty()) {
+    process_unknown_relu_ciphers_batch(relu_ciphers_batch);
+    relu_ciphers_batch.clear();
+  }
 
-}  // namespace he
-}  // namespace ngraph::he
+  // Wait until all batches have been processed
+  std::unique_lock<std::mutex> mlock(m_relu_mutex);
+  m_relu_cond.wait(
+      mlock, [=]() { return m_relu_done_count == m_unknown_relu_idx.size(); });
+  m_relu_done_count = 0;
+
+  out->data() = m_relu_data;
+}
+
+}  // namespace ngraph::runtime::he

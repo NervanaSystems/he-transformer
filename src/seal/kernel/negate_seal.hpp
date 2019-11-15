@@ -23,7 +23,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 void scalar_negate_seal(const SealCiphertextWrapper& arg,
                         std::shared_ptr<SealCiphertextWrapper>& out,
                         const HESealBackend& he_seal_backend);
@@ -39,13 +39,15 @@ inline void scalar_negate_seal(HEType& arg, HEType& out,
                "Complex packing types don't match");
   out.complex_packing() = arg.complex_packing();
 
+  NGRAPH_CHECK((arg.is_plaintext() == out.is_plaintext()) &&
+                   (arg.is_ciphertext() == out.is_ciphertext()),
+               "Unknown argument types");
+
   if (arg.is_ciphertext() && out.is_ciphertext()) {
     scalar_negate_seal(*arg.get_ciphertext(), out.get_ciphertext(),
                        he_seal_backend);
   } else if (arg.is_plaintext() && out.is_plaintext()) {
     scalar_negate_seal(arg.get_plaintext(), out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 
@@ -65,4 +67,4 @@ inline void negate_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

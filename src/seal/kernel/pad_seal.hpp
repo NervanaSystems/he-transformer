@@ -24,11 +24,11 @@
 #include "ngraph/op/pad.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 void pad_seal(std::vector<HEType>& arg0,
               std::vector<HEType>& arg1,  // scalar
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& out_shape, const CoordinateDiff& padding_below,
               const CoordinateDiff& padding_above, op::PadMode pad_mode);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

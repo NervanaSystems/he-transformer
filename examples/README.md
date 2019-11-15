@@ -1,3 +1,5 @@
+# Python example
+
 This example demonstrates a simple example of a small matrix multiplication and addition. This example depends on the [**Intel® nGraph™ Compiler and runtime engine for TensorFlow**](https://github.com/tensorflow/ngraph-bridge). Make sure the python environment with the ngraph-tf bridge is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`.
 
 The examples rely on numpy, so first run
@@ -10,21 +12,20 @@ To run on the CPU backend,
 python $HE_TRANSFORMER/examples/ax.py --backend=CPU
 ```
 
-To run on the CKKS backend,
+To run on the HE backend,
 ```bash
 python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL
 ```
 
-By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag, for example
+By default, the default encryption parameters will be used. To specify a non-default set of parameters, use the `encryption_parameters` flag. For example:
 ```bash
 python $HE_TRANSFORMER/examples/ax.py --backend=HE_SEAL --encryption_parameters=$HE_TRANSFORMER/configs/he_seal_ckks_config_N11_L1.json
  ```
 
 #  Client-server model
-In practice, the public key and secret key will not be stored in the same location.
-Instead, a client will provide the backend with encrypted data.
+In a proper deployment setting, the public key and secret key will not be stored in the same location. Instead, a client will store the secret key, and provide the backend with encrypted data.
 
-The client uses python bindings. See the `python` folder for instructions to build he-transformer with python bindings.
+The client-server model uses python bindings. See the [README.md](https://github.com/NervanaSystems/he-transformer/tree/master/README.md) for instructions to build he-transformer with python bindings.
 
 For a simple demonstration of a server-client approach, run
 ```bash
@@ -68,12 +69,11 @@ For a deep learning example using the client-server model, see the `MNIST/MLP` f
     - `coeff_modulus` should be a list of integers in [1,60]. This indicates the bit-widths of the coefficient moduli used. ***Note***: The number of coefficient moduli should be at least the multiplicative depth of your model between non-polynomial layers.
     - `scale` is the scale at which number are encoded; `log2(scale)` represents roughly the fixed-bit precision of the encoding. If no scale is passes, the second-to-last coeffcient modulus is used.
     - `complex_packing` specifies whether or not to double the capacity (i.e. maximum batch size) by packing two scalars `(a,b)` in a complex number `a+bi`. Typically, the capacity is `poly_modulus_degree/2`. Enabling complex packing doubles the capacity to `poly_modulus_degree`. Note: enabling `complex_packing` will reduce the performance of ciphertext-ciphertext multiplication.
-  * `NAIVE_RESCALING`. For comparison purposes only. No need to enable.
-  * `NGRAPH_VOPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_VOPS=add,multiply,convolution`. *Note*, `NGRAPH_HE_LOG_LEVEL` should be set to at least 3 when using `NGRAPH_VOPS`
-  * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly;
+  * `NGRAPH_HE_VERBOSE_OPS`. Set to `all` to print information about every operation performed. Set to a comma-separated list to print information about those ops; for example `NGRAPH_HE_VERBOSE_OPS=add,multiply,convolution`. *Note*, `NGRAPH_HE_LOG_LEVEL` should be set to at least 3 when using `NGRAPH_HE_VERBOSE_OPS`
+  * `NGRAPH_HE_LOG_LEVEL`. Defines the verbosity of the logging. Set to 0 for minimal logging, 5 for maximum logging. Roughly:
     - `NGRAPH_HE_LOG_LEVEL=0 [default]` will print minimal amount of information
     - `NGRAPH_HE_LOG_LEVEL=1` will print encryption parameters
-    - `NGRAPH_HE_LOG_LEVEL=3` will print op information (when `NGRAPH_VOPS` is enabled)
+    - `NGRAPH_HE_LOG_LEVEL=3` will print op information (when `NGRAPH_HE_VERBOSE_OPS` is enabled)
     - `NGRAPH_HE_LOG_LEVEL=4` will print communication information
     - `NGARPH_HE_LOG_LEVEL=5` is the highest debug level
 

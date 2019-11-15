@@ -29,7 +29,26 @@
 #include "seal/util/polyarithsmallmod.h"
 #include "seal/util/uintarith.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
+
+seal::sec_level_type seal_security_level(size_t bits) {
+  if (bits == 0) {
+    NGRAPH_WARN
+        << "Parameter selection does not enforce minimum security level";
+    return seal::sec_level_type::none;
+  }
+  if (bits == 128) {
+    return seal::sec_level_type::tc128;
+  }
+  if (bits == 192) {
+    return seal::sec_level_type::tc192;
+  }
+  if (bits == 256) {
+    return seal::sec_level_type::tc256;
+  }
+  throw ngraph_error("Invalid security level " + std::to_string(bits));
+}
+
 void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
                                      SealCiphertextWrapper& arg1,
                                      const HESealBackend& he_seal_backend,
@@ -40,27 +59,19 @@ void match_modulus_and_scale_inplace(SealCiphertextWrapper& arg0,
   if (chain_ind0 == chain_ind1) {
     return;
   }
-  bool rescale = !within_rescale_tolerance(arg0, arg1);
+
+  NGRAPH_CHECK(within_rescale_tolerance(arg0, arg1),
+               "arguments are not within rescale tolerance");
 
   if (chain_ind0 < chain_ind1) {
     auto arg0_parms_id = arg0.ciphertext().parms_id();
-    if (rescale) {
-      he_seal_backend.get_evaluator()->rescale_to_inplace(arg1.ciphertext(),
-                                                          arg0_parms_id, pool);
-    } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
-          arg1.ciphertext(), arg0_parms_id, pool);
-    }
+    he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg1.ciphertext(),
+                                                           arg0_parms_id, pool);
     chain_ind1 = he_seal_backend.get_chain_index(arg1);
   } else {  // chain_ind0 > chain_ind1
     auto arg1_parms_id = arg1.ciphertext().parms_id();
-    if (rescale) {
-      he_seal_backend.get_evaluator()->rescale_to_inplace(arg0.ciphertext(),
-                                                          arg1_parms_id, pool);
-    } else {
-      he_seal_backend.get_evaluator()->mod_switch_to_inplace(
-          arg0.ciphertext(), arg1_parms_id, pool);
-    }
+    he_seal_backend.get_evaluator()->mod_switch_to_inplace(arg0.ciphertext(),
+                                                           arg1_parms_id, pool);
     chain_ind0 = he_seal_backend.get_chain_index(arg0);
   }
   NGRAPH_CHECK(chain_ind0 == chain_ind1, "Chain indices don't match (",
@@ -90,17 +101,16 @@ void add_plain_inplace(seal::Ciphertext& encrypted, double value,
   size_t coeff_mod_count = coeff_modulus.size();
 
   // Size check
-  if (!seal::util::product_fits_in(coeff_count, coeff_mod_count)) {
-    throw ngraph_error("invalid parameters");
-  }
+  NGRAPH_CHECK(seal::util::product_fits_in(coeff_count, coeff_mod_count),
+               "invalid parameters");
 
   NGRAPH_CHECK(encrypted.data() != nullptr, "Encrypted data == nullptr");
 
   // Encode
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   double scale = encrypted.scale();
-  encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
-         plaintext_vals, he_seal_backend);
+  encode(value, element::f32, scale, encrypted.parms_id(), plaintext_vals,
+         he_seal_backend);
 
   for (size_t j = 0; j < coeff_mod_count; j++) {
     // Add poly scalar instead of poly poly
@@ -122,10 +132,9 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
                             const seal::MemoryPoolHandle& pool) {
   // Verify parameters.
   auto context = he_seal_backend.get_context();
-  if (!seal::is_metadata_valid_for(encrypted, context)) {
-    throw ngraph_error("encrypted is not valid for encryption parameters");
-  }
-  if (!context->get_context_data(encrypted.parms_id())) {
+  if (!seal::is_metadata_valid_for(encrypted, context) ||
+      !is_buffer_valid(encrypted) ||
+      !context->get_context_data(encrypted.parms_id())) {
     throw ngraph_error("encrypted is not valid for encryption parameters");
   }
   if (!encrypted.is_ntt_form()) {
@@ -144,17 +153,16 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
   size_t encrypted_ntt_size = encrypted.size();
 
   // Size check
-  if (!seal::util::product_fits_in(encrypted_ntt_size, coeff_count,
-                                   coeff_mod_count)) {
-    throw ngraph_error("invalid parameters");
-  }
+  NGRAPH_CHECK(seal::util::product_fits_in(encrypted_ntt_size, coeff_count,
+                                           coeff_mod_count),
+               "invalid parameters");
 
   std::vector<std::uint64_t> plaintext_vals(coeff_mod_count, 0);
   // TODO(fboemer): explore using different scales! Smaller scales might reduce
   // # of rescalings
   double scale = encrypted.scale();
-  encode(value, ngraph::element::f32, scale, encrypted.parms_id(),
-         plaintext_vals, he_seal_backend);
+  encode(value, element::f32, scale, encrypted.parms_id(), plaintext_vals,
+         he_seal_backend);
   double new_scale = scale * scale;
   // Check that scale is positive and not too large
   if (new_scale <= 0 || (static_cast<int>(log2(new_scale)) >=
@@ -173,10 +181,10 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
       // Multiply by scalar instead of doing dyadic product
       if (coeff_modulus[j].value() < (1UL << 31U)) {
         const std::uint64_t modulus_value = coeff_modulus[j].value();
-        auto iter = barrett64_ratio_map.find(modulus_value);
-        NGRAPH_CHECK(iter != barrett64_ratio_map.end(), "Modulus value ",
+        auto it = barrett64_ratio_map.find(modulus_value);
+        NGRAPH_CHECK(it != barrett64_ratio_map.end(), "Modulus value ",
                      modulus_value, "not in Barrett64 ratio map");
-        const std::uint64_t barrett_ratio = iter->second;
+        const std::uint64_t barrett_ratio = it->second;
         multiply_poly_scalar_coeffmod64(encrypted.data(i) + (j * coeff_count),
                                         coeff_count, plaintext_vals[j],
                                         modulus_value, barrett_ratio,
@@ -262,8 +270,8 @@ size_t match_to_smallest_chain_index(std::vector<HEType>& he_types,
   return smallest_chain_ind.second;
 }
 
-void encode(double value, const ngraph::element::Type& element_type,
-            double scale, seal::parms_id_type parms_id,
+void encode(double value, const element::Type& element_type, double scale,
+            seal::parms_id_type parms_id,
             std::vector<std::uint64_t>& destination,
             const HESealBackend& he_seal_backend,
             const seal::MemoryPoolHandle& pool) {
@@ -273,9 +281,9 @@ void encode(double value, const ngraph::element::Type& element_type,
   // Verify parameters.
   auto context = he_seal_backend.get_context();
   auto context_data_ptr = context->get_context_data(parms_id);
-  if (!context_data_ptr) {
-    throw ngraph_error("parms_id is not valid for encryption parameters");
-  }
+
+  NGRAPH_CHECK(context_data_ptr != nullptr,
+               "parms_id is not valid for encryption parameters");
   if (!pool) {
     throw ngraph_error("pool is uninitialized");
   }
@@ -287,15 +295,14 @@ void encode(double value, const ngraph::element::Type& element_type,
   size_t coeff_count = parms.poly_modulus_degree();
 
   // Quick sanity check
-  if (!seal::util::product_fits_in(coeff_mod_count, coeff_count)) {
-    throw ngraph_error("invalid parameters");
-  }
+  NGRAPH_CHECK(seal::util::product_fits_in(coeff_mod_count, coeff_count),
+               "invalid parameters");
 
   // Check that scale is positive and not too large
   if (scale <= 0 || (static_cast<int>(log2(scale)) >=
                      context_data.total_coeff_modulus_bit_count())) {
     NGRAPH_ERR << "scale " << scale;
-    NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count"
+    NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count "
                << context_data.total_coeff_modulus_bit_count();
     throw ngraph_error("scale out of bounds");
   }
@@ -305,7 +312,6 @@ void encode(double value, const ngraph::element::Type& element_type,
 
   int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
-#pragma omp critical
     {
       NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
                  << scale;
@@ -379,11 +385,9 @@ void encode(double value, const ngraph::element::Type& element_type,
                 "local_value cannot be the same as local_destination");
           }
 #endif
-          if (local_coeff_mod_count == 1) {
-            seal::util::set_uint_uint(local_value, local_coeff_mod_count,
-                                      local_destination);
-            return;
-          }
+          NGRAPH_CHECK(local_coeff_mod_count != 1,
+                       "Logic error, local_coeff_mod_count should be > 1 for "
+                       "large coefficients");
 
           auto value_copy(
               seal::util::allocate_uint(local_coeff_mod_count, local_pool));
@@ -435,7 +439,7 @@ void encode(double value, const ngraph::element::Type& element_type,
 
 void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
             seal::CKKSEncoder& ckks_encoder, seal::parms_id_type parms_id,
-            const ngraph::element::Type& element_type, double scale,
+            const element::Type& element_type, double scale,
             bool complex_packing) {
   const size_t slot_count = ckks_encoder.slot_count();
 
@@ -484,7 +488,6 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
     case element::Type_t::f16:
     case element::Type_t::boolean:
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
-      break;
   }
 
   destination.complex_packing() = complex_packing;
@@ -492,7 +495,7 @@ void encode(SealPlaintextWrapper& destination, const HEPlaintext& plaintext,
 
 void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
              const HEPlaintext& input, seal::parms_id_type parms_id,
-             const ngraph::element::Type& element_type, double scale,
+             const element::Type& element_type, double scale,
              seal::CKKSEncoder& ckks_encoder, const seal::Encryptor& encryptor,
              bool complex_packing) {
   auto plaintext = SealPlaintextWrapper(complex_packing);
@@ -520,4 +523,4 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
   decode(output, plaintext_wrapper, ckks_encoder);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

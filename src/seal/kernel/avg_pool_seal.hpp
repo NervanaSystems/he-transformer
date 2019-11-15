@@ -27,7 +27,7 @@
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                           const Shape& arg_shape, const Shape& out_shape,
                           const Shape& window_shape,
@@ -36,6 +36,9 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
                           const Shape& padding_above,
                           bool include_padding_in_avg_computation,
                           size_t batch_size, HESealBackend& he_seal_backend) {
+  // TODO(unknown): (fboemer: enable padding in avg pool computation
+  NGRAPH_CHECK(!include_padding_in_avg_computation,
+               "AvgPool doesn't support padding in computation");
   // At the outermost level we will walk over every output coordinate O.
   CoordinateTransform output_transform(out_shape);
 
@@ -116,6 +119,7 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
     //   n_elements := n_elements + 1
 
     // T result = 0;
+
     // TODO(fboemer): better type which matches arguments?
     auto sum = HEType(HEPlaintext(), false);
     bool first_add = true;
@@ -126,7 +130,7 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
       bool in_bounds =
           input_batch_transform.has_source_coordinate(input_batch_coord);
 
-      if (in_bounds || include_padding_in_avg_computation) {
+      if (in_bounds /* || include_padding_in_avg_computation */) {
         // T v = in_bounds ?: 0;
         // result += v;
 
@@ -145,24 +149,17 @@ inline void avg_pool_seal(std::vector<HEType>& arg, std::vector<HEType>& out,
       }
     }
 
-    if (n_elements == 0) {
-      throw std::runtime_error("AvgPool elements == 0, must be non-zero");
-    }
+    NGRAPH_CHECK(n_elements != 0, "AvgPool num_elements must be non-zero");
+    NGRAPH_CHECK(!first_add, "AvgPool must have > 1 elements to add");
 
-    if (first_add) {
-      // TODO(fboemer): batch size number of zeros?
-      HEPlaintext zero(std::vector<double>{0});
-      out[out_coord_idx].set_plaintext(zero);
-    } else {
-      // TODO(fboemer): batch size number of zeros?
-      auto inv_n_elements =
-          HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
-                 sum.complex_packing());
+    // TODO(fboemer): batch size number of zeros?
+    auto inv_n_elements =
+        HEType(HEPlaintext(std::vector<double>{1.f / n_elements}),
+               sum.complex_packing());
 
-      scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
-      out[out_coord_idx] = sum;
-    }
+    scalar_multiply_seal(sum, inv_n_elements, sum, he_seal_backend);
+    out[out_coord_idx] = sum;
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

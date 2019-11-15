@@ -26,7 +26,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const Shape& in_shape, const Shape& out_shape,
@@ -65,7 +65,7 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
       out[out_idx].set_plaintext(out_plain[out_idx]);
     } else {
       encrypt(out[out_idx].get_ciphertext(), out_plain[out_idx], parms_id,
-              ngraph::element::f32, scale, ckks_encoder, encryptor,
+              element::f32, scale, ckks_encoder, encryptor,
               out[out_idx].complex_packing());
     }
   }
@@ -81,4 +81,4 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
            *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

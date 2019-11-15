@@ -24,7 +24,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void scalar_relu_seal(const HEPlaintext& arg, HEPlaintext& out) {
   out.resize(arg.size());
@@ -44,7 +44,7 @@ void scalar_relu_seal(const HEType& arg, HEType& out,
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
             ckks_encoder);
     scalar_relu_seal(plain, plain);
-    encrypt(out.get_ciphertext(), plain, parms_id, ngraph::element::f32, scale,
+    encrypt(out.get_ciphertext(), plain, parms_id, element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());
     out.set_ciphertext(out.get_ciphertext());
   }
@@ -66,4 +66,4 @@ void relu_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

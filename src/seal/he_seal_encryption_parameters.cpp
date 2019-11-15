@@ -26,7 +26,8 @@
 #include "nlohmann/json.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
+
 HESealEncryptionParameters::HESealEncryptionParameters() {
   auto default_parms = default_real_packing_parms();
 
@@ -107,6 +108,18 @@ void HESealEncryptionParameters::validate_parameters() const {
   // TODO(fboemer): validate scale is reasonable
 }
 
+double HESealEncryptionParameters::choose_scale(
+    const std::vector<seal::SmallModulus>& coeff_moduli) {
+  if (coeff_moduli.size() > 2) {
+    return static_cast<double>(coeff_moduli[coeff_moduli.size() - 2].value());
+  }
+  if (coeff_moduli.size() > 1) {
+    return static_cast<double>(coeff_moduli.back().value()) / 4096.0;
+  }
+  // Enable a single multiply
+  return sqrt(static_cast<double>(coeff_moduli.back().value() / 256.0));
+}
+
 bool HESealEncryptionParameters::operator==(
     const HESealEncryptionParameters& other) const {
 #pragma clang diagnostic push
@@ -126,7 +139,7 @@ bool HESealEncryptionParameters::same_context(
   auto p2 = parms2;
   p1.complex_packing() = p2.complex_packing();
   p1.security_level() = p2.security_level();
-  p1.scale() = p2.scale();
+  p1.set_scale(p2.scale());
 
   return (p1 == p2);
 }
@@ -167,8 +180,8 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
   }
 
   std::string json_config_str = config;
-  if (ngraph::file_util::exists(config)) {
-    json_config_str = ngraph::file_util::read_file_to_string(config);
+  if (file_util::exists(config)) {
+    json_config_str = file_util::read_file_to_string(config);
   }
 
   try {
@@ -207,7 +220,7 @@ HESealEncryptionParameters::parse_config_or_use_default(const char* config) {
     std::stringstream ss;
     ss << "Error creating encryption parameter from string " << json_config_str
        << ": " << e.what();
-    throw ngraph::ngraph_error(ss.str());
+    throw ngraph_error(ss.str());
   }
 }
 
@@ -244,4 +257,4 @@ void print_encryption_parameters(const HESealEncryptionParameters& params,
   NGRAPH_HE_LOG(1) << param_ss.str();
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

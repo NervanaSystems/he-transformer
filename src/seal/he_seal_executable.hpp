@@ -17,7 +17,6 @@
 #pragma once
 
 #include <atomic>
-#include <boost/asio.hpp>
 #include <chrono>
 #include <condition_variable>
 #include <memory>
@@ -27,6 +26,7 @@
 #include <vector>
 
 #include "aby/aby_server_executor.hpp"
+#include "boost/asio.hpp"
 #include "he_op_annotations.hpp"
 #include "he_tensor.hpp"
 #include "logging/ngraph_he_log.hpp"
@@ -39,11 +39,12 @@
 #include "tcp/tcp_message.hpp"
 #include "tcp/tcp_session.hpp"
 
-namespace ngraph::aby {
+namespace ngraph::runtime::aby {
 class ABYServerExecutor;
 }
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
+
 /// \brief Class representing a function to execute
 class HESealExecutable : public runtime::Executable {
  public:
@@ -91,16 +92,10 @@ class HESealExecutable : public runtime::Executable {
   std::vector<runtime::PerformanceCounter> get_performance_data()
       const override;
 
-  // \brief Returns the port at which the server is expecting a connection
-  size_t get_port() const { return m_port; }
-
   // TODO(fboemer): merge _done() methods
 
   /// \brief Returns whether or not the maxpool op has completed
   bool max_pool_done() const { return m_max_pool_done; }
-
-  /// \brief Returns whether or not the minimum op has completed
-  bool minimum_done() const { return m_minimum_done; }
 
   /// \brief Returns whether or not the session has started
   bool session_started() const { return m_session_started; }
@@ -183,9 +178,9 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not a node's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
-  bool verbose_op(const ngraph::Node& op) {
+  bool verbose_op(const Node& op) {
     return m_verbose_all_ops ||
-           m_verbose_ops.find(ngraph::to_lower(op.description())) !=
+           m_verbose_ops.find(to_lower(op.description())) !=
                m_verbose_ops.end();
   }
 
@@ -193,50 +188,21 @@ class HESealExecutable : public runtime::Executable {
   /// \param[in] description Node description determine verbosity of
   bool verbose_op(const std::string& description) {
     return m_verbose_all_ops ||
-           m_verbose_ops.find(ngraph::to_lower(description)) !=
-               m_verbose_ops.end();
+           m_verbose_ops.find(to_lower(description)) != m_verbose_ops.end();
   }
 
   /// \brief Returns the batch size
-  size_t batch_size() const { return m_batch_size; }
+  size_t batch_size() const;
 
-  /// \brief Returns the batch size
+  /// \brief Sets the batch size
   void set_batch_size(size_t batch_size);
 
-  /// \brief Returns whether or not operation node should be received from
-  /// client. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] op Graph operation, should be Constant or Parameter node
-  bool from_client(const ngraph::op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
-      NGRAPH_HE_LOG(5) << "Op has he annotation " << *he_annotation;
-      return he_annotation->from_client();
-    }
-    NGRAPH_HE_LOG(5) << "Op has no he annotation";
-    return false;
-  }
-
-  /// \brief Returns whether or not operation node should be packed using
-  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] node_wrapper Wrapper of graph operation
-  bool plaintext_packed(const NodeWrapper& node_wrapper) {
-    return plaintext_packed(*node_wrapper.get_op());
-  }
-
-  /// \brief Returns whether or not operation node should be packed using
-  /// plaintext packing. Defaults to false if op has no HEOpAnnotation.
-  /// \param[in] op Graph operation
-  bool plaintext_packed(const ngraph::op::Op& op) {
-    auto annotation = op.get_op_annotations();
-    if (auto he_annotation =
-            std::dynamic_pointer_cast<HEOpAnnotations>(annotation)) {
-      return he_annotation->packed();
-    }
-    return false;
-  }
+  /// \brief Sets verbosity of all operations
+  void set_verbose_all_ops(bool value);
 
  private:
+  friend class TestHESealExecutable;
+
   HESealBackend& m_he_seal_backend;
   bool m_is_compiled{false};
   bool m_verbose_all_ops{false};
@@ -286,11 +252,6 @@ class HESealExecutable : public runtime::Executable {
   std::condition_variable m_max_pool_cond;
   bool m_max_pool_done{false};
 
-  // To trigger when minimum is done
-  std::mutex m_minimum_mutex;
-  std::condition_variable m_minimum_cond;
-  bool m_minimum_done{false};
-
   // To trigger when result message has been written
   std::mutex m_result_mutex;
   std::condition_variable m_result_cond;
@@ -312,4 +273,4 @@ class HESealExecutable : public runtime::Executable {
 
   bool m_stop_const_fold{string_to_bool(std::getenv("STOP_CONST_FOLD"))};
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

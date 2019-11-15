@@ -142,8 +142,9 @@ library_dirs = [NGRAPH_HE_LIB_DIR]
 
 libraries = ['he_seal_backend']
 
-data_files = [('lib', [(NGRAPH_HE_LIB_DIR + '/' + library)
-                       for library in os.listdir(NGRAPH_HE_LIB_DIR)])]
+lib_files = [os.path.join(NGRAPH_HE_LIB_DIR, f) for f in os.listdir(NGRAPH_HE_LIB_DIR) if os.path.isfile(os.path.join(NGRAPH_HE_LIB_DIR, f))]
+
+data_files = [('lib', lib_files)]
 print('data_files', data_files)
 
 sources = ['pyhe_client/he_seal_client.cpp', 'pyhe_client/pyhe_client.cpp']

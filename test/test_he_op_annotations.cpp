@@ -16,76 +16,12 @@
 
 #include "gtest/gtest.h"
 #include "he_op_annotations.hpp"
+#include "ngraph/op/parameter.hpp"
 
-TEST(he_op_annotations, defaults) {
-  {
-    auto ann1 =
-        ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation();
-
-    EXPECT_FALSE(ann1->from_client());
-    EXPECT_FALSE(ann1->encrypted());
-    EXPECT_FALSE(ann1->packed());
-  }
-  {
-    auto ann2 =
-        ngraph::he::HEOpAnnotations::server_plaintext_packed_annotation();
-
-    EXPECT_FALSE(ann2->from_client());
-    EXPECT_FALSE(ann2->encrypted());
-    EXPECT_TRUE(ann2->packed());
-  }
-  {
-    auto ann3 =
-        ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
-
-    EXPECT_FALSE(ann3->from_client());
-    EXPECT_TRUE(ann3->encrypted());
-    EXPECT_FALSE(ann3->packed());
-  }
-  {
-    auto ann4 =
-        ngraph::he::HEOpAnnotations::server_ciphertext_packed_annotation();
-
-    EXPECT_FALSE(ann4->from_client());
-    EXPECT_TRUE(ann4->encrypted());
-    EXPECT_TRUE(ann4->packed());
-  }
-  {
-    auto ann5 =
-        ngraph::he::HEOpAnnotations::client_plaintext_unpacked_annotation();
-
-    EXPECT_TRUE(ann5->from_client());
-    EXPECT_FALSE(ann5->encrypted());
-    EXPECT_FALSE(ann5->packed());
-  }
-  {
-    auto ann6 =
-        ngraph::he::HEOpAnnotations::client_plaintext_packed_annotation();
-
-    EXPECT_TRUE(ann6->from_client());
-    EXPECT_FALSE(ann6->encrypted());
-    EXPECT_TRUE(ann6->packed());
-  }
-  {
-    auto ann7 =
-        ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation();
-
-    EXPECT_TRUE(ann7->from_client());
-    EXPECT_TRUE(ann7->encrypted());
-    EXPECT_FALSE(ann7->packed());
-  }
-  {
-    auto ann8 =
-        ngraph::he::HEOpAnnotations::client_ciphertext_packed_annotation();
-
-    EXPECT_TRUE(ann8->from_client());
-    EXPECT_TRUE(ann8->encrypted());
-    EXPECT_TRUE(ann8->packed());
-  }
-}
+namespace ngraph::runtime::he {
 
 TEST(he_op_annotations, set_get) {
-  auto ann = ngraph::he::HEOpAnnotations(false, false, false);
+  auto ann = HEOpAnnotations(false, false, false);
   EXPECT_FALSE(ann.from_client());
   EXPECT_FALSE(ann.encrypted());
   EXPECT_FALSE(ann.packed());
@@ -108,3 +44,19 @@ TEST(he_op_annotations, set_get) {
   ann.set_packed(false);
   EXPECT_FALSE(ann.packed());
 }
+
+TEST(he_op_annotations, initialize) {
+  HEOpAnnotations annotation{false, true, false};
+  HEOpAnnotations annotation2{annotation};
+
+  EXPECT_EQ(annotation, annotation2);
+}
+
+TEST(he_op_annotations, defaults) {
+  auto param = std::make_shared<op::Parameter>(element::f32, Shape{});
+
+  EXPECT_FALSE(HEOpAnnotations::from_client(*param));
+  EXPECT_FALSE(HEOpAnnotations::plaintext_packed(*param));
+}
+
+}  // namespace ngraph::runtime::he

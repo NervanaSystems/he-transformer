@@ -28,7 +28,7 @@
 #include "seal/kernel/multiply_seal.hpp"
 #include "seal/kernel/subtract_seal.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void batch_norm_inference_seal(
     double eps, std::vector<HEType>& gamma, std::vector<HEType>& beta,
     std::vector<HEType>& input, std::vector<HEType>& mean,
@@ -38,7 +38,7 @@ inline void batch_norm_inference_seal(
   CoordinateTransform input_transform(input_shape);
 
   // Store input coordinates for parallelization
-  std::vector<ngraph::Coordinate> input_coords;
+  std::vector<Coordinate> input_coords;
   for (const Coordinate& in_coord : input_transform) {
     input_coords.emplace_back(in_coord);
   }
@@ -94,4 +94,4 @@ inline void batch_norm_inference_seal(
                     normed_input[input_index], he_seal_backend);
   }
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

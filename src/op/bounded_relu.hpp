@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include "ngraph/node.hpp"
 #include "ngraph/op/op.hpp"
@@ -24,7 +25,7 @@
 
 namespace ngraph::op {
 /// \brief Elementwise Minimum(Relu(arg, 0), alpha) operation.
-class BoundedRelu : public ngraph::op::util::UnaryElementwiseArithmetic {
+class BoundedRelu : public util::UnaryElementwiseArithmetic {
  public:
   static const std::string type_name;
 
@@ -33,7 +34,7 @@ class BoundedRelu : public ngraph::op::util::UnaryElementwiseArithmetic {
   /// \brief Constructs a BoundedRelu operation.
   /// \param[in] arg Node input to the Relu.
   /// \param[in] alpha Bound on bounded relu
-  BoundedRelu(const Output<ngraph::Node>& arg, float alpha);
+  BoundedRelu(const Output<Node>& arg, float alpha);
 
   float get_alpha() const { return m_alpha; }
 

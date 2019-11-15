@@ -1,7 +1,7 @@
 
 syntax = "proto3";
 
-package ngraph.he.pb;
+package ngraph.runtime.he.pb;
 
 /// \brief Represents a message between the server and client.
 message TCPMessage {
@@ -37,9 +37,27 @@ message Function {
 message HETensor {
   string name = 1;
   repeated uint64 shape = 2;
-  bool packed = 3;
-  uint64 offset = 4;
-  repeated HEType data = 5;
+  enum ElementType {
+    UNDEFINED = 0;
+    DYNAMIC = 1;
+    BOOLEAN = 2;
+    BF16 = 3;
+    F16 = 4;
+    F32 = 5;
+    F64 = 6;
+    I8 = 7;
+    I16 = 8;
+    I32 = 9;
+    I64 = 10;
+    U8 = 11;
+    U16 = 12;
+    U32 = 13;
+    U64 = 14;
+  }
+  ElementType type = 3;
+  bool packed = 4;
+  uint64 offset = 5;
+  repeated HEType data = 6;
 }
 
 message HEType {

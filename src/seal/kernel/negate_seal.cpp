@@ -16,7 +16,7 @@
 
 #include "seal/kernel/negate_seal.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void scalar_negate_seal(const SealCiphertextWrapper& arg,
                         std::shared_ptr<SealCiphertextWrapper>& out,
@@ -30,4 +30,4 @@ void scalar_negate_seal(const HEPlaintext& arg, HEPlaintext& out) {
   out = std::move(out_vals);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

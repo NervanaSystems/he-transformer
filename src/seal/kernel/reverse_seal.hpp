@@ -21,7 +21,7 @@
 #include "he_type.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void reverse_seal(const std::vector<HEType>& arg,
                          std::vector<HEType>& out, const Shape& arg_shape,
                          const Shape& out_shape, const AxisSet& reversed_axes) {
@@ -44,4 +44,4 @@ inline void reverse_seal(const std::vector<HEType>& arg,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

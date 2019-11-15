@@ -21,7 +21,6 @@
 #include <limits>
 #include <memory>
 
-#include "he_op_annotations.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/runtime/backend_manager.hpp"
 #include "ngraph/util.hpp"
@@ -39,7 +38,7 @@ get_backend_constructor_pointer() {
     std::shared_ptr<ngraph::runtime::Backend> create(
         const std::string& config) override {
       NGRAPH_HE_LOG(5) << "Creating backend with config string " << config;
-      return std::make_shared<ngraph::he::HESealBackend>();
+      return std::make_shared<ngraph::runtime::he::HESealBackend>();
     }
   };
 
@@ -48,7 +47,7 @@ get_backend_constructor_pointer() {
   return s_backend_constructor.get();
 }
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HESealBackend::HESealBackend()
     : HESealBackend(HESealEncryptionParameters::parse_config_or_use_default(
@@ -103,24 +102,6 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
   (void)error;  // Avoid unused parameter warning
   NGRAPH_HE_LOG(3) << "Setting config";
   for (const auto& [option, setting] : config) {
-    std::string lower_option = ngraph::to_lower(option);
-    std::vector<std::string> lower_settings =
-        ngraph::split(ngraph::to_lower(setting), ',');
-    // Strip attributes, i.e. "tensor_name:0 => tensor_name"
-    std::string tensor_name = option.substr(0, option.find(':', 0));
-
-    for (const auto& lower_setting : lower_settings) {
-      if (lower_setting == "client_input") {
-        m_client_tensor_names.insert(tensor_name);
-      } else if (lower_setting == "encrypt") {
-        m_encrypted_tensor_names.insert(tensor_name);
-      } else if (lower_setting == "plain") {
-        m_plaintext_tensor_names.insert(tensor_name);
-      } else if (lower_setting == "packed") {
-        m_packed_tensor_names.insert(tensor_name);
-      }
-    }
-
     // Check whether client is enabled
     if (option == "enable_client") {
       bool client_enabled = string_to_bool(setting.c_str(), false);
@@ -151,8 +132,6 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       } else {
         NGRAPH_HE_LOG(3) << "Not masking garbled circuits outputs from config";
       }
-    } else {
-      NGRAPH_WARN << "Unknown config option " << option;
     }
   }
 
@@ -174,8 +153,46 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
   for (const auto& tensor_name : m_encrypted_tensor_names) {
     NGRAPH_HE_LOG(3) << "Encrypted tensor name " << tensor_name;
   }
-  return true;
-}  // namespace he
+  else {
+    std::string lower_option = to_lower(option);
+    std::vector<std::string> lower_settings = split(to_lower(setting), ',');
+    // Strip attributes, i.e. "tensor_name:0 => tensor_name"
+    std::string tensor_name = option.substr(0, option.find(':', 0));
+    m_config_tensors.insert_or_assign(
+        tensor_name, *HEOpAnnotations::server_plaintext_unpacked_annotation());
+
+    static std::unordered_set<std::string> valid_config_settings{
+        "client_input", "encrypt", "packed", ""};
+    for (const auto& lower_setting : lower_settings) {
+      NGRAPH_CHECK(valid_config_settings.find(lower_setting) !=
+                       valid_config_settings.end(),
+                   "Invalid config setting ", lower_setting);
+
+      if (lower_setting == "client_input") {
+        m_config_tensors.at(tensor_name).set_from_client(true);
+      } else if (lower_setting == "encrypt") {
+        m_config_tensors.at(tensor_name).set_encrypted(true);
+      } else if (lower_setting == "packed") {
+        m_config_tensors.at(tensor_name).set_packed(true);
+      }
+    }
+  }
+}
+
+bool any_config_from_client =
+    std::any_of(m_config_tensors.begin(), m_config_tensors.end(),
+                [](const auto& name_and_op_annotation) {
+                  const auto& [name, op_annotation] = name_and_op_annotation;
+                  return op_annotation.from_client();
+                });
+NGRAPH_CHECK(m_enable_client || !any_config_from_client,
+             "Configuration specifies client input, but client is not enabled");
+
+for (const auto& [name, config] : m_config_tensors) {
+  NGRAPH_HE_LOG(3) << "Tensor name: " << name << " with config " << config;
+}
+return true;
+}  // namespace ngraph::runtime::he
 
 void HESealBackend::update_encryption_parameters(
     const HESealEncryptionParameters& new_parms) {
@@ -188,49 +205,44 @@ void HESealBackend::update_encryption_parameters(
   }
 }
 
-std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_tensor(
+std::shared_ptr<runtime::Tensor> HESealBackend::create_tensor(
     const element::Type& type, const Shape& shape) {
   return create_plain_tensor(type, shape, false);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_plain_tensor(
+std::shared_ptr<runtime::Tensor> HESealBackend::create_plain_tensor(
     const element::Type& type, const Shape& shape, const bool plaintext_packing,
     const std::string& name) const {
   auto tensor = std::make_shared<HETensor>(
       type, shape, plaintext_packing, complex_packing(), false, *this, name);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor> HESealBackend::create_cipher_tensor(
+std::shared_ptr<runtime::Tensor> HESealBackend::create_cipher_tensor(
     const element::Type& type, const Shape& shape, const bool plaintext_packing,
     const std::string& name) const {
   auto tensor = std::make_shared<HETensor>(
       type, shape, plaintext_packing, complex_packing(), true, *this, name);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor>
-HESealBackend::create_packed_cipher_tensor(const element::Type& type,
-                                           const Shape& shape) const {
+std::shared_ptr<runtime::Tensor> HESealBackend::create_packed_cipher_tensor(
+    const element::Type& type, const Shape& shape) const {
   auto tensor = std::make_shared<HETensor>(type, shape, true, complex_packing(),
                                            true, *this);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
-std::shared_ptr<ngraph::runtime::Tensor>
-HESealBackend::create_packed_plain_tensor(const element::Type& type,
-                                          const Shape& shape) const {
+std::shared_ptr<runtime::Tensor> HESealBackend::create_packed_plain_tensor(
+    const element::Type& type, const Shape& shape) const {
   auto tensor = std::make_shared<HETensor>(type, shape, true, complex_packing(),
                                            false, *this);
-  return std::static_pointer_cast<ngraph::runtime::Tensor>(tensor);
+  return std::static_pointer_cast<runtime::Tensor>(tensor);
 }
 
 // NOLINTNEXTLINE
-std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
+std::shared_ptr<runtime::Executable> HESealBackend::compile(
     std::shared_ptr<Function> function, bool enable_performance_data) {
-  auto from_client_annotation =
-      std::make_shared<HEOpAnnotations>(true, false, false);
-
   NGRAPH_HE_LOG(1) << "Compiling function with "
                    << function->get_parameters().size() << " parameters";
 
@@ -243,85 +255,19 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
     }
   }
 
-  for (const auto& name : get_client_tensor_names()) {
-    NGRAPH_HE_LOG(3) << "get_client_tensor_names " << name;
-    bool matching_param = false;
-    bool has_tag = false;
-    for (auto& param : function->get_parameters()) {
-      has_tag |= (!param->get_provenance_tags().empty());
-
-      if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
-                         << param->get_shape() << ") as from client";
-        param->set_op_annotations(from_client_annotation);
-        matching_param = true;
-      }
-    }
-    // ngraph-bridge calls compile() twice, once before adding tags, and once
-    // after
-    NGRAPH_CHECK(!has_tag || matching_param, "Function has no parameter named ",
-                 name);
-  }
-
-  NGRAPH_HE_LOG(3) << "Setting encrypted tags";
-  for (const auto& name : get_encrypted_tensor_names()) {
-    for (auto& param : function->get_parameters()) {
-      if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(5) << "Setting tensor name " << param->get_name()
-                         << param->get_shape() << ") as encrypted";
-        auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
-            param->get_op_annotations());
-        if (current_annotation == nullptr) {
-          param->set_op_annotations(
-              HEOpAnnotations::server_ciphertext_unpacked_annotation());
-        } else {
-          current_annotation->set_encrypted(true);
-        }
-        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
-                         << param->get_shape() << ") as encrypted";
-      }
-    }
-  }
-
-  NGRAPH_HE_LOG(3) << "Setting plaintext tags";
-  for (const auto& name : get_plaintext_tensor_names()) {
-    NGRAPH_HE_LOG(5) << "Plaintext tensor name " << name;
-    for (auto& param : function->get_parameters()) {
-      if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
-                         << param->get_shape() << ") as plaintext";
-        auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
-            param->get_op_annotations());
-        if (current_annotation == nullptr) {
-          param->set_op_annotations(
-              HEOpAnnotations::server_plaintext_unpacked_annotation());
-        } else {
-          current_annotation->set_encrypted(false);
-        }
-        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
-                         << param->get_shape() << ") as plaintext";
-      }
-    }
-  }
-
-  NGRAPH_HE_LOG(3) << "Setting packed tags";
-  for (const auto& name : get_packed_tensor_names()) {
-    NGRAPH_HE_LOG(5) << "Packed tensor name " << name;
-    for (auto& param : function->get_parameters()) {
-      if (param_originates_from_name(*param, name)) {
-        NGRAPH_HE_LOG(3) << "Setting tensor name " << param->get_name() << " ("
-                         << param->get_shape() << ") as packed";
-        auto current_annotation = std::dynamic_pointer_cast<HEOpAnnotations>(
-            param->get_op_annotations());
-        if (current_annotation == nullptr) {
-          param->set_op_annotations(
-              HEOpAnnotations::server_plaintext_packed_annotation());
-        } else {
-          current_annotation->set_packed(true);
-        }
-        NGRAPH_HE_LOG(5) << "Set tensor name " << param->get_name() << " ("
-                         << param->get_shape() << ") as plaintext";
-      }
+  for (auto& param : function->get_parameters()) {
+    auto it =
+        std::find_if(m_config_tensors.begin(), m_config_tensors.end(),
+                     [&](const auto& config) {
+                       const auto& [tensor_name, annotation] = config;
+                       return param_originates_from_name(*param, tensor_name);
+                     });
+    if (it != m_config_tensors.end()) {
+      const auto& [tensor_name, annotation] = *it;
+      param->set_op_annotations(std::make_shared<HEOpAnnotations>(annotation));
+    } else {
+      param->set_op_annotations(
+          HEOpAnnotations::server_plaintext_unpacked_annotation());
     }
   }
 
@@ -330,7 +276,7 @@ std::shared_ptr<ngraph::runtime::Executable> HESealBackend::compile(
                                          *this, m_enable_client));
 }
 
-bool HESealBackend::is_supported(const ngraph::Node& node) const {
+bool HESealBackend::is_supported(const Node& node) const {
   return m_unsupported_op_name_list.find(node.description()) ==
              m_unsupported_op_name_list.end() &&
          is_supported_type(node.get_element_type());
@@ -340,16 +286,16 @@ void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
                             const HEPlaintext& input, const element::Type& type,
                             bool complex_packing) const {
   NGRAPH_CHECK(!input.empty(), "Input has no values in encrypt");
-  ngraph::he::encrypt(output, input, m_context->first_parms_id(), type,
-                      get_scale(), *m_ckks_encoder, *m_encryptor,
-                      complex_packing);
+  ngraph::runtime::he::encrypt(output, input, m_context->first_parms_id(), type,
+                               get_scale(), *m_ckks_encoder, *m_encryptor,
+                               complex_packing);
 }
 
 void HESealBackend::decrypt(HEPlaintext& output,
                             const SealCiphertextWrapper& input,
                             const bool complex_packing) const {
-  ngraph::he::decrypt(output, input, complex_packing, *m_decryptor,
-                      *m_ckks_encoder);
+  ngraph::runtime::he::decrypt(output, input, complex_packing, *m_decryptor,
+                               *m_ckks_encoder);
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

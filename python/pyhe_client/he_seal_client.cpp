@@ -14,6 +14,8 @@
 // limitations under the License.
 //*****************************************************************************
 
+#include "pyhe_client/he_seal_client.hpp"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -21,23 +23,24 @@
 #include <unordered_map>
 #include <vector>
 
-#include "pyhe_client/he_seal_client.hpp"
 #include "seal/he_seal_client.hpp"
 
 namespace py = pybind11;
 
 void regclass_pyhe_client(py::module m) {
-  py::class_<ngraph::he::HESealClient> he_seal_client(m, "HESealClient");
+  py::class_<ngraph::runtime::he::HESealClient> he_seal_client(m,
+                                                               "HESealClient");
   he_seal_client.doc() = "he_seal_client wraps ngraph::he::HESealClient";
 
   he_seal_client.def(
       py::init<const std::string&, const std::size_t, const std::size_t,
-               const ngraph::he::HETensorConfigMap<float>&>());
+               const ngraph::runtime::he::HETensorConfigMap<float>&>());
 
   he_seal_client.def("set_seal_context",
-                     &ngraph::he::HESealClient::set_seal_context);
-  he_seal_client.def("is_done", &ngraph::he::HESealClient::is_done);
-  he_seal_client.def("get_results", &ngraph::he::HESealClient::get_results);
+                     &ngraph::runtime::he::HESealClient::set_seal_context);
+  he_seal_client.def("is_done", &ngraph::runtime::he::HESealClient::is_done);
+  he_seal_client.def("get_results",
+                     &ngraph::runtime::he::HESealClient::get_results);
   he_seal_client.def("close_connection",
-                     &ngraph::he::HESealClient::close_connection);
+                     &ngraph::runtime::he::HESealClient::close_connection);
 }
