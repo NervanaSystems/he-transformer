@@ -36,7 +36,6 @@ void scalar_subtract_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
                           std::shared_ptr<SealCiphertextWrapper>& out,
                           const bool complex_packing,
                           HESealBackend& he_seal_backend) {
-  NGRAPH_INFO << "Cipher minus plain complex? " << complex_packing;
   HEPlaintext neg_arg1(arg1.size());
   std::transform(arg1.cbegin(), arg1.cend(), neg_arg1.begin(), std::negate<>());
   scalar_add_seal(arg0, neg_arg1, out, complex_packing, he_seal_backend);

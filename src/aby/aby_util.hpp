@@ -55,7 +55,7 @@ void check_argument_range(const std::vector<T>& values, const T min_val,
 inline double uint64_to_double(uint64_t i, uint64_t q, double scale) {
   if (i >= q) {
     NGRAPH_WARN << "i " << i << " is too large for q " << q;
-    throw ngraph_error("i is too large");
+    // throw ngraph_error("i is too large");
   }
   if (i > q / 2) {
     return (i - q / 2) / scale;

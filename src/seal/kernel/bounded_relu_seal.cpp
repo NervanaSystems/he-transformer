@@ -39,14 +39,15 @@ void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
                               const seal::parms_id_type& parms_id, double scale,
                               seal::CKKSEncoder& ckks_encoder,
                               seal::Encryptor& encryptor,
-                              seal::Decryptor& decryptor) {
+                              seal::Decryptor& decryptor,
+                              std::shared_ptr<seal::SEALContext> context) {
   if (arg.is_plaintext()) {
     out.set_plaintext(arg.get_plaintext());
     scalar_bounded_relu_seal(arg.get_plaintext(), out.get_plaintext(), alpha);
   } else {
     HEPlaintext plain;
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
-            ckks_encoder);
+            ckks_encoder, context, arg.batch_size());
     scalar_bounded_relu_seal(plain, plain, alpha);
     encrypt(out.get_ciphertext(), plain, parms_id, element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());
@@ -58,7 +59,8 @@ void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
   scalar_bounded_relu_seal(
       arg, out, alpha, he_seal_backend.get_context()->first_parms_id(),
       he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
-      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
+      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor(),
+      he_seal_backend.get_context());
 }
 
 void bounded_relu_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,

@@ -506,7 +506,8 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 }
 
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
-            seal::CKKSEncoder& ckks_encoder, double mod_interval) {
+            seal::CKKSEncoder& ckks_encoder, size_t batch_size,
+            double mod_interval) {
   NGRAPH_INFO << "Decoding with mod_interval " << mod_interval;
   if (input.complex_packing()) {
     std::vector<std::complex<double>> complex_vals;
@@ -515,20 +516,19 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
   } else {
     ckks_encoder.decode(input.plaintext(), output);
   }
-
-  NGRAPH_INFO << "before centering " << output;
-
+  output.resize(batch_size);
+  NGRAPH_HE_LOG(3) << "before centering " << output;
   // TODO: pass in batch size?
   for (size_t i = 0; i < output.size(); ++i) {
     output[i] = runtime::aby::mod_reduce_zero_centered(output[i], mod_interval);
   }
-  NGRAPH_INFO << "after centering " << output;
+  NGRAPH_HE_LOG(3) << "after centering " << output;
 }
 
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder,
-             std::shared_ptr<seal::SEALContext> context) {
+             std::shared_ptr<seal::SEALContext> context, size_t batch_size) {
   auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
   decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
 
@@ -539,12 +539,12 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
         context->get_context_data(input.ciphertext().parms_id())->parms();
     const auto& coeff_moduli = encryption_params.coeff_modulus();
     const auto& q = coeff_moduli[0].value();
-    NGRAPH_INFO << "q " << q;
+    NGRAPH_HE_LOG(3) << "q " << q;
 
     q_over_scale = q / (input.ciphertext().scale());
-    NGRAPH_INFO << "q_over_scale " << q_over_scale;
+    NGRAPH_HE_LOG(3) << "q_over_scale " << q_over_scale;
   }
-  decode(output, plaintext_wrapper, ckks_encoder, q_over_scale);
+  decode(output, plaintext_wrapper, ckks_encoder, batch_size, q_over_scale);
 }
 
 }  // namespace ngraph::runtime::he

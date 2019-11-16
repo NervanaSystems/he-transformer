@@ -33,7 +33,8 @@ void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
                               const seal::parms_id_type& parms_id, double scale,
                               seal::CKKSEncoder& ckks_encoder,
                               seal::Encryptor& encryptor,
-                              seal::Decryptor& decryptor);
+                              seal::Decryptor& decryptor,
+                              std::shared_ptr<seal::SEALContext> context);
 
 void scalar_bounded_relu_seal(const HEType& arg, HEType& out, float alpha,
                               const HESealBackend& he_seal_backend);

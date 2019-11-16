@@ -148,8 +148,8 @@ TEST(seal_util, match_modulus_and_scale_inplace) {
     auto check_decryption = [&](SealCiphertextWrapper& cipher) {
       HEPlaintext output;
       decrypt(output, cipher, complex_packing, *he_backend->get_decryptor(),
-              *he_backend->get_ckks_encoder());
-      output.resize(plain.size());
+              *he_backend->get_ckks_encoder(), he_backend->get_context(),
+              plain.size());
       EXPECT_TRUE(test::all_close(output, plain));
     };
 

@@ -90,7 +90,7 @@ void ABYServerExecutor::post_process_aby_circuit(
     post_process_aby_relu_circuit(tensor);
   } else if (name == "BoundedRelu") {
     double bound = js["bound"];
-    NGRAPH_INFO << "Bound " << bound;
+    NGRAPH_HE_LOG(3) << "Bound " << bound;
     post_process_aby_bounded_relu_circuit(tensor, bound);
   } else {
     NGRAPH_ERR << "Unknown function name " << name;
@@ -114,9 +114,9 @@ std::shared_ptr<he::HETensor> ABYServerExecutor::generate_gc_mask(
   } else {
     rand_vals = std::vector<uint64_t>(rand_vals.size(), default_value);
   }
-  NGRAPH_INFO << "Random mask vals:";
+  NGRAPH_HE_LOG(3) << "Random mask vals:";
   for (const auto& elem : rand_vals) {
-    NGRAPH_INFO << elem;
+    NGRAPH_HE_LOG(3) << elem;
   }
 
   tensor->write(rand_vals.data(), rand_vals.size() * sizeof(uint64_t));
@@ -148,14 +148,14 @@ void ABYServerExecutor::prepare_aby_relu_circuit(
   bool complex_packing = cipher_batch[0].complex_packing();
   size_t batch_size = cipher_batch[0].batch_size();
 
-  NGRAPH_INFO << "Generating gc input mask";
-  NGRAPH_INFO << "complex_packing? " << complex_packing;
+  NGRAPH_HE_LOG(3) << "Generating gc input mask";
+  NGRAPH_HE_LOG(3) << "complex_packing? " << complex_packing;
 
   m_gc_input_mask =
       generate_gc_input_mask(Shape{batch_size, cipher_batch.size()},
                              plaintext_packing, complex_packing);
 
-  NGRAPH_INFO << "Generating gc output mask";
+  NGRAPH_HE_LOG(3) << "Generating gc output mask";
 
   m_gc_output_mask = generate_gc_output_mask(
       Shape{batch_size, cipher_batch.size()}, plaintext_packing,
@@ -170,14 +170,14 @@ void ABYServerExecutor::prepare_aby_relu_circuit(
 
     auto cipher = he_type.get_ciphertext();
 
-    NGRAPH_INFO << "Mod switching to lowest";
+    NGRAPH_HE_LOG(3) << "Mod switching to lowest";
     // Switch modulus to lowest values since mask values are drawn
     // from (-q/2, q/2) for q the lowest coeff modulus
     m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 
     // Divide by scale so we can encode at the same scale as existing
     // ciphertext
-    NGRAPH_INFO << "scaling input mask";
+    NGRAPH_HE_LOG(3) << "scaling input mask";
     double scale = cipher->ciphertext().scale();
     scales[i] = scale;
     he::HEPlaintext scaled_gc_input_mask(gc_input_mask.get_plaintext());
@@ -185,13 +185,13 @@ void ABYServerExecutor::prepare_aby_relu_circuit(
          ++mask_idx) {
       scaled_gc_input_mask[mask_idx] /= scale;
     }
-    NGRAPH_INFO << "scaled_gc_input_mask " << scaled_gc_input_mask;
+    NGRAPH_HE_LOG(3) << "scaled_gc_input_mask " << scaled_gc_input_mask;
 
-    NGRAPH_INFO << "scalar_subtract_seal";
+    NGRAPH_HE_LOG(3) << "scalar_subtract_seal";
     scalar_subtract_seal(*cipher, scaled_gc_input_mask, cipher,
                          he_type.complex_packing(),
                          m_he_seal_executable.he_seal_backend());
-    NGRAPH_INFO << "donew with scalar_subtract_seal";
+    NGRAPH_HE_LOG(3) << "donew with scalar_subtract_seal";
   }
 
   for (const auto& scale : scales) {
@@ -202,7 +202,7 @@ void ABYServerExecutor::prepare_aby_relu_circuit(
 
 void ABYServerExecutor::run_aby_relu_circuit(
     std::vector<he::HEType>& cipher_batch) {
-  NGRAPH_INFO << "run_aby_relu_circuit ";
+  NGRAPH_HE_LOG(3) << "run_aby_relu_circuit ";
 
   // TODO(fboemer): bounded relu?
 
@@ -219,9 +219,9 @@ void ABYServerExecutor::run_aby_relu_circuit(
 
   NGRAPH_HE_LOG(3) << "Server creating relu circuit";
   BooleanCircuit* circ = get_circuit();
-  NGRAPH_INFO << "num_aby_vals " << num_aby_vals;
-  NGRAPH_INFO << "gc_input_mask_vals " << gc_input_mask_vals.size();
-  NGRAPH_INFO << "gc_output_mask_vals " << gc_output_mask_vals.size();
+  NGRAPH_HE_LOG(3) << "num_aby_vals " << num_aby_vals;
+  NGRAPH_HE_LOG(3) << "gc_input_mask_vals " << gc_input_mask_vals.size();
+  NGRAPH_HE_LOG(3) << "gc_output_mask_vals " << gc_output_mask_vals.size();
 
   ngraph::runtime::aby::relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
                                  gc_output_mask_vals, m_aby_bitlen,
@@ -236,7 +236,7 @@ void ABYServerExecutor::run_aby_relu_circuit(
 void ABYServerExecutor::post_process_aby_relu_circuit(
     std::shared_ptr<he::HETensor>& tensor) {
   if (m_he_seal_executable.he_seal_backend().mask_gc_outputs()) {
-    NGRAPH_INFO << "Post-processing relu outptus";
+    NGRAPH_HE_LOG(3) << "Post-processing relu outptus";
 
     size_t tensor_size = tensor->data().size();
     double scale = m_he_seal_executable.he_seal_backend().get_scale();
@@ -248,11 +248,11 @@ void ABYServerExecutor::post_process_aby_relu_circuit(
       auto cipher = data.get_ciphertext();
 
       auto mask = m_gc_output_mask->data(tensor_idx).get_plaintext();
-      NGRAPH_INFO << "Mask before " << mask;
+      NGRAPH_HE_LOG(3) << "Mask before " << mask;
       for (auto& value : mask) {
         value = (value - m_lowest_coeff_modulus / 2.0) / scale;
       }
-      NGRAPH_INFO << "Mask after " << mask;
+      NGRAPH_HE_LOG(3) << "Mask after " << mask;
       // TODO(fboemer): do subtraction mod p_0 instead of p_L
 
       m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
@@ -261,7 +261,7 @@ void ABYServerExecutor::post_process_aby_relu_circuit(
                            m_he_seal_executable.he_seal_backend());
 
       auto& int_array = cipher->ciphertext().int_array();
-      NGRAPH_INFO << "int_array.size " << int_array.size();
+      NGRAPH_HE_LOG(3) << "int_array.size " << int_array.size();
     }
   }
 }
@@ -274,14 +274,14 @@ void ABYServerExecutor::prepare_aby_bounded_relu_circuit(
   bool complex_packing = cipher_batch[0].complex_packing();
   size_t batch_size = cipher_batch[0].batch_size();
 
-  NGRAPH_INFO << "Generating gc input mask";
-  NGRAPH_INFO << "complex_packing? " << complex_packing;
+  NGRAPH_HE_LOG(3) << "Generating gc input mask";
+  NGRAPH_HE_LOG(3) << "complex_packing? " << complex_packing;
 
   m_gc_input_mask =
       generate_gc_input_mask(Shape{batch_size, cipher_batch.size()},
                              plaintext_packing, complex_packing);
 
-  NGRAPH_INFO << "Generating gc output mask";
+  NGRAPH_HE_LOG(3) << "Generating gc output mask";
 
   m_gc_output_mask = generate_gc_output_mask(
       Shape{batch_size, cipher_batch.size()}, plaintext_packing,
@@ -296,14 +296,14 @@ void ABYServerExecutor::prepare_aby_bounded_relu_circuit(
 
     auto cipher = he_type.get_ciphertext();
 
-    NGRAPH_INFO << "Mod switching to lowest";
+    NGRAPH_HE_LOG(3) << "Mod switching to lowest";
     // Switch modulus to lowest values since mask values are drawn
     // from (-q/2, q/2) for q the lowest coeff modulus
     m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 
     // Divide by scale so we can encode at the same scale as existing
     // ciphertext
-    NGRAPH_INFO << "scaling input mask";
+    NGRAPH_HE_LOG(3) << "scaling input mask";
     double scale = cipher->ciphertext().scale();
     scales[i] = scale;
     he::HEPlaintext scaled_gc_input_mask(gc_input_mask.get_plaintext());
@@ -311,13 +311,13 @@ void ABYServerExecutor::prepare_aby_bounded_relu_circuit(
          ++mask_idx) {
       scaled_gc_input_mask[mask_idx] /= scale;
     }
-    NGRAPH_INFO << "scaled_gc_input_mask " << scaled_gc_input_mask;
+    NGRAPH_HE_LOG(3) << "scaled_gc_input_mask " << scaled_gc_input_mask;
 
-    NGRAPH_INFO << "scalar_subtract_seal";
+    NGRAPH_HE_LOG(3) << "scalar_subtract_seal";
     scalar_subtract_seal(*cipher, scaled_gc_input_mask, cipher,
                          he_type.complex_packing(),
                          m_he_seal_executable.he_seal_backend());
-    NGRAPH_INFO << "donew with scalar_subtract_seal";
+    NGRAPH_HE_LOG(3) << "donew with scalar_subtract_seal";
   }
 
   for (const auto& scale : scales) {
@@ -328,7 +328,7 @@ void ABYServerExecutor::prepare_aby_bounded_relu_circuit(
 
 void ABYServerExecutor::run_aby_bounded_relu_circuit(
     std::vector<he::HEType>& cipher_batch, double bound) {
-  NGRAPH_INFO << "run_aby_bounded_relu_circuit with bound " << bound;
+  NGRAPH_HE_LOG(3) << "run_aby_bounded_relu_circuit with bound " << bound;
 
   uint32_t num_aby_vals = cipher_batch.size() * cipher_batch[0].batch_size();
   std::vector<uint64_t> zeros(num_aby_vals, 0);
@@ -336,7 +336,7 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
   std::vector<uint64_t> gc_output_mask_vals(num_aby_vals);
   std::vector<uint64_t> bound_vals(num_aby_vals);
   for (size_t i = 0; i < bound_vals.size(); ++i) {
-    NGRAPH_INFO
+    NGRAPH_HE_LOG(3)
         << "Scale "
         << cipher_batch[i % cipher_batch.size()].get_ciphertext()->scale();
     bound_vals[i] = std::round(
@@ -348,7 +348,7 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
       bound_vals[i] = m_lowest_coeff_modulus - 1;
     }
 
-    NGRAPH_INFO << "bound_vals[ " << i << "]=" << bound_vals[i];
+    NGRAPH_HE_LOG(3) << "bound_vals[ " << i << "]=" << bound_vals[i];
   }
 
   m_gc_input_mask->read(gc_input_mask_vals.data(),
@@ -358,9 +358,9 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
 
   NGRAPH_HE_LOG(3) << "Server creating bounded_relu circuit";
   BooleanCircuit* circ = get_circuit();
-  NGRAPH_INFO << "num_aby_vals " << num_aby_vals;
-  NGRAPH_INFO << "gc_input_mask_vals " << gc_input_mask_vals.size();
-  NGRAPH_INFO << "gc_output_mask_vals " << gc_output_mask_vals.size();
+  NGRAPH_HE_LOG(3) << "num_aby_vals " << num_aby_vals;
+  NGRAPH_HE_LOG(3) << "gc_input_mask_vals " << gc_input_mask_vals.size();
+  NGRAPH_HE_LOG(3) << "gc_output_mask_vals " << gc_output_mask_vals.size();
 
   ngraph::runtime::aby::bounded_relu_aby(
       *circ, num_aby_vals, gc_input_mask_vals, zeros, gc_output_mask_vals,
@@ -375,12 +375,13 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
 void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
     std::shared_ptr<he::HETensor>& tensor, double bound) {
   if (m_he_seal_executable.he_seal_backend().mask_gc_outputs()) {
-    NGRAPH_INFO << "post_process_aby_bounded_relu_circuit with bound " << bound;
+    NGRAPH_HE_LOG(3) << "post_process_aby_bounded_relu_circuit with bound "
+                     << bound;
     size_t tensor_size = tensor->data().size();
     double scale = m_he_seal_executable.he_seal_backend().get_scale();
 
-    NGRAPH_INFO << "Scale " << scale;
-    NGRAPH_INFO << "tensor_size " << tensor_size;
+    NGRAPH_HE_LOG(3) << "Scale " << scale;
+    NGRAPH_HE_LOG(3) << "tensor_size " << tensor_size;
 
     for (size_t tensor_idx = 0; tensor_idx < tensor_size; ++tensor_idx) {
       auto& data = tensor->data(tensor_idx);
@@ -388,11 +389,11 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
       auto cipher = data.get_ciphertext();
 
       auto mask = m_gc_output_mask->data(tensor_idx).get_plaintext();
-      NGRAPH_INFO << "Mask before " << mask;
+      NGRAPH_HE_LOG(3) << "Mask before " << mask;
       for (auto& value : mask) {
         value = (value - m_lowest_coeff_modulus / 2.0) / scale;
       }
-      NGRAPH_INFO << "Mask after " << mask;
+      NGRAPH_HE_LOG(3) << "Mask after " << mask;
       // TODO(fboemer): do subtraction mod p_0 instead of p_L
 
       m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
@@ -401,7 +402,7 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
                            m_he_seal_executable.he_seal_backend());
 
       auto& int_array = cipher->ciphertext().int_array();
-      NGRAPH_INFO << "int_array.size " << int_array.size();
+      NGRAPH_HE_LOG(3) << "int_array.size " << int_array.size();
     }
   }
 }

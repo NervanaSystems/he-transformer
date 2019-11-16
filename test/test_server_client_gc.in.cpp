@@ -204,14 +204,14 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
   std::vector<float> exp_results(shape_size(shape));
   for (size_t i = 0; i < shape_size(shape); ++i) {
     inputs[i] = static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
-    NGRAPH_INFO << "Inputs[" << i << "] = " << inputs[i];
+    NGRAPH_HE_LOG(3) << "Inputs[" << i << "] = " << inputs[i];
 
     if (bounded) {
       exp_results[i] = bounded_relu(inputs[i]);
     } else {
       exp_results[i] = relu(inputs[i]);
     }
-    NGRAPH_INFO << "ExpResults[" << i << "] = " << exp_results[i];
+    NGRAPH_HE_LOG(3) << "ExpResults[" << i << "] = " << exp_results[i];
   }
 
   std::vector<float> results;

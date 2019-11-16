@@ -33,7 +33,8 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                      const AxisSet& reduction_axes, size_t batch_size,
                      const seal::parms_id_type& parms_id, double scale,
                      seal::CKKSEncoder& ckks_encoder,
-                     seal::Encryptor& encryptor, seal::Decryptor& decryptor) {
+                     seal::Encryptor& encryptor, seal::Decryptor& decryptor,
+                     std::shared_ptr<seal::SEALContext> context) {
   std::vector<HEPlaintext> out_plain(
       out.size(), HEPlaintext(std::vector<double>(
                       batch_size, -std::numeric_limits<double>::infinity())));
@@ -51,7 +52,8 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
       max_cmp_plain = max_cmp.get_plaintext();
     } else {
       decrypt(max_cmp_plain, *max_cmp.get_ciphertext(),
-              max_cmp.complex_packing(), decryptor, ckks_encoder);
+              max_cmp.complex_packing(), decryptor, ckks_encoder, context,
+              batch_size);
       max_cmp_plain.resize(batch_size);
     }
     for (size_t i = 0; i < max_cmp_plain.size(); ++i) {
@@ -78,7 +80,8 @@ inline void max_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
   max_seal(arg, out, in_shape, out_shape, reduction_axes, batch_size,
            he_seal_backend.get_context()->first_parms_id(),
            he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
-           *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
+           *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor(),
+           he_seal_backend.get_context());
 }
 
 }  // namespace ngraph::runtime::he

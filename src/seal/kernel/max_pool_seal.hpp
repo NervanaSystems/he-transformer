@@ -133,7 +133,7 @@ inline void max_pool_seal(
     const Strides& window_movement_strides, const Shape& padding_below,
     const Shape& padding_above, const seal::parms_id_type& parms_id,
     double scale, seal::CKKSEncoder& ckks_encoder, seal::Encryptor& encryptor,
-    seal::Decryptor& decryptor) {
+    seal::Decryptor& decryptor, std::shared_ptr<seal::SEALContext> context) {
   auto max_lists = max_pool_seal_max_list(arg_shape, out_shape, window_shape,
                                           window_movement_strides,
                                           padding_below, padding_above);
@@ -150,7 +150,7 @@ inline void max_pool_seal(
 
     max_seal(max_args, max_out, Shape{max_list.size()}, Shape{}, AxisSet{0},
              out[out_idx].batch_size(), parms_id, scale, ckks_encoder,
-             encryptor, decryptor);
+             encryptor, decryptor, context);
     out[out_idx] = max_out[0];
   }
 }
@@ -167,7 +167,8 @@ inline void max_pool_seal(const std::vector<HEType>& arg,
       padding_below, padding_above,
       he_seal_backend.get_context()->first_parms_id(),
       he_seal_backend.get_scale(), *he_seal_backend.get_ckks_encoder(),
-      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor());
+      *he_seal_backend.get_encryptor(), *he_seal_backend.get_decryptor(),
+      he_seal_backend.get_context());
 }
 
 }  // namespace ngraph::runtime::he

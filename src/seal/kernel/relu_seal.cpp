@@ -43,7 +43,7 @@ void scalar_relu_seal(const HEType& arg, HEType& out,
   } else {
     HEPlaintext plain;
     decrypt(plain, *arg.get_ciphertext(), arg.complex_packing(), decryptor,
-            ckks_encoder, context);
+            ckks_encoder, context, arg.batch_size());
     scalar_relu_seal(plain, plain);
     encrypt(out.get_ciphertext(), plain, parms_id, element::f32, scale,
             ckks_encoder, encryptor, arg.complex_packing());

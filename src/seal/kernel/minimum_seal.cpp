@@ -53,13 +53,13 @@ void scalar_minimum_seal(const HEType& arg0, const HEType& arg1, HEType& out,
 
   if (arg0.is_ciphertext()) {
     he_seal_backend.decrypt(arg0_plain, *arg0.get_ciphertext(),
-                            arg0.complex_packing());
+                            arg0.batch_size(), arg0.complex_packing());
   } else {
     arg0_plain = arg0.get_plaintext();
   }
   if (arg1.is_ciphertext()) {
     he_seal_backend.decrypt(arg1_plain, *arg1.get_ciphertext(),
-                            arg1.complex_packing());
+                            arg1.batch_size(), arg1.complex_packing());
   } else {
     arg1_plain = arg1.get_plaintext();
   }

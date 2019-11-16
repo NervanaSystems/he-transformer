@@ -181,7 +181,7 @@ class HESealBackend : public runtime::Backend {
 
   /// \brief TODO(fboemer)
   void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
-               const bool complex_packing) const;
+               size_t batch_size, const bool complex_packing) const;
 
   /// \brief Returns pointer to SEAL context
   const std::shared_ptr<seal::SEALContext> get_context() const {

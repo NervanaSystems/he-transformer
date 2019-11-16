@@ -350,10 +350,10 @@ void HESealClient::handle_bounded_relu_request(pb::TCPMessage&& message) {
     size_t result_count = proto_tensor->data_size();
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
-      scalar_bounded_relu_seal(he_tensor->data(result_idx),
-                               he_tensor->data(result_idx), bound,
-                               m_context->first_parms_id(), scale(),
-                               *m_ckks_encoder, *m_encryptor, *m_decryptor);
+      scalar_bounded_relu_seal(
+          he_tensor->data(result_idx), he_tensor->data(result_idx), bound,
+          m_context->first_parms_id(), scale(), *m_ckks_encoder, *m_encryptor,
+          *m_decryptor, m_context);
     }
   }
   std::vector<pb::HETensor> proto_output_tensors;
@@ -395,7 +395,8 @@ void HESealClient::handle_max_pool_request(pb::TCPMessage&& message) {
   max_pool_seal(he_tensor->data(), post_max_he_tensor.data(),
                 Shape{1, 1, cipher_count}, Shape{1, 1, 1}, Shape{cipher_count},
                 Strides{1}, Shape{0}, Shape{0}, m_context->first_parms_id(),
-                scale(), *m_ckks_encoder, *m_encryptor, *m_decryptor);
+                scale(), *m_ckks_encoder, *m_encryptor, *m_decryptor,
+                m_context);
 
   message.set_type(pb::TCPMessage_Type_RESPONSE);
   message.clear_he_tensors();

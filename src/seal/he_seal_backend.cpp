@@ -282,9 +282,10 @@ void HESealBackend::encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 
 void HESealBackend::decrypt(HEPlaintext& output,
                             const SealCiphertextWrapper& input,
+                            size_t batch_size,
                             const bool complex_packing) const {
   ngraph::runtime::he::decrypt(output, input, complex_packing, *m_decryptor,
-                               *m_ckks_encoder, m_context);
+                               *m_ckks_encoder, m_context, batch_size);
 }
 
 }  // namespace ngraph::runtime::he

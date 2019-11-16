@@ -63,11 +63,10 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     HEPlaintext plain_arg0;
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
-                            arg0.complex_packing());
+                            arg0.batch_size(), arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
-                            arg1.complex_packing());
-    plain_arg0.resize(arg0.batch_size());
-    plain_arg1.resize(arg1.batch_size());
+                            arg1.batch_size(), arg1.complex_packing());
+
     scalar_power_seal(plain_arg0, plain_arg1, plain_arg1);
 
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
@@ -76,8 +75,7 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
   } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
     HEPlaintext plain_arg0;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
-                            arg0.complex_packing());
-    plain_arg0.resize(arg0.batch_size());
+                            arg0.batch_size(), arg0.complex_packing());
     scalar_power_seal(plain_arg0, arg1.get_plaintext(), plain_arg0);
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0, element::f32,
                             arg0.complex_packing());
@@ -85,8 +83,7 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
   } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
-                            arg1.complex_packing());
-    plain_arg1.resize(arg0.batch_size());
+                            arg1.batch_size(), arg1.complex_packing());
     scalar_power_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
                             arg0.complex_packing());

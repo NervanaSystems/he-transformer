@@ -47,9 +47,9 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
     HEPlaintext plain_arg0;
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg0, *arg0.get_ciphertext(),
-                            arg0.complex_packing());
+                            arg0.batch_size(), arg0.complex_packing());
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
-                            arg1.complex_packing());
+                            arg1.batch_size(), arg1.complex_packing());
     scalar_divide_seal(plain_arg0, plain_arg1, plain_arg1);
 
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
@@ -72,7 +72,7 @@ void scalar_divide_seal(HEType& arg0, HEType& arg1, HEType& out,
     // TODO(fboemer): complex packing?
     HEPlaintext plain_arg1;
     he_seal_backend.decrypt(plain_arg1, *arg1.get_ciphertext(),
-                            arg1.complex_packing());
+                            arg1.batch_size(), arg1.complex_packing());
     scalar_divide_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
     he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
                             arg0.complex_packing());

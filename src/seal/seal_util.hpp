@@ -241,7 +241,8 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 /// \param[in] input Plaintext to decode
 /// \param[in] ckks_encoder Used for decoding
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
-            seal::CKKSEncoder& ckks_encoder, double mod_interval);
+            seal::CKKSEncoder& ckks_encoder, size_t batch_size,
+            double mod_interval);
 
 /// \brief Decrypts and decodes a ciphertext to plaintext values
 /// \param[out] output Destination to write values to
@@ -253,6 +254,6 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
              bool complex_packing, seal::Decryptor& decryptor,
              seal::CKKSEncoder& ckks_encoder,
-             std::shared_ptr<seal::SEALContext> context = nullptr);
+             std::shared_ptr<seal::SEALContext> context, size_t batch_size);
 
 }  // namespace ngraph::runtime::he

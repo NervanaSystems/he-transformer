@@ -72,9 +72,9 @@ void ABYClientExecutor::run_aby_relu_circuit(
   size_t batch_size = tensor_data[0].batch_size();
 
   auto tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
-  NGRAPH_INFO << "Batch size " << batch_size;
-  NGRAPH_INFO << "tensor_data.size() " << tensor_data.size();
-  NGRAPH_INFO << "tensor_size " << tensor_size;
+  NGRAPH_HE_LOG(3) << "Batch size " << batch_size;
+  NGRAPH_HE_LOG(3) << "tensor_data.size() " << tensor_data.size();
+  NGRAPH_HE_LOG(3) << "tensor_size " << tensor_size;
 
   std::vector<double> relu_vals(tensor_size);
   size_t num_bytes = tensor_size * tensor->get_element_type().size();
@@ -125,14 +125,14 @@ void ABYClientExecutor::run_aby_relu_circuit(
                             // and sent to server
   relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
                                 &result_count);
-  NGRAPH_INFO << "result_count " << result_count;
+  NGRAPH_HE_LOG(3) << "result_count " << result_count;
   for (size_t i = 0; i < result_count; ++i) {
-    NGRAPH_INFO << out_vals_relu[i];
+    NGRAPH_HE_LOG(3) << out_vals_relu[i];
   }
 
   double scale = m_he_seal_client.scale();
 
-  NGRAPH_INFO << "tensor size " << tensor->data().size();
+  NGRAPH_HE_LOG(3) << "tensor size " << tensor->data().size();
 
   NGRAPH_CHECK(result_count == tensor->data().size() * batch_size,
                "Wrong number of ABY result values, result_count=", result_count,
@@ -149,7 +149,8 @@ void ABYClientExecutor::run_aby_relu_circuit(
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
-    NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
+    NGRAPH_HE_LOG(3) << "Encrypting " << post_relu_vals << " at scale "
+                     << scale;
 
     runtime::he::encrypt(
         cipher, post_relu_vals,
@@ -157,7 +158,6 @@ void ABYClientExecutor::run_aby_relu_circuit(
         *m_he_seal_client.get_ckks_encoder(), *m_he_seal_client.get_encryptor(),
         m_he_seal_client.complex_packing());
 
-    NGRAPH_INFO << "Done encrypting";
     tensor->data(result_idx).set_ciphertext(cipher);
   }
 
@@ -172,9 +172,9 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
   size_t batch_size = tensor_data[0].batch_size();
 
   auto tensor_size = static_cast<uint64_t>(tensor_data.size() * batch_size);
-  NGRAPH_INFO << "Batch size " << batch_size;
-  NGRAPH_INFO << "tensor_data.size() " << tensor_data.size();
-  NGRAPH_INFO << "tensor_size " << tensor_size;
+  NGRAPH_HE_LOG(3) << "Batch size " << batch_size;
+  NGRAPH_HE_LOG(3) << "tensor_data.size() " << tensor_data.size();
+  NGRAPH_HE_LOG(3) << "tensor_size " << tensor_size;
 
   std::vector<double> relu_vals(tensor_size);
   size_t num_bytes = tensor_size * tensor->get_element_type().size();
@@ -225,14 +225,14 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
                             // and sent to server
   relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
                                 &result_count);
-  NGRAPH_INFO << "result_count " << result_count;
+  NGRAPH_HE_LOG(3) << "result_count " << result_count;
   for (size_t i = 0; i < result_count; ++i) {
-    NGRAPH_INFO << out_vals_relu[i];
+    NGRAPH_HE_LOG(3) << out_vals_relu[i];
   }
 
   double scale = m_he_seal_client.scale();
 
-  NGRAPH_INFO << "tensor size " << tensor->data().size();
+  NGRAPH_HE_LOG(3) << "tensor size " << tensor->data().size();
 
   NGRAPH_CHECK(result_count == tensor->data().size() * batch_size,
                "Wrong number of ABY result values, result_count=", result_count,
@@ -249,7 +249,8 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
-    NGRAPH_INFO << "Encrypting " << post_relu_vals << " at scale " << scale;
+    NGRAPH_HE_LOG(3) << "Encrypting " << post_relu_vals << " at scale "
+                     << scale;
 
     runtime::he::encrypt(
         cipher, post_relu_vals,
@@ -257,7 +258,6 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
         *m_he_seal_client.get_ckks_encoder(), *m_he_seal_client.get_encryptor(),
         m_he_seal_client.complex_packing());
 
-    NGRAPH_INFO << "Done encrypting";
     tensor->data(result_idx).set_ciphertext(cipher);
   }
 
