@@ -74,7 +74,7 @@ ExternalProject_Add(
                     -DZLIB_ROOT=${ZLIB_PREFIX}
   PATCH_COMMAND git apply ${SEAL_PATCH}
                     # Skip updates
-  # UPDATE_COMMAND ""
+   UPDATE_COMMAND ""
   )
 
 # ExternalProject_Get_Property(ext_seal SOURCE_DIR)

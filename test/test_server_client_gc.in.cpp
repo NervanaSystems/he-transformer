@@ -204,6 +204,12 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
   std::vector<float> exp_results(shape_size(shape));
   for (size_t i = 0; i < shape_size(shape); ++i) {
     inputs[i] = static_cast<int>(i) - static_cast<int>(shape_size(shape)) / 2;
+
+    // Choose 30 instead of 32 to avoid rounding issues
+    if (std::abs(inputs[i]) > 30) {
+      inputs[i] = fmod(inputs[i], 32);
+    }
+
     NGRAPH_HE_LOG(3) << "Inputs[" << i << "] = " << inputs[i];
 
     if (bounded) {
