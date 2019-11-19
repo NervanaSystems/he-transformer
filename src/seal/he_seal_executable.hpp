@@ -164,9 +164,9 @@ class HESealExecutable : public runtime::Executable {
                                  const std::shared_ptr<HETensor>& out,
                                  const NodeWrapper& node_wrapper);
 
-  /// \brief Returns whether or not a node's verbosity is on or off
+  /// \brief Returns whether or not an Op's verbosity is on or off
   /// \param[in] op Operation to determine verbosity of
-  bool verbose_op(const Node& op) {
+  bool verbose_op(const op::Op& op) {
     return m_verbose_all_ops ||
            m_verbose_ops.find(to_lower(op.description())) !=
                m_verbose_ops.end();

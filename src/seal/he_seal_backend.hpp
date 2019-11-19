@@ -47,10 +47,9 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
 
-namespace ngraph::runtime {
-class BackendConstructor;
+extern "C" void ngraph_register_he_seal_backend();
 
-namespace he {
+namespace ngraph::runtime::he {
 class HEType;
 class SealCiphertextWrapper;
 
@@ -89,8 +88,8 @@ class HESealBackend : public runtime::Backend {
       std::shared_ptr<Function> function,
       bool enable_performance_data = false) override;
 
-  /// \brief Returns whether or not a given operation is supported
-  /// \param[in] node Node representing an operation
+  /// \brief Returns whether or not a given Node is supported
+  /// \param[in] node Node
   bool is_supported(const Node& node) const override;
 
   /// \brief Sets a configuration for the backend
@@ -383,5 +382,4 @@ class HESealBackend : public runtime::Backend {
       "Transpose"};
 };
 
-}  // namespace he
-}  // namespace ngraph::runtime
+}  // namespace ngraph::runtime::he
