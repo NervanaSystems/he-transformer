@@ -22,8 +22,7 @@
 // original script -- we only need to provide this new trigger hook.
 //
 
-//String JENKINS_BRANCH = "master"
-String JENKINS_BRANCH = "lam/hetr_ci"
+String JENKINS_BRANCH = "master"
 String TIMEOUTTIME = "3600"
 
 // Constants
@@ -41,14 +40,14 @@ timestamps {
             sleep sleeptime; sleeptime = 10
             sh "git clone -b $JENKINS_BRANCH https://github.intel.com/AIPG/cje-algo $JENKINS_DIR"
         }
-        
+
         def heTransformerCIPreMerge = load("$JENKINS_DIR/hetransformer-lib/he-transformer-ci-premerge.groovy")
         heTransformerCIPreMerge(prURL: CHANGE_URL,
                         prAuthor: CHANGE_AUTHOR,
                         useMBPipelineSCM: 'true',
                         checkoutBranch: '-UNDEFINED-BRANCH-'
                         )
-                         
+
         echo "he-transformer-ci-premerge.groovy completed"
 
     }  // End:  node
