@@ -17,7 +17,6 @@
 #pragma once
 
 #include <complex>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -26,45 +25,9 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 #include "ngraph/util.hpp"
-#include "nlohmann/json.hpp"
-#include "node_wrapper.hpp"
-#include "op/bounded_relu.hpp"
 #include "protos/message.pb.h"
 
 namespace ngraph::runtime::he {
-
-inline std::string bool_to_string(const bool b) {
-  std::ostringstream ss;
-  ss << std::boolalpha << b;
-  return ss.str();
-}
-
-/// \brief Interprets a string as a boolean value
-/// \param[in] value String to interpret
-/// \param[in] default_value Value to return if flag is not able to be parsed
-/// \returns True if flag represents a True value, False otherwise
-inline bool string_to_bool(const char* value, bool default_value = false) {
-  if (value == nullptr) {
-    return default_value;
-  }
-  static std::unordered_set<std::string> on_map{"1", "on", "y", "yes", "true"};
-  static std::unordered_set<std::string> off_map{"0", "off", "n", "no",
-                                                 "false"};
-  std::string value_str = ngraph::to_lower(std::string(value));
-
-  if (on_map.find(value_str) != on_map.end()) {
-    return true;
-  }
-  if (off_map.find(value_str) != off_map.end()) {
-    return false;
-  }
-  throw ngraph_error("Unknown flag value " + value_str);
-}
-
-inline bool string_to_bool(const std::string& value,
-                           bool default_value = false) {
-  return string_to_bool(value.c_str(), default_value);
-}
 
 /// \brief Unpacks complex values to real values
 /// (a+bi, c+di) => (a,b,c,d)
@@ -90,9 +53,11 @@ map_to_double_map(
   std::unordered_map<std::string, std::pair<std::string, std::vector<double>>>
       outputs;
 
-  for (const auto& [key, value] : inputs) {
-    std::vector<double> double_inputs{value.second.begin(), value.second.end()};
-    outputs.insert({key, std::make_pair(value.first, double_inputs)});
+  for (const auto& elem : inputs) {
+    std::vector<double> double_inputs{elem.second.second.begin(),
+                                      elem.second.second.end()};
+    outputs.insert(
+        {elem.first, std::make_pair(elem.second.first, double_inputs)});
   }
   return outputs;
 }
@@ -112,28 +77,6 @@ double type_to_double(const void* src, const element::Type& element_type);
 
 bool param_originates_from_name(const op::Parameter& param,
                                 const std::string& name);
-
-inline pb::Function node_to_proto_function(
-    const NodeWrapper& node_wrapper,
-    const std::unordered_map<std::string, std::string>& extra_configs = {}) {
-  const Node& node = *node_wrapper.get_node();
-  auto type_id = node_wrapper.get_typeid();
-
-  nlohmann::json js = {{"function", node.description()}};
-  if (type_id == OP_TYPEID::BoundedRelu) {
-    const auto* bounded_relu = static_cast<const op::BoundedRelu*>(&node);
-    float alpha = bounded_relu->get_alpha();
-    js["bound"] = alpha;
-  }
-
-  for (const auto& [key, value] : extra_configs) {
-    js[key] = value;
-  }
-
-  pb::Function f;
-  f.set_function(js.dump());
-  return f;
-}
 
 pb::HETensor_ElementType type_to_pb_type(const element::Type& element_type);
 

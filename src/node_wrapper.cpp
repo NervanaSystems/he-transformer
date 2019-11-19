@@ -33,6 +33,7 @@
 #include "ngraph/op/broadcast_distributed.hpp"
 #include "ngraph/op/ceiling.hpp"
 #include "ngraph/op/concat.hpp"
+#include "ngraph/op/constant.hpp"
 #include "ngraph/op/convert.hpp"
 #include "ngraph/op/convolution.hpp"
 #include "ngraph/op/cos.hpp"
@@ -51,13 +52,9 @@
 #include "ngraph/op/experimental/dyn_reshape.hpp"
 #include "ngraph/op/experimental/dyn_slice.hpp"
 #include "ngraph/op/experimental/generate_mask.hpp"
-#include "ngraph/op/experimental/quantized_avg_pool.hpp"
-#include "ngraph/op/experimental/quantized_concat.hpp"
 #include "ngraph/op/experimental/quantized_conv_bias.hpp"
 #include "ngraph/op/experimental/quantized_conv_relu.hpp"
-#include "ngraph/op/experimental/quantized_dot.hpp"
 #include "ngraph/op/experimental/quantized_dot_bias.hpp"
-#include "ngraph/op/experimental/quantized_max_pool.hpp"
 #include "ngraph/op/experimental/range.hpp"
 #include "ngraph/op/experimental/shape_of.hpp"
 #include "ngraph/op/experimental/tile.hpp"
@@ -185,7 +182,7 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
       return std::static_pointer_cast<const op::Concat>(m_node);
     }
     case OP_TYPEID::Constant: {
-      throw ngraph_error("Constant is not op");
+      return std::static_pointer_cast<const op::Constant>(m_node);
     }
     case OP_TYPEID::Convert: {
       return std::static_pointer_cast<const op::Convert>(m_node);
@@ -325,10 +322,12 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
     case OP_TYPEID::AllReduce:
     case OP_TYPEID::And:
     case OP_TYPEID::Any:
+    case OP_TYPEID::Atan2:
     case OP_TYPEID::AvgPoolBackprop:
     case OP_TYPEID::BatchMatMul:
     case OP_TYPEID::BatchNormTraining:
     case OP_TYPEID::BatchNormTrainingBackprop:
+    case OP_TYPEID::BinaryConvolution:
     case OP_TYPEID::BroadcastDistributed:
     case OP_TYPEID::BroadcastLike:
     case OP_TYPEID::ConvolutionBackpropData:
@@ -345,10 +344,14 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
     case OP_TYPEID::GenerateMask:
     case OP_TYPEID::MaxPoolBackprop:
     case OP_TYPEID::LRN:
+    case OP_TYPEID::LessEqual:
+    case OP_TYPEID::LogicalAnd:
+    case OP_TYPEID::LogicalNot:
+    case OP_TYPEID::LogicalOr:
+    case OP_TYPEID::LogicalXor:
     case OP_TYPEID::Or:
     case OP_TYPEID::Passthrough:
     case OP_TYPEID::Quantize:
-    case OP_TYPEID::QuantizedAvgPool:
     case OP_TYPEID::QuantizedConvolution:
     case OP_TYPEID::QuantizedConvolutionBias:
     case OP_TYPEID::QuantizedConvolutionBiasAdd:
@@ -356,7 +359,7 @@ std::shared_ptr<const op::Op> NodeWrapper::get_op() const {
     case OP_TYPEID::QuantizedConvolutionRelu:
     case OP_TYPEID::QuantizedDot:
     case OP_TYPEID::QuantizedDotBias:
-    case OP_TYPEID::QuantizedMaxPool:
+    case OP_TYPEID::RandomUniform:
     case OP_TYPEID::Recv:
     case OP_TYPEID::Range:
     case OP_TYPEID::ReluBackprop:

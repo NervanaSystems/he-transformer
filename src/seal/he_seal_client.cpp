@@ -107,6 +107,7 @@ void HESealClient::init_aby_executor() {
 }
 
 void HESealClient::send_public_and_relin_keys() {
+  NGRAPH_HE_LOG(3) << "Client sending public and relin keys";
   pb::TCPMessage message;
   message.set_type(pb::TCPMessage_Type_RESPONSE);
 
@@ -118,17 +119,21 @@ void HESealClient::send_public_and_relin_keys() {
   *message.mutable_public_key() = public_key;
 
   // Set relinearization keys
-  std::stringstream evk_stream;
-  m_relin_keys->save(evk_stream);
-  pb::EvaluationKey eval_key;
-  eval_key.set_eval_key(evk_stream.str());
-  *message.mutable_eval_key() = eval_key;
+  if (m_context->using_keyswitching()) {
+    std::stringstream evk_stream;
+    m_relin_keys->save(evk_stream);
+    pb::EvaluationKey eval_key;
+    eval_key.set_eval_key(evk_stream.str());
+    *message.mutable_eval_key() = eval_key;
+  }
 
   write_message(TCPMessage(std::move(message)));
 }
 
 void HESealClient::handle_encryption_parameters_response(
     const pb::TCPMessage& message) {
+  NGRAPH_HE_LOG(3) << "Client handling encryption parameters message";
+
   NGRAPH_CHECK(message.has_encryption_parameters(),
                "message does not have encryption_parameters");
 
@@ -436,6 +441,7 @@ void HESealClient::handle_message(const TCPMessage& message) {
       json js = json::parse(function);
       auto name = js.at("function");
 
+      // TODO(fboemer): Move to any_of in message.proto
       static std::unordered_set<std::string> s_known_names{
           "Parameter", "Relu", "BoundedRelu", "MaxPool"};
 
