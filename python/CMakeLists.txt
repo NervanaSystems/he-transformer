@@ -32,8 +32,6 @@ set(PYTHON_ARTIFACTS_DIR ${CMAKE_BINARY_DIR}/python/_install)
 set(PYTHON_LIB_DIR ${PYTHON_ARTIFACTS_DIR}/lib)
 set(PYTHON_INCLUDE_DIR ${PYTHON_ARTIFACTS_DIR}/include)
 
-message("EXTERNAL_INSTALL_INCLUDE_DIR ${EXTERNAL_INSTALL_INCLUDE_DIR}")
-
 # Hack to install files for python wheel When specifying DESTDIR in custom
 # command, this will change the destination to DESTDIR, rather than
 # EXTERNAL_INSTALL_INCLUDE_DIR

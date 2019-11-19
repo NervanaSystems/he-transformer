@@ -20,9 +20,6 @@ set(NGRAPH_HE_PROTOBUF_GIT_REPO_URL
     "https://github.com/protocolbuffers/protobuf")
 set(NGRAPH_HE_PROTOBUF_GIT_TAG "v3.10.1")
 
-message("MAKE $(MAKE)")
-message("NGRAPH_HE_CXX_STANDARD ${NGRAPH_HE_CXX_STANDARD}")
-
 ExternalProject_Add(
   ext_protobuf
   PREFIX protobuf
