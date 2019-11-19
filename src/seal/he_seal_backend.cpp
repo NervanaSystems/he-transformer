@@ -31,20 +31,11 @@
 
 using json = nlohmann::json;
 
-extern "C" ngraph::runtime::BackendConstructor*
-get_backend_constructor_pointer() {
-  class HESealBackendConstructor : public ngraph::runtime::BackendConstructor {
-   public:
-    std::shared_ptr<ngraph::runtime::Backend> create(
-        const std::string& config) override {
-      NGRAPH_HE_LOG(5) << "Creating backend with config string " << config;
-      return std::make_shared<ngraph::runtime::he::HESealBackend>();
-    }
-  };
-
-  static std::unique_ptr<ngraph::runtime::BackendConstructor>
-      s_backend_constructor(new HESealBackendConstructor());
-  return s_backend_constructor.get();
+extern "C" void ngraph_register_he_seal_backend() {
+  ngraph::runtime::BackendManager::register_backend(
+      "HE_SEAL", [](const std::string& /* config */) {
+        return std::make_shared<ngraph::runtime::he::HESealBackend>();
+      });
 }
 
 namespace ngraph::runtime::he {

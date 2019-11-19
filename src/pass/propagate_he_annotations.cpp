@@ -67,12 +67,13 @@ bool pass::PropagateHEAnnotations::run_on_function(
   // Node has encrypted output if any of its inputs is encrypted
   // Node has packed output if any of its inputs is packed
   for (const auto& node : nodes) {
-    auto op = std::dynamic_pointer_cast<op::Op>(node);
-    if (op == nullptr) {
+    if (!node->is_op()) {
       NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not op";
       continue;
     }
+    auto op = std::static_pointer_cast<op::Op>(node);
     NGRAPH_HE_LOG(5) << "Op " << op->get_name();
+
     auto he_op_annotations = HEOpAnnotations::he_op_annotation(*op);
     NGRAPH_HE_LOG(5) << "Annotation " << *he_op_annotations;
 
@@ -82,11 +83,9 @@ bool pass::PropagateHEAnnotations::run_on_function(
         auto target_op = dynamic_cast<op::Op*>(target_node);
         NGRAPH_CHECK(target_op != nullptr, "Target is not an op");
 
-        auto he_target_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
-            target_op->get_op_annotations());
-        NGRAPH_CHECK(he_target_annotations != nullptr, "Target node ",
-                     target_op->get_name(), " doesn't have HEOpAnnotations");
-        NGRAPH_HE_LOG(5) << "Target node " << target_op->get_name()
+        auto he_target_annotations =
+            HEOpAnnotations::he_op_annotation(*target_op);
+        NGRAPH_HE_LOG(5) << "Target node " << target_node->get_name()
                          << " has HE annotation " << *he_target_annotations;
 
         if (he_op_annotations->encrypted()) {
@@ -108,15 +107,12 @@ bool pass::PropagateHEAnnotations::run_on_function(
   NGRAPH_HE_LOG(5) << "Final node annotations";
   for (const auto& node : nodes) {
     if (node->is_op()) {
-      auto op = std::dynamic_pointer_cast<op::Op>(node);
+      auto op = std::static_pointer_cast<op::Op>(node);
       if (HEOpAnnotations::has_he_annotation(*op)) {
-        auto he_op_annotations = std::dynamic_pointer_cast<HEOpAnnotations>(
-            op->get_op_annotations());
+        auto he_op_annotations = HEOpAnnotations::he_op_annotation(*op);
         NGRAPH_HE_LOG(5) << "Op " << op->get_name() << " (" << op->get_shape()
                          << ") has annotation: " << *he_op_annotations;
       }
-    } else {
-      NGRAPH_HE_LOG(5) << "Node " << node->get_name() << " is not an op";
     }
   }
   return false;
