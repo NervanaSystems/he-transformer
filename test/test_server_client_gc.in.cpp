@@ -108,6 +108,8 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_add_3_relu) {
       std::map<std::string, std::string>{
           {"enable_client", "true"},
           {"enable_gc", "true"},
+          {"mask_gc_inputs", "true"},
+          {"mask_gc_outputs", "true"},
           {b->get_name(), "client_input,encrypt"}},
       error_str);
 

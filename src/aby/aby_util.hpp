@@ -68,9 +68,9 @@ inline double uint64_to_double(uint64_t i, uint64_t q, double scale) {
 inline double mod_reduce_zero_centered(double d, const double q) {
   NGRAPH_CHECK(q >= 0, "q should be positive");
   if (d < -q / 2) {
-    d += ceilf(-1 / 2. - d / q) * q;
+    d += ceil(-1 / 2. - d / q) * q;
   } else if (d > q / 2) {
-    d -= ceilf(d / q - 1 / 2.) * q;
+    d -= ceil(d / q - 1 / 2.) * q;
   }
 
   NGRAPH_CHECK(d <= q / 2 && d >= -q / 2, "d ", d, " outside valid range [",

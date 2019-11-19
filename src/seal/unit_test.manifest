@@ -67,8 +67,10 @@ max_vector_zero_plain_complex_packed
 # Divide. Need to check complex packing behavior
 divide_2_3_plain_cipher_complex_packed
 
-# Seems to hang sometimes
-# server_client_provenance_tag
 
 # Error not caught if using multi-threading
 mult_end_of_depth
+
+# Seems to hang sometimes
+server_client_add_3_multiple_parameters_plain
+# server_client_provenance_tag

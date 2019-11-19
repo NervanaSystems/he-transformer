@@ -220,7 +220,7 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_add_3_multiple_parameters_encrypt) {
         "scheme_name" : "HE_SEAL",
         "poly_modulus_degree" : 2048,
         "security_level" : 0,
-        "coeff_modulus" : [30, 30, 30, 30, 30],
+        "coeff_modulus" : [40, 30, 30, 30, 30],
         "scale" : 1073741824
     })";
 

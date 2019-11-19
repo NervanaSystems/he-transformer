@@ -71,7 +71,7 @@ class HESealExecutable : public runtime::Executable {
 
   /// \brief Returns whether or not the client is enabled with garbled circuits
   bool enable_garbled_circuits() const {
-    return m_he_seal_backend.enable_client();
+    return m_he_seal_backend.garbled_circuit_enabled();
   }
 
   void update_he_op_annotations();
