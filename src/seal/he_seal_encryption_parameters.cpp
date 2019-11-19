@@ -51,8 +51,9 @@ HESealEncryptionParameters::HESealEncryptionParameters(
 
 HESealEncryptionParameters
 HESealEncryptionParameters::default_real_packing_parms() {
-  return HESealEncryptionParameters(
-      "HE_SEAL", 1024, std::vector<int>{40, 24, 24, 24, 30}, 0, 1 << 24, false);
+  return HESealEncryptionParameters("HE_SEAL", 1024,
+                                    std::vector<int>{40, 24, 24, 24, 24, 30}, 0,
+                                    1 << 24, false);
 }
 
 HESealEncryptionParameters

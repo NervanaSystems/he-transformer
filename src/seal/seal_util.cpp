@@ -532,17 +532,19 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
   auto plaintext_wrapper = SealPlaintextWrapper(complex_packing);
   decryptor.decrypt(input.ciphertext(), plaintext_wrapper.plaintext());
 
-  // TODO(fboemer): fix
-  double q_over_scale{123456789};
+  // No modulus reduction
+  double q_over_scale{std::numeric_limits<double>::max()};
   if (context) {
     const auto& encryption_params =
         context->get_context_data(input.ciphertext().parms_id())->parms();
     const auto& coeff_moduli = encryption_params.coeff_modulus();
-    const auto& q = coeff_moduli[0].value();
-    NGRAPH_HE_LOG(3) << "q " << q;
 
-    q_over_scale = q / (input.ciphertext().scale());
+    q_over_scale = 1.0 / input.ciphertext().scale();
+    for (const auto& coeff_mod : coeff_moduli) {
+      q_over_scale *= coeff_mod.value();
+    }
     NGRAPH_HE_LOG(3) << "q_over_scale " << q_over_scale;
+    NGRAPH_HE_LOG(3) << "scale " << input.ciphertext().scale();
   }
   decode(output, plaintext_wrapper, ckks_encoder, batch_size, q_over_scale);
 }
