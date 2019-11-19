@@ -30,9 +30,7 @@ def main(FLAGS):
         {'client_parameter_name': ('encrypt', data)})
 
     results = client.get_results()
-
     print('results', results)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

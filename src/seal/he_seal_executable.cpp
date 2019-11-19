@@ -890,17 +890,18 @@ void HESealExecutable::send_client_results() {
                "HESealExecutable only supports output size 1 (got ",
                get_results().size(), "");
 
-  std::vector<pb::HETensor> proto_tensors;
-  m_client_outputs[0]->write_to_protos(proto_tensors);
+  std::vector<pb::HETensor> pb_tensors;
+  m_client_outputs[0]->write_to_protos(pb_tensors);
 
-  for (const auto& proto_tensor : proto_tensors) {
+  for (const auto& pb_tensor : pb_tensors) {
     pb::TCPMessage result_msg;
     result_msg.set_type(pb::TCPMessage_Type_RESPONSE);
-    *result_msg.add_he_tensors() = proto_tensor;
+    *result_msg.add_he_tensors() = pb_tensor;
 
     auto result_shape = result_msg.he_tensors(0).shape();
     NGRAPH_HE_LOG(3) << "Server sending result with shape "
-                     << Shape{result_shape.begin(), result_shape.end()};
+                     << Shape{result_shape.begin(), result_shape.end()}
+                     << ", element type " << pb_tensor.type();
     m_session->write_message(TCPMessage(std::move(result_msg)));
   }
 

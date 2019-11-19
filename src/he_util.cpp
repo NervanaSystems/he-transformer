@@ -74,11 +74,16 @@ bool flag_to_bool(const char* flag, bool default_value) {
 }
 
 double type_to_double(const void* src, const element::Type& element_type) {
+  NGRAPH_INFO << "type to double " << element_type;
 #pragma clang diagnostic push
 #pragma clang diagnostic error "-Wswitch"
 #pragma clang diagnostic error "-Wswitch-enum"
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
+      NGRAPH_INFO << "returnign "
+                  << static_cast<double>(*static_cast<const float*>(src));
+      double d = static_cast<double>(*static_cast<const float*>(src));
+      return d;
       return static_cast<double>(*static_cast<const float*>(src));
     }
     case element::Type_t::f64: {

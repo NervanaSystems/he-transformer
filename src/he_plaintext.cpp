@@ -48,6 +48,7 @@ HEPlaintext& HEPlaintext::operator=(HEPlaintext&& v) noexcept {
 
 void HEPlaintext::write(void* target, const element::Type& element_type) {
   NGRAPH_CHECK(!empty(), "Input has no values");
+  NGRAPH_INFO << "Plain writing to type " << element_type;
   size_t count = this->size();
   size_t type_byte_size = element_type.size();
 
@@ -56,6 +57,9 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       std::vector<float> float_values{begin(), end()};
+      NGRAPH_INFO << "float_values " << float_values.size();
+      NGRAPH_INFO << "count " << count;
+      NGRAPH_INFO << float_values[0];
       auto type_values_src = static_cast<const void*>(float_values.data());
       std::memcpy(target, type_values_src, type_byte_size * count);
       break;

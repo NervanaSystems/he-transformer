@@ -235,6 +235,9 @@ void HETensor::read(void* p, size_t n) const {
   size_t type_byte_size = element_type.size();
   size_t num_elements_to_read = n / (type_byte_size * get_batch_size());
 
+  NGRAPH_INFO << "num_elements_to_read " << num_elements_to_read;
+  NGRAPH_INFO << "element_type " << element_type;
+
   auto copy_batch_values_to_src = [&](size_t element_idx, void* copy_target,
                                       const void* type_values_src) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
@@ -258,6 +261,10 @@ void HETensor::read(void* p, size_t n) const {
     } else {
       plain = m_data[i].get_plaintext();
     }
+
+    NGRAPH_INFO << "get_batch_size " << get_batch_size();
+    NGRAPH_INFO << "type_byte_size " << type_byte_size;
+    NGRAPH_INFO << "plain size before " << plain.size();
 
     void* dst = ngraph_malloc(type_byte_size * get_batch_size());
     plain.resize(get_batch_size());

@@ -25,9 +25,9 @@ from tensorflow.core.protobuf import rewriter_config_pb2
 def str2bool(v):
     if isinstance(v, bool):
         return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+    if v.lower() in ('on','yes', 'true', 't', 'y', '1'):
         return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+    elif v.lower() in ('off','no', 'false', 'f', 'n', '0'):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
@@ -46,6 +46,12 @@ def server_config_from_flags(FLAGS, tensor_param_name):
         "encryption_parameters"].s = FLAGS.encryption_parameters.encode()
     server_config.parameter_map['enable_client'].s = (str(
         FLAGS.enable_client)).encode()
+    server_config.parameter_map['enable_gc'].s = (str(
+        FLAGS.enable_gc)).encode()
+    server_config.parameter_map['mask_gc_inputs'].s = (str(
+        FLAGS.mask_gc_inputs)).encode()
+    server_config.parameter_map['mask_gc_outputs'].s = (str(
+        FLAGS.mask_gc_inputs)).encode()
     if FLAGS.enable_client:
         server_config.parameter_map[tensor_param_name].s = b'client_input'
 
@@ -83,6 +89,21 @@ if __name__ == '__main__':
         type=str2bool,
         default=False,
         help='Enable the client')
+    parser.add_argument(
+        '--enable_gc',
+        type=str2bool,
+        default=False,
+        help='Enable garbled circuits')
+    parser.add_argument(
+        '--mask_gc_inputs',
+        type=str2bool,
+        default=False,
+        help='Mask garbled circuits inputs')
+    parser.add_argument(
+        '--mask_gc_outputs',
+        type=str2bool,
+        default=False,
+        help='Mask garbled circuits outputs')
     parser.add_argument(
         '--backend',
         type=str,

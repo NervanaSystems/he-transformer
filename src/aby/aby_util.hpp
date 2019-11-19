@@ -72,6 +72,13 @@ inline double mod_reduce_zero_centered(double d, const double q) {
   } else if (d > q / 2) {
     d -= ceil(d / q - 1 / 2.) * q;
   }
+  // Avoid boundary cases due to floating-point inaccuracies
+  while (d < -q / 2) {
+    d += q;
+  }
+  while (d > q / 2) {
+    d -= q;
+  }
 
   NGRAPH_CHECK(d <= q / 2 && d >= -q / 2, "d ", d, " outside valid range [",
                -q / 2, ", ", q / 2, "]");
