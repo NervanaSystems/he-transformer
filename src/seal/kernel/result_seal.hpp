@@ -25,7 +25,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 inline void scalar_result_seal(const HEType& arg, HEType& out,
                                HESealBackend& /*he_seal_backend*/) {
@@ -42,8 +42,6 @@ inline void scalar_result_seal(const HEType& arg, HEType& out,
 
   } else if (arg.is_plaintext() && out.is_plaintext()) {
     out = arg;
-  } else {
-    NGRAPH_CHECK(false, "Unknown result type");
   }
 }
 
@@ -61,4 +59,4 @@ inline void result_seal(const std::vector<HEType>& arg,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

@@ -22,7 +22,7 @@
 
 #include "seal/seal.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Class representing CKKS encryption parameters
 class HESealEncryptionParameters {
  public:
@@ -96,16 +96,17 @@ class HESealEncryptionParameters {
   /// level
   void validate_parameters() const;
 
+  /// \brief Chooses a default scale for the given list of coefficient moduli
+  /// \param[in] coeff_moduli List of coefficient moduli
+  /// \returns Chosen scale
+  static double choose_scale(
+      const std::vector<seal::SmallModulus>& coeff_moduli);
+
   /// \brief Saves encryption parameters to a stream
   void save(std::ostream& stream) const;
 
   /// \brief Loads encryption parametrs from a stream
   static HESealEncryptionParameters load(std::istream& stream);
-
-  /// \brief Returns SEAL encryption parameters
-  seal::EncryptionParameters& seal_encryption_parameters() {
-    return m_seal_encryption_parameters;
-  }
 
   /// \brief Returns SEAL encryption parameters
   const seal::EncryptionParameters& seal_encryption_parameters() const {
@@ -125,7 +126,7 @@ class HESealEncryptionParameters {
 
   /// \brief Returns the scale
   /// TODO(fboemer): verify scale is valid
-  double& scale() { return m_scale; }
+  void set_scale(double scale) { m_scale = scale; }
 
   /// \brief Returns the security level
   std::uint64_t security_level() const { return m_security_level; }
@@ -154,4 +155,4 @@ class HESealEncryptionParameters {
 void print_encryption_parameters(const HESealEncryptionParameters& params,
                                  const seal::SEALContext& context);
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

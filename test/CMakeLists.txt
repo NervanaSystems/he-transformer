@@ -16,12 +16,32 @@
 
 set(SRC
     main.cpp
-    test_seal.cpp
-    test_encryption_parameters.cpp
+    # src/
     test_he_op_annotations.cpp
+    test_he_plaintext.cpp
+    test_he_tensor.cpp
+    test_he_type.cpp
+    test_he_util.cpp
+    test_node_wrapper.cpp
+    # src/pass
+    test_he_fusion.cpp
+    test_he_supported_ops.cpp
+    test_propagate_he_annotations.cpp
+    # src/seal
+    test_encryption_parameters.cpp
+    test_he_seal_executable.cpp
+    test_bounded_relu.cpp
     test_perf_micro.cpp
+    test_seal.cpp
     test_protobuf.cpp
-    test_tensor.cpp)
+    test_seal_plaintext_wrapper.cpp
+    test_seal_util.cpp
+    # src/tcp
+    test_tcp_message.cpp
+    test_tcp_client.cpp
+    # test logging
+    test_ngraph_he_log.cpp
+    )
 
 set(BACKEND_TEST_SRC
     test_add.in.cpp
@@ -35,7 +55,7 @@ set(BACKEND_TEST_SRC
     test_divide.in.cpp
     test_exp.in.cpp
     test_dot.in.cpp
-    test_he_fusion.in.cpp
+    test_rescale.in.cpp
     test_layers.in.cpp
     test_maxpool.in.cpp
     test_minimum.in.cpp
@@ -47,6 +67,7 @@ set(BACKEND_TEST_SRC
     test_read_write.in.cpp
     test_relu.in.cpp
     test_reshape.in.cpp
+    test_result.in.cpp
     test_reverse.in.cpp
     test_server_client.in.cpp
     test_softmax.in.cpp

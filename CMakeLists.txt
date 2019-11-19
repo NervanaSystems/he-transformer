@@ -14,8 +14,8 @@
 # the License.
 # *****************************************************************************
 
-# SEAL requires >= 3.10
-cmake_minimum_required(VERSION 3.10)
+# SEAL requires >= 3.12
+cmake_minimum_required(VERSION 3.12)
 
 # Global project name
 project(he_transformer LANGUAGES CXX)
@@ -46,6 +46,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Create compilation database compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+endif()
 
 set(NGRAPH_HE_FORWARD_CMAKE_ARGS
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -237,7 +241,13 @@ set(INSTALL_INCLUDE_DIRS ${EXTERNAL_INSTALL_INCLUDE_DIR}
 
 include(cmake/gtest.cmake)
 include(cmake/json.cmake)
-include(cmake/openmp.cmake)
+
+# Exclude openmp for code coverage, since regions will trigger false negatives
+if (NGRAPH_HE_CODE_COVERAGE)
+  add_compile_options(-Wno-source-uses-openmp)
+else()
+  include(cmake/openmp.cmake)
+endif()
 include(cmake/seal.cmake)
 include(cmake/boost.cmake)
 include(cmake/protobuf.cmake)

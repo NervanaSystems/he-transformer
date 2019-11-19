@@ -21,7 +21,7 @@
 #include "he_type.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void slice_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
                        const Shape& arg_shape, const Coordinate& lower_bounds,
                        const Coordinate& upper_bounds, const Strides& strides,
@@ -46,4 +46,4 @@ inline void slice_seal(const std::vector<HEType>& arg, std::vector<HEType>& out,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

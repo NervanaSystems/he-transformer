@@ -22,15 +22,15 @@
 #include "ngraph/node.hpp"
 #include "ngraph/op/op.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 enum class OP_TYPEID;
 class NodeWrapper;
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he
 // This expands the op list in op_tbl.hpp into a list of enumerations that look
 // like this: Abs, Acos,
 // ...
 #define NGRAPH_OP(a, b) a,
-enum class ngraph::he::OP_TYPEID {
+enum class ngraph::runtime::he::OP_TYPEID {
 #include "ngraph/op/op_tbl.hpp"
   NGRAPH_OP(BoundedRelu, ngraph::op)
 };
@@ -39,18 +39,18 @@ enum class ngraph::he::OP_TYPEID {
 /// \brief This class allows adding an enum typeid to each Node. This makes
 /// dealing with collections of Nodes a little easier and faster as we can use
 /// switch() instead of if/else statements
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 class NodeWrapper {
  public:
-  explicit NodeWrapper(std::shared_ptr<const ngraph::Node> node);
+  explicit NodeWrapper(std::shared_ptr<const Node> node);
 
   std::shared_ptr<const Node> get_node() const { return m_node; }
-  ngraph::he::OP_TYPEID get_typeid() const { return m_typeid; }
+  ngraph::runtime::he::OP_TYPEID get_typeid() const { return m_typeid; }
 
-  std::shared_ptr<const ngraph::op::Op> get_op() const;
+  std::shared_ptr<const op::Op> get_op() const;
 
  private:
-  std::shared_ptr<const ngraph::Node> m_node;
+  std::shared_ptr<const Node> m_node;
   OP_TYPEID m_typeid;
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

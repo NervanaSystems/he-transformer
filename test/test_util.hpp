@@ -28,11 +28,10 @@
 #include "ngraph/node.hpp"
 #include "ngraph/runtime/tensor.hpp"
 #include "ngraph/type/element_type.hpp"
+#include "ngraph/util.hpp"
 #include "seal/he_seal_backend.hpp"
 
-namespace ngraph {
-namespace test {
-namespace he {
+namespace ngraph::runtime::he::test {
 
 template <typename T>
 bool all_close(const std::vector<std::complex<T>>& a,
@@ -41,6 +40,7 @@ bool all_close(const std::vector<std::complex<T>>& a,
   for (size_t i = 0; i < a.size(); ++i) {
     if ((std::abs(a[i].real() - b[i].real()) > atol) ||
         std::abs(a[i].imag() - b[i].imag()) > atol) {
+      NGRAPH_INFO << a[i] << " is not close to " << b[i] << " at index " << i;
       return false;
     }
   }
@@ -60,43 +60,47 @@ bool all_close(const std::vector<T>& a, const std::vector<T>& b,
   return close;
 }
 
-inline std::shared_ptr<ngraph::he::HEOpAnnotations> annotation_from_flags(
+inline std::shared_ptr<HEOpAnnotations> annotation_from_flags(
     const bool from_client, const bool encrypted, const bool packed) {
-  if (!from_client && encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::server_ciphertext_packed_annotation();
-  } else if (!from_client && encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::server_ciphertext_unpacked_annotation();
-  } else if (!from_client && !encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::server_plaintext_packed_annotation();
-  } else if (!from_client && !encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::server_plaintext_unpacked_annotation();
-  } else if (from_client && encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::client_ciphertext_packed_annotation();
-  } else if (from_client && encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::client_ciphertext_unpacked_annotation();
-  } else if (from_client && !encrypted && packed) {
-    return ngraph::he::HEOpAnnotations::client_plaintext_packed_annotation();
-  } else if (from_client && !encrypted && !packed) {
-    return ngraph::he::HEOpAnnotations::client_plaintext_unpacked_annotation();
-  }
-  throw ngraph_error("Logic error");
+  return std::make_shared<HEOpAnnotations>(from_client, encrypted, packed);
 };
 
-inline std::shared_ptr<ngraph::runtime::Tensor> tensor_from_flags(
-    ngraph::he::HESealBackend& he_seal_backend, const ngraph::Shape& shape,
-    const bool encrypted, const bool packed) {
+inline std::string config_from_annotation(const HEOpAnnotations& annotation) {
+  std::vector<std::string> configs;
+  if (annotation.from_client()) {
+    configs.emplace_back("from_client");
+  }
+  if (annotation.encrypted()) {
+    configs.emplace_back("encrypt");
+  }
+  if (annotation.packed()) {
+    configs.emplace_back("packed");
+  }
+  return join(configs, ",");
+}
+
+inline std::string config_from_flags(const bool from_client,
+                                     const bool encrypted, const bool packed) {
+  return config_from_annotation(
+      HEOpAnnotations(from_client, encrypted, packed));
+}
+
+inline std::shared_ptr<runtime::Tensor> tensor_from_flags(
+    HESealBackend& he_seal_backend, const Shape& shape, const bool encrypted,
+    const bool packed) {
   if (encrypted && packed) {
     return he_seal_backend.create_packed_cipher_tensor(element::f32, shape);
-  } else if (encrypted && !packed) {
+  }
+  if (encrypted && !packed) {
     return he_seal_backend.create_cipher_tensor(element::f32, shape);
-  } else if (!encrypted && packed) {
+  }
+  if (!encrypted && packed) {
     return he_seal_backend.create_packed_plain_tensor(element::f32, shape);
-  } else if (!encrypted && !packed) {
+  }
+  if (!encrypted && !packed) {
     return he_seal_backend.create_plain_tensor(element::f32, shape);
   }
   throw ngraph_error("Logic error");
 };
 
-}  // namespace he
-}  // namespace test
-}  // namespace ngraph
+}  // namespace ngraph::runtime::he::test

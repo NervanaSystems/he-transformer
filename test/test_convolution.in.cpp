@@ -25,47 +25,50 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
-                    const ngraph::Strides& window_movement_strides,
-                    const ngraph::Strides& window_dilation_strides,
-                    const ngraph::CoordinateDiff& padding_below,
-                    const ngraph::CoordinateDiff& padding_above,
-                    const ngraph::Strides& data_dilation_strides,
+namespace ngraph::runtime::he {
+
+auto conv_test = [](const Shape& shape_a, const Shape& shape_b,
+                    const Strides& window_movement_strides,
+                    const Strides& window_dilation_strides,
+                    const CoordinateDiff& padding_below,
+                    const CoordinateDiff& padding_above,
+                    const Strides& data_dilation_strides,
                     const std::vector<float>& input_a,
                     const std::vector<float>& input_b,
                     const std::vector<float>& output, const bool arg1_encrypted,
                     const bool arg2_encrypted, const bool complex_packing,
                     const bool packed) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a =
-      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_a);
-  auto b =
-      std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape_b);
-  auto t = std::make_shared<ngraph::op::Convolution>(
+  auto a = std::make_shared<op::Parameter>(element::f32, shape_a);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape_b);
+  auto t = std::make_shared<op::Convolution>(
       a, b, window_movement_strides, window_dilation_strides, padding_below,
       padding_above, data_dilation_strides);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
+  const auto& arg1_config =
+      test::config_from_flags(false, arg1_encrypted, packed);
   // Weights should not be packed
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, false));
+  const auto& arg2_config =
+      test::config_from_flags(false, arg2_encrypted, false);
 
-  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape_a,
-                                                 arg1_encrypted, packed);
+  std::string error_str;
+  he_backend->set_config(
+      {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
+
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape_a, arg1_encrypted, packed);
   // Weights should not be packed
-  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape_b,
-                                                 arg2_encrypted, false);
-  auto t_result = ngraph::test::he::tensor_from_flags(
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape_b, arg2_encrypted, false);
+  auto t_result = test::tensor_from_flags(
       *he_backend, t->get_shape(), arg1_encrypted || arg2_encrypted, packed);
 
   copy_data(t_a, input_a);
@@ -73,15 +76,12 @@ auto conv_test = [](const ngraph::Shape& shape_a, const ngraph::Shape& shape_b,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(
-      ngraph::test::he::all_close(read_vector<float>(t_result), output, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), output, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{}, ngraph::CoordinateDiff{},
-            ngraph::Strides{},
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
             std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
                                2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
                                2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
@@ -91,123 +91,113 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_real_packed) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, false, true);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, false,
+            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_plain_plain_complex_unpacked) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, true, false);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, true,
+            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_plain_complex_packed) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, true, true);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, false, false, true,
+            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_plain_real_unpacked) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false, false);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false,
+            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_cipher_plain_real_packed) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false, true);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false,
+            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_cipher_plain_complex_unpacked) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, true, false);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, true,
+            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_cipher_plain_complex_packed) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, true, true);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, true,
+            true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1image_plain_cipher_real_unpacked) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false, false);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, false, false,
+            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_cipher_cipher_real_unpacked) {
-  conv_test(
-      ngraph::Shape{1, 1, 5, 5}, ngraph::Shape{1, 1, 3, 3},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
-      std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
-                         2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
-      std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-      std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, true, false, false);
+  conv_test(Shape{1, 1, 5, 5}, Shape{1, 1, 3, 3}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{}, CoordinateDiff{}, Strides{},
+            std::vector<float>{2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+                               2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+            std::vector<float>{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
+            std::vector<float>{9, 9, 9, 9, 9, 9, 9, 9, 9}, true, true, false,
+            false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_2outputs_plain_plain_real_unpacked) {
   conv_test(
-      ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
+      Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{}, CoordinateDiff{}, Strides{},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8},
       std::vector<float>{51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193,
@@ -218,9 +208,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_2outputs_plain_cipher_real_unpacked) {
   conv_test(
-      ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
+      Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{}, CoordinateDiff{}, Strides{},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8},
       std::vector<float>{51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193,
@@ -231,9 +220,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_2outputs_cipher_plain_real_unpacked) {
   conv_test(
-      ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
+      Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{}, CoordinateDiff{}, Strides{},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8},
       std::vector<float>{51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193,
@@ -244,9 +232,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1image_2outputs_cipher_cipher_real_unpacked) {
   conv_test(
-      ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{1, 1}, ngraph::Strides{1, 1}, ngraph::CoordinateDiff{},
-      ngraph::CoordinateDiff{}, ngraph::Strides{},
+      Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+      CoordinateDiff{}, CoordinateDiff{}, Strides{},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
       std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8},
       std::vector<float>{51, 61, 71, 81, 101, 111, 121, 131, 115, 141, 167, 193,
@@ -255,10 +242,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -269,10 +254,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_plain_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -283,10 +266,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_plain_cipher_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -297,10 +278,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_plain_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -312,10 +291,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_1item_cipher_cipher_real_unpacked) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_1_1x1_1_plain_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{1, 1}, ngraph::CoordinateDiff{1, 1},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -331,10 +308,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_1_1x1_1_plain_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{1, 1}, ngraph::CoordinateDiff{1, 1},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -350,10 +325,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_1_1x1_1_cipher_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{1, 1}, ngraph::CoordinateDiff{1, 1},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -369,10 +342,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_1_1x1_1_cipher_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{1, 1}, ngraph::CoordinateDiff{1, 1},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{1, 1}, CoordinateDiff{1, 1}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -388,10 +359,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_2_3x4_5_plain_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{4, 5},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -425,10 +394,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_2_3x4_5_plain_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{4, 5},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -462,10 +429,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_2_3x4_5_cipher_plain_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{4, 5},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -499,10 +464,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_1item_padded_2_3x4_5_cipher_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{1, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{2, 3}, ngraph::CoordinateDiff{4, 5},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{1, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{2, 3}, CoordinateDiff{4, 5}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f,
                                -8.f, 5.f, -8.f, 1.f, 2.f, 8.f, -2.f},
             std::vector<float>{-8.f, 2.f, -4.f, -2.f, 9.f, 9.f, -0.f, -3.f},
@@ -535,10 +498,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_real_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -553,10 +514,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_real_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -572,10 +531,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_real_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_plain_plain_complex_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -590,10 +547,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_complex_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -608,10 +563,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_plain_complex_packed) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -626,10 +579,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher_real_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -645,10 +596,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_plain_cipher_real_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_plain_cipher_complex_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -664,10 +613,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_plain_cipher_complex_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -682,10 +629,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -700,10 +645,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_unpacked) {
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -719,10 +662,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_plain_real_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_cipher_plain_complex_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -738,10 +679,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_cipher_plain_complex_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -757,10 +696,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_cipher_cipher_real_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -775,10 +712,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_cipher_real_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -794,10 +729,8 @@ NGRAPH_TEST(${BACKEND_NAME}, convolution_2d_2items_cipher_cipher_real_packed) {
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_cipher_cipher_complex_unpacked) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -813,10 +746,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_cipher_cipher_complex_packed) {
-  conv_test(ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-            ngraph::Strides{1, 1}, ngraph::Strides{1, 1},
-            ngraph::CoordinateDiff{0, 0}, ngraph::CoordinateDiff{0, 0},
-            ngraph::Strides{1, 1},
+  conv_test(Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{1, 1}, Strides{1, 1},
+            CoordinateDiff{0, 0}, CoordinateDiff{0, 0}, Strides{1, 1},
             std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                                -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                                9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -833,10 +764,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_strided_padded_plain_plain_real_unpacked) {
   conv_test(
-      ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{2, 2}, ngraph::Strides{1, 1},
-      ngraph::CoordinateDiff{4, 2}, ngraph::CoordinateDiff{5, 7},
-      ngraph::Strides{1, 1},
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
+      CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
       std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                          -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                          9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -868,10 +797,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_strided_padded_plain_cipher_real_unpacked) {
   conv_test(
-      ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{2, 2}, ngraph::Strides{1, 1},
-      ngraph::CoordinateDiff{4, 2}, ngraph::CoordinateDiff{5, 7},
-      ngraph::Strides{1, 1},
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
+      CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
       std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                          -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                          9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -903,10 +830,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_strided_padded_cipher_plain_real_unpacked) {
   conv_test(
-      ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{2, 2}, ngraph::Strides{1, 1},
-      ngraph::CoordinateDiff{4, 2}, ngraph::CoordinateDiff{5, 7},
-      ngraph::Strides{1, 1},
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
+      CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
       std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                          -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                          9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -938,10 +863,8 @@ NGRAPH_TEST(${BACKEND_NAME},
 NGRAPH_TEST(${BACKEND_NAME},
             convolution_2d_2items_strided_padded_cipher_cipher_real_unpacked) {
   conv_test(
-      ngraph::Shape{2, 1, 3, 5}, ngraph::Shape{2, 1, 2, 2},
-      ngraph::Strides{2, 2}, ngraph::Strides{1, 1},
-      ngraph::CoordinateDiff{4, 2}, ngraph::CoordinateDiff{5, 7},
-      ngraph::Strides{1, 1},
+      Shape{2, 1, 3, 5}, Shape{2, 1, 2, 2}, Strides{2, 2}, Strides{1, 1},
+      CoordinateDiff{4, 2}, CoordinateDiff{5, 7}, Strides{1, 1},
       std::vector<float>{-8.f, 2.f,  -4.f, -2.f, 9.f,  9.f,  -0.f, -3.f,
                          -8.f, 5.f,  -8.f, 1.f,  2.f,  8.f,  -2.f, 6.f,
                          9.f,  -7.f, 3.f,  0.f,  6.f,  -1.f, -4.f, -2.f,
@@ -969,3 +892,5 @@ NGRAPH_TEST(${BACKEND_NAME},
           0.0f,   0.0f,   0.0f,   0.0f,   0.0f,   0.0f},
       true, true, false, false);
 }
+
+}  // namespace ngraph::runtime::he

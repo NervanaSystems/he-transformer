@@ -23,7 +23,7 @@
 #include "ngraph/coordinate_transform.hpp"
 #include "ngraph/shape_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void broadcast_seal(const std::vector<HEType>& arg,
                            std::vector<HEType>& out, const Shape& in_shape,
                            const Shape& out_shape,
@@ -37,4 +37,4 @@ inline void broadcast_seal(const std::vector<HEType>& arg,
         arg[input_transform.index(input_coord)];
   }
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

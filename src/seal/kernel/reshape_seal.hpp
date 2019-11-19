@@ -22,7 +22,7 @@
 #include "ngraph/axis_vector.hpp"
 #include "ngraph/coordinate_transform.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 inline void reshape_seal(const std::vector<HEType>& arg,
                          std::vector<HEType>& out, const Shape& in_shape,
                          const AxisVector& in_axis_order,
@@ -39,9 +39,8 @@ inline void reshape_seal(const std::vector<HEType>& arg,
   CoordinateTransform output_transform(out_shape);
   CoordinateTransform::Iterator output_it = output_transform.begin();
 
-  if (output_it == output_transform.end()) {
-    return;
-  }
+  NGRAPH_CHECK(shape_size(input_transform.get_target_shape()) ==
+               shape_size(output_transform.get_target_shape()));
 
   for (const Coordinate& input_coord : input_transform) {
     const Coordinate& output_coord = *output_it;
@@ -51,4 +50,4 @@ inline void reshape_seal(const std::vector<HEType>& arg,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

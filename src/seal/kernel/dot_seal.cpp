@@ -19,12 +19,12 @@
 #include "seal/kernel/add_seal.hpp"
 #include "seal/kernel/multiply_seal.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
               std::vector<HEType>& out, const Shape& arg0_shape,
               const Shape& arg1_shape, const Shape& out_shape,
               size_t reduction_axes_count, const element::Type& element_type,
-              HESealBackend& he_seal_backend) {
+              size_t batch_size, HESealBackend& he_seal_backend) {
   NGRAPH_CHECK(he_seal_backend.is_supported_type(element_type),
                "Unsupported type ", element_type);
   // Get the sizes of the dot axes. It's easiest to pull them from arg1
@@ -60,12 +60,12 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
 
   // Get arg0_projected_size and arg1_projected_size for parallelization
   // and pre-compute coordinates
-  std::vector<ngraph::Coordinate> arg0_projected_coords;
+  std::vector<Coordinate> arg0_projected_coords;
   for (const Coordinate& coord : arg0_projected_transform) {
     arg0_projected_coords.emplace_back(coord);
   }
 
-  std::vector<ngraph::Coordinate> arg1_projected_coords;
+  std::vector<Coordinate> arg1_projected_coords;
   for (const Coordinate& coord : arg1_projected_transform) {
     arg1_projected_coords.emplace_back(coord);
   }
@@ -135,13 +135,12 @@ void dot_seal(const std::vector<HEType>& arg0, const std::vector<HEType>& arg1,
     }
     // Write the sum back.
     if (first_add) {
-      // TODO(fboemer): batch size number of zeros?
-      HEPlaintext zero(std::vector<double>{0});
-      out[out_index].set_plaintext(zero);
+      HEPlaintext zero(batch_size, 0);
+      out[out_index].set_plaintext(std::move(zero));
     } else {
       out[out_index] = sum;
     }
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

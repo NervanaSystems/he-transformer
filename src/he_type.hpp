@@ -24,7 +24,7 @@
 #include "seal/he_seal_backend.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 class HESealBackend;
 
 /// \brief Class representing an HE datatype, either a plaintext or a ciphertext
@@ -32,33 +32,12 @@ class HEType {
  public:
   HEType() = delete;
 
-  HEType(const HEPlaintext& plain, const bool complex_packing)
-      : HEType(complex_packing, plain.size()) {
-    m_is_plain = true;
-    m_plain = plain;
-  }
+  HEType(const HEPlaintext& plain, bool complex_packing);
 
   HEType(const std::shared_ptr<SealCiphertextWrapper>& cipher,
-         const bool complex_packing, const size_t batch_size)
-      : HEType(complex_packing, batch_size) {
-    m_is_plain = false;
-    m_cipher = cipher;
-  }
+         bool complex_packing, size_t batch_size);
 
-  void save(pb::HEType& proto_he_type) const {
-    proto_he_type.set_is_plaintext(is_plaintext());
-    proto_he_type.set_complex_packing(complex_packing());
-    proto_he_type.set_batch_size(batch_size());
-
-    if (is_plaintext()) {
-      // TODO(fboemer): more efficient
-      for (auto& elem : get_plaintext()) {
-        proto_he_type.add_plain(static_cast<float>(elem));
-      }
-    } else {
-      get_ciphertext()->save(proto_he_type);
-    }
-  }
+  void save(pb::HEType& proto_he_type) const;
 
   static HEType load(const pb::HEType& proto_he_type,
                      std::shared_ptr<seal::SEALContext> context);
@@ -77,13 +56,7 @@ class HEType {
   const HEPlaintext& get_plaintext() const { return m_plain; }
   HEPlaintext& get_plaintext() { return m_plain; }
 
-  void set_plaintext(HEPlaintext plain) {
-    m_plain = std::move(plain);
-    m_is_plain = true;
-    if (m_cipher != nullptr) {
-      m_cipher->ciphertext().release();
-    }
-  }
+  void set_plaintext(HEPlaintext plain);
 
   const std::shared_ptr<SealCiphertextWrapper>& get_ciphertext() const {
     return m_cipher;
@@ -109,4 +82,4 @@ class HEType {
   std::shared_ptr<SealCiphertextWrapper> m_cipher;
 };
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

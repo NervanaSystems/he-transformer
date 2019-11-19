@@ -21,9 +21,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "he_op_annotations.hpp"
 #include "he_plaintext.hpp"
 #include "he_tensor.hpp"
 #include "he_type.hpp"
+#include "he_util.hpp"
 #include "ngraph/descriptor/layout/dense_tensor_layout.hpp"
 #include "ngraph/descriptor/layout/tensor_layout.hpp"
 #include "ngraph/function.hpp"
@@ -44,18 +46,17 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_plaintext_wrapper.hpp"
-#include "util.hpp"
 
-namespace ngraph {
-namespace runtime {
+namespace ngraph::runtime {
 class BackendConstructor;
-}  // namespace runtime
+
 namespace he {
 class HEType;
 class SealCiphertextWrapper;
+
 /// \brief Class representing a backend using the CKKS homomorphic encryption
 /// scheme.
-class HESealBackend : public ngraph::runtime::Backend {
+class HESealBackend : public runtime::Backend {
  public:
   /// \brief Constructs a backend with default parameter choice
   HESealBackend();
@@ -110,8 +111,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   ///     5) {"encryption_parameters" : "filename
   ///     or json string"}, which sets the encryption parameters to use.
   ///
-  ///     Note, entries with the same tensor key should be comma-separated, for
-  ///     instance: {tensor_name : "client_input,encrypt,packed"}
+  ///     Note, entries with the same tensor key should be comma-separated,
+  ///     for instance: {tensor_name : "client_input,encrypt,packed"}
   ///
   ///  \warning Specfying entries of form 1) without an entry of form 2) will
   ///  not load the tensors from the client
@@ -134,8 +135,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   std::shared_ptr<runtime::Tensor> create_packed_cipher_tensor(
       const element::Type& type, const Shape& shape) const;
 
-  /// \brief Creates a plaintext tensor using plaintext packing along the batch
-  /// (i.e. first) axis
+  /// \brief Creates a plaintext tensor using plaintext packing along the
+  /// batch (i.e. first) axis
   /// \param[in] type Datatype stored in the tensor
   /// \param[in] shape Shape of the tensor
   /// \returns Pointer to created tensor
@@ -170,23 +171,6 @@ class HESealBackend : public ngraph::runtime::Backend {
     return std::make_shared<SealCiphertextWrapper>();
   }
 
-  /// \brief Creates empty ciphertext at given parameter choice
-  /// \param[in] parms_id Seal encryption parameter id
-  /// \returns Pointer to created ciphertext
-  std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
-      seal::parms_id_type parms_id) const {
-    return std::make_shared<SealCiphertextWrapper>(
-        seal::Ciphertext(m_context, parms_id));
-  }
-
-  /// \brief Creates empty ciphertext at given parameter choice
-  /// \param[in] pool Memory pool used for new memory allocation
-  /// \returns Pointer to created ciphertext
-  std::shared_ptr<SealCiphertextWrapper> create_empty_ciphertext(
-      const seal::MemoryPoolHandle& pool) const {
-    return std::make_shared<SealCiphertextWrapper>(pool);
-  }
-
   /// \brief TODO(fboemer)
   void decode(void* output, const HEPlaintext& input, const element::Type& type,
               size_t count = 1) const;
@@ -203,16 +187,6 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns pointer to SEAL context
   const std::shared_ptr<seal::SEALContext> get_context() const {
     return m_context;
-  }
-
-  /// \brief Returns pointer to secret key
-  const std::shared_ptr<seal::SecretKey> get_secret_key() const {
-    return m_secret_key;
-  }
-
-  /// \brief Returns pointer to public key
-  const std::shared_ptr<seal::PublicKey> get_public_key() const {
-    return m_public_key;
   }
 
   /// \brief Returns pointer to relinearization keys
@@ -283,17 +257,8 @@ class HESealBackend : public ngraph::runtime::Backend {
   /// \brief Returns whether or not complex packing is used
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
-  /// \brief Returns whether or not the rescaling operation is performed after
-  /// every multiplication.
-  /// \warning Naive rescaling results in a dramatic performance penalty for
-  /// Convolution and Dot operations. Typically, this should never be used
-  bool naive_rescaling() const { return m_naive_rescaling; }
-
-  /// \brief Returns whether or not the rescaling operation is performed after
-  /// every multiplication.
-  /// \warning Naive rescaling results in a dramatic performance penalty for
-  /// Convolution and Dot operations. Typically, this should never be used
-  bool& naive_rescaling() { return m_naive_rescaling; }
+  /// \brief Returns whether or not the client is enabled
+  bool enable_client() const { return m_enable_client; }
 
   /// \brief Returns the chain index, also known as level, of the ciphertext
   /// \param[in] cipher Ciphertext whose chain index to return
@@ -311,28 +276,7 @@ class HESealBackend : public ngraph::runtime::Backend {
         ->chain_index();
   }
 
-  /// \brief Returns set of tensors to be provided by the client
-  std::unordered_set<std::string> get_client_tensor_names() const {
-    return m_client_tensor_names;
-  }
-
-  /// \brief Returns set of parameter tensors to be encrypted
-  std::unordered_set<std::string> get_encrypted_tensor_names() const {
-    return m_encrypted_tensor_names;
-  }
-
-  /// \brief Returns set of parameter tensors to remain plaintext.
-  std::unordered_set<std::string> get_plaintext_tensor_names() const {
-    return m_plaintext_tensor_names;
-  }
-
-  /// \brief Returns set of parameter tensors to be packed.
-  std::unordered_set<std::string> get_packed_tensor_names() const {
-    return m_packed_tensor_names;
-  }
-
  private:
-  bool m_naive_rescaling{flag_to_bool(std::getenv("NAIVE_RESCALING"))};
   bool m_enable_client{false};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
@@ -354,10 +298,7 @@ class HESealBackend : public ngraph::runtime::Backend {
       element::f32.hash(), element::i32.hash(), element::i64.hash(),
       element::f64.hash()};
 
-  std::unordered_set<std::string> m_client_tensor_names;
-  std::unordered_set<std::string> m_encrypted_tensor_names;
-  std::unordered_set<std::string> m_plaintext_tensor_names;
-  std::unordered_set<std::string> m_packed_tensor_names;
+  std::unordered_map<std::string, HEOpAnnotations> m_config_tensors;
 
   std::unordered_set<std::string> m_unsupported_op_name_list{
       "Abs",
@@ -443,4 +384,4 @@ class HESealBackend : public ngraph::runtime::Backend {
 };
 
 }  // namespace he
-}  // namespace ngraph
+}  // namespace ngraph::runtime

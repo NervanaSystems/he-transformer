@@ -21,34 +21,16 @@
 
 #include "ngraph/log.hpp"
 
-namespace {
+namespace ngraph::runtime::he::logging {
 // Parse log level (int64) from environment variable (char*)
-inline int64_t LogLevelStrToInt(const char* env_var_val) {
-  if (env_var_val == nullptr) {
-    return 0;
-  }
+int64_t log_level_str_to_int(const char* env_var_val);
 
-  // Ideally we would use env_var / safe_strto64, but it is
-  // hard to use here without pulling in a lot of dependencies,
-  // so we use std:istringstream instead
-  std::string min_log_level(env_var_val);
-  std::istringstream ss(min_log_level);
-  int64_t level;
-  if (!(ss >> level)) {
-    // Invalid vlog level setting, set level to default (0)
-    level = 0;
-  }
+int64_t min_ngraph_he_log_level();
 
-  return level;
-}
-}  // namespace
+}  // namespace ngraph::runtime::he::logging
 
-inline int64_t min_ngraph_he_log_level() {
-  const char* tf_env_var_val = std::getenv("NGRAPH_HE_LOG_LEVEL");
-  return LogLevelStrToInt(tf_env_var_val);
-}
-
-#define NGRAPH_HE_VLOG_IS_ON(lvl) ((lvl) <= min_ngraph_he_log_level())
+#define NGRAPH_HE_VLOG_IS_ON(lvl) \
+  ((lvl) <= ngraph::runtime::he::logging::min_ngraph_he_log_level())
 
 #define NGRAPH_HE_LOG(lvl) \
   if (NGRAPH_HE_VLOG_IS_ON(lvl)) NGRAPH_INFO

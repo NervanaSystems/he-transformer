@@ -31,9 +31,7 @@ BoundedRelu::BoundedRelu(const Output<Node>& arg, float alpha)
 
 std::shared_ptr<Node> BoundedRelu::copy_with_new_args(
     const NodeVector& new_args) const {
-  if (new_args.size() != 1) {
-    throw ngraph_error("Incorrect number of new arguments");
-  }
+  NGRAPH_CHECK(new_args.size() == 1, "Incorrect number of new arguments");
   return std::make_shared<BoundedRelu>(new_args.at(0), m_alpha);
 }
 

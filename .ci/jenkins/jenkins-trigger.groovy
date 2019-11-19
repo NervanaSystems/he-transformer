@@ -40,14 +40,12 @@ timestamps {
             sleep sleeptime; sleeptime = 10
             sh "git clone -b $JENKINS_BRANCH https://github.intel.com/AIPG/cje-algo $JENKINS_DIR"
         }
-
         def heTransformerCIPreMerge = load("$JENKINS_DIR/hetransformer-lib/he-transformer-ci-premerge.groovy")
         heTransformerCIPreMerge(prURL: CHANGE_URL,
                         prAuthor: CHANGE_AUTHOR,
                         useMBPipelineSCM: 'true',
                         checkoutBranch: '-UNDEFINED-BRANCH-'
                         )
-
         echo "he-transformer-ci-premerge.groovy completed"
 
     }  // End:  node

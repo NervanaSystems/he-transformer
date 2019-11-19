@@ -17,7 +17,6 @@
 #include "seal/he_seal_client.hpp"
 
 #include <algorithm>
-#include <boost/asio.hpp>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -25,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "boost/asio.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
@@ -39,7 +39,7 @@
 
 using json = nlohmann::json;
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 HESealClient::HESealClient(const std::string& hostname, const size_t port,
                            const size_t batch_size,
@@ -87,7 +87,9 @@ void HESealClient::set_seal_context() {
   print_encryption_parameters(m_encryption_params, *m_context);
 
   m_keygen = std::make_shared<seal::KeyGenerator>(m_context);
-  m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+  if (m_context->using_keyswitching()) {
+    m_relin_keys = std::make_shared<seal::RelinKeys>(m_keygen->relin_keys());
+  }
   m_public_key = std::make_shared<seal::PublicKey>(m_keygen->public_key());
   m_secret_key = std::make_shared<seal::SecretKey>(m_keygen->secret_key());
   m_encryptor = std::make_shared<seal::Encryptor>(m_context, *m_public_key);
@@ -160,12 +162,15 @@ void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
                " not found");
 
   auto& [input_config, input_data] = input_proto->second;
+  static std::unordered_set<std::string> known_configs{"encrypt", "plain"};
+
+  NGRAPH_CHECK(known_configs.find(input_config) != known_configs.end(),
+               "Unknown configuration ", input_config);
+
   if (input_config == "encrypt") {
     encrypt_tensor = true;
   } else if (input_config == "plain") {
     encrypt_tensor = false;
-  } else {
-    NGRAPH_WARN << "Unknown configuration " << input_config;
   }
 
   NGRAPH_HE_LOG(5) << "Client received inference request with name "
@@ -178,16 +183,16 @@ void HESealClient::handle_inference_request(const pb::TCPMessage& message) {
     NGRAPH_HE_LOG(5) << "Client complex packing";
   }
 
-  size_t parameter_size = ngraph::shape_size(HETensor::pack_shape(shape));
+  size_t parameter_size = shape_size(HETensor::pack_shape(shape));
   NGRAPH_HE_LOG(5) << "Client parameter_size " << parameter_size;
 
-  if (input_data.size() > parameter_size * m_batch_size) {
-    NGRAPH_HE_LOG(5) << "m_input_config.size() " << m_input_config.size()
-                     << " > paramter_size ( " << parameter_size
-                     << ") * m_batch_size (" << m_batch_size << ")";
-  }
+  NGRAPH_CHECK(input_data.size() == parameter_size * m_batch_size,
+               "incorrect input_data.size() ", input_data.size(),
+               ", expected  ", parameter_size * m_batch_size,
+               " (parameter_size=", parameter_size,
+               "), (batch_size=", m_batch_size, ")");
 
-  HETensor::unpack_shape(shape, m_batch_size);
+  shape = HETensor::unpack_shape(shape, m_batch_size);
   auto element_type = element::f64;
 
   auto he_tensor = HETensor(
@@ -233,11 +238,22 @@ void HESealClient::handle_result(const pb::TCPMessage& message) {
   }
 
   if (m_result_tensor->done_loading()) {
-    size_t data_size = m_result_tensor->data().size();
-    m_results.resize(data_size * m_result_tensor->get_batch_size());
-    size_t num_bytes =
-        m_results.size() * m_result_tensor->get_element_type().size();
-    m_result_tensor->read(m_results.data(), num_bytes);
+    size_t data_size =
+        m_result_tensor->data().size() * m_result_tensor->get_batch_size();
+    m_results.resize(data_size);
+
+    const auto& type = m_result_tensor->get_element_type();
+    size_t num_bytes = data_size * type.size();
+    auto bytes = ngraph_malloc(num_bytes);
+    m_result_tensor->read(bytes, num_bytes);
+
+    for (size_t i = 0; i < data_size; ++i) {
+      void* addr =
+          static_cast<void*>(static_cast<char*>(bytes) + i * type.size());
+      m_results[i] = type_to_double(addr, type);
+    }
+
+    ngraph_free(bytes);
     close_connection();
   }
 }
@@ -377,30 +393,32 @@ void HESealClient::handle_message(const TCPMessage& message) {
       break;
     }
     case pb::TCPMessage_Type_REQUEST: {
-      if (proto_msg->has_function()) {
-        const std::string& function = proto_msg->function().function();
-        json js = json::parse(function);
-        auto name = js.at("function");
+      NGRAPH_CHECK(proto_msg->has_function(), "Unknown request type");
 
-        if (name == "Parameter") {
-          handle_inference_request(*proto_msg);
-        } else if (name == "Relu") {
-          handle_relu_request(std::move(*proto_msg));
-        } else if (name == "BoundedRelu") {
-          handle_bounded_relu_request(std::move(*proto_msg));
-        } else if (name == "MaxPool") {
-          handle_max_pool_request(std::move(*proto_msg));
-        } else {
-          NGRAPH_HE_LOG(5) << "Unknown name " << name;
-        }
-      } else {
-        NGRAPH_CHECK(false, "Unknown REQUEST type");
+      const std::string& function = proto_msg->function().function();
+      json js = json::parse(function);
+      auto name = js.at("function");
+
+      static std::unordered_set<std::string> s_known_names{
+          "Parameter", "Relu", "BoundedRelu", "MaxPool"};
+
+      NGRAPH_CHECK(s_known_names.find(name) != s_known_names.end(),
+                   "Unknown name ", name);
+
+      if (name == "Parameter") {
+        handle_inference_request(*proto_msg);
+      } else if (name == "Relu") {
+        handle_relu_request(std::move(*proto_msg));
+      } else if (name == "BoundedRelu") {
+        handle_bounded_relu_request(std::move(*proto_msg));
+      } else if (name == "MaxPool") {
+        handle_max_pool_request(std::move(*proto_msg));
       }
       break;
     }
     case pb::TCPMessage_Type_UNKNOWN:
     default:
-      NGRAPH_CHECK(false, "Unknonwn TCPMessage type");
+      NGRAPH_CHECK(false, "Unknown TCPMessage type");
   }
 #pragma clang diagnostic pop
 }
@@ -422,4 +440,4 @@ void HESealClient::close_connection() {
   m_is_done_cond.notify_all();
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

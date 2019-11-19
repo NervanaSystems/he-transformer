@@ -22,8 +22,11 @@ set(HE_SRC
     he_tensor.cpp
     he_type.cpp
     node_wrapper.cpp
-    util.cpp
+    he_util.cpp
+    he_op_annotations.cpp
     he_plaintext.cpp
+    # logging
+    logging/ngraph_he_log.cpp
     # pass
     pass/he_fusion.cpp
     pass/he_liveness.cpp
@@ -53,7 +56,13 @@ set(HE_SRC
     seal/he_seal_client.cpp
     seal/he_seal_encryption_parameters.cpp
     seal/he_seal_executable.cpp
+    seal/seal_ciphertext_wrapper.cpp
+    seal/seal_plaintext_wrapper.cpp
     seal/seal_util.cpp
+    # tcp
+    tcp/tcp_message.cpp
+    tcp/tcp_client.cpp
+    tcp/tcp_session.cpp
     # protobuf files
     ${message_proto_srcs})
 
@@ -65,6 +74,7 @@ set_source_files_properties(${message_proto_srcs}
 # Create library and link to dependencies
 add_library(he_seal_backend SHARED ${HE_SRC})
 target_include_directories(he_seal_backend PUBLIC ${HE_TRANSFORMER_SOURCE_DIR})
+
 target_link_libraries(he_seal_backend
                       PUBLIC libjson
                              libboost
@@ -73,6 +83,12 @@ target_link_libraries(he_seal_backend
                              protobuf::libprotobuf
                              generated_proto_files
                              ngraph)
+
+# TODO: better condition if we don't link with OpenMP
+if (NGRAPH_HE_CODE_COVERAGE)
+        find_package(Threads)
+        target_link_libraries(he_seal_backend PUBLIC  ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 foreach(INSTALL_LIB_DIR ${INSTALL_LIB_DIRS})
   install(TARGETS he_seal_backend DESTINATION ${INSTALL_LIB_DIR})

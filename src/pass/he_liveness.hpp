@@ -20,7 +20,7 @@
 
 #include "ngraph/pass/graph_rewrite.hpp"
 
-namespace ngraph::he::pass {
+namespace ngraph::runtime::he::pass {
 
 /// \brief An aggressive version of Liveness which will delete the parameter
 /// node and any constant nodes
@@ -29,6 +29,6 @@ class HELiveness : public ngraph::pass::FunctionPass {
   /// \brief Performs HELiveness pass on given function
   /// \param[in,out] function Function to perform pass on
   /// \returns false, indicating the function has not been modified
-  bool run_on_function(std::shared_ptr<ngraph::Function> function) override;
+  bool run_on_function(std::shared_ptr<Function> function) override;
 };
-}  // namespace ngraph::he::pass
+}  // namespace ngraph::runtime::he::pass

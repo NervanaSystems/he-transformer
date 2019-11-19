@@ -24,7 +24,7 @@
 #include "seal/seal_ciphertext_wrapper.hpp"
 #include "seal/seal_util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 void scalar_power_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                        HEPlaintext& out) {
@@ -70,8 +70,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
     plain_arg1.resize(arg1.batch_size());
     scalar_power_seal(plain_arg0, plain_arg1, plain_arg1);
 
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_ciphertext() && arg1.is_plaintext()) {
     HEPlaintext plain_arg0;
@@ -79,8 +79,8 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
                             arg0.complex_packing());
     plain_arg0.resize(arg0.batch_size());
     scalar_power_seal(plain_arg0, arg1.get_plaintext(), plain_arg0);
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg0, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_ciphertext()) {
     HEPlaintext plain_arg1;
@@ -88,15 +88,13 @@ void scalar_power_seal(HEType& arg0, HEType& arg1, HEType& out,
                             arg1.complex_packing());
     plain_arg1.resize(arg0.batch_size());
     scalar_power_seal(arg0.get_plaintext(), plain_arg1, plain_arg1);
-    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1,
-                            ngraph::element::f32, arg0.complex_packing());
+    he_seal_backend.encrypt(out.get_ciphertext(), plain_arg1, element::f32,
+                            arg0.complex_packing());
 
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     out.set_plaintext(arg0.get_plaintext());
     scalar_power_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                       out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 
@@ -113,4 +111,4 @@ void power_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

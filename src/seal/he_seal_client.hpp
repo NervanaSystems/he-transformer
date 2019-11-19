@@ -16,21 +16,21 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
+#include "boost/asio.hpp"
 #include "he_tensor.hpp"
+#include "he_util.hpp"
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal.h"
 #include "tcp/tcp_client.hpp"
 #include "tcp/tcp_message.hpp"
-#include "util.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 /// (tensor_name : (configuration, data)
 template <class T>
@@ -75,7 +75,7 @@ class HESealClient {
 
   /// \brief Processes a message from the server
   /// \param[in] message Message to process
-  void handle_message(const ngraph::he::TCPMessage& message);
+  void handle_message(const ngraph::runtime::he::TCPMessage& message);
 
   /// \brief Processes a message containing encryption parameters
   /// \param[in] message Message to process
@@ -106,7 +106,7 @@ class HESealClient {
 
   /// \brief Writes a mesage to the server
   /// \param[in] message Message to write
-  void write_message(ngraph::he::TCPMessage&& message) {
+  void write_message(ngraph::runtime::he::TCPMessage&& message) {
     m_tcp_client->write_message(std::move(message));
   }
 
@@ -129,7 +129,7 @@ class HESealClient {
 
  private:
   std::unique_ptr<TCPClient> m_tcp_client;
-  ngraph::he::HESealEncryptionParameters m_encryption_params;
+  HESealEncryptionParameters m_encryption_params;
   std::shared_ptr<seal::PublicKey> m_public_key;
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::SEALContext> m_context;
@@ -152,4 +152,4 @@ class HESealClient {
   std::shared_ptr<HETensor> m_result_tensor;
   std::vector<double> m_results;  // Function outputs
 };
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

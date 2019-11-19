@@ -22,12 +22,37 @@
 #include "ngraph/check.hpp"
 #include "ngraph/except.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
+
+HEPlaintext::HEPlaintext(const std::initializer_list<double>& values)
+    : std::vector<double>(values) {}
+
+HEPlaintext::HEPlaintext(const std::vector<double>& values)
+    : std::vector<double>(values) {}
+
+HEPlaintext::HEPlaintext(std::vector<double>&& values)
+    : std::vector<double>(std::move(values)) {}
+
+HEPlaintext::HEPlaintext(size_t n, double initial_value)
+    : std::vector<double>(n, initial_value) {}
+
+HEPlaintext& HEPlaintext::operator=(const HEPlaintext& v) {
+  static_cast<std::vector<double>*>(this)->operator=(v);
+  return *this;
+}
+
+HEPlaintext& HEPlaintext::operator=(HEPlaintext&& v) noexcept {
+  static_cast<std::vector<double>*>(this)->operator=(v);
+  return *this;
+}
+
 void HEPlaintext::write(void* target, const element::Type& element_type) {
   NGRAPH_CHECK(!empty(), "Input has no values");
   size_t count = this->size();
   size_t type_byte_size = element_type.size();
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
   switch (element_type.get_type_enum()) {
     case element::Type_t::f32: {
       std::vector<float> float_values{begin(), end()};
@@ -70,16 +95,16 @@ void HEPlaintext::write(void* target, const element::Type& element_type) {
     case element::Type_t::f16:
     case element::Type_t::boolean:
       NGRAPH_CHECK(false, "Unsupported element type ", element_type);
-      break;
   }
+#pragma clang diagnostic pop
 }
 
 std::ostream& operator<<(std::ostream& os, const HEPlaintext& plain) {
-  os << "HEPlaintext(";
+  os << "HEPlaintext( ";
   for (const auto& value : plain) {
     os << value << " ";
   }
   os << ")";
   return os;
 }
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

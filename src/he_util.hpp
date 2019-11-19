@@ -27,43 +27,22 @@
 #include "ngraph/util.hpp"
 #include "protos/message.pb.h"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 
 /// \brief Unpacks complex values to real values
 /// (a+bi, c+di) => (a,b,c,d)
 /// \param[out] output Vector to store unpacked real values
 /// \param[in] input Vector of complex values to unpack
-template <typename T>
-inline void complex_vec_to_real_vec(std::vector<T>& output,
-                                    const std::vector<std::complex<T>>& input) {
-  NGRAPH_CHECK(output.empty(), "Output vector is not empty");
-  output.reserve(input.size() * 2);
-  for (const std::complex<T>& value : input) {
-    output.emplace_back(value.real());
-    output.emplace_back(value.imag());
-  }
-}
+void complex_vec_to_real_vec(std::vector<double>& output,
+                             const std::vector<std::complex<double>>& input);
 
 /// \brief Packs elements of input into complex values
 /// (a,b,c,d) => (a+bi, c+di)
 /// (a,b,c) => (a+bi, c+0i)
 /// \param[out] output Vector to store packed complex values
 /// \param[in] input Vector of real values to unpack
-template <typename T>
-inline void real_vec_to_complex_vec(std::vector<std::complex<T>>& output,
-                                    const std::vector<T>& input) {
-  NGRAPH_CHECK(output.empty(), "Output vector is not empty");
-  output.reserve(input.size() / 2);
-  std::vector<T> complex_parts(2, 0);
-  for (size_t i = 0; i < input.size(); ++i) {
-    complex_parts[i % 2] = input[i];
-
-    if (i % 2 == 1 || i == input.size() - 1) {
-      output.emplace_back(std::complex<T>(complex_parts[0], complex_parts[1]));
-      complex_parts = {T(0), T(0)};
-    }
-  }
-}
+void real_vec_to_complex_vec(std::vector<std::complex<double>>& output,
+                             const std::vector<double>& input);
 
 template <typename T>
 inline std::unordered_map<std::string,
@@ -96,7 +75,11 @@ bool flag_to_bool(const char* flag, bool default_value = false);
 /// \returns double value
 double type_to_double(const void* src, const element::Type& element_type);
 
-bool param_originates_from_name(const ngraph::op::Parameter& param,
+bool param_originates_from_name(const op::Parameter& param,
                                 const std::string& name);
 
-}  // namespace ngraph::he
+pb::HETensor_ElementType type_to_pb_type(const element::Type& element_type);
+
+element::Type pb_type_to_type(pb::HETensor_ElementType pb_type);
+
+}  // namespace ngraph::runtime::he

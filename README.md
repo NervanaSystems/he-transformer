@@ -27,15 +27,16 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 - python3 and pip3
 - virtualenv v16.1.0
 - bazel v0.25.2
+
+For a full list of dependencies, see the [docker containers](https://github.com/NervanaSystems/he-transformer/tree/master/contrib/docker), which build he-transformer on a reference OS.
+
 #### The following dependencies are built automatically
 - [nGraph](https://github.com/NervanaSystems/ngraph) - v0.25.1-rc.8
 - [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - commit cad093d84cc3a1ce212d8a96c67217321b44309b
 - [SEAL](https://github.com/Microsoft/SEAL) - v3.4.2
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
 - [Boost](https://github.com/boostorg) v1.69
-- [Google protobuf](https://github.com/protocolbuffers/protobuf) v3.9.1
-
-We also offer [docker containers](https://github.com/NervanaSystems/he-transformer/tree/master/contrib/docker) and builds of he-transformer on a reference OS.
+- [Google protobuf](https://github.com/protocolbuffers/protobuf) v3.10.1
 
 ### To install bazel
 ```bash
@@ -80,29 +81,33 @@ make docs
 to create doxygen documentation in `$HE_TRANSFORMER/build/doc/doxygen`.
 
 #### 1b. Python bindings for client
-To build an client-server model with python bindings, see the [python](https://github.com/NervanaSystems/he-transformer/tree/master/python) folder.
+To build a client-server model with python bindings (recommended for running neural networks through TensorFlow):
+```bash
+cd $HE_TRANSFORMER/build
+source external/venv-tf-py3/bin/activate
+make install python_client
+```
+This will create `python/dist/pyhe_client-*.whl`. Install it using
+```bash
+pip install python/dist/pyhe_client-*.whl
+```
+To check the installation worked correctly, run
+```bash
+python3 -c "import pyhe_client"
+```
+This should run without errors.
 
 ### 2. Run C++ unit-tests
-Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`
 ```bash
 cd $HE_TRANSFORMER/build
 # To run single HE_SEAL unit-test
-./test/unit-test --gtest_filter="HE_SEAL.add_2_3"
+./test/unit-test --gtest_filter="HE_SEAL.add_2_3_cipher_plain_real_unpacked_unpacked"
 # To run all C++ unit-tests
 ./test/unit-test
 ```
 
-### 3. Run Simple python example
-Ensure the virtual environment is active, i.e. run `source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate`
-```bash
-cd $HE_TRANSFORMER/examples
-# Run with CPU
-python ax.py --backend=CPU
-# To run CKKS unit-test
-python ax.py --backend=HE_SEAL
-```
-
-For a deep learning example, see [examples/MNIST/Cryptonets/](https://github.com/NervanaSystems/he-transformer/tree/master/examples/MNIST/Cryptonets).
+### 3. Run python examples
+See [examples/README.md](https://github.com/NervanaSystems/he-transformer/tree/master/examples/README.md) for examples of running he-transformer for deep learning inference on encrypted data.
 
 ## Code formatting
 Please run `maint/apply-code-format.sh` before submitting a pull request.

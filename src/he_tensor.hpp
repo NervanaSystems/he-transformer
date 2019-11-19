@@ -26,7 +26,7 @@
 #include "seal/he_seal_encryption_parameters.hpp"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 class HESealBackend;
 class HEType;
 /// \brief Class representing a Tensor of either ciphertexts or plaintexts
@@ -52,7 +52,7 @@ class HETensor : public runtime::Tensor {
            seal::CKKSEncoder& ckks_encoder,
            std::shared_ptr<seal::SEALContext> context,
            const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-           const ngraph::he::HESealEncryptionParameters& encryption_params,
+           const HESealEncryptionParameters& encryption_params,
            const std::string& name = "external");
 
   /// \brief Constructs a generic HETensor
@@ -87,11 +87,12 @@ class HETensor : public runtime::Tensor {
   static Shape pack_shape(const Shape& shape, size_t pack_axis = 0);
 
   /// \brief Expands shape along pack axis
-  /// \param[in,out] shape Input shape to pack
+  /// \param[in] shape Input shape to pack
   /// \param[in] pack_size New size of pack axis
   /// \param[in] pack_axis Axis along which to pack
-  static void unpack_shape(Shape& shape, size_t pack_size,
-                           size_t pack_axis = 0);
+  /// \return Shape after unpacking along pack axis
+  static Shape unpack_shape(const Shape& shape, size_t pack_size,
+                            size_t pack_axis = 0);
 
   /// \brief Packs the tensor along pack axis
   /// \param[in] pack_axis Axis along which to pack.
@@ -101,8 +102,6 @@ class HETensor : public runtime::Tensor {
   /// \brief Unpacks the tensor
   /// \throws ngraph_error if tensor contains any encrypted data
   void unpack();
-
-  const std::vector<HEType>& data() const { return m_data; }
 
   std::vector<HEType>& data() { return m_data; }
 
@@ -118,16 +117,11 @@ class HETensor : public runtime::Tensor {
   /// \brief Returns the shape of the un-expanded (i.e. packed) tensor.
   const Shape& get_packed_shape() const { return m_packed_shape; }
 
-  /// \brief Returns the shape of the expanded tensor.
-  const Shape& get_expanded_shape() const { return get_shape(); }
-
   /// \brief Returns plaintext packing factor used in the tensor
   size_t get_batch_size() const { return batch_size(get_shape(), m_packed); }
 
   /// \brief Returns number of ciphertext / plaintext objects in the tensor
-  size_t get_batched_element_count() const {
-    return get_element_count() / get_batch_size();
-  }
+  size_t get_batched_element_count() const;
 
   /// \brief Returns whether or not the tensor is packed
   bool is_packed() const { return m_packed; }
@@ -152,7 +146,7 @@ class HETensor : public runtime::Tensor {
       seal::CKKSEncoder& ckks_encoder,
       const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-      const ngraph::he::HESealEncryptionParameters& encryption_params);
+      const HESealEncryptionParameters& encryption_params);
 
   /// \brief Loads a tensor from protobuf tensor
   /// \param[in] proto_tensor protobuf tensor to load from
@@ -167,7 +161,7 @@ class HETensor : public runtime::Tensor {
       const pb::HETensor& proto_tensor, seal::CKKSEncoder& ckks_encoder,
       const std::shared_ptr<seal::SEALContext>& context,
       const seal::Encryptor& encryptor, seal::Decryptor& decryptor,
-      const ngraph::he::HESealEncryptionParameters& encryption_params) {
+      const HESealEncryptionParameters& encryption_params) {
     return load_from_proto_tensors({proto_tensor}, ckks_encoder, context,
                                    encryptor, decryptor, encryption_params);
   }
@@ -193,9 +187,9 @@ class HETensor : public runtime::Tensor {
   std::shared_ptr<seal::SEALContext> m_context;
   const seal::Encryptor& m_encryptor;
   seal::Decryptor& m_decryptor;
-  const ngraph::he::HESealEncryptionParameters& m_encryption_params;
+  const HESealEncryptionParameters& m_encryption_params;
 
   void check_io_bounds(size_t n) const;
 };
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

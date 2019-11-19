@@ -17,6 +17,7 @@
 #include "he_op_annotations.hpp"
 #include "ngraph/ngraph.hpp"
 #include "seal/he_seal_backend.hpp"
+#include "seal/kernel/multiply_seal.hpp"
 #include "test_util.hpp"
 #include "util/all_close.hpp"
 #include "util/ndarray.hpp"
@@ -25,33 +26,39 @@
 
 static std::string s_manifest = "${MANIFEST}";
 
-auto mult_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
+namespace ngraph::runtime::he {
+
+auto mult_test = [](const Shape& shape, const bool arg1_encrypted,
                     const bool arg2_encrypted, const bool complex_packing,
                     const bool packed) {
-  auto backend = ngraph::runtime::Backend::create("${BACKEND_NAME}");
-  auto he_backend = static_cast<ngraph::he::HESealBackend*>(backend.get());
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
 
   if (complex_packing) {
     he_backend->update_encryption_parameters(
-        ngraph::he::HESealEncryptionParameters::
-            default_complex_packing_parms());
+        HESealEncryptionParameters::default_complex_packing_parms());
   }
 
-  auto a = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto b = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, shape);
-  auto t = std::make_shared<ngraph::op::Multiply>(a, b);
-  auto f = std::make_shared<ngraph::Function>(t, ngraph::ParameterVector{a, b});
-  a->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg1_encrypted, packed));
-  b->set_op_annotations(
-      ngraph::test::he::annotation_from_flags(false, arg2_encrypted, packed));
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Multiply>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
 
-  auto t_a = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg1_encrypted, packed);
-  auto t_b = ngraph::test::he::tensor_from_flags(*he_backend, shape,
-                                                 arg2_encrypted, packed);
-  auto t_result = ngraph::test::he::tensor_from_flags(
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::tensor_from_flags(
       *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+
+  const auto& arg1_config =
+      test::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      test::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
 
   std::vector<float> input_a;
   std::vector<float> input_b;
@@ -69,10 +76,10 @@ auto mult_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
     if (packed && complex_packing && arg1_encrypted && !arg2_encrypted) {
       exp_result.emplace_back(
           input_a.back() *
-          input_b[i % shape_size(ngraph::he::HETensor::pack_shape(shape))]);
+          input_b[i % shape_size(HETensor::pack_shape(shape))]);
     } else if (packed && complex_packing && !arg1_encrypted && arg2_encrypted) {
       exp_result.emplace_back(
-          input_a[i % shape_size(ngraph::he::HETensor::pack_shape(shape))] *
+          input_a[i % shape_size(HETensor::pack_shape(shape))] *
           input_b.back());
     } else {
       exp_result.emplace_back(input_a.back() * input_b.back());
@@ -83,70 +90,247 @@ auto mult_test = [](const ngraph::Shape& shape, const bool arg1_encrypted,
 
   auto handle = backend->compile(f);
   handle->call_with_validate({t_result}, {t_a, t_b});
-  EXPECT_TRUE(ngraph::test::he::all_close(read_vector<float>(t_result),
-                                          exp_result, 1e-3f));
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
 };
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_plain_real_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, false, false, false, false);
+  mult_test(Shape{2, 3}, false, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_plain_real_packed) {
-  mult_test(ngraph::Shape{2, 3}, false, false, false, true);
+  mult_test(Shape{2, 3}, false, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_plain_complex_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, false, false, true, false);
+  mult_test(Shape{2, 3}, false, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_plain_complex_packed) {
-  mult_test(ngraph::Shape{2, 3}, false, false, true, true);
+  mult_test(Shape{2, 3}, false, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_cipher_real_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, false, true, false, false);
+  mult_test(Shape{2, 3}, false, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_cipher_real_packed) {
-  mult_test(ngraph::Shape{2, 3}, false, true, false, true);
+  mult_test(Shape{2, 3}, false, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_cipher_complex_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, false, true, true, false);
+  mult_test(Shape{2, 3}, false, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_plain_cipher_complex_packed) {
-  mult_test(ngraph::Shape{2, 3}, false, true, true, true);
+  mult_test(Shape{2, 3}, false, true, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_plain_real_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, true, false, false, false);
+  mult_test(Shape{2, 3}, true, false, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_plain_real_packed) {
-  mult_test(ngraph::Shape{2, 3}, true, false, false, true);
+  mult_test(Shape{2, 3}, true, false, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_plain_complex_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, true, false, true, false);
+  mult_test(Shape{2, 3}, true, false, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_plain_complex_packed) {
-  mult_test(ngraph::Shape{2, 3}, true, false, true, true);
+  mult_test(Shape{2, 3}, true, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_cipher_real_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, true, true, false, false);
+  mult_test(Shape{2, 3}, true, true, false, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_cipher_real_packed) {
-  mult_test(ngraph::Shape{2, 3}, true, true, false, true);
+  mult_test(Shape{2, 3}, true, true, false, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_cipher_complex_unpacked) {
-  mult_test(ngraph::Shape{2, 3}, true, true, true, false);
+  mult_test(Shape{2, 3}, true, true, true, false);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, mult_2_3_cipher_cipher_complex_packed) {
-  mult_test(ngraph::Shape{2, 3}, true, true, true, true);
+  mult_test(Shape{2, 3}, true, true, true, true);
 }
+
+NGRAPH_TEST(${BACKEND_NAME}, mult_end_of_depth) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+
+  std::string param_str = R"(
+    {
+        "scheme_name" : "HE_SEAL",
+        "poly_modulus_degree" : 2048,
+        "security_level" : 128,
+        "coeff_modulus" : [54],
+        "scale" : 16777216,
+        "complex_packing" : true
+    })";
+  auto he_parms = HESealEncryptionParameters::parse_config_or_use_default(
+      param_str.c_str());
+  he_backend->update_encryption_parameters(he_parms);
+
+  Shape shape{2, 2};
+
+  bool arg1_encrypted = true;
+  bool arg2_encrypted = true;
+  bool packed = false;
+
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Multiply>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
+
+  const auto& arg1_config =
+      test::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      test::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
+
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::tensor_from_flags(
+      *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+
+  std::vector<float> input_a{1, 2, 3, 4};
+  std::vector<float> input_b{5, 6, 7, 8};
+  std::vector<float> exp_result{5, 12, 21, 32};
+
+  copy_data(t_a, input_a);
+  copy_data(t_b, input_b);
+
+  auto handle = backend->compile(f);
+  EXPECT_ANY_THROW(handle->call_with_validate({t_result}, {t_a, t_b}));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, mult_zero) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+
+  Shape shape{2, 2};
+
+  bool arg1_encrypted = true;
+  bool arg2_encrypted = false;
+  bool packed = false;
+
+  auto a = std::make_shared<op::Parameter>(element::f32, shape);
+  auto b = std::make_shared<op::Parameter>(element::f32, shape);
+  auto t = std::make_shared<op::Multiply>(a, b);
+  auto f = std::make_shared<Function>(t, ParameterVector{a, b});
+
+  const auto& arg1_config =
+      test::config_from_flags(false, arg1_encrypted, packed);
+  const auto& arg2_config =
+      test::config_from_flags(false, arg2_encrypted, packed);
+
+  std::string error_str;
+  he_backend->set_config(
+      {{a->get_name(), arg1_config}, {b->get_name(), arg2_config}}, error_str);
+
+  auto t_a =
+      test::tensor_from_flags(*he_backend, shape, arg1_encrypted, packed);
+  auto t_b =
+      test::tensor_from_flags(*he_backend, shape, arg2_encrypted, packed);
+  auto t_result = test::tensor_from_flags(
+      *he_backend, shape, arg1_encrypted || arg2_encrypted, packed);
+
+  std::vector<float> input_a{0, 0, 3, 4};
+  std::vector<float> input_b{5, 6, 0, 0};
+  std::vector<float> exp_result{0, 0, 0, 0};
+
+  copy_data(t_a, input_a);
+  copy_data(t_b, input_b);
+
+  auto handle = backend->compile(f);
+  handle->call_with_validate({t_result}, {t_a, t_b});
+  EXPECT_TRUE(test::all_close(read_vector<float>(t_result), exp_result, 1e-3f));
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, mult_wrong_output_type) {
+  auto backend = runtime::Backend::create("${BACKEND_NAME}");
+  auto he_backend = static_cast<HESealBackend*>(backend.get());
+
+  Shape shape{1};
+
+  bool packed = false;
+
+  std::vector<float> cipher_input{7};
+  std::vector<float> plain_input{8};
+
+  // cipher cipher => plain
+  {
+    auto cipher_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, true, packed));
+    auto plain_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+    auto result_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+
+    copy_data(cipher_tensor, cipher_input);
+    copy_data(plain_tensor, plain_input);
+
+    scalar_multiply_seal(cipher_tensor->data(0), cipher_tensor->data(0),
+                         result_tensor->data(0), *he_backend);
+    EXPECT_TRUE(test::all_close(read_vector<float>(result_tensor),
+                                std::vector<float>{49}, 1e-3f));
+  }
+  // cipher plain => plain
+  {
+    auto cipher_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, true, packed));
+    auto plain_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+    auto result_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+
+    copy_data(cipher_tensor, cipher_input);
+    copy_data(plain_tensor, plain_input);
+
+    scalar_multiply_seal(cipher_tensor->data(0), plain_tensor->data(0),
+                         result_tensor->data(0), *he_backend);
+    EXPECT_TRUE(test::all_close(read_vector<float>(result_tensor),
+                                std::vector<float>{56}, 1e-3f));
+  }
+  // plain cipher => plain
+  {
+    auto cipher_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, true, packed));
+    auto plain_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+    auto result_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+
+    copy_data(cipher_tensor, cipher_input);
+    copy_data(plain_tensor, plain_input);
+
+    scalar_multiply_seal(cipher_tensor->data(0), plain_tensor->data(0),
+                         result_tensor->data(0), *he_backend);
+    EXPECT_TRUE(test::all_close(read_vector<float>(result_tensor),
+                                std::vector<float>{56}, 1e-3f));
+  }
+  // plain plain => cipher
+  {
+    auto plain_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, false, packed));
+    auto result_tensor = std::static_pointer_cast<HETensor>(
+        test::tensor_from_flags(*he_backend, shape, true, packed));
+
+    copy_data(plain_tensor, plain_input);
+
+    scalar_multiply_seal(plain_tensor->data(0), plain_tensor->data(0),
+                         result_tensor->data(0), *he_backend);
+    EXPECT_TRUE(test::all_close(read_vector<float>(result_tensor),
+                                std::vector<float>{64}, 1e-3f));
+  }
+}
+
+}  // namespace ngraph::runtime::he

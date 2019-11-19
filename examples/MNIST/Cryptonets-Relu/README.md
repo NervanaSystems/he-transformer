@@ -64,4 +64,4 @@ python pyclient_mnist.py --batch_size=1024 \
 ```
 
 ## Debugging
-For debugging purposes, enable the `NGRAPH_HE_LOG_LEVEL` or `NGRAPH_VOPS` flags. See [here](https://github.com/NervanaSystems/he-transformer/blob/master/examples/README.md) for more details.
+For debugging purposes, enable the `NGRAPH_HE_LOG_LEVEL` or `NGRAPH_HE_VERBOSE_OPS` flags. See [here](https://github.com/NervanaSystems/he-transformer/blob/master/examples/README.md) for more details.

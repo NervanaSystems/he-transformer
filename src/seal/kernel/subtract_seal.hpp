@@ -26,7 +26,7 @@
 #include "seal/seal.h"
 #include "seal/seal_ciphertext_wrapper.hpp"
 
-namespace ngraph::he {
+namespace ngraph::runtime::he {
 /// \brief Subtracts two ciphertexts
 /// \param[in,out] arg0 Ciphertext argument to subtract from. May be rescaled
 /// \param[in,out] arg1 Ciphertext argument to subtract. May be rescaled
@@ -94,8 +94,6 @@ inline void scalar_subtract_seal(HEType& arg0, HEType& arg1, HEType& out,
   } else if (arg0.is_plaintext() && arg1.is_plaintext()) {
     scalar_subtract_seal(arg0.get_plaintext(), arg1.get_plaintext(),
                          out.get_plaintext());
-  } else {
-    NGRAPH_CHECK(false, "Unknown argument types");
   }
 }
 
@@ -123,4 +121,4 @@ inline void subtract_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
   }
 }
 
-}  // namespace ngraph::he
+}  // namespace ngraph::runtime::he

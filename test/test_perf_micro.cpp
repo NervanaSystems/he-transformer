@@ -25,7 +25,7 @@
 #include "util/test_control.hpp"
 #include "util/test_tools.hpp"
 
-static std::string s_manifest = "${MANIFEST}";
+namespace ngraph::runtime::he {
 
 TEST(perf_micro, encode) {
   auto perf_test = [](size_t poly_modulus_degree,
@@ -63,9 +63,9 @@ TEST(perf_micro, encode) {
     seal::Evaluator evaluator(context);
 
     // he-transformer setup
-    auto he_parms = ngraph::he::HESealEncryptionParameters(
+    auto he_parms = HESealEncryptionParameters(
         "HE_SEAL", poly_modulus_degree, coeff_modulus_bits, 128, 0, false);
-    auto he_seal_backend = ngraph::he::HESealBackend(he_parms);
+    auto he_seal_backend = HESealBackend(he_parms);
 
     for (int test_run = 0; test_run < max_test_count; ++test_run) {
       auto seal_capacity =
@@ -93,12 +93,12 @@ TEST(perf_micro, encode) {
 
         // HE encoder
         time_start = std::chrono::high_resolution_clock::now();
-        encode(input, ngraph::element::f32, scale, parms_id, he_plain,
-               he_seal_backend, pool);
-        encode(input, ngraph::element::f32, scale, parms_id, he_plain,
-               he_seal_backend, pool);
-        encode(input, ngraph::element::f32, scale, parms_id, he_plain,
-               he_seal_backend, pool);
+        encode(input, element::f32, scale, parms_id, he_plain, he_seal_backend,
+               pool);
+        encode(input, element::f32, scale, parms_id, he_plain, he_seal_backend,
+               pool);
+        encode(input, element::f32, scale, parms_id, he_plain, he_seal_backend,
+               pool);
         time_end = std::chrono::high_resolution_clock::now();
         time_he_encode_sum +=
             std::chrono::duration_cast<std::chrono::nanoseconds>(time_end -
@@ -215,3 +215,5 @@ TEST(perf_micro, encode) {
     perf_test(poly_modulus_degree, coeff_moduli);
   }
 }
+
+}  // namespace ngraph::runtime::he
