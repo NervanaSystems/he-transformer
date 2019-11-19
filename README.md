@@ -31,8 +31,8 @@ The [examples](https://github.com/NervanaSystems/he-transformer/tree/master/exam
 For a full list of dependencies, see the [docker containers](https://github.com/NervanaSystems/he-transformer/tree/master/contrib/docker), which build he-transformer on a reference OS.
 
 #### The following dependencies are built automatically
-- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.25.1-rc.8
-- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - commit cad093d84cc3a1ce212d8a96c67217321b44309b
+- [nGraph](https://github.com/NervanaSystems/ngraph) - v0.27.0-rc.0
+- [nGraph-tf](https://github.com/tensorflow/ngraph-bridge) - v0.21.0-rc0
 - [SEAL](https://github.com/Microsoft/SEAL) - v3.4.2
 - [TensorFlow](https://github.com/tensorflow/tensorflow) - v1.14.0
 - [Boost](https://github.com/boostorg) v1.69

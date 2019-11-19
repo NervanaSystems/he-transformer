@@ -88,7 +88,7 @@ class HESealBackend : public runtime::Backend {
       std::shared_ptr<Function> function,
       bool enable_performance_data = false) override;
 
-  /// \brief Returns whether or not a given Node is supported
+  /// \brief Returns whether or not a given node is supported
   /// \param[in] node Node
   bool is_supported(const Node& node) const override;
 
