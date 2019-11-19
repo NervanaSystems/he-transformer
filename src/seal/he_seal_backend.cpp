@@ -97,7 +97,7 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
   for (const auto& [option, setting] : config) {
     // Check whether client is enabled
     if (option == "enable_client") {
-      bool client_enabled = string_to_bool(setting.c_str(), false);
+      bool client_enabled = flag_to_bool(setting.c_str(), false);
       if (client_enabled) {
         NGRAPH_HE_LOG(3) << "Enabling client from config";
         m_enable_client = true;
@@ -107,19 +107,19 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
           setting.c_str());
       update_encryption_parameters(new_parms);
     } else if (option == "enable_gc") {
-      m_enable_garbled_circuit = string_to_bool(setting.c_str(), false);
+      m_enable_garbled_circuit = flag_to_bool(setting.c_str(), false);
       if (m_enable_garbled_circuit) {
         NGRAPH_HE_LOG(3) << "Enabling garbled circuits from config";
       }
     } else if (option == "mask_gc_inputs") {
-      m_mask_gc_inputs = string_to_bool(setting.c_str(), false);
+      m_mask_gc_inputs = flag_to_bool(setting.c_str(), false);
       if (m_mask_gc_inputs) {
         NGRAPH_HE_LOG(3) << "Masking garbled circuits inputs from config";
       } else {
         NGRAPH_HE_LOG(3) << "Not masking garbled circuits inputs from config";
       }
     } else if (option == "mask_gc_outputs") {
-      m_mask_gc_outputs = string_to_bool(setting.c_str(), false);
+      m_mask_gc_outputs = flag_to_bool(setting.c_str(), false);
       if (m_mask_gc_outputs) {
         NGRAPH_HE_LOG(3) << "Masking garbled circuits outputs from config";
       } else {

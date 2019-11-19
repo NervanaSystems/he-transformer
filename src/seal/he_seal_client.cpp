@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "boost/asio.hpp"
+#include "he_util.hpp"
 #include "logging/ngraph_he_log.hpp"
 #include "ngraph/log.hpp"
 #include "nlohmann/json.hpp"
@@ -289,7 +290,7 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
 
   const std::string& function = message.function().function();
   const json& js = json::parse(function);
-  bool enable_gc = string_to_bool(std::string(js.at("enable_gc")));
+  bool enable_gc = flag_to_bool(std::string(js.at("enable_gc")));
   NGRAPH_INFO << "Client relu with gc? " << enable_gc;
 
   if (enable_gc) {
@@ -341,7 +342,7 @@ void HESealClient::handle_bounded_relu_request(pb::TCPMessage&& message) {
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
 
-  bool enable_gc = string_to_bool(std::string(js.at("enable_gc")));
+  bool enable_gc = flag_to_bool(std::string(js.at("enable_gc")));
 
   if (enable_gc) {
     NGRAPH_HE_LOG(3) << "Client bounded relu with GC";
