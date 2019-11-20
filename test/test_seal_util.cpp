@@ -351,8 +351,8 @@ TEST(seal_util, encode_invalid) {
   {
     std::vector<std::uint64_t> dst;
     auto parms_id = context->first_parms_id();
-    EXPECT_ANY_THROW(encode(std::numeric_limits<float>::max(), element::f32,
-                            1 << 29, parms_id, dst, *he_backend));
+    EXPECT_NO_THROW(encode(std::numeric_limits<float>::max(), element::f32,
+                           1 << 29, parms_id, dst, *he_backend));
   }
 }
 

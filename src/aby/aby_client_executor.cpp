@@ -78,7 +78,18 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
   std::vector<double> relu_vals(tensor_size);
   size_t num_bytes = tensor_size * tensor->get_element_type().size();
-  tensor->read(relu_vals.data(), num_bytes);
+
+  if (tensor->get_element_type() == element::f32) {
+    std::vector<float> relu_float_vals(tensor_size);
+    tensor->read(relu_float_vals.data(), num_bytes);
+    relu_vals =
+        std::vector<double>{relu_float_vals.begin(), relu_float_vals.end()};
+
+  } else if (tensor->get_element_type() == element::f64) {
+    tensor->read(relu_vals.data(), num_bytes);
+  } else {
+    throw ngraph_error("Invalid element type");
+  }
 
   NGRAPH_HE_LOG(3) << "Converting client values to ABY integers";
 

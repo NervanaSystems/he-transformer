@@ -351,6 +351,11 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
     NGRAPH_HE_LOG(3) << "bound_vals[ " << i << "]=" << bound_vals[i];
   }
 
+  NGRAPH_CHECK(m_gc_input_mask->get_element_type() == element::i64,
+               "Wrong element type ", m_gc_input_mask->get_element_type());
+  NGRAPH_CHECK(m_gc_output_mask->get_element_type() == element::i64,
+               "Wrong element type ", m_gc_output_mask->get_element_type());
+
   m_gc_input_mask->read(gc_input_mask_vals.data(),
                         num_aby_vals * sizeof(uint64_t));
   m_gc_output_mask->read(gc_output_mask_vals.data(),
