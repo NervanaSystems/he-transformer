@@ -305,7 +305,7 @@ void encode(double value, const element::Type& element_type, double scale,
     NGRAPH_ERR << "scale " << scale;
     NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count "
                << context_data.total_coeff_modulus_bit_count();
-    throw ngraph_error("scale out of bounds");
+    // throw ngraph_error("scale out of bounds");
   }
 
   // Compute the scaled value

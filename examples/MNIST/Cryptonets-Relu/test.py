@@ -92,6 +92,8 @@ def test_cryptonets_relu(FLAGS):
         y_test_batch = y_test[:FLAGS.batch_size]
         y_label_batch = np.argmax(y_test_batch, 1)
 
+        print('y_conv_val', np.round(y_conv_val, 2))
+
         y_pred = np.argmax(y_conv_val, 1)
         correct_prediction = np.equal(y_pred, y_label_batch)
         error_count = np.size(correct_prediction) - np.sum(correct_prediction)
