@@ -244,43 +244,26 @@ void HESealClient::handle_result(const pb::TCPMessage& message) {
   const auto& proto_tensor = message.he_tensors(0);
 
   if (m_result_tensor == nullptr) {
-    NGRAPH_INFO << "HETensor::load_from_proto_tensor ";
     m_result_tensor = HETensor::load_from_proto_tensor(
         proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
         m_encryption_params);
   } else {
-    NGRAPH_INFO << "HETensor::load_from_proto_tensor big";
     HETensor::load_from_proto_tensor(m_result_tensor, proto_tensor, m_context);
   }
-  NGRAPH_INFO << "m_result_tensor->done_loading? "
-              << m_result_tensor->done_loading();
 
   if (m_result_tensor->done_loading()) {
-    NGRAPH_INFO << "Done loading result tenor";
     size_t data_size =
         m_result_tensor->data().size() * m_result_tensor->get_batch_size();
     m_results.resize(data_size);
-    NGRAPH_INFO << "data_size " << data_size;
-    NGRAPH_INFO << "m_result_tensor->data().size() "
-                << m_result_tensor->data().size();
-    NGRAPH_INFO << "m_result_tensor->get_batch_size() "
-                << m_result_tensor->get_batch_size();
-
     const auto& type = m_result_tensor->get_element_type();
-    NGRAPH_INFO << "type " << type;
     size_t num_bytes = data_size * type.size();
     auto bytes = ngraph_malloc(num_bytes);
 
-    NGRAPH_INFO << "Reading from data";
     m_result_tensor->read(bytes, num_bytes);
-    NGRAPH_INFO << "done reading from data";
-    NGRAPH_INFO << "bytes " << bytes;
 
     for (size_t i = 0; i < data_size; ++i) {
-      NGRAPH_INFO << "i " << i;
       void* addr =
           static_cast<void*>(static_cast<char*>(bytes) + i * type.size());
-      NGRAPH_INFO << "addr " << addr;
       m_results[i] = type_to_double(addr, type);
       NGRAPH_INFO << "results " << i << ": " << m_results[i];
     }

@@ -70,6 +70,10 @@ if __name__ == '__main__':
 
     FLAGS, unparsed = parser.parse_known_args()
 
+    if unparsed:
+        print("Unrecognized flags: ", unparsed)
+        exit(1)
+
     print(FLAGS)
 
     test_mnist_cnn(FLAGS)

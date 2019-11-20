@@ -107,6 +107,7 @@ if __name__ == '__main__':
 
     if unparsed:
         print('Unparsed flags:', unparsed)
+        exit(1)
     if FLAGS.encrypt_server_data and FLAGS.enable_client:
         raise Exception(
             "encrypt_server_data flag only valid when client is not enabled. Note: the client can specify whether or not to encrypt the data using 'encrypt' or 'plain' in the configuration map"
