@@ -47,7 +47,9 @@ def test_mnist_cnn(FLAGS):
         print(y_pred_reshape)
 
     y_pred = y_pred_reshape.argmax(axis=1)
-    print('y_pred', y_pred)
+
+    if FLAGS.batch_size < 10:
+        print('y_pred', y_pred)
     y_true = y_test_batch.argmax(axis=1)
 
     correct = np.sum(np.equal(y_pred, y_true))
