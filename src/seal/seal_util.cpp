@@ -518,12 +518,12 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
     ckks_encoder.decode(input.plaintext(), output);
   }
   output.resize(batch_size);
-  NGRAPH_HE_LOG(3) << "before centering " << output;
+  NGRAPH_HE_LOG(4) << "before centering " << output;
   // TODO: pass in batch size?
   for (size_t i = 0; i < output.size(); ++i) {
     output[i] = runtime::aby::mod_reduce_zero_centered(output[i], mod_interval);
   }
-  NGRAPH_HE_LOG(3) << "after centering " << output;
+  NGRAPH_HE_LOG(4) << "after centering " << output;
 }
 
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,

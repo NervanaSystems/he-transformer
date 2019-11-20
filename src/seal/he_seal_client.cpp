@@ -265,7 +265,6 @@ void HESealClient::handle_result(const pb::TCPMessage& message) {
       void* addr =
           static_cast<void*>(static_cast<char*>(bytes) + i * type.size());
       m_results[i] = type_to_double(addr, type);
-      NGRAPH_INFO << "results " << i << ": " << m_results[i];
     }
 
     ngraph_free(bytes);
