@@ -67,7 +67,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
     EXPECT_TRUE(test::all_close(
         read_vector<float>(result),
         (ngraph::test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
-        1e-1f));
+        1.f));
   }
 
   {
@@ -83,7 +83,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
     EXPECT_TRUE(test::all_close(
         read_vector<float>(result),
         (ngraph::test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
-        1e-1f));
+        1.f));
   }
   {
     copy_data(t_a,
@@ -98,7 +98,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_cipher) {
     EXPECT_TRUE(test::all_close(
         read_vector<float>(result),
         (ngraph::test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
-        1e-1f));
+        1.f));
   }
 }
 
@@ -148,7 +148,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     EXPECT_TRUE(test::all_close(
         read_vector<float>(result),
         (ngraph::test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
-        1e-1f));
+        1.f));
   }
   // B A C order
   {
@@ -179,7 +179,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     EXPECT_TRUE(test::all_close(
         read_vector<float>(result),
         (ngraph::test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
-        1e-1f));
+        1.f));
   }
   // C A B order
   {
@@ -210,7 +210,7 @@ NGRAPH_TEST(${BACKEND_NAME}, mult_layer_cipher_plain) {
     EXPECT_TRUE(test::all_close(
         read_vector<float>(result),
         (ngraph::test::NDArray<float, 2>({{45, 120}, {231, 384}})).get_vector(),
-        1e-1f));
+        1.f));
   }
 }
 

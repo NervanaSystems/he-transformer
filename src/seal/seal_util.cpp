@@ -175,20 +175,13 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
     throw ngraph_error("scale out of bounds");
   }
 
-  auto& barrett64_ratio_map = he_seal_backend.barrett64_ratio_map();
-
   for (size_t i = 0; i < encrypted_ntt_size; i++) {
     for (size_t j = 0; j < coeff_mod_count; j++) {
       // Multiply by scalar instead of doing dyadic product
       if (coeff_modulus[j].value() < (1UL << 31U)) {
-        const std::uint64_t modulus_value = coeff_modulus[j].value();
-        auto it = barrett64_ratio_map.find(modulus_value);
-        NGRAPH_CHECK(it != barrett64_ratio_map.end(), "Modulus value ",
-                     modulus_value, "not in Barrett64 ratio map");
-        const std::uint64_t barrett_ratio = it->second;
         multiply_poly_scalar_coeffmod64(encrypted.data(i) + (j * coeff_count),
                                         coeff_count, plaintext_vals[j],
-                                        modulus_value, barrett_ratio,
+                                        coeff_modulus[j],
                                         encrypted.data(i) + (j * coeff_count));
       } else {
         seal::util::multiply_poly_scalar_coeffmod(
@@ -204,9 +197,11 @@ void multiply_plain_inplace(seal::Ciphertext& encrypted, double value,
 
 void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
                                      uint64_t scalar,
-                                     const std::uint64_t modulus_value,
-                                     const std::uint64_t const_ratio,
+                                     const seal::SmallModulus& modulus,
                                      uint64_t* result) {
+  const uint64_t modulus_value = modulus.value();
+  const uint64_t const_ratio_0 = modulus.const_ratio()[0];
+  const uint64_t const_ratio_1 = modulus.const_ratio()[1];
   // NOLINTNEXTLINE
   for (; coeff_count--; poly++, result++) {
     // Multiplication
@@ -217,7 +212,7 @@ void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
     // NOLINTNEXTLINE(google-runtime-int)
     unsigned long long carry;
     // Carry will store the result modulo 2^64
-    seal::util::multiply_uint64_hw64(z, const_ratio, &carry);
+    seal::util::multiply_uint64_hw64(z, const_ratio_1, &carry);
     // Barrett subtraction
     carry = z - carry * modulus_value;
     // Possible correction term
@@ -508,7 +503,13 @@ void encrypt(std::shared_ptr<SealCiphertextWrapper>& output,
 void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
             seal::CKKSEncoder& ckks_encoder, size_t batch_size,
             double mod_interval) {
-  NGRAPH_INFO << "Decoding with mod_interval " << mod_interval;
+  // TODO(fboemer): remove
+  static double prev_mod_interval{0.0};
+  if (mod_interval != prev_mod_interval) {
+    prev_mod_interval = mod_interval;
+    NGRAPH_INFO << "Decoding with mod_interval " << mod_interval;
+  }
+
   if (input.complex_packing()) {
     std::vector<std::complex<double>> complex_vals;
     ckks_encoder.decode(input.plaintext(), complex_vals);

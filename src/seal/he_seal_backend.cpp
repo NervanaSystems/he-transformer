@@ -73,21 +73,6 @@ void HESealBackend::generate_context() {
   auto coeff_moduli = context_data->parms().coeff_modulus();
 
   print_encryption_parameters(m_encryption_params, *m_context);
-
-  // Set barrett ratio map
-  for (const seal::SmallModulus& modulus : coeff_moduli) {
-    const std::uint64_t modulus_value = modulus.value();
-    if (modulus_value < (1UL << 31U)) {
-      std::array<std::uint64_t, 2> numerator = {0, 1};
-      std::array<std::uint64_t, 2> quotient = {0, 0};
-      seal::util::divide_uint128_uint64_inplace(numerator.data(), modulus_value,
-                                                quotient.data());
-      std::uint64_t const_ratio = quotient[0];
-
-      NGRAPH_CHECK(quotient[1] == 0, "Quotient[1] != 0 for modulus");
-      m_barrett64_ratio_map[modulus_value] = const_ratio;
-    }
-  }
 }
 
 bool HESealBackend::set_config(const std::map<std::string, std::string>& config,

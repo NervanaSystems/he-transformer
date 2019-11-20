@@ -113,13 +113,11 @@ inline void add_plain(const seal::Ciphertext& encrypted, double value,
 /// \param[in] poly Polynomial to be multiplied
 /// \param[in] coeff_count Number of terms in the polynomial
 /// \param[in] scalar Value with which to multiply
-/// \param[in] modulus_value modulus with which to reduce each product
-/// \param[in] const_ratio TODO(fboemer)
+/// \param[in] modulus modulus with which to reduce each product
 /// \param[out] result Will store the result of the multiplication
 void multiply_poly_scalar_coeffmod64(const uint64_t* poly, size_t coeff_count,
                                      uint64_t scalar,
-                                     const std::uint64_t modulus_value,
-                                     const std::uint64_t const_ratio,
+                                     const seal::SmallModulus& modulus,
                                      uint64_t* result);
 
 /// \brief Adds each element in a polynomial with a scalar modulo
