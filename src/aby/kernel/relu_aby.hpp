@@ -42,7 +42,6 @@ inline share* relu_aby(BooleanCircuit& circ, size_t num_vals,
                        std::vector<uint64_t>& xs, std::vector<uint64_t>& xc,
                        std::vector<uint64_t>& r, size_t bitlen,
                        size_t coeff_modulus) {
-  NGRAPH_INFO << "Num vals " << num_vals;
   NGRAPH_CHECK(xs.size() == num_vals, "Wrong number of xs (got ", xs.size(),
                ", expected ", num_vals, ")");
   NGRAPH_CHECK(xc.size() == num_vals, "Wrong number of xc (got ", xc.size(),
@@ -55,7 +54,6 @@ inline share* relu_aby(BooleanCircuit& circ, size_t num_vals,
   NGRAPH_HE_LOG(3) << "Creating new relu aby circuit with q = " << q
                    << ", q/2 = " << q_half << " and " << num_vals
                    << " num vals, bitlen= " << bitlen;
-  NGRAPH_INFO << "Num vals " << num_vals;
   check_argument_range(xs, 0UL, coeff_modulus);
   check_argument_range(xc, 0UL, coeff_modulus);
   check_argument_range(r, 0UL, coeff_modulus);
@@ -65,7 +63,6 @@ inline share* relu_aby(BooleanCircuit& circ, size_t num_vals,
 
   share* out;
   share* xs_in = circ.PutSIMDINGate(num_vals, xs.data(), bitlen, SERVER);
-  NGRAPH_INFO << "Created xc_in";
   share* xc_in = circ.PutSIMDINGate(num_vals, xc.data(), bitlen, CLIENT);
   share* r_in = circ.PutSIMDINGate(num_vals, r.data(), bitlen, SERVER);
 
