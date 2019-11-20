@@ -300,7 +300,7 @@ void encode(double value, const element::Type& element_type, double scale,
     NGRAPH_ERR << "scale " << scale;
     NGRAPH_ERR << "context_data.total_coeff_modulus_bit_count "
                << context_data.total_coeff_modulus_bit_count();
-    // throw ngraph_error("scale out of bounds");
+    throw ngraph_error("scale out of bounds");
   }
 
   // Compute the scaled value
@@ -309,12 +309,12 @@ void encode(double value, const element::Type& element_type, double scale,
   int coeff_bit_count = static_cast<int>(log2(fabs(value))) + 2;
   if (coeff_bit_count >= context_data.total_coeff_modulus_bit_count()) {
     {
-      NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
-                 << scale;
-      NGRAPH_ERR << "coeff_bit_count " << coeff_bit_count;
-      NGRAPH_ERR << "coeff_mod_count " << coeff_mod_count;
-      NGRAPH_ERR << "total coeff modulus bit count "
-                 << context_data.total_coeff_modulus_bit_count();
+      // NGRAPH_ERR << "Failed to encode " << value / scale << " at scale "
+      //           << scale;
+      // NGRAPH_ERR << "coeff_bit_count " << coeff_bit_count;
+      // NGRAPH_ERR << "coeff_mod_count " << coeff_mod_count;
+      // NGRAPH_ERR << "total coeff modulus bit count "
+      //           << context_data.total_coeff_modulus_bit_count();
       // throw ngraph_error("encoded value is too large");
     }
   }

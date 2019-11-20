@@ -254,8 +254,7 @@ void ABYServerExecutor::post_process_aby_relu_circuit(
       }
       NGRAPH_HE_LOG(4) << "Mask after " << mask;
       // TODO(fboemer): do subtraction mod p_0 instead of p_L
-
-      m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
+      // m_he_seal_executable.he_seal_backend().mod_switch_to_lowest(*cipher);
 
       scalar_subtract_seal(*cipher, mask, cipher, data.complex_packing(),
                            m_he_seal_executable.he_seal_backend());
@@ -405,9 +404,6 @@ void ABYServerExecutor::post_process_aby_bounded_relu_circuit(
 
       scalar_subtract_seal(*cipher, mask, cipher, data.complex_packing(),
                            m_he_seal_executable.he_seal_backend());
-
-      auto& int_array = cipher->ciphertext().int_array();
-      NGRAPH_HE_LOG(4) << "int_array.size " << int_array.size();
     }
   }
 }
