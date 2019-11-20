@@ -66,7 +66,7 @@ void scalar_add_seal(SealCiphertextWrapper& arg0, const HEPlaintext& arg1,
           arg0.ciphertext(), p.plaintext(), out->ciphertext());
     }
   }
-}  // namespace he
+}
 
 void scalar_add_seal(const HEPlaintext& arg0, const HEPlaintext& arg1,
                      HEPlaintext& out) {

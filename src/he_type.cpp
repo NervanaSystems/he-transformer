@@ -77,6 +77,7 @@ void HEType::set_plaintext(HEPlaintext plain) {
   if (m_cipher != nullptr) {
     m_cipher->ciphertext().release();
   }
+  m_batch_size = plain.size();
 }
 
 }  // namespace ngraph::runtime::he

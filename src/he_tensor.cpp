@@ -112,14 +112,19 @@ void HETensor::pack(size_t pack_axis) {
   m_packed = true;
   std::vector<HEType> new_data(m_data.size() / get_batch_size(),
                                HEType(HEPlaintext(), false));
+  std::vector<HEPlaintext> new_plaintexts(new_data.size());
 
   for (size_t idx = 0; idx < m_data.size(); ++idx) {
     auto& plain = m_data[idx].get_plaintext();
     if (!plain.empty()) {
       size_t new_idx = idx % new_data.size();
-      new_data[new_idx].get_plaintext().emplace_back(plain[0]);
+      new_plaintexts[new_idx].emplace_back(plain[0]);
       new_data[new_idx].complex_packing() = m_data[idx].complex_packing();
     }
+  }
+
+  for (size_t idx = 0; idx < new_data.size(); ++idx) {
+    new_data[idx].set_plaintext(new_plaintexts[idx]);
   }
 
   m_data = std::move(new_data);
@@ -261,10 +266,6 @@ void HETensor::read(void* p, size_t n) const {
     } else {
       plain = m_data[i].get_plaintext();
     }
-
-    NGRAPH_INFO << "get_batch_size " << get_batch_size();
-    NGRAPH_INFO << "type_byte_size " << type_byte_size;
-    NGRAPH_INFO << "plain size before " << plain.size();
 
     void* dst = ngraph_malloc(type_byte_size * get_batch_size());
     plain.resize(get_batch_size());

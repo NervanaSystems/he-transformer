@@ -45,13 +45,14 @@ class HEType {
   bool is_plaintext() const { return m_is_plain; }
   bool is_ciphertext() const { return !is_plaintext(); }
 
-  const bool& complex_packing() const { return m_complex_packing; }
+  bool complex_packing() const { return m_complex_packing; }
   bool& complex_packing() { return m_complex_packing; }
 
   bool plaintext_packing() const { return m_batch_size > 1; }
 
-  const size_t& batch_size() const { return m_batch_size; }
-  size_t& batch_size() { return m_batch_size; }
+  size_t batch_size() const { return m_batch_size; }
+
+  void set_batch_size(size_t batch_size) { m_batch_size = batch_size; }
 
   const HEPlaintext& get_plaintext() const { return m_plain; }
   HEPlaintext& get_plaintext() { return m_plain; }

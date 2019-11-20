@@ -207,8 +207,7 @@ void convolution_seal(
       ++filter_it;
     }
     if (first_add) {
-      // TODO(fboemer): batch size number of zeros?
-      HEPlaintext zero(std::vector<double>{0});
+      HEPlaintext zero(std::vector<double>(batch_size, 0));
       out[out_coord_idx].set_plaintext(zero);
     } else {
       // Write the sum back.

@@ -212,6 +212,12 @@ void scalar_multiply_seal(HEType& arg0, HEType& arg1, HEType& out,
                          out.get_plaintext());
   }
   out.complex_packing() = arg0.complex_packing();
+
+  if (arg0.batch_size() == 1) {
+    out.set_batch_size(arg1.batch_size());
+  } else {
+    out.set_batch_size(arg0.batch_size());
+  }
 }
 
 void multiply_seal(std::vector<HEType>& arg0, std::vector<HEType>& arg1,
