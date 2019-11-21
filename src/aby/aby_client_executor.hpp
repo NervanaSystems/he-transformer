@@ -39,7 +39,7 @@ class ABYClientExecutor : public ABYExecutor {
                     uint32_t bit_length = 64, uint32_t num_threads = 1,
                     uint32_t num_parties = 1,
                     std::string mg_algo_str = std::string("MT_OT"),
-                    uint32_t reserve_num_gates = 100000);
+                    uint32_t reserve_num_gates = 100);
 
   ~ABYClientExecutor() = default;
 

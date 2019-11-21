@@ -311,12 +311,14 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
     NGRAPH_INFO << "Client done running aby circuit";
   } else {
     size_t result_count = proto_tensor->data_size();
+    NGRAPH_INFO << "Performing relu without gc";
 #pragma omp parallel for
     for (size_t result_idx = 0; result_idx < result_count; ++result_idx) {
       scalar_relu_seal(he_tensor->data(result_idx), he_tensor->data(result_idx),
                        m_context->first_parms_id(), scale(), *m_ckks_encoder,
                        *m_encryptor, *m_decryptor, m_context);
     }
+    NGRAPH_INFO << "Done performing relu without gc";
   }
 
   std::vector<pb::HETensor> proto_output_tensors;
@@ -327,7 +329,7 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
   *proto_tensor = proto_output_tensors[0];
 
   write_message(TCPMessage(std::move(message)));
-}  // namespace ngraph::runtime::he
+}
 
 void HESealClient::handle_bounded_relu_request(pb::TCPMessage&& message) {
   NGRAPH_HE_LOG(3) << "Client handling bounded relu request";

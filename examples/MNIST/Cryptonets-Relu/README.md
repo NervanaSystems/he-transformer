@@ -71,8 +71,10 @@ In another terminal, run
 ```bash
 source $HE_TRANSFORMER/build/external/venv-tf-py3/bin/activate
 cd $HE_TRANSFORMER/examples/MNIST
-python pyclient_mnist.py --batch_size=50 \
-                         --encrypt_data=yes
 
-
+NGRAPH_HE_LOG_LEVEL=4 \
+OMP_NUM_THREADS=1 \
+python pyclient_mnist.py \
+  --batch_size=50 \
+  --encrypt_data=yes
 ```

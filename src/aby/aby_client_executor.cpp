@@ -119,7 +119,6 @@ void ABYClientExecutor::run_aby_relu_circuit(
   double scale = m_he_seal_client.scale();
 
   std::vector<uint64_t> relu_result(tensor_size, 0);
-  NGRAPH_INFO << "relu_result.size " << relu_result.size();
 #pragma omp parallel for num_threads(m_num_parties)
   for (size_t party_idx = 0; party_idx < m_num_parties; ++party_idx) {
     const auto& [start_idx, end_idx] = party_data_start_end_idx[party_idx];
@@ -133,7 +132,6 @@ void ABYClientExecutor::run_aby_relu_circuit(
     std::vector<uint64_t> zeros(party_data_size, 0);
 
     // TODO(fboemer): Use span?
-    NGRAPH_INFO << "party_data_size " << party_data_size;
     std::vector<uint64_t> client_party_gc_vals(party_data_size);
     for (size_t idx = start_idx; idx < end_idx; ++idx) {
       client_party_gc_vals[idx - start_idx] = client_gc_vals[idx];

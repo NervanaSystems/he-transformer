@@ -41,6 +41,10 @@ ABYServerExecutor::ABYServerExecutor(
                                .coeff_modulus()[0]
                                .value();
   m_rand_max = static_cast<int64_t>(m_lowest_coeff_modulus - 1);
+
+  // TODO(fboemer): remove!
+  // m_rand_max /= 2;
+
   m_random_distribution = std::uniform_int_distribution<int64_t>{0, m_rand_max};
 }
 
