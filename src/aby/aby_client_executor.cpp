@@ -28,15 +28,14 @@ using json = nlohmann::json;
 
 namespace ngraph::runtime::aby {
 
-ABYClientExecutor::ABYClientExecutor(std::string mpc_protocol,
-                                     const he::HESealClient& he_seal_client,
-                                     std::string hostname, std::size_t port,
-                                     uint64_t security_level,
-                                     uint32_t bit_length, uint32_t num_threads,
-                                     std::string mg_algo_str,
-                                     uint32_t reserve_num_gates)
+ABYClientExecutor::ABYClientExecutor(
+    std::string mpc_protocol, const he::HESealClient& he_seal_client,
+    std::string hostname, std::size_t port, uint64_t security_level,
+    uint32_t bit_length, uint32_t num_threads, uint32_t num_parties,
+    std::string mg_algo_str, uint32_t reserve_num_gates)
     : ABYExecutor("client", mpc_protocol, hostname, port, security_level,
-                  bit_length, num_threads, mg_algo_str, reserve_num_gates),
+                  bit_length, num_threads, num_parties, mg_algo_str,
+                  reserve_num_gates),
       m_he_seal_client(he_seal_client) {
   m_lowest_coeff_modulus = m_he_seal_client.encryption_paramters()
                                .seal_encryption_parameters()
@@ -115,45 +114,71 @@ void ABYClientExecutor::run_aby_relu_circuit(
   }
 
   NGRAPH_HE_LOG(3) << "Client creating relu circuit";
-  std::vector<uint64_t> zeros(tensor_size, 0);
 
-  BooleanCircuit* circ = get_circuit();
-  auto* relu_out = relu_aby(*circ, tensor_size, zeros, client_gc_vals, zeros,
-                            m_aby_bitlen, m_lowest_coeff_modulus);
-  NGRAPH_HE_LOG(3) << "Client executing relu circuit";
-
-  auto t1 = std::chrono::high_resolution_clock::now();
-  m_ABYParty->ExecCircuit();
-  auto t2 = std::chrono::high_resolution_clock::now();
-  NGRAPH_HE_LOG(3)
-      << "Client executing circuit took "
-      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-      << "us";
-
-  uint32_t out_bitlen_relu;
-  uint32_t result_count;
-  uint64_t* out_vals_relu;  // output of circuit this value will be encrypted
-                            // and sent to server
-  relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
-                                &result_count);
-  NGRAPH_HE_LOG(3) << "result_count " << result_count;
-  for (size_t i = 0; i < result_count; ++i) {
-    NGRAPH_HE_LOG(3) << out_vals_relu[i];
-  }
-
+  auto party_data_start_end_idx = split_vector(tensor_size, m_num_parties);
   double scale = m_he_seal_client.scale();
 
-  NGRAPH_HE_LOG(3) << "tensor size " << tensor->data().size();
+  std::vector<uint64_t> relu_result(tensor_data.size(), 0);
+#pragma omp parallel for
+  for (size_t party_idx = 0; party_idx < m_num_parties; ++party_idx) {
+    const auto& [start_idx, end_idx] = party_data_start_end_idx[party_idx];
+    size_t party_data_size = end_idx - start_idx;
+    if (party_data_size == 0) {
+      continue;
+    }
 
-  NGRAPH_CHECK(result_count == tensor->data().size() * batch_size,
-               "Wrong number of ABY result values, result_count=", result_count,
-               ", expected ", tensor->data().size() * batch_size);
+    BooleanCircuit* circ = get_circuit(party_idx);
+
+    std::vector<uint64_t> zeros(party_data_size, 0);
+
+    // TODO(fboemer): Use span?
+    std::vector<uint64_t> client_party_gc_vals{
+        std::begin(client_gc_vals) + start_idx,
+        std::begin(client_gc_vals) + end_idx};
+    auto* relu_out =
+        relu_aby(*circ, party_data_size, zeros, client_party_gc_vals, zeros,
+                 m_aby_bitlen, m_lowest_coeff_modulus);
+
+    NGRAPH_HE_LOG(3) << "Client party " << party_idx
+                     << " executing relu circuit";
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    m_ABYParties[party_idx]->ExecCircuit();
+    auto t2 = std::chrono::high_resolution_clock::now();
+    NGRAPH_HE_LOG(3) << "Client executing circuit took "
+                     << std::chrono::duration_cast<std::chrono::microseconds>(
+                            t2 - t1)
+                            .count()
+                     << "us";
+    uint32_t out_bitlen_relu;
+    uint32_t result_count;
+    uint64_t* out_vals_relu;  // output of circuit this value will be encrypted
+                              // and sent to server
+    relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
+                                  &result_count);
+    NGRAPH_HE_LOG(3) << "result_count " << result_count;
+    for (size_t i = 0; i < result_count; ++i) {
+      NGRAPH_HE_LOG(3) << out_vals_relu[i];
+    }
+
+    NGRAPH_CHECK(result_count == party_data_size,
+                 "Wrong number of ABY result values, result_count=",
+                 result_count, ", expected ", party_data_size);
+
+    for (size_t party_result_idx = 0; party_result_idx < party_data_size;
+         ++party_result_idx) {
+      relu_result[party_result_idx + party_data_size] =
+          out_vals_relu[party_result_idx];
+    }
+
+    reset_party(party_idx);
+  }
 
   for (size_t result_idx = 0; result_idx < tensor_data.size(); ++result_idx) {
     he::HEPlaintext post_relu_vals(batch_size);
     for (size_t fill_idx = 0; fill_idx < batch_size; ++fill_idx) {
       size_t out_idx = result_idx + fill_idx * tensor_data.size();
-      uint64_t out_val = out_vals_relu[out_idx];
+      uint64_t out_val = relu_result[out_idx];
       double d_out_val =
           uint64_to_double(out_val, m_lowest_coeff_modulus, scale);
       post_relu_vals[fill_idx] = d_out_val;
@@ -171,13 +196,12 @@ void ABYClientExecutor::run_aby_relu_circuit(
 
     tensor->data(result_idx).set_ciphertext(cipher);
   }
-
-  reset_party();
 }
 
 void ABYClientExecutor::run_aby_bounded_relu_circuit(
     const std::string& function, std::shared_ptr<he::HETensor>& tensor) {
   NGRAPH_HE_LOG(3) << "run_aby_bounded_relu_circuit";
+  /*
 
   auto& tensor_data = tensor->data();
   size_t batch_size = tensor_data[0].batch_size();
@@ -273,6 +297,8 @@ void ABYClientExecutor::run_aby_bounded_relu_circuit(
   }
 
   reset_party();
+
+  */
 }
 
 }  // namespace ngraph::runtime::aby

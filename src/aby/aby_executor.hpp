@@ -34,17 +34,18 @@ class ABYExecutor {
   ABYExecutor(const std::string& role, const std::string& mpc_protocol,
               const std::string& hostname, std::size_t port,
               uint64_t security_level, uint32_t bit_length,
-              uint32_t num_threads, const std::string& mg_algo_str,
-              uint32_t reserve_num_gates);
+              uint32_t num_threads, uint32_t num_parties,
+              const std::string& mg_algo_str, uint32_t reserve_num_gates);
 
   virtual ~ABYExecutor();
 
-  inline ABYParty* get_aby_party() { return m_ABYParty; }
+  inline BooleanCircuit* get_circuit(size_t party_idx) {
+    NGRAPH_CHECK(party_idx < m_ABYParties.size(), "Party idx ", party_idx,
+                 "too large");
 
-  inline BooleanCircuit* get_circuit() {
-    m_sharings = m_ABYParty->GetSharings();
+    m_sharings[party_idx] = m_ABYParties[party_idx]->GetSharings();
     auto circ = dynamic_cast<BooleanCircuit*>(
-        m_sharings[m_aby_gc_protocol]->GetCircuitBuildRoutine());
+        m_sharings[party_idx][m_aby_gc_protocol]->GetCircuitBuildRoutine());
     return circ;
   }
 
@@ -64,19 +65,25 @@ class ABYExecutor {
   virtual void run_aby_circuit(const std::string& function,
                                std::shared_ptr<he::HETensor>& tensor) = 0;
 
-  void reset_party() { m_ABYParty->Reset(); }
+  void reset_party(size_t party_idx) {
+    if (party_idx < m_ABYParties.size()) {
+      m_ABYParties[party_idx]->Reset();
+    }
+  }
 
  protected:
   size_t m_num_threads;
+  size_t m_num_parties;
 
-  std::vector<Sharing*> m_sharings{};
+  // m_sharings[i] are the sharings for party i
+  std::vector<std::vector<Sharing*>> m_sharings;
 
   e_role m_role;
   e_sharing m_aby_gc_protocol;
   e_mt_gen_alg m_mt_gen_alg;
   uint32_t m_aby_bitlen;
   uint64_t m_security_level;
-  ABYParty* m_ABYParty;
+  std::vector<ABYParty*> m_ABYParties;
 
   size_t m_lowest_coeff_modulus{0};
 };

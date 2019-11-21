@@ -103,7 +103,7 @@ void HESealClient::init_aby_executor() {
   NGRAPH_INFO << "Initializing ABY executor";
   if (m_aby_executor == nullptr) {
     m_aby_executor = std::make_unique<aby::ABYClientExecutor>(
-        std::string("yao"), *this, m_hostname);
+        std::string("yao"), *this, m_hostname, 34001, 128, 64, 2, 3);
   }
 }
 

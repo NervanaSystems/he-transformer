@@ -26,15 +26,14 @@ using json = nlohmann::json;
 
 namespace ngraph::runtime::aby {
 
-ABYServerExecutor::ABYServerExecutor(he::HESealExecutable& he_seal_executable,
-                                     const std::string& mpc_protocol,
-                                     const std::string hostname,
-                                     std::size_t port, uint64_t security_level,
-                                     uint32_t bit_length, uint32_t num_threads,
-                                     std::string mg_algo_str,
-                                     uint32_t reserve_num_gates)
+ABYServerExecutor::ABYServerExecutor(
+    he::HESealExecutable& he_seal_executable, const std::string& mpc_protocol,
+    const std::string hostname, std::size_t port, uint64_t security_level,
+    uint32_t bit_length, uint32_t num_threads, uint32_t num_parties,
+    std::string mg_algo_str, uint32_t reserve_num_gates)
     : ABYExecutor("server", mpc_protocol, hostname, port, security_level,
-                  bit_length, num_threads, mg_algo_str, reserve_num_gates),
+                  bit_length, num_threads, num_parties, mg_algo_str,
+                  reserve_num_gates),
       m_he_seal_executable{he_seal_executable} {
   m_lowest_coeff_modulus = m_he_seal_executable.he_seal_backend()
                                .get_encryption_parameters()
@@ -204,10 +203,10 @@ void ABYServerExecutor::run_aby_relu_circuit(
     std::vector<he::HEType>& cipher_batch) {
   NGRAPH_HE_LOG(4) << "run_aby_relu_circuit ";
 
-  // TODO(fboemer): bounded relu?
-
   uint32_t num_aby_vals = cipher_batch.size() * cipher_batch[0].batch_size();
-  std::vector<uint64_t> zeros(num_aby_vals, 0);
+
+  auto party_data_start_end_idx = split_vector(num_aby_vals, m_num_parties);
+
   std::vector<uint64_t> gc_input_mask_vals(num_aby_vals);
   std::vector<uint64_t> gc_output_mask_vals(num_aby_vals);
   std::vector<uint64_t> bound_vals(num_aby_vals);
@@ -217,22 +216,46 @@ void ABYServerExecutor::run_aby_relu_circuit(
   m_gc_output_mask->read(gc_output_mask_vals.data(),
                          num_aby_vals * sizeof(uint64_t));
 
-  NGRAPH_HE_LOG(3) << "Server creating relu circuit";
-  BooleanCircuit* circ = get_circuit();
-  NGRAPH_HE_LOG(3) << "num_aby_vals " << num_aby_vals;
-  NGRAPH_HE_LOG(3) << "gc_input_mask_vals " << gc_input_mask_vals.size();
-  NGRAPH_HE_LOG(3) << "gc_output_mask_vals " << gc_output_mask_vals.size();
+#pragma omp parallel for
+  for (size_t party_idx = 0; party_idx < m_num_parties; ++party_idx) {
+    const auto& [start_idx, end_idx] = party_data_start_end_idx[party_idx];
+    size_t party_data_size = end_idx - start_idx;
+    if (party_data_size == 0) {
+      continue;
+    }
 
-  ngraph::runtime::aby::relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
-                                 gc_output_mask_vals, m_aby_bitlen,
-                                 m_lowest_coeff_modulus);
+    NGRAPH_HE_LOG(3) << "Server creating relu circuit for party " << party_idx;
+    BooleanCircuit* circ = get_circuit(party_idx);
+    NGRAPH_HE_LOG(3) << "num_aby_vals " << num_aby_vals;
+    NGRAPH_HE_LOG(3) << "gc_input_mask_vals " << gc_input_mask_vals.size();
+    NGRAPH_HE_LOG(3) << "gc_output_mask_vals " << gc_output_mask_vals.size();
+    NGRAPH_INFO << "party_data_size " << party_data_size;
 
-  NGRAPH_HE_LOG(3) << "server executing relu circuit";
-  m_ABYParty->ExecCircuit();
-  NGRAPH_HE_LOG(3) << "server done executing relu circuit";
+    std::vector<uint64_t> gc_input_party_mask_vals{
+        std::begin(gc_input_mask_vals) + start_idx,
+        std::begin(gc_input_mask_vals) + end_idx};
+    std::vector<uint64_t> gc_output_party_mask_vals{
+        std::begin(gc_output_mask_vals) + start_idx,
+        std::begin(gc_output_mask_vals) + end_idx};
 
-  reset_party();
-  NGRAPH_HE_LOG(3) << "server done reset party";
+    std::vector<uint64_t> zeros(party_data_size, 0);
+
+    NGRAPH_INFO << "gc_input_party_mask_vals.size "
+                << gc_input_party_mask_vals.size();
+    NGRAPH_INFO << "gc_output_party_mask_vals.size "
+                << gc_output_party_mask_vals.size();
+
+    ngraph::runtime::aby::relu_aby(
+        *circ, num_aby_vals, gc_input_party_mask_vals, zeros,
+        gc_output_party_mask_vals, m_aby_bitlen, m_lowest_coeff_modulus);
+
+    NGRAPH_HE_LOG(3) << "server executing relu circuit";
+    m_ABYParties[party_idx]->ExecCircuit();
+    NGRAPH_HE_LOG(3) << "server done executing relu circuit";
+
+    reset_party(party_idx);
+    NGRAPH_HE_LOG(3) << "server done reset party " << party_idx;
+  }
 }
 
 void ABYServerExecutor::post_process_aby_relu_circuit(
@@ -330,6 +353,8 @@ void ABYServerExecutor::prepare_aby_bounded_relu_circuit(
 void ABYServerExecutor::run_aby_bounded_relu_circuit(
     std::vector<he::HEType>& cipher_batch, double bound) {
   NGRAPH_HE_LOG(4) << "run_aby_bounded_relu_circuit with bound " << bound;
+  NGRAPH_ERR << "ABY Bounded relu unimplemented";
+  /*
 
   uint32_t num_aby_vals = cipher_batch.size() * cipher_batch[0].batch_size();
   std::vector<uint64_t> zeros(num_aby_vals, 0);
@@ -345,8 +370,8 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
         cipher_batch[i % cipher_batch.size()].get_ciphertext()->scale());
     if (bound_vals[i] > m_lowest_coeff_modulus) {
       NGRAPH_WARN << "bound value " << bound_vals[i]
-                  << " too large for coeff modulus " << m_lowest_coeff_modulus;
-      bound_vals[i] = m_lowest_coeff_modulus - 1;
+                  << " too large for coeff modulus " <<
+  m_lowest_coeff_modulus; bound_vals[i] = m_lowest_coeff_modulus - 1;
     }
 
     NGRAPH_HE_LOG(4) << "bound_vals[ " << i << "]=" << bound_vals[i];
@@ -377,6 +402,7 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
   NGRAPH_HE_LOG(3) << "server done executing bounded relu circuit";
 
   reset_party();
+  */
 }
 
 void ABYServerExecutor::post_process_aby_bounded_relu_circuit(

@@ -507,7 +507,7 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
   static double prev_mod_interval{0.0};
   if (mod_interval != prev_mod_interval) {
     prev_mod_interval = mod_interval;
-    NGRAPH_INFO << "Decoding with mod_interval " << mod_interval;
+    NGRAPH_HE_LOG(5) << "Decoding with mod_interval " << mod_interval;
   }
 
   if (input.complex_packing()) {
@@ -518,12 +518,12 @@ void decode(HEPlaintext& output, const SealPlaintextWrapper& input,
     ckks_encoder.decode(input.plaintext(), output);
   }
   output.resize(batch_size);
-  NGRAPH_HE_LOG(4) << "before centering " << output;
+  NGRAPH_HE_LOG(5) << "before centering " << output;
   // TODO: pass in batch size?
   for (size_t i = 0; i < output.size(); ++i) {
     output[i] = runtime::aby::mod_reduce_zero_centered(output[i], mod_interval);
   }
-  NGRAPH_HE_LOG(4) << "after centering " << output;
+  NGRAPH_HE_LOG(5) << "after centering " << output;
 }
 
 void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,

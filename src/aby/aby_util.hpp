@@ -93,4 +93,38 @@ inline share* reduce_mod(BooleanCircuit& circ, share* x, share* mod) {
   return x;
 };
 
+// Splits a vector into num_splits nearly-equal-sized subvectors
+// Returns vector of [start_idx, end_idx) for each split
+inline std::vector<std::pair<size_t, size_t>> split_vector(size_t vector_size,
+                                                           size_t num_splits) {
+  std::vector<std::pair<size_t, size_t>> splits{num_splits};
+
+  size_t split_size = std::floor(vector_size / num_splits);
+  size_t splits_extra = vector_size - num_splits * split_size;
+  NGRAPH_INFO << "splits_exrta " << splits_extra;
+  std::vector<std::pair<size_t, size_t>> party_data_start_end_idx{
+      num_splits, std::make_pair(0, 0)};
+  for (size_t split_idx = 0; split_idx < num_splits; ++split_idx) {
+    size_t start_idx = (split_idx > 0) ? splits[split_idx - 1].second : 0;
+    size_t end_idx = start_idx + split_size;
+    if (split_idx < splits_extra) {
+      end_idx++;
+    }
+
+    if (split_idx == num_splits - 1) {
+      end_idx = vector_size;
+    }
+
+    splits[split_idx] = std::make_pair(start_idx, end_idx);
+    NGRAPH_INFO << "split_idx " << split_idx << " start " << start_idx
+                << ", end " << end_idx;
+  }
+
+  for (const auto& elem : splits) {
+    NGRAPH_INFO << elem.first << " ,  " << elem.second;
+  }
+
+  return splits;
+}
+
 }  // namespace ngraph::runtime::aby

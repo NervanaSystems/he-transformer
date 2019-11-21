@@ -25,9 +25,12 @@ ABYExecutor::ABYExecutor(const std::string& role,
                          const std::string& mpc_protocol,
                          const std::string& hostname, std::size_t port,
                          uint64_t security_level, uint32_t bit_length,
-                         uint32_t num_threads, const std::string& mg_algo_str,
+                         uint32_t num_threads, uint32_t num_parties,
+                         const std::string& mg_algo_str,
                          uint32_t reserve_num_gates)
-    : m_num_threads{num_threads}, m_aby_bitlen{bit_length} {
+    : m_num_threads{num_threads},
+      m_num_parties{num_parties},
+      m_aby_bitlen{bit_length} {
   static std::map<std::string, e_role> role_map{{"server", SERVER},
                                                 {"client", CLIENT}};
 
@@ -51,15 +54,21 @@ ABYExecutor::ABYExecutor(const std::string& role,
                security_level);
   m_security_level = security_level;
 
-  NGRAPH_INFO << "Creating ABYParty with role " << role << " at " << hostname
-              << ":" << port;
+  NGRAPH_INFO << "Creating " << num_parties << " ABYParties with role " << role
+              << " at " << hostname << ":" << port;
 
-  m_ABYParty =
-      new ABYParty(m_role, hostname, port, get_sec_lvl(m_security_level),
-                   bit_length, m_num_threads, m_mt_gen_alg, reserve_num_gates);
+  m_ABYParties.resize(num_parties);
+  for (size_t idx = 0; idx < num_parties; ++idx) {
+    m_ABYParties[idx] = new ABYParty(
+        m_role, hostname, port + idx, get_sec_lvl(m_security_level), bit_length,
+        m_num_threads, m_mt_gen_alg, reserve_num_gates);
+  }
+  m_sharings.resize(num_parties);
+
   // TODO(fboemer): connect and base OTs?
   //  m_ABYParty_server->ConnectAndBaseOTs();
-  NGRAPH_HE_LOG(1) << "Started ABYParty with role " << role;
+  NGRAPH_HE_LOG(1) << "Started ABYParty with role " << role << ", "
+                   << num_parties << " parties";
 }
 
 // TODO(fboemer): delete ABYParty

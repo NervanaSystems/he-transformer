@@ -289,4 +289,29 @@ TEST(aby, mod_reduce_zero_centered) {
   EXPECT_DOUBLE_EQ(mod_reduce_zero_centered(9.1, 2.0), -0.9);
 }
 
+TEST(aby, split_vector) {
+  {
+    auto splits = split_vector(10, 3);
+    EXPECT_EQ(splits.size(), 3);
+    EXPECT_EQ(splits[0].first, 0);
+    EXPECT_EQ(splits[0].second, 4);
+    EXPECT_EQ(splits[1].first, 4);
+    EXPECT_EQ(splits[1].second, 7);
+    EXPECT_EQ(splits[2].first, 7);
+    EXPECT_EQ(splits[2].second, 10);
+  }
+  {
+    auto splits = split_vector(10, 4);
+    EXPECT_EQ(splits.size(), 4);
+    EXPECT_EQ(splits[0].first, 0);
+    EXPECT_EQ(splits[0].second, 3);
+    EXPECT_EQ(splits[1].first, 3);
+    EXPECT_EQ(splits[1].second, 6);
+    EXPECT_EQ(splits[2].first, 6);
+    EXPECT_EQ(splits[2].second, 8);
+    EXPECT_EQ(splits[3].first, 8);
+    EXPECT_EQ(splits[3].second, 10);
+  }
+}
+
 }  // namespace ngraph::runtime::aby
