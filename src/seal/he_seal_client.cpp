@@ -99,14 +99,13 @@ void HESealClient::set_seal_context() {
   m_ckks_encoder = std::make_shared<seal::CKKSEncoder>(m_context);
 }
 
-void HESealClient::init_aby_executor() {
-  NGRAPH_INFO << "Initializing ABY executor with " << m_num_aby_parties
+void HESealClient::init_aby_executor(size_t num_parties) {
+  NGRAPH_INFO << "Initializing ABY executor with " << num_parties
               << " aby parties";
 
   if (m_aby_executor == nullptr) {
     m_aby_executor = std::make_unique<aby::ABYClientExecutor>(
-        std::string("yao"), *this, m_hostname, 34001, 128, 64, 2,
-        m_num_aby_parties);
+        std::string("yao"), *this, m_hostname, 34001, 128, 64, 2, num_parties);
   }
 }
 
@@ -301,12 +300,15 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
   if (enable_gc) {
     NGRAPH_HE_LOG(3) << "Client relu with GC";
 
-    init_aby_executor();
+    NGRAPH_CHECK(js.find("num_aby_parties") != js.end(),
+                 "Number of ABY parties not specified");
+    size_t num_aby_parties = flag_to_int(std::string(js["num_aby_parties"]));
+    NGRAPH_INFO << "parsed num_aby_parties " << num_aby_parties;
+    init_aby_executor(num_aby_parties);
 
     m_aby_executor->prepare_aby_circuit(function, he_tensor);
     m_aby_executor->run_aby_circuit(function, he_tensor);
     NGRAPH_INFO << "Client done running aby circuit";
-
   } else {
     size_t result_count = proto_tensor->data_size();
 #pragma omp parallel for
@@ -325,7 +327,7 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
   *proto_tensor = proto_output_tensors[0];
 
   write_message(TCPMessage(std::move(message)));
-}
+}  // namespace ngraph::runtime::he
 
 void HESealClient::handle_bounded_relu_request(pb::TCPMessage&& message) {
   NGRAPH_HE_LOG(3) << "Client handling bounded relu request";
@@ -351,7 +353,12 @@ void HESealClient::handle_bounded_relu_request(pb::TCPMessage&& message) {
 
   if (enable_gc) {
     NGRAPH_HE_LOG(3) << "Client bounded relu with GC";
-    init_aby_executor();
+
+    NGRAPH_CHECK(js.find("num_aby_parties") != js.end(),
+                 "Number of ABY parties not specified");
+    size_t num_aby_parties = flag_to_int(std::string(js["num_aby_parties"]));
+    NGRAPH_INFO << "parsed num_aby_parties " << num_aby_parties;
+    init_aby_executor(num_aby_parties);
 
     m_aby_executor->prepare_aby_circuit(function, he_tensor);
     m_aby_executor->run_aby_circuit(function, he_tensor);

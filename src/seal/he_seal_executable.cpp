@@ -1475,7 +1475,8 @@ void HESealExecutable::handle_server_relu_op(
         proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
         *proto_msg.mutable_function() = node_to_proto_function(
             node_wrapper,
-            {{"enable_gc", bool_to_string(enable_garbled_circuits())}});
+            {{"enable_gc", bool_to_string(enable_garbled_circuits())},
+             {"num_aby_parties", std::to_string(m_num_aby_parties)}});
         std::string function_str = proto_msg.function().function();
 
         // TODO(fboemer): set complex_packing to correct values?
@@ -1499,7 +1500,8 @@ void HESealExecutable::handle_server_relu_op(
           write_msg.set_type(pb::TCPMessage_Type_REQUEST);
           *write_msg.mutable_function() = node_to_proto_function(
               node_wrapper,
-              {{"enable_gc", bool_to_string(enable_garbled_circuits())}});
+              {{"enable_gc", bool_to_string(enable_garbled_circuits())},
+               {"num_aby_parties", std::to_string(m_num_aby_parties)}});
 
           *write_msg.add_he_tensors() = proto_tensor;
           TCPMessage relu_message(std::move(write_msg));

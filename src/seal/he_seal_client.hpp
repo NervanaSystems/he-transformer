@@ -128,7 +128,7 @@ class HESealClient {
   /// packing
   bool complex_packing() const { return m_encryption_params.complex_packing(); }
 
-  void init_aby_executor();
+  void init_aby_executor(size_t num_parties);
 
   /// \brief Returns the scale of the encryption parameters
   double scale() const { return m_encryption_params.scale(); }
@@ -168,9 +168,6 @@ class HESealClient {
   std::shared_ptr<seal::KeyGenerator> m_keygen;
   std::shared_ptr<seal::RelinKeys> m_relin_keys;
   size_t m_batch_size;
-
-  size_t m_num_aby_parties{
-      static_cast<size_t>(flag_to_int(std::getenv("NUM_ABY_THREADS"), 1))};
 
   bool m_is_done{false};
   std::condition_variable m_is_done_cond;

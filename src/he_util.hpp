@@ -84,6 +84,10 @@ inline std::string bool_to_string(const bool b) {
 
 int flag_to_int(const char* flag, int default_value = 0);
 
+inline int flag_to_int(const std::string& flag, int default_value = 0) {
+  return flag_to_int(flag.c_str(), default_value);
+}
+
 /// \brief Converts a type to a double using static_cast
 /// Note, this means a reduction of range in int64 and uint64 values.
 /// \param[in] src Source from which to read
