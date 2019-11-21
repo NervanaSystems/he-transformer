@@ -218,8 +218,6 @@ class HESealExecutable : public runtime::Executable {
 
   // ABY-related members
   std::unique_ptr<aby::ABYServerExecutor> m_aby_executor;
-  size_t m_num_aby_parties{
-      static_cast<size_t>(flag_to_int(std::getenv("NUM_ABY_THREADS"), 1))};
 
   std::unordered_map<std::shared_ptr<const Node>, stopwatch> m_timer_map;
   std::vector<NodeWrapper> m_wrapped_nodes;

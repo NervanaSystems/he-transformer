@@ -255,7 +255,7 @@ bool HESealExecutable::server_setup() {
     if (enable_garbled_circuits()) {
       m_aby_executor = std::make_unique<aby::ABYServerExecutor>(
           *this, std::string("yao"), std::string("0.0.0.0"), 34001, 128, 64, 2,
-          m_num_aby_parties);
+          m_he_seal_backend.num_garbled_circuit_threads());
     }
 
     std::stringstream param_stream;
@@ -1464,57 +1464,58 @@ void HESealExecutable::handle_server_relu_op(
       m_unknown_relu_idx.emplace_back(relu_idx);
     }
   }
-  auto process_unknown_relu_ciphers_batch =
-      [&](std::vector<HEType>& cipher_batch) {
-        if (verbose) {
-          NGRAPH_HE_LOG(3) << "Sending relu request size "
-                           << cipher_batch.size();
-        }
+  auto process_unknown_relu_ciphers_batch = [&](std::vector<HEType>&
+                                                    cipher_batch) {
+    if (verbose) {
+      NGRAPH_HE_LOG(3) << "Sending relu request size " << cipher_batch.size();
+    }
 
-        pb::TCPMessage proto_msg;
-        proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
-        *proto_msg.mutable_function() = node_to_proto_function(
-            node_wrapper,
-            {{"enable_gc", bool_to_string(enable_garbled_circuits())},
-             {"num_aby_parties", std::to_string(m_num_aby_parties)}});
-        std::string function_str = proto_msg.function().function();
+    pb::TCPMessage proto_msg;
+    proto_msg.set_type(pb::TCPMessage_Type_REQUEST);
+    *proto_msg.mutable_function() = node_to_proto_function(
+        node_wrapper,
+        {{"enable_gc", bool_to_string(enable_garbled_circuits())},
+         {"num_aby_parties",
+          std::to_string(m_he_seal_backend.num_garbled_circuit_threads())}});
+    std::string function_str = proto_msg.function().function();
 
-        // TODO(fboemer): set complex_packing to correct values?
-        auto relu_tensor = std::make_shared<HETensor>(
-            arg->get_element_type(),
-            Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
-            arg->is_packed(), false, true, m_he_seal_backend);
-        relu_tensor->data() = cipher_batch;
-        NGRAPH_INFO << "relu tensor shape " << relu_tensor->get_shape()
-                    << " with batch size " << relu_tensor->get_batch_size();
+    // TODO(fboemer): set complex_packing to correct values?
+    auto relu_tensor = std::make_shared<HETensor>(
+        arg->get_element_type(),
+        Shape{cipher_batch[0].batch_size(), cipher_batch.size()},
+        arg->is_packed(), false, true, m_he_seal_backend);
+    relu_tensor->data() = cipher_batch;
+    NGRAPH_INFO << "relu tensor shape " << relu_tensor->get_shape()
+                << " with batch size " << relu_tensor->get_batch_size();
 
-        if (enable_garbled_circuits()) {
-          // Masks input values
-          m_aby_executor->prepare_aby_circuit(function_str, relu_tensor);
-        }
+    if (enable_garbled_circuits()) {
+      // Masks input values
+      m_aby_executor->prepare_aby_circuit(function_str, relu_tensor);
+    }
 
-        std::vector<pb::HETensor> proto_tensors;
-        relu_tensor->write_to_protos(proto_tensors);
-        for (const auto& proto_tensor : proto_tensors) {
-          pb::TCPMessage write_msg;
-          write_msg.set_type(pb::TCPMessage_Type_REQUEST);
-          *write_msg.mutable_function() = node_to_proto_function(
-              node_wrapper,
-              {{"enable_gc", bool_to_string(enable_garbled_circuits())},
-               {"num_aby_parties", std::to_string(m_num_aby_parties)}});
+    std::vector<pb::HETensor> proto_tensors;
+    relu_tensor->write_to_protos(proto_tensors);
+    for (const auto& proto_tensor : proto_tensors) {
+      pb::TCPMessage write_msg;
+      write_msg.set_type(pb::TCPMessage_Type_REQUEST);
+      *write_msg.mutable_function() = node_to_proto_function(
+          node_wrapper,
+          {{"enable_gc", bool_to_string(enable_garbled_circuits())},
+           {"num_aby_parties",
+            std::to_string(m_he_seal_backend.num_garbled_circuit_threads())}});
 
-          *write_msg.add_he_tensors() = proto_tensor;
-          TCPMessage relu_message(std::move(write_msg));
+      *write_msg.add_he_tensors() = proto_tensor;
+      TCPMessage relu_message(std::move(write_msg));
 
-          NGRAPH_HE_LOG(5) << "Server writing relu request message";
-          m_session->write_message(std::move(relu_message));
+      NGRAPH_HE_LOG(5) << "Server writing relu request message";
+      m_session->write_message(std::move(relu_message));
 
-          if (enable_garbled_circuits()) {
-            m_aby_executor->run_aby_circuit(function_str, relu_tensor);
-            NGRAPH_INFO << "Server done running relu circuit";
-          }
-        }
-      };
+      if (enable_garbled_circuits()) {
+        m_aby_executor->run_aby_circuit(function_str, relu_tensor);
+        NGRAPH_INFO << "Server done running relu circuit";
+      }
+    }
+  };
 
   // Process unknown values
   std::vector<HEType> relu_ciphers_batch;

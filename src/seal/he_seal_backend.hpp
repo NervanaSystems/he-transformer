@@ -257,6 +257,10 @@ class HESealBackend : public runtime::Backend {
   /// evaluation
   bool& garbled_circuit_enabled() { return m_enable_garbled_circuit; }
 
+  size_t num_garbled_circuit_threads() const {
+    return m_num_garbled_circuit_threads;
+  }
+
   /// \brief Returns whether or not the garbled circuit inputs should be masked
   /// for privacy
   bool mask_gc_inputs() const { return m_mask_gc_inputs; }
@@ -314,6 +318,7 @@ class HESealBackend : public runtime::Backend {
   bool m_enable_garbled_circuit{false};
   bool m_mask_gc_inputs{false};
   bool m_mask_gc_outputs{false};
+  size_t m_num_garbled_circuit_threads{0};
 
   std::shared_ptr<seal::SecretKey> m_secret_key;
   std::shared_ptr<seal::PublicKey> m_public_key;

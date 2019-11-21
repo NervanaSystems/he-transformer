@@ -121,6 +121,11 @@ def server_argument_parser():
         default=False,
         help='Mask garbled circuits outputs')
     parser.add_argument(
+        '--num_gc_threads',
+        type=int,
+        default=1,
+        help='Number of threads to run garbled circuits with')
+    parser.add_argument(
         '--backend',
         type=str,
         default='HE_SEAL',
@@ -166,6 +171,8 @@ def server_config_from_flags(FLAGS, tensor_param_name):
         FLAGS.mask_gc_inputs)).encode()
     server_config.parameter_map['mask_gc_outputs'].s = (str(
         FLAGS.mask_gc_inputs)).encode()
+    server_config.parameter_map['num_gc_threads'].s = (str(
+        FLAGS.num_gc_threads)).encode()
 
     if FLAGS.enable_client:
         server_config.parameter_map[tensor_param_name].s = b'client_input'

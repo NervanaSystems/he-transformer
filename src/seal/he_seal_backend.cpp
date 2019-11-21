@@ -96,6 +96,10 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       if (m_enable_garbled_circuit) {
         NGRAPH_HE_LOG(3) << "Enabling garbled circuits from config";
       }
+    } else if (option == "num_gc_threads") {
+      m_num_garbled_circuit_threads = flag_to_int(setting.c_str(), 1);
+      NGRAPH_HE_LOG(3) << "Setting " << m_num_garbled_circuit_threads
+                       << " garbled circuits threads from config";
     } else if (option == "mask_gc_inputs") {
       m_mask_gc_inputs = flag_to_bool(setting.c_str(), false);
       if (m_mask_gc_inputs) {
@@ -124,7 +128,8 @@ bool HESealBackend::set_config(const std::map<std::string, std::string>& config,
       for (const auto& lower_setting : lower_settings) {
         NGRAPH_CHECK(valid_config_settings.find(lower_setting) !=
                          valid_config_settings.end(),
-                     "Invalid config setting ", lower_setting);
+                     "Invalid config setting ", lower_setting, " for option ",
+                     option);
 
         if (lower_setting == "client_input") {
           m_config_tensors.at(tensor_name).set_from_client(true);
