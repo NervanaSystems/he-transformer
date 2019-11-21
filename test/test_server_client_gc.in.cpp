@@ -212,14 +212,13 @@ auto server_client_gc_relu_packed_test = [](size_t element_count,
       inputs[i] = fmod(inputs[i], 32);
     }
 
-    NGRAPH_HE_LOG(3) << "Inputs[" << i << "] = " << inputs[i];
-
+    // NGRAPH_HE_LOG(3) << "Inputs[" << i << "] = " << inputs[i];
     if (bounded) {
       exp_results[i] = bounded_relu(inputs[i]);
     } else {
       exp_results[i] = relu(inputs[i]);
     }
-    NGRAPH_HE_LOG(3) << "ExpResults[" << i << "] = " << exp_results[i];
+    // NGRAPH_HE_LOG(3) << "ExpResults[" << i << "] = " << exp_results[i];
   }
 
   std::vector<float> results;
@@ -392,6 +391,14 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_real_mask_in) {
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_1_relu_real_mask_in_out) {
   server_client_gc_relu_packed_test(100, 1, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_300000_1_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(300000, 1, false, true, true);
+}
+
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_845_400_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(845, 400, false, true, true);
 }
 
 NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_100_2_relu_real) {

@@ -74,3 +74,9 @@ mult_end_of_depth
 # Seems to hang sometimes
 server_client_add_3_multiple_parameters_plain
 # server_client_provenance_tag
+
+# Segfault in ABY
+server_client_gc_845_400_relu_real_mask_in_ou
+
+# Inaccurate values
+server_client_gc_300000_1_relu_real_mask_in_out

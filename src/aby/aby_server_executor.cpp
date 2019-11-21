@@ -217,20 +217,22 @@ void ABYServerExecutor::run_aby_relu_circuit(
   m_gc_output_mask->read(gc_output_mask_vals.data(),
                          num_aby_vals * sizeof(uint64_t));
 
-  NGRAPH_HE_LOG(4) << "Server creating relu circuit";
+  NGRAPH_HE_LOG(3) << "Server creating relu circuit";
   BooleanCircuit* circ = get_circuit();
-  NGRAPH_HE_LOG(4) << "num_aby_vals " << num_aby_vals;
-  NGRAPH_HE_LOG(4) << "gc_input_mask_vals " << gc_input_mask_vals.size();
-  NGRAPH_HE_LOG(4) << "gc_output_mask_vals " << gc_output_mask_vals.size();
+  NGRAPH_HE_LOG(3) << "num_aby_vals " << num_aby_vals;
+  NGRAPH_HE_LOG(3) << "gc_input_mask_vals " << gc_input_mask_vals.size();
+  NGRAPH_HE_LOG(3) << "gc_output_mask_vals " << gc_output_mask_vals.size();
 
   ngraph::runtime::aby::relu_aby(*circ, num_aby_vals, gc_input_mask_vals, zeros,
                                  gc_output_mask_vals, m_aby_bitlen,
                                  m_lowest_coeff_modulus);
 
-  NGRAPH_HE_LOG(4) << "server executing relu circuit";
+  NGRAPH_HE_LOG(3) << "server executing relu circuit";
   m_ABYParty->ExecCircuit();
+  NGRAPH_HE_LOG(3) << "server done executing relu circuit";
 
   reset_party();
+  NGRAPH_HE_LOG(3) << "server done reset party";
 }
 
 void ABYServerExecutor::post_process_aby_relu_circuit(
@@ -360,7 +362,7 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
   m_gc_output_mask->read(gc_output_mask_vals.data(),
                          num_aby_vals * sizeof(uint64_t));
 
-  NGRAPH_HE_LOG(4) << "Server creating bounded_relu circuit";
+  NGRAPH_HE_LOG(3) << "Server creating bounded_relu circuit";
   BooleanCircuit* circ = get_circuit();
   NGRAPH_HE_LOG(4) << "num_aby_vals " << num_aby_vals;
   NGRAPH_HE_LOG(4) << "gc_input_mask_vals " << gc_input_mask_vals.size();
@@ -370,8 +372,9 @@ void ABYServerExecutor::run_aby_bounded_relu_circuit(
       *circ, num_aby_vals, gc_input_mask_vals, zeros, gc_output_mask_vals,
       bound_vals, m_aby_bitlen, m_lowest_coeff_modulus);
 
-  NGRAPH_HE_LOG(4) << "server executing bounded relu circuit";
+  NGRAPH_HE_LOG(3) << "server executing bounded relu circuit";
   m_ABYParty->ExecCircuit();
+  NGRAPH_HE_LOG(3) << "server done executing bounded relu circuit";
 
   reset_party();
 }
