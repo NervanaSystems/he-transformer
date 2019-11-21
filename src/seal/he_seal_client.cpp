@@ -100,10 +100,13 @@ void HESealClient::set_seal_context() {
 }
 
 void HESealClient::init_aby_executor() {
-  NGRAPH_INFO << "Initializing ABY executor";
+  NGRAPH_INFO << "Initializing ABY executor with " << m_num_aby_parties
+              << " aby parties";
+
   if (m_aby_executor == nullptr) {
     m_aby_executor = std::make_unique<aby::ABYClientExecutor>(
-        std::string("yao"), *this, m_hostname, 34001, 128, 64, 2, 3);
+        std::string("yao"), *this, m_hostname, 34001, 128, 64, 2,
+        m_num_aby_parties);
   }
 }
 
@@ -284,9 +287,11 @@ void HESealClient::handle_relu_request(pb::TCPMessage&& message) {
   message.set_type(pb::TCPMessage_Type_RESPONSE);
 
   pb::HETensor* proto_tensor = message.mutable_he_tensors(0);
+  NGRAPH_INFO << "Loading from proto tensor";
   auto he_tensor = HETensor::load_from_proto_tensor(
       *proto_tensor, *m_ckks_encoder, m_context, *m_encryptor, *m_decryptor,
       m_encryption_params);
+  NGRAPH_INFO << "Loaded from proto tensor";
 
   const std::string& function = message.function().function();
   const json& js = json::parse(function);

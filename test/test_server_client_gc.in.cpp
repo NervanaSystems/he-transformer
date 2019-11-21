@@ -397,6 +397,10 @@ NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_300000_1_relu_real_mask_in_out) {
   server_client_gc_relu_packed_test(300000, 1, false, true, true);
 }
 
+NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_845_100_relu_real_mask_in_out) {
+  server_client_gc_relu_packed_test(845, 100, false, true, true);
+}
+
 NGRAPH_TEST(${BACKEND_NAME}, server_client_gc_845_400_relu_real_mask_in_out) {
   server_client_gc_relu_packed_test(845, 400, false, true, true);
 }

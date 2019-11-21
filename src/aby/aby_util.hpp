@@ -101,7 +101,6 @@ inline std::vector<std::pair<size_t, size_t>> split_vector(size_t vector_size,
 
   size_t split_size = std::floor(vector_size / num_splits);
   size_t splits_extra = vector_size - num_splits * split_size;
-  NGRAPH_INFO << "splits_exrta " << splits_extra;
   std::vector<std::pair<size_t, size_t>> party_data_start_end_idx{
       num_splits, std::make_pair(0, 0)};
   for (size_t split_idx = 0; split_idx < num_splits; ++split_idx) {
@@ -116,12 +115,6 @@ inline std::vector<std::pair<size_t, size_t>> split_vector(size_t vector_size,
     }
 
     splits[split_idx] = std::make_pair(start_idx, end_idx);
-    NGRAPH_INFO << "split_idx " << split_idx << " start " << start_idx
-                << ", end " << end_idx;
-  }
-
-  for (const auto& elem : splits) {
-    NGRAPH_INFO << elem.first << " ,  " << elem.second;
   }
 
   return splits;

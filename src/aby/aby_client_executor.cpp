@@ -118,8 +118,9 @@ void ABYClientExecutor::run_aby_relu_circuit(
   auto party_data_start_end_idx = split_vector(tensor_size, m_num_parties);
   double scale = m_he_seal_client.scale();
 
-  std::vector<uint64_t> relu_result(tensor_data.size(), 0);
-#pragma omp parallel for
+  std::vector<uint64_t> relu_result(tensor_size, 0);
+  NGRAPH_INFO << "relu_result.size " << relu_result.size();
+#pragma omp parallel for num_threads(m_num_parties)
   for (size_t party_idx = 0; party_idx < m_num_parties; ++party_idx) {
     const auto& [start_idx, end_idx] = party_data_start_end_idx[party_idx];
     size_t party_data_size = end_idx - start_idx;
@@ -132,9 +133,12 @@ void ABYClientExecutor::run_aby_relu_circuit(
     std::vector<uint64_t> zeros(party_data_size, 0);
 
     // TODO(fboemer): Use span?
-    std::vector<uint64_t> client_party_gc_vals{
-        std::begin(client_gc_vals) + start_idx,
-        std::begin(client_gc_vals) + end_idx};
+    NGRAPH_INFO << "party_data_size " << party_data_size;
+    std::vector<uint64_t> client_party_gc_vals(party_data_size);
+    for (size_t idx = start_idx; idx < end_idx; ++idx) {
+      client_party_gc_vals[idx - start_idx] = client_gc_vals[idx];
+    }
+
     auto* relu_out =
         relu_aby(*circ, party_data_size, zeros, client_party_gc_vals, zeros,
                  m_aby_bitlen, m_lowest_coeff_modulus);
@@ -157,17 +161,18 @@ void ABYClientExecutor::run_aby_relu_circuit(
     relu_out->get_clear_value_vec(&out_vals_relu, &out_bitlen_relu,
                                   &result_count);
     NGRAPH_HE_LOG(3) << "result_count " << result_count;
-    for (size_t i = 0; i < result_count; ++i) {
-      NGRAPH_HE_LOG(3) << out_vals_relu[i];
-    }
 
     NGRAPH_CHECK(result_count == party_data_size,
                  "Wrong number of ABY result values, result_count=",
                  result_count, ", expected ", party_data_size);
 
+    NGRAPH_HE_LOG(3) << "party_data_size " << party_data_size;
+    NGRAPH_HE_LOG(3) << "start_idx " << start_idx;
+    NGRAPH_HE_LOG(3) << "end_idx " << end_idx;
+
     for (size_t party_result_idx = 0; party_result_idx < party_data_size;
          ++party_result_idx) {
-      relu_result[party_result_idx + party_data_size] =
+      relu_result[start_idx + party_result_idx] =
           out_vals_relu[party_result_idx];
     }
 
@@ -185,7 +190,7 @@ void ABYClientExecutor::run_aby_relu_circuit(
     }
 
     auto cipher = he::HESealBackend::create_empty_ciphertext();
-    NGRAPH_HE_LOG(3) << "Encrypting " << post_relu_vals << " at scale "
+    NGRAPH_HE_LOG(5) << "Encrypting " << post_relu_vals << " at scale "
                      << scale;
 
     runtime::he::encrypt(

@@ -73,6 +73,13 @@ bool flag_to_bool(const char* flag, bool default_value) {
   throw ngraph_error("Unknown flag value " + std::string(flag));
 }
 
+int flag_to_int(const char* flag, int default_value) {
+  if (flag == nullptr) {
+    return default_value;
+  }
+  return std::stoi(std::string(flag));
+}
+
 double type_to_double(const void* src, const element::Type& element_type) {
 #pragma clang diagnostic push
 #pragma clang diagnostic error "-Wswitch"

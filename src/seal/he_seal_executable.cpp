@@ -255,7 +255,7 @@ bool HESealExecutable::server_setup() {
     if (enable_garbled_circuits()) {
       m_aby_executor = std::make_unique<aby::ABYServerExecutor>(
           *this, std::string("yao"), std::string("0.0.0.0"), 34001, 128, 64, 2,
-          3);
+          m_num_aby_parties);
     }
 
     std::stringstream param_stream;

@@ -544,8 +544,8 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
     for (const auto& coeff_mod : coeff_moduli) {
       q_over_scale *= coeff_mod.value();
     }
-    NGRAPH_HE_LOG(3) << "q_over_scale " << q_over_scale;
-    NGRAPH_HE_LOG(3) << "scale " << input.ciphertext().scale();
+    NGRAPH_HE_LOG(5) << "q_over_scale " << q_over_scale;
+    NGRAPH_HE_LOG(5) << "scale " << input.ciphertext().scale();
   }
   decode(output, plaintext_wrapper, ckks_encoder, batch_size, q_over_scale);
 }

@@ -17,6 +17,7 @@
 #pragma once
 
 #include <complex>
+#include <cstdlib>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -80,6 +81,8 @@ inline std::string bool_to_string(const bool b) {
   ss << std::boolalpha << b;
   return ss.str();
 }
+
+int flag_to_int(const char* flag, int default_value = 0);
 
 /// \brief Converts a type to a double using static_cast
 /// Note, this means a reduction of range in int64 and uint64 values.

@@ -85,6 +85,16 @@ TEST(he_util, flag_to_bool) {
   EXPECT_ANY_THROW(flag_to_bool("DUMMY_VAL"));
 }
 
+TEST(he_util, flag_to_int) {
+  EXPECT_EQ(flag_to_int(nullptr, 42), 42);
+
+  EXPECT_EQ(flag_to_int("0"), 0);
+  EXPECT_EQ(flag_to_int("1"), 1);
+  EXPECT_EQ(flag_to_int("7"), 7);
+
+  EXPECT_ANY_THROW(flag_to_int("DUMMY_VAL"));
+}
+
 TEST(he_util, type_to_double) {
   auto test_type_to_double = [](auto x) {
     EXPECT_DOUBLE_EQ(

@@ -216,7 +216,7 @@ void ABYServerExecutor::run_aby_relu_circuit(
   m_gc_output_mask->read(gc_output_mask_vals.data(),
                          num_aby_vals * sizeof(uint64_t));
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(m_num_parties)
   for (size_t party_idx = 0; party_idx < m_num_parties; ++party_idx) {
     const auto& [start_idx, end_idx] = party_data_start_end_idx[party_idx];
     size_t party_data_size = end_idx - start_idx;
@@ -231,22 +231,18 @@ void ABYServerExecutor::run_aby_relu_circuit(
     NGRAPH_HE_LOG(3) << "gc_output_mask_vals " << gc_output_mask_vals.size();
     NGRAPH_INFO << "party_data_size " << party_data_size;
 
-    std::vector<uint64_t> gc_input_party_mask_vals{
-        std::begin(gc_input_mask_vals) + start_idx,
-        std::begin(gc_input_mask_vals) + end_idx};
-    std::vector<uint64_t> gc_output_party_mask_vals{
-        std::begin(gc_output_mask_vals) + start_idx,
-        std::begin(gc_output_mask_vals) + end_idx};
+    std::vector<uint64_t> gc_input_party_mask_vals(party_data_size);
+    std::vector<uint64_t> gc_output_party_mask_vals(party_data_size);
+
+    for (size_t idx = start_idx; idx < end_idx; ++idx) {
+      gc_input_party_mask_vals[idx - start_idx] = gc_input_mask_vals[idx];
+      gc_output_party_mask_vals[idx - start_idx] = gc_output_mask_vals[idx];
+    }
 
     std::vector<uint64_t> zeros(party_data_size, 0);
 
-    NGRAPH_INFO << "gc_input_party_mask_vals.size "
-                << gc_input_party_mask_vals.size();
-    NGRAPH_INFO << "gc_output_party_mask_vals.size "
-                << gc_output_party_mask_vals.size();
-
     ngraph::runtime::aby::relu_aby(
-        *circ, num_aby_vals, gc_input_party_mask_vals, zeros,
+        *circ, party_data_size, gc_input_party_mask_vals, zeros,
         gc_output_party_mask_vals, m_aby_bitlen, m_lowest_coeff_modulus);
 
     NGRAPH_HE_LOG(3) << "server executing relu circuit";
