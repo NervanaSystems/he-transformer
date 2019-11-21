@@ -541,9 +541,10 @@ void decrypt(HEPlaintext& output, const SealCiphertextWrapper& input,
     const auto& coeff_moduli = encryption_params.coeff_modulus();
 
     q_over_scale = 1.0 / input.ciphertext().scale();
-    for (const auto& coeff_mod : coeff_moduli) {
+    q_over_scale *= coeff_moduli[0].value();
+    /* for (const auto& coeff_mod : coeff_moduli) {
       q_over_scale *= coeff_mod.value();
-    }
+    } */
     NGRAPH_HE_LOG(5) << "q_over_scale " << q_over_scale;
     NGRAPH_HE_LOG(5) << "scale " << input.ciphertext().scale();
   }

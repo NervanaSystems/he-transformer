@@ -114,8 +114,8 @@ std::shared_ptr<he::HETensor> ABYServerExecutor::generate_gc_mask(
     rand_vals = std::vector<uint64_t>(rand_vals.size(), default_value);
   }
   NGRAPH_HE_LOG(4) << "Random mask vals:";
-  for (const auto& elem : rand_vals) {
-    NGRAPH_HE_LOG(4) << elem;
+  for (size_t i = 0; i < std::min(rand_vals.size(), 10UL); ++i) {
+    NGRAPH_HE_LOG(4) << rand_vals[i];
   }
 
   tensor->write(rand_vals.data(), rand_vals.size() * sizeof(uint64_t));

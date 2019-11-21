@@ -92,7 +92,7 @@ def test_cryptonets_relu(FLAGS):
         y_test_batch = y_test[:FLAGS.batch_size]
         y_label_batch = np.argmax(y_test_batch, 1)
 
-        if FLAGS.batch_size < 10:
+        if FLAGS.batch_size < 15:
             print('y_conv_val', np.round(y_conv_val, 2))
 
         y_pred = np.argmax(y_conv_val, 1)
