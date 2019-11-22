@@ -4,6 +4,8 @@
 
 # HE Transformer for nGraph
 
+# This project has moved to https://github.com/IntelAI/he-transformer
+
 The **Intel® HE transformer for nGraph™** is a Homomorphic Encryption (HE) backend to the [**Intel® nGraph Compiler**](https://github.com/NervanaSystems/ngraph), Intel's graph compiler for Artificial Neural Networks.
 
 Homomorphic encryption is a form of encryption that allows computation on encrypted data, and is an attractive remedy to increasing concerns about data privacy in the field of machine learning. For more information, see our [original paper](https://arxiv.org/pdf/1810.10121.pdf). Our [updated paper](https://arxiv.org/pdf/1908.04172.pdf) showcases many of the recent advances in he-transformer.
